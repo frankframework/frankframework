@@ -83,10 +83,31 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	public M toFile(String folderName, String filename) throws FileSystemException {
+		checkOpen();
+		MockFolder destFolder= folderName==null?this:getFolders().get(folderName);
+		if (destFolder==null) {
+			throw new FileSystemException("folder ["+folderName+"] does not exist");
+		}
+		M result = (M)destFolder.getFiles().get(filename);
+		if (result!=null) {
+			return result;
+		}
+		return (M)new MockFile(filename,destFolder);
+	}
+
+	@Override
 	public Iterator<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
-		return (Iterator<M>)folder.getFiles().values().iterator();
+		if (folder==null) {
+			throw new FileSystemException("folder ["+folderName+"] is null");
+		}
+		Map<String,MockFile>files = folder.getFiles();
+		if (files==null) {
+			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		}
+		return (Iterator<M>)files.values().iterator();
 	}
 
 	@Override
@@ -173,7 +194,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public String getCanonicalName(M f) throws FileSystemException {
-		checkOpenAndExists(null,f);
+		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
 		return f.getName();
 	}
 
@@ -219,6 +240,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public Map<String, Object> getAdditionalFileProperties(M f) {
 		checkOpen();
 		return f.getAdditionalProperties();
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "Mock!";
 	}
 
 

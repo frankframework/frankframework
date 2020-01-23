@@ -53,4 +53,22 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 	public void classloaderOnlyFolder() {
 		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
+
+	@Test
+	public void checkFilePathWithoutBasePath() throws Exception {
+		String filename = "fileOnlyOnZipClassPath.xml";
+
+		createAndConfigure("ClassLoader"); //Create a ClassLoader with BasePath
+
+		URL url = getResource(filename);
+		assertEquals("Path of resource invalid", filename, url.getPath());
+	}
+
+	@Test
+	public void checkFilePathWithBasePath() throws Exception {
+		String fileNameWithBasePath = "ClassLoader/fileOnlyOnZipClassPath.xml";
+
+		URL url = getResource(fileNameWithBasePath); //This ClassLoader doesn't have a BasePath so we need to append it
+		assertEquals("Path of resource invalid", fileNameWithBasePath, url.getPath());
+	}
 }

@@ -51,16 +51,17 @@ import java.util.zip.InflaterInputStream;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.SimpleParameter;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
  * Database-oriented utility functions.
@@ -120,15 +121,14 @@ public class JdbcUtil {
 	}
 
 	public static boolean isBlobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
-        switch(rsmeta.getColumnType(colNum))
-        {
-	        case Types.LONGVARBINARY :
-	        case Types.VARBINARY :
-			case Types.BLOB :
+		switch (rsmeta.getColumnType(colNum)) {
+			case Types.LONGVARBINARY:
+			case Types.VARBINARY:
+			case Types.BLOB:
 				return true;
 			default:
 				return false;
-        }
+		}
 	}
 
 	public static boolean isClobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
@@ -262,11 +262,11 @@ public class JdbcUtil {
 			InputStream inputStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
 			if ("decode".equalsIgnoreCase(blobBase64Direction)){
 				Base64InputStream base64DecodedStream = new Base64InputStream (inputStream);
-				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);   					
+				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			}
 			else if ("encode".equalsIgnoreCase(blobBase64Direction)){
 				Base64InputStream base64EncodedStream = new Base64InputStream (inputStream, true);
-				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);   									
+				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			}
 			else {	
 				StreamUtil.copyStream(inputStream, outputStream, 50000);
@@ -1007,24 +1007,20 @@ public class JdbcUtil {
 		retrieveJdbcPropertiesFromDatabase();
 	}
 
-	public static synchronized Connection retrieveConnection(String jmsRealm)
-			throws JdbcException {
+	public static synchronized Connection retrieveConnection(String jmsRealm) throws JdbcException {
 		JdbcFacade jdbcFacade = new JdbcFacade();
 		jdbcFacade.setJmsRealm(jmsRealm);
 		return jdbcFacade.getConnection();
 	}
 
-	public static String selectAllFromTable(Connection conn, String tableName)
-			throws SQLException {
+	public static String selectAllFromTable(Connection conn, String tableName) throws SQLException {
 		return selectAllFromTable(conn, tableName, null);
 	}
 
-	public static String selectAllFromTable(Connection conn, String tableName,
-			String orderBy) throws SQLException {
+	public static String selectAllFromTable(Connection conn, String tableName, String orderBy) throws SQLException {
 		PreparedStatement stmt = null;
 		try {
-			String query = "select * from " + tableName
-					+ (orderBy != null ? " ORDER BY " + orderBy : "");
+			String query = "select * from " + tableName + (orderBy != null ? " ORDER BY " + orderBy : "");
 			stmt = conn.prepareStatement(query);
 			ResultSet rs = stmt.executeQuery();
 			try {
@@ -1073,42 +1069,35 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void executeStatement(Connection connection, String query,
-			List<SimpleParameter> simpleParameters) throws JdbcException {
+	public static void executeStatement(Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
 		PreparedStatement stmt = null;
 		try {
 			if (log.isDebugEnabled())
-				log.debug("prepare and execute query [" + query + "]"
-						+ displayParameters(simpleParameters));
+				log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 			stmt = connection.prepareStatement(query);
-			applyParameters(stmt, simpleParameters);
+			applyParameters(stmt, parameterValues);
 			stmt.execute();
 		} catch (Exception e) {
-			throw new JdbcException("could not execute query [" + query + "]"
-					+ displayParameters(simpleParameters), e);
+			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
 		} finally {
 			if (stmt != null) {
 				try {
 					stmt.close();
 				} catch (Exception e) {
 					log.warn(
-							"exception closing statement for query [" + query
-									+ "]" + displayParameters(simpleParameters),
-							e);
+							"exception closing statement for query [" + query + "]" + displayParameters(parameterValues), e);
 				}
 			}
 		}
 	}
 
-	public static Object executeQuery(Connection connection, String query,
-			List<SimpleParameter> simpleParameters) throws JdbcException {
+	public static Object executeQuery(Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
 		PreparedStatement stmt = null;
 		try {
 			if (log.isDebugEnabled())
-				log.debug("prepare and execute query [" + query + "]"
-						+ displayParameters(simpleParameters));
+				log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 			stmt = connection.prepareStatement(query);
-			applyParameters(stmt, simpleParameters);
+			applyParameters(stmt, parameterValues);
 			ResultSet rs = stmt.executeQuery();
 			try {
 				if (!rs.next()) {
@@ -1128,93 +1117,80 @@ public class JdbcUtil {
 				rs.close();
 			}
 		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["
-					+ query + "]" + displayParameters(simpleParameters), e);
+			throw new JdbcException("could not obtain value using query [" + query + "]" + displayParameters(parameterValues), e);
 		} finally {
 			if (stmt != null) {
 				try {
 					stmt.close();
 				} catch (Exception e) {
-					log.warn(
-							"exception closing statement for query [" + query
-									+ "]" + displayParameters(simpleParameters),
-							e);
+					log.warn("exception closing statement for query [" + query + "]" + displayParameters(parameterValues), e);
 				}
 			}
 		}
 	}
 	
-	private static String displayParameters(List<SimpleParameter> simpleParameters) {
-		if (simpleParameters == null) {
+	private static String displayParameters(ParameterValueList parameterValues) {
+		if (parameterValues == null) {
 			return "";
 		}
 		StringBuilder sb = new StringBuilder();
-		int i = 0;
-		for (SimpleParameter simpleParameter : simpleParameters) {
-			i++;
+		for (int i=0; i<parameterValues.size(); i++) {
 			sb.append("param" + i + " [");
-			sb.append(simpleParameter.getValue() + "]");
+			sb.append(parameterValues.getParameterValue(i).getValue() + "]");
 		}
 		return sb.toString();
 	}
 
-	public static void applyParameters(PreparedStatement statement,
-			List<SimpleParameter> simpleParameters)
-			throws SQLException, JdbcException {
-		if (simpleParameters != null) {
-			int i = 0;
-			for (SimpleParameter simpleParameter : simpleParameters) {
-				applyParameter(statement, simpleParameter, ++i);
+	public static void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
+		if (parameters!=null) {
+			for (int i = 0; i < parameters.size(); i++) {
+				applyParameter(statement, parameters.getParameterValue(i), i + 1);
 			}
 		}
-	}
+	}	
 
-	public static void applyParameter(PreparedStatement statement,
-			SimpleParameter simpleParameter, int parameterIndex)
-			throws SQLException, JdbcException {
-		String paramType = simpleParameter.getType();
-		Object value = simpleParameter.getValue();
+
+	public static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex) throws SQLException, JdbcException {
+		
+		String paramName=pv.getDefinition().getName();
+		String paramType = pv.getDefinition().getType();
+		Object value = pv.getValue();
+		if (log.isDebugEnabled()) log.debug("jdbc parameter ["+parameterIndex+"] applying parameter ["+paramName+"] value ["+value+"]");
 		if (Parameter.TYPE_DATE.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.DATE);
 			} else {
-				statement.setDate(parameterIndex,
-						new java.sql.Date(((Date) value).getTime()));
+				statement.setDate(parameterIndex, new java.sql.Date(((Date) value).getTime()));
 			}
 		} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.TIMESTAMP);
 			} else {
-				statement.setTimestamp(parameterIndex,
-						new Timestamp(((Date) value).getTime()));
+				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
 			}
 		} else if (Parameter.TYPE_TIMESTAMP.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.TIMESTAMP);
 			} else {
-				statement.setTimestamp(parameterIndex,
-						new Timestamp(((Date) value).getTime()));
+				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
 			}
 		} else if (Parameter.TYPE_TIME.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.TIME);
 			} else {
-				statement.setTime(parameterIndex,
-						new java.sql.Time(((Date) value).getTime()));
+				statement.setTime(parameterIndex, new java.sql.Time(((Date) value).getTime()));
 			}
 		} else if (Parameter.TYPE_XMLDATETIME.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.TIMESTAMP);
 			} else {
-				statement.setTimestamp(parameterIndex,
-						new Timestamp(((Date) value).getTime()));
+				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
 			}
 		} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
 			if (value == null) {
 				statement.setNull(parameterIndex, Types.NUMERIC);
 			} else {
-				statement.setDouble(parameterIndex,
-						((Number) value).doubleValue());
+				statement.setDouble(parameterIndex, ((Number) value).doubleValue());
 			}
 		} else if (Parameter.TYPE_INTEGER.equals(paramType)) {
 			if (value == null) {
@@ -1245,12 +1221,8 @@ public class JdbcUtil {
 			} else if (value instanceof InputStream) {
 				statement.setBinaryStream(parameterIndex, (InputStream) value);
 			} else {
-				throw new JdbcException("unknown inputstream ["
-						+ value.getClass() + "] for parameter ["
-						+ simpleParameter.getName() + "]");
+				throw new JdbcException("unknown inputstream [" + value.getClass() + "] for parameter [" + paramName + "]");
 			}
-		} else if ("string2bytes".equals(paramType)) {
-			statement.setBytes(parameterIndex, ((String) value).getBytes());
 		} else if ("bytes".equals(paramType)) {
 			statement.setBytes(parameterIndex, (byte[]) value);
 		} else {

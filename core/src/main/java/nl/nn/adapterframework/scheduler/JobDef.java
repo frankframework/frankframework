@@ -355,8 +355,7 @@ public class JobDef {
 	protected Logger log=LogUtil.getLogger(this);
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
     private String name;
     private String cronExpression;
@@ -807,29 +806,22 @@ public class JobDef {
 				// load new (activated) configs
 				List<String> dbConfigNames = null;
 				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm);
+					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
 				} catch (ConfigurationException e) {
 					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames
-								.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext()
-									.load(currentDbConfigurationName);
+						if (!configNames.contains(currentDbConfigurationName)) {
+							ibisManager.getIbisContext().load(currentDbConfigurationName);
 						}
 					}
 				}
-				// unload old (deactivated) configs
+				// unload old (deactivated) configurations
 				if (configNames != null && !configNames.isEmpty()) {
 					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName)
-								&& "DatabaseClassLoader".equals(ibisManager
-										.getConfiguration(
-												currentConfigurationName)
-										.getClassLoaderType())) {
-							ibisManager.getIbisContext()
-									.unload(currentConfigurationName);
+						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+							ibisManager.getIbisContext().unload(currentConfigurationName);
 						}
 					}
 				}
@@ -997,6 +989,10 @@ public class JobDef {
 			}
 			if (StringUtils.isNotEmpty(getAdapterName())) {
 				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
+				if (iAdapter == null) {
+					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
+					return;
+				}
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}

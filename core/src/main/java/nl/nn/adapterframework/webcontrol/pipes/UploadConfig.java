@@ -49,31 +49,25 @@ public class UploadConfig extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration()
-				.getIbisManager().getIbisContext();
+		ibisContext = ((Adapter) getAdapter()).getConfiguration().getIbisManager().getIbisContext();
 	}
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if ("GET".equalsIgnoreCase(method)) {
 			return doGet(session);
 		} else if ("POST".equalsIgnoreCase(method)) {
 			return doPost(session);
 		} else {
-			throw new PipeRunException(this,
-					getLogPrefix(session) + "Illegal value for method ["
-							+ method + "], must be 'GET' or 'POST'");
+			throw new PipeRunException(this, getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}
 	}
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
-		String otapStage = AppConstants.getInstance()
-				.getResolvedProperty("otap.stage");
+		String dtapStage = APP_CONSTANTS.getResolvedProperty("dtap.stage");
 		session.put(ACTIVE_CONFIG, "on");
-		if ("DEV".equalsIgnoreCase(otapStage)
-				|| "TEST".equalsIgnoreCase(otapStage)) {
+		if ("DEV".equalsIgnoreCase(dtapStage) || "TEST".equalsIgnoreCase(dtapStage)) {
 			session.put(AUTO_RELOAD, "on");
 		} else {
 			session.put(AUTO_RELOAD, "off");
@@ -161,8 +155,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 
 	
 
-	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey)
-			throws PipeRunException {
+	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey) throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get(ACTIVE_CONFIG);
 		boolean isActiveConfig = "on".equals(activeConfig);
@@ -174,27 +167,21 @@ public class UploadConfig extends TimeoutGuardPipe {
 		try {
 			// convert inputStream to byteArray so it can be read twice
 			byte[] bytes = IOUtils.toByteArray(inputStream);
-			
-			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(
-					new ByteArrayInputStream(bytes));
+
+			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(new ByteArrayInputStream(bytes));
 			String buildInfoName = buildInfo[0];
 			String buildInfoVersion = buildInfo[1];
 			if (StringUtils.isEmpty(buildInfoName) || StringUtils.isEmpty(buildInfoVersion)) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Cannot retrieve BuildInfo name and version");
+				throw new PipeRunException(this, getLogPrefix(session) + "Cannot retrieve BuildInfo name and version");
 			}
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext,
-					formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion,
-					fileName, new ByteArrayInputStream(bytes), remoteUser)) {
-				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext
-						.getIbisManager().getConfiguration(buildInfoName) == null) {
-					ibisContext.load(buildInfoName);
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext.getIbisManager().getConfiguration(buildInfoName) == null) {
+					ibisContext.reload(buildInfoName);
 				}
 				return ("OK\n" + "Name: " + buildInfoName + "\nVersion: " + buildInfoVersion);
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on adding config to database", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Error occured on adding config to database", e);
 		}
 		return "NOT_OK";
 	}

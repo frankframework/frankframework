@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 
 public class JdbcUtilTest {
@@ -33,6 +34,7 @@ public class JdbcUtilTest {
 				"CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME)");
 	}
 
+	
 	@Test
 	public void test() throws Exception {
 		String query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT) VALUES (1, 'just a text', 1793)";
@@ -48,16 +50,12 @@ public class JdbcUtilTest {
 		JdbcUtil.executeStatement(connection, query, 4, "fourth text");
 
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME) VALUES (?, ?, ?, ?)";
-		List<SimpleParameter> simpleParameters = new ArrayList<SimpleParameter>();
-		simpleParameters.add(new SimpleParameter(null, Parameter.TYPE_INTEGER,
-				new Integer(6)));
-		simpleParameters.add(new SimpleParameter(null, null, "5th text"));
-		simpleParameters.add(new SimpleParameter(null, Parameter.TYPE_INTEGER,
-				new Integer(15092002)));
-		simpleParameters.add(new SimpleParameter(null, Parameter.TYPE_DATETIME,
-				DateUtils.parseToDate("2018-04-12 03:05:06",
-						"yyyy-MM-dd HH:mm:ss")));
-		JdbcUtil.executeStatement(connection, query, simpleParameters);
+		ParameterValueList params = new ParameterValueList();
+		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(6)));
+		params.add(new SimpleParameter(null, null, "5th text"));
+		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(15092002)));
+		params.add(new SimpleParameter(null, Parameter.TYPE_DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
+		JdbcUtil.executeStatement(connection, query, params);
 
 		query = "SELECT COUNT(*) FROM TEMP";
 		int intResult = JdbcUtil.executeIntQuery(connection, query);
@@ -75,11 +73,9 @@ public class JdbcUtilTest {
 		compareXML("JdbcUtil/expected.xml", stringResult);
 
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
-		simpleParameters = new ArrayList<SimpleParameter>();
-		simpleParameters.add(new SimpleParameter(null, Parameter.TYPE_INTEGER,
-				new Integer(3)));
-		List<Object> listResult = (List<Object>) JdbcUtil
-				.executeQuery(connection, query, simpleParameters);
+		params = new ParameterValueList();
+		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(3)));
+		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(connection, query, params);
 		assertEquals("just a third text", listResult.get(0));
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
 

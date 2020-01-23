@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import java.util.TreeMap;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -88,25 +87,29 @@ import org.apache.commons.lang.StringUtils;
 
 @Path("/")
 public final class ShowConfigurationStatus extends Base {
-	@Context ServletConfig servletConfig;
 	@Context Request request;
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
+
+	private Adapter getAdapter(String adapterName) {
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		return adapter;
+	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-		initBase(servletConfig);
-
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
 
 		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
-		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
+		List<IAdapter> registeredAdapters = getIbisManager().getRegisteredAdapters();
 
 		for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
 			Adapter adapter = (Adapter)adapterIt.next();
@@ -157,13 +160,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(name);
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
 
 		if(expanded != null && !expanded.isEmpty()) {
@@ -208,13 +206,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth(@PathParam("name") String name) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(name);
 		Map<String, Object> response = new HashMap<String, Object>();
 		List<String> errors = new ArrayList<String>();
 
@@ -255,7 +248,6 @@ public final class ShowConfigurationStatus extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		String action = null;
@@ -277,16 +269,16 @@ public final class ShowConfigurationStatus extends Base {
 				}
 			}
 		}
-		
+
 		if(action != null) {
 			response.status(Response.Status.ACCEPTED);
 			if(adapters.size() == 0) {
-				ibisManager.handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
+				getIbisManager().handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
 			}
 			else {
 				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
 					String adapterName = iterator.next();
-					ibisManager.handleAdapter(action, "", adapterName, null, null, false);
+					getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
 				}
 			}
 		}
@@ -300,14 +292,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		getAdapter(adapterName); //Check if the adapter exists!
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -315,12 +301,12 @@ public final class ShowConfigurationStatus extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
 				String action = null;
-				
+
 				if(value.equals("stop")) { action = "stopadapter"; }
 				if(value.equals("start")) { action = "startadapter"; }
-				
-				ibisManager.handleAdapter(action, "", adapterName, null, null, false);
-				
+
+				getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
+
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
@@ -334,13 +320,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null) {
-			throw new ApiException("Adapter ["+adapterName+"] not found!");
-		}
+		Adapter adapter = getAdapter(adapterName);
 
 		IReceiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
@@ -354,11 +335,16 @@ public final class ShowConfigurationStatus extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
 				String action = null;
-				
-				if(value.equals("stop")) { action = "stopreceiver"; }
-				if(value.equals("start")) { action = "startreceiver"; }
 
-				ibisManager.handleAdapter(action, "", adapterName, receiverName, null, false);
+				if(value.equals("stop")) { action = "stopreceiver"; }
+				else if(value.equals("start")) { action = "startreceiver"; }
+				else if(value.equals("incthread")) { action = "incthreads"; }
+				else if(value.equals("decthread")) { action = "decthreads"; }
+
+				if(StringUtils.isEmpty(action))
+					throw new ApiException("unknown or empty action ["+action+"]");
+
+				getIbisManager().handleAdapter(action, "", adapterName, receiverName, null, false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
@@ -371,15 +357,10 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/pipes")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> adapterInfo = mapAdapterPipes(adapter);
+
 		if(adapterInfo == null)
 			throw new ApiException("Adapter not configured!");
 
@@ -391,14 +372,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/messages")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
-		initBase(servletConfig);
 
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> adapterInfo = mapAdapterMessages(adapter);
 
 		return Response.status(Response.Status.OK).entity(adapterInfo).build();
@@ -409,18 +384,8 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/receivers")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterReceivers(@PathParam("name") String adapterName, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
-		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(adapterName);
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
 		return Response.status(Response.Status.OK).entity(receiverInfo).build();
@@ -431,14 +396,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
-		initBase(servletConfig);
-
-		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
+		Adapter adapter = getAdapter(adapterName);
 		return Response.status(Response.Status.OK).entity(getFlow(adapter)).build();
 	}
 
@@ -611,7 +569,7 @@ public final class ShowConfigurationStatus extends Base {
 							messageLogCount="?";
 						}
 					} catch (Exception e) {
-						log.warn(e);
+						log.warn("Cannot determine number of messages in messageLog ["+messageLog.getName()+"]", e);
 						messageLogCount="error";
 					}
 					pipesInfo.put("messageLogCount", messageLogCount);
@@ -676,7 +634,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn(e);
+							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
 							receiverInfo.put("errorStorageCount", "error");
 						}
 					}
@@ -690,7 +648,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("messageLogCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn(e);
+							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}
@@ -718,7 +676,7 @@ public final class ShowConfigurationStatus extends Base {
 							int messageCount = jmsBrowser.getMessageCount();
 							numMsgs = String.valueOf(messageCount);
 						} catch (Throwable t) {
-							log.warn(t);
+							log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
 							numMsgs = "?";
 						}
 						receiverInfo.put("pendingMessagesCount", numMsgs);

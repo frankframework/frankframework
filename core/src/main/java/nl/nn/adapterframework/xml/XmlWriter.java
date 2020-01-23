@@ -21,6 +21,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,9 +51,19 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
-	private StringBuffer namespaceDefinitions=new StringBuffer();
+	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 	
+	private class PrefixMapping {
+
+		public String prefix;
+		public String uri;
+
+		PrefixMapping(String prefix, String uri) {
+			this.prefix=prefix;
+			this.uri=uri;
+		}
+	}
+
 	public XmlWriter() {
 		writer=new StringWriter();
 	}
@@ -92,24 +104,29 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		}
 	}
 
-	private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
-		output.append(" xmlns");
-		if (StringUtils.isNotEmpty(prefix) ) {
-			output.append(":").append(prefix);
+	private void writePrefixMapping(PrefixMapping prefixMapping) throws IOException {
+		if (elementLevel==0 && StringUtils.isEmpty(prefixMapping.uri)) {
+			return;
 		}
-		output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+		writer.append(" xmlns");
+		if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
+			writer.append(":").append(prefixMapping.prefix);
+		}
+		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
 	}
+
+	private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
+		PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
+		prefixMappingList.add(prefixMapping);
+	}
+
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
-		if (elementLevel==0) {
-			appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
-		} else {
-			appendNamespaceMapping(namespaceDefinitions, prefix, uri);
-		}
-		super.startPrefixMapping(prefix, uri);
+		storePrefixMapping(namespaceDefinitions, prefix, uri);
 	}
+
+
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -122,12 +139,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				for (int i=0; i<attributes.getLength(); i++) {
 					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
 				}
-				if (elementLevel==0) {
-					writer.append(firstLevelNamespaceDefinitions);
+				for (int i=0; i<namespaceDefinitions.size(); i++) {
+					writePrefixMapping(namespaceDefinitions.get(i));
 				}
-				writer.append(namespaceDefinitions);
 			}
-			namespaceDefinitions.setLength(0);
+			namespaceDefinitions.clear();
 			elementJustStarted=true;
 			elementLevel++;
 		} catch (IOException e) {
@@ -258,6 +274,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 //		System.out.println("endEntity ["+arg0+"]");
 	}
 
+	public Writer getWriter() {
+		return writer;
+	}
+
 	@Override
 	public String toString() {
 		return writer.toString();
@@ -279,6 +299,5 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void setTextMode(boolean textMode) {
 		this.textMode = textMode;
 	}
-
 
 }

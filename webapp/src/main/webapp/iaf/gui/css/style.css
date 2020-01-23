@@ -3621,6 +3621,7 @@ body.body-small .footer.fixed {
   line-height: 1.42857;
   padding: 5px;
   vertical-align: top;
+  min-width: 75px;
 }
 .table-nohead > tbody > tr:first-child > td {
   border-top: none;
@@ -3655,6 +3656,9 @@ body.body-small .footer.fixed {
 .nav.nav-tabs li {
   background: none;
   border: none;
+}
+.nav.nav-tabs li:hover {
+  cursor: pointer;
 }
 .nav-tabs > li > a,
 .nav-tabs > li > div {
@@ -3812,6 +3816,21 @@ code {
   user-select:none;
   -o-user-select:none;
 }
+.clipboard {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  -o-user-select: text;
+}
+.clipboard i {
+  display: none;
+  margin-left: 5px;
+}
+.clipboard:hover i {
+  display: inline;
+  cursor: pointer;
+}
 
 .ibox-left {
   float: left;
@@ -3948,7 +3967,6 @@ table.table-mail tr td {
   float: left;
 }
 .ibox-title .label {
-  float: left;
   margin-left: 4px;
 }
 .ibox-tools {
@@ -6702,6 +6720,9 @@ body.body-small .vote-icon {
 }
 .pace-inactive {
   display: none;
+}
+.m-b-xxs button, .m-b-xxs a {
+  margin: 0 0 3px 0;
 }
 .hideBtn1170 button, .hideBtn1170 a {
   margin: 0 3px;

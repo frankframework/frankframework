@@ -88,19 +88,19 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			}
 		}
 		super.configure();
-		AppConstants appConstants = AppConstants.getInstance();
+		AppConstants rootAppConstants = AppConstants.getInstance();
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			instanceName = appConstants.getResolvedProperty("instance.name");
+			instanceName = rootAppConstants.getResolvedProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
 				throw new ConfigurationException("instance.name not available");
 			}
-			instanceNameLowerCase = appConstants.getResolvedProperty("instance.name.lc");
+			instanceNameLowerCase = rootAppConstants.getResolvedProperty("instance.name.lc");
 			if (StringUtils.isEmpty(instanceNameLowerCase)) {
 				throw new ConfigurationException("instance.name.lc not available");
 			}
-			environment = appConstants.getResolvedProperty("otap.stage");
+			environment = rootAppConstants.getResolvedProperty("dtap.stage");
 			if (StringUtils.isEmpty(environment) || environment.length() < 1) {
-				throw new ConfigurationException("otap.stage not available");
+				throw new ConfigurationException("dtap.stage not available");
 			}
 			environment = environment.substring(0, 1);
 			if (StringUtils.isEmpty(getFlowId())) {
@@ -112,7 +112,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (!StringUtils.isEmpty(getFlowId())) {
 				throw new ConfigurationException("attribute flowId must not be specified");
 			}
-			fxfDir = appConstants.getResolvedProperty("fxf.dir");
+			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("fxf.dir");
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
 			} else if (!new File(fxfDir).isDirectory()) {

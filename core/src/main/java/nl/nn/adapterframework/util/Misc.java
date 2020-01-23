@@ -942,6 +942,17 @@ public class Misc {
 		return defaultValue;
 	}
 	
+	public static String cleanseMessage(String inputString, String hideRegex, String hideMethod) {
+		if (StringUtils.isEmpty(hideRegex)) {
+			return inputString;
+		}
+		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
+			return hideFirstHalf(inputString, hideRegex);
+		} else {
+			return hideAll(inputString, hideRegex);
+		}
+	}
+	
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}
@@ -1006,5 +1017,14 @@ public class Misc {
 	public static String toSortName(String name) {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
+	}
+
+	public static int countRegex(String string, String regex) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(string);
+		int count = 0;
+		while (matcher.find())
+			count++;
+		return count;
 	}
 }

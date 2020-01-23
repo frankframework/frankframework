@@ -20,7 +20,9 @@ import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -68,6 +70,8 @@ public class LadybugPipe extends FixedForwardPipe {
 	private TestStorage testStorage;
 	private Storage debugStorage; 
 	private ReportXmlTransformer reportXmlTransformer;
+	private String exclude;
+	private Pattern excludeRegexPattern;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -76,91 +80,115 @@ public class LadybugPipe extends FixedForwardPipe {
 		if (failureForward == null) {
 			failureForward = getForward();
 		}
+		if (StringUtils.isNotEmpty(exclude)) {
+			excludeRegexPattern = Pattern.compile(exclude);
+		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");
-		int errorCount = 0;
-		int notEqualCount = 0;
+		int reportsPassed = 0;
+		
 		List<Report> reports = new ArrayList<Report>();
 		try {
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
-				reports.add(report);
+				String fullReportPath = (report.getPath() != null ? report.getPath() : "") + report.getName();
+				
+				if(excludeRegexPattern == null || !excludeRegexPattern.matcher(fullReportPath).matches()) {
+					reports.add(report);
+				}
 			}
 		} catch (StorageException e) {
-			errorCount++;
 			addExceptionElement(results, e);
 		}
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
+		
+		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
 		if(enableReportGenerator) {
+			IbisDebuggerAdvice.setEnabled(true);
 			testTool.setReportGeneratorEnabled(true);
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
+			IbisDebuggerAdvice.setEnabled(reportGeneratorEnabledOldValue);
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
 		}
+		long endTime = System.currentTimeMillis();
 		
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
+			long originalDuration = report.getEndTime() - report.getStartTime();
+			long duration = -1;
+			boolean equal = false;
+			String error = "";
+			
 			if (runResult.errorMessage != null) {
-				errorCount++;
-				results.addSubElement("Error", runResult.errorMessage);
+				error = runResult.errorMessage;
 			} else {
 				Report runResultReport = null;
 				try {
-					runResultReport = reportRunner.getRunResultReport(debugStorage, runResult.correlationId);
+					runResultReport = ReportRunner.getRunResultReport(debugStorage, runResult.correlationId);
 				} catch (StorageException e) {
-					errorCount++;
 					addExceptionElement(results, e);
 				}
+				
 				if (runResultReport == null) {
-					errorCount++;
-					results.addSubElement("Error", "Result report not found. Report generator not enabled?");
+					error = "Result report not found. Report generator not enabled?";
 				} else {
-					long originalDuration = report.getEndTime() - report.getStartTime();
-					long duration = runResultReport.getEndTime() - runResultReport.getStartTime();
-					boolean equal = false;
+					duration = runResultReport.getEndTime() - runResultReport.getStartTime();
 					report.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
 					if (report.toXml().equals(runResultReport.toXml())) {
 						equal = true;
-					} else {
-						notEqualCount++;
-					}
-					XmlBuilder result = new XmlBuilder("Result");
-					results.addSubElement(result);
-					result.addSubElement("Path", report.getPath());
-					result.addSubElement("Name", report.getName());
-					result.addSubElement("OriginalDuration", "" + originalDuration);
-					result.addSubElement("Duration", "" + duration);
-					result.addSubElement("Equal", "" + equal);
-					if (writeToLog || writeToSystemOut) {
-						String message;
-						message = "Path=\"" + report.getPath() + "\", "
-								+ "Name=\"" + report.getName() + "\", "
-								+ "OriginalDuration=\"" + originalDuration + "\", "
-								+ "Duration=\"" + duration + "\", "
-								+ "Equal=\"" + equal + "\"";
-						if (writeToLog) {
-							log.info(message);
-						}
-						if (writeToSystemOut) {
-							System.out.println(message);
-						}
+						reportsPassed++;
 					}
 				}
 			}
+			XmlBuilder result = new XmlBuilder("Result");
+			results.addSubElement(result);
+			result.addSubElement("Path", report.getPath());
+			result.addSubElement("Name", report.getName());
+			result.addSubElement("OriginalDuration", "" + originalDuration);
+			if(duration > -1) result.addSubElement("Duration", "" + duration);
+			result.addSubElement("Equal", "" + equal);
+			if(!error.isEmpty()) result.addSubElement("Error", error);
+			if (writeToLog || writeToSystemOut) {
+				writeToLogOrSysOut("Path=\"" + report.getPath() + "\", "
+						+ "Name=\"" + report.getName() + "\", "
+						+ "OriginalDuration=\"" + originalDuration + "\", "
+						+ ((duration > -1) ? "Duration=\"" + duration + "\", " : "")
+						+ "Equal=\"" + equal + "\""
+						+ (!error.isEmpty() ? ", Error=\"" + error + "\"" : ""));
+			}
 		}
-		PipeForward forward = (errorCount == 0 && notEqualCount == 0) ? getForward() : failureForward;
+		
+		boolean allReportsPassed = reportsPassed == reports.size();
+		if (writeToLog || writeToSystemOut) {
+			writeToLogOrSysOut("Total=\"" + reports.size() + "\", "
+					+ "Passed=\"" + reportsPassed + "\", "
+					+ "Failed=\"" + (reports.size() - reportsPassed) + "\", "
+					+ "TotalDuration=\"" + (endTime - startTime) + "\", "
+					+ "Equal=\"" + allReportsPassed + "\"");
+		}
+		PipeForward forward = allReportsPassed ? getForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
+	}
+
+	private void writeToLogOrSysOut(String message) {
+		if (writeToLog) {
+			log.info(message);
+		}
+		if (writeToSystemOut) {
+			System.out.println(message);
+		}
 	}
 
 	private void addExceptionElement(XmlBuilder results, Exception e) {
@@ -194,6 +222,11 @@ public class LadybugPipe extends FixedForwardPipe {
 			+ "then revert it to its original setting", "false"})
 	public void setEnableReportGenerator(boolean enabled) {
 		enableReportGenerator = enabled;
+	}
+	
+	@IbisDoc({"When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\".", ""})
+	public void setExclude(String exclude) {
+		this.exclude = exclude;
 	}
 
 	public void setTestTool(TestTool testTool) {

@@ -25,10 +25,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -67,9 +68,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	
 	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
-	
-	
-	
+	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
+
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -105,8 +106,12 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		return super.canProvideOutputStream() && actor.canProvideOutputStream();
 	}
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() && actor.requiresOutputStream();  
+	}
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;  
 	}
 	
 	@Override
@@ -118,7 +123,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
 		
 		try {
@@ -131,8 +136,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 		Object result;
 		try {
-			result = actor.doAction(input, pvl, session);
+			result = actor.doAction(new Message(input), pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
+			if (getForwards().containsKey("exception")) {
+				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
+			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
@@ -161,7 +169,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.addActions(specificActions);
 	}
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
+	@IbisDocRef({"1", FILESYSTEMACTOR})
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -169,12 +177,40 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		return actor.getAction();
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDocRef({"2", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 	public String getInputFolder() {
 		return actor.getInputFolder();
+	}
+	
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+	public String getFilename() {
+		return actor.getFilename();
+	}
+
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+
+	@IbisDocRef({"5", FILESYSTEMACTOR})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+
+	@IbisDocRef({"6", FILESYSTEMACTOR})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
 	}
 
 }

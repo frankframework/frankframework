@@ -17,7 +17,6 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -27,22 +26,21 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Provides functions for JDBC connections.
@@ -63,10 +61,11 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 	
 	private String name;
-    private String username=null;
-    private String password=null;
-    
-	private Map proxiedDataSources = null;
+	private String authAlias = null;
+	private String username = null;
+	private String password = null;
+
+	private Map<String,DataSource> proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
 
@@ -76,12 +75,25 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
+	private boolean credentialsConfigured=false;
+	private CredentialFactory cf=null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void configure() throws ConfigurationException {
+		configureCredentials();
+	}
+
+	public void configureCredentials() {
+		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
+			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		}
+		credentialsConfigured=true;
+	}
+	
+	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
@@ -125,9 +137,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
-		Connection conn=null;
-		try {
-			conn=getConnection();
+		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
 			String productVersion=md.getDatabaseProductVersion();
@@ -135,9 +145,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2
-					&& "WAS".equals(IbisContext.getApplicationServerType())
-					&& md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
@@ -146,23 +154,11 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				// transactionAttribute="NotSupported":
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log,
-						"The database's default holdability for ResultSet objects is "
-						+ md.getResultSetHoldability()
-						+ " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT
-						+ " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+				configWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
-		} finally {
-			if (conn!=null) {
-				try {
-					conn.close();
-				} catch (SQLException e1) {
-					log.warn("exception closing connection for metadata",e1);
-				}
-			}
 		}
 		return dsinfo;
 	}
@@ -235,10 +231,13 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
+		if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
+			configureCredentials(); 
+		}
 		DataSource ds=getDatasource();
 		try {
-			if (StringUtils.isNotEmpty(getUsername())) {
-				return ds.getConnection(getUsername(),getPassword());
+			if (cf!=null) {
+				return ds.getConnection(cf.getUsername(), cf.getPassword());
 			}
 			return ds.getConnection();
 		} catch (SQLException e) {
@@ -266,73 +265,50 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 *  
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
+	@Override
 	public String getPhysicalDestinationName() {
 		String result="unknown";
-		try {
-			Connection connection = getConnection();
+		try (Connection connection = getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			result = metadata.getURL();
 	
 			String catalog=null;
 			catalog=connection.getCatalog();
 			result += catalog!=null ? ("/"+catalog):"";
-			
-			connection.close();
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);		
 		}
 		return result;
 	}
 
-	protected void applyParameters(PreparedStatement statement,
-			ParameterValueList parameters) throws SQLException, JdbcException {
-		for (int i = 0; i < parameters.size(); i++) {
-			ParameterValue pv = parameters.getParameterValue(i);
-			JdbcUtil.applyParameter(statement,
-					new SimpleParameter(pv.getDefinition().getName(),
-							pv.getDefinition().getType(), pv.getValue()),
-					i + 1);
-		}
-	}	
 
-
-	/**
-	 * Sets the name of the object.
-	 */
+	@IbisDoc({"1", "Name of the sender", ""})
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>false</code> 
-	 */
+	@IbisDoc({"2", "JNDI name of datasource to be used", ""})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
 	public String getDatasourceName() {
 		return datasourceName;
 	}
-	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
-	 */
-	public void setDatasourceNameXA(String datasourceNameXA) {
-		if (StringUtils.isNotEmpty(datasourceNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'datasourceNameXA' is no longer supported. The datasource can now only be specified using attribute 'datasourceName'");
-		}
-//		this.datasourceNameXA = datasourceNameXA;
-	}
-//	public String getDatasourceNameXA() {
-//		return datasourceNameXA;
-//	}
 
-	/**
-	 * Sets the user name that is used to open the database connection.
-	 * If a value is set, it will be used together with the (@link #setPassword(String) specified password} 
-	 * to open the connection to the database.
-	 */
+
+	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -340,10 +316,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return username;
 	}
 
-	/**
-	 * Sets the password that is used to open the database connection.
-	 * @see #setPassword(String)
-	 */
+	@IbisDoc({"5", "Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -357,10 +330,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}
 
+	@IbisDoc({"6", "informs the sender that the obtained connection is from a pool", "true"})
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}

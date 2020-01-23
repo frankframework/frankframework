@@ -160,7 +160,7 @@
 		<tableName>DUAL</tableName>
 		<columns>
 			<column>
-				<name>SEQ_IBISTEMP.NEXTVAL</name>
+				<name>SEQ_IBISTEMP.NEXTVAL AS NEXTVAL</name>
 				<type>function</type>
 			</column>
 		</columns>
@@ -185,7 +185,7 @@
 		<order>tkey</order>
 	</select>
 	<sql>
-		<query>INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())</query>
+		<query>INSERT INTO IBISTEMP (tkey,tblob1,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),EMPTY_CLOB())</query>
 	</sql>
 	<sql>
 		<type>select</type>

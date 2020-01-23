@@ -76,13 +76,10 @@ public class ConfigurationUtils {
 	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
-	public static boolean stubConfiguration() {
-		return stubConfiguration(null);
-	}
 	/**
-	 * TODO: make this method public and create STUB per configuration
+	 * Checks if a configuration is stubbed or not
 	 */
-	private static boolean stubConfiguration(ClassLoader classLoader) {
+	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
@@ -90,7 +87,7 @@ public class ConfigurationUtils {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put("disableValidators", AppConstants.getInstance().getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
+		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
@@ -134,6 +131,11 @@ public class ConfigurationUtils {
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		} else {
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) { //Trim the BasePath, why is it even here!?
+				configurationFile = configurationFile.substring(i + 1);
+			}
 		}
 		return configurationFile;
 	}
@@ -142,7 +144,11 @@ public class ConfigurationUtils {
 		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
 	}
 
-	public static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
+	public static String getApplicationVersion() {
+		return getVersion(ConfigurationUtils.class.getClassLoader(), "instance.version", "instance.timestamp");
+	}
+
+	private static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
 		AppConstants constants = AppConstants.getInstance(classLoader);
 		String version = null;
 		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
@@ -274,6 +280,42 @@ public class ConfigurationUtils {
 			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
 			return stmt.executeUpdate() > 0;
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			JdbcUtil.fullClose(conn, rs);
+		}
+	}
+
+	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
+				throw new ConfigurationException("no JmsRealm found");
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(workJmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+
+			String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, name);
+			stmt.setString(2, version);
+			stmt.execute();
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
 		} catch (JdbcException e) {
@@ -427,6 +469,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -445,6 +491,9 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if (onlyAutoReload) {
+				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();

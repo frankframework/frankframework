@@ -18,12 +18,12 @@ package nl.nn.adapterframework.pipes;
 import java.util.Iterator;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -41,10 +41,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	private String sessionKey;
 	private String type = null;
 
-	/**
-	 * This is where the action takes place. Pipes may only throw a PipeRunException,
-	 * to be handled by the caller of this object.
-	 */
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String key = getSessionKey();
 		if(StringUtils.isEmpty(key))
@@ -86,17 +83,18 @@ public class GetFromSession  extends FixedForwardPipe {
 	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see IPipeLineSession
 	 */
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the output message from", ""})
+	@IbisDoc({"1", "Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	@IbisDoc({"2", "<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	public void setType(String type) {
+		this.type = type;
+	}
 	public String getType() {
 		return type;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
+
 }

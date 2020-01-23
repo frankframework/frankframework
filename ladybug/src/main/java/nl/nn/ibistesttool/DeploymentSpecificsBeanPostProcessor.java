@@ -20,6 +20,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.helpers.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -29,32 +30,37 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @author Jaco de Groot
  */
 public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
+	private AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	public Object postProcessBeforeInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
 			TestTool testTool = (TestTool)bean;
-			// TODO appConstants.getResolvedProperty doen?
-			String stage = System.getProperty("otap.stage");
-			if ("ACC".equals(stage) || "PRD".equals(stage)) {
-				testTool.setReportGeneratorEnabled(false);
-			}
+			boolean testToolEnabled=true;
 			AppConstants appConstants = AppConstants.getInstance();
-			String testToolEnabled = appConstants.getProperty("testtool.enabled");
-			if ("TRUE".equalsIgnoreCase(testToolEnabled)) {
-				testTool.setReportGeneratorEnabled(true);
+			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
+			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
+				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
+			} else {
+				String stage = APP_CONSTANTS.getProperty("dtap.stage");
+				if ("ACC".equals(stage) || "PRD".equals(stage)) {
+					testToolEnabled=false;
+				}
+				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
+			// enable/disable testtool via two switches, until one of the switches has become deprecated
+			testTool.setReportGeneratorEnabled(testToolEnabled); 
+			IbisDebuggerAdvice.setEnabled(testToolEnabled);
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
-			AppConstants appConstants = AppConstants.getInstance();
-			String maxFileSize = appConstants.getResolvedProperty("ibistesttool.maxFileSize");
+			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long maximumFileSize = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maximumFileSize);
 			}
-			String maxBackupIndex = appConstants.getResolvedProperty("ibistesttool.maxBackupIndex");
+			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				int maximumBackupIndex = Integer.parseInt(maxBackupIndex);
@@ -62,8 +68,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 			}
 		}
 //		if (bean instanceof nl.nn.testtool.storage.diff.Storage) {
-//			// TODO niet otap.stage maar een specifieke prop. gebruiken? op andere plekken in deze class ook?
-//			String stage = System.getResolvedProperty("otap.stage");
+//			// TODO niet dtap.stage maar een specifieke prop. gebruiken? op andere plekken in deze class ook?
+//			String stage = System.getResolvedProperty("dtap.stage");
 //			if ("LOC".equals(stage)) {
 //				AppConstants appConstants = AppConstants.getInstance();
 //				nl.nn.testtool.storage.diff.Storage runStorage = (nl.nn.testtool.storage.diff.Storage)bean;
@@ -86,8 +92,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 

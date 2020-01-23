@@ -84,7 +84,7 @@ public class StatisticsKeeper implements ItemList {
 	    
 	    List classBoundariesBuffer = new ArrayList();
 	
-	    StringTokenizer tok = AppConstants.getInstance().getTokenizer(boundaryConfigKey,defaultBoundaryList);
+	    StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(boundaryConfigKey,defaultBoundaryList);
 	
 	    while (tok.hasMoreTokens()) {
 	        classBoundariesBuffer.add(new Long(Long.parseLong(tok.nextToken())));

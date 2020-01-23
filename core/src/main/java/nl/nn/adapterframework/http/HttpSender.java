@@ -507,10 +507,14 @@ public class HttpSender extends HttpSenderBase {
 			return headersXml.toXML();
 		}
 		String responseBody = responseHandler.getResponseAsString(true);
-		int rbLength = responseBody.length();
-		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-		if (rbLength >= rbSizeWarn) {
-			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+		if (StringUtils.isEmpty(responseBody)) {
+			log.warn(getLogPrefix()+"responseBody is empty");
+		} else {
+			int rbLength = responseBody.length();
+			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+			if (rbLength >= rbSizeWarn) {
+				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+			}
 		}
 		return responseBody;
 	}

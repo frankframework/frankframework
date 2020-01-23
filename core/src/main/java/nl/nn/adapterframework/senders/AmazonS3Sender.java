@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
@@ -87,21 +89,25 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
 			return super.sendMessage(correlationID, message, prc, target);
 		}
 
 		String result = null;
-		String fileName = message;
+		String fileName;
+		try {
+			fileName = message.asString();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 
 		ParameterValueList pvl = null;
 		if (prc != null && paramList != null) {
 			try {
 				pvl = prc.getValues(paramList);
 			} catch (ParameterException e) {
-				throw new SenderException(
-						getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
 		}
 

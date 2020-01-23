@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-
-import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -27,13 +23,13 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
@@ -65,11 +61,12 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
-	
+	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -102,8 +99,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return super.canProvideOutputStream() && actor.canProvideOutputStream();
 	}
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() && actor.requiresOutputStream();  
 	}
 	
 	@Override
@@ -112,7 +109,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
@@ -125,26 +122,14 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			Object result = actor.doAction(message, pvl, prc.getSession());
-			if (result==null) {
-				return null;
-			} else {
-				if (result instanceof InputStream) {
-					try (InputStream is = new Base64InputStream((InputStream)result, true)) {
-						return Misc.streamToString(is);
-					} catch (IOException e) {
-						throw new SenderException(e);
-					}
-				} else {
-					return result.toString();
-				}
-			}
+			return actor.doAction(message, pvl, prc.getSession());
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (getFileSystem() instanceof HasPhysicalDestination) {
 			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
@@ -166,7 +151,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDocRef({"1", FILESYSTEMACTOR})
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -174,10 +159,51 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getAction();
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDocRef({"2", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
+	
+	public String getInputFolder() {
+		return actor.getInputFolder();
+	}
 
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+	public String getBase64() {
+		return actor.getBase64();
+	}
+
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+	public int getRotateDays() {
+		return actor.getRotateDays();
+	}
+
+	@IbisDocRef({"5", FILESYSTEMACTOR})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+	public int getRotateSize() {
+		return actor.getRotateSize();
+	}
+
+	@IbisDocRef({"6", FILESYSTEMACTOR})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
+	}
+
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+
+	public String getFilename() {
+		return actor.getFilename();
+	}
 
 }

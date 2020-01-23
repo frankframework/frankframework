@@ -55,4 +55,13 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		return null;
 	}
+	
+	public boolean parameterEvaluationRequiresInputMessage() {
+		for (Parameter p:this) {
+			if (p.requiresInputValueForResolution()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

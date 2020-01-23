@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-	   http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +15,22 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import javax.servlet.ServletException;
 
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -26,7 +38,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
@@ -35,43 +46,45 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 /**
- * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet}
+ * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
  * it will register the servlet in the context. When the Application Context is created or destroyed it will also create/destroy the servlet.
  * This ensures that the correct {@link SpringBus bus} will be used in which CXF will register it's endpoints and dispatchers.
- *
+ * 
  * <br/><br/>
- *
- * It is important that the Application Context is created before the {@link IbisApplicationServlet servlet} initializes.
+ * 
+ * It is important that the Application Context is created before the {@link IbisApplicationServlet servlet} initializes. 
  * Otherwise the servlet will register under the wrong {@link SpringBus bus}!
- *
+ * 
  * <br/><br/>
- *
+ * 
  * It is possible to retrieve the Application Context through the Spring WebApplicationContextUtils class
- *
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
+ *
  */
 public class IbisApplicationContext {
-	enum BootState {
-		FIRST_START, STARTING, STARTED, STOPPING, STOPPED;
+	public enum BootState {
+		FIRST_START,STARTING,STARTED,STOPPING,STOPPED,ERROR;
+		private Exception ex;
+		public BootState setException(Exception ex) {
+			this.ex = ex;
+			return this;
+		}
+		public Exception getException() {
+			return ex;
+		}
+		public static BootState ERROR(Exception ex) {
+			return BootState.ERROR.setException(ex);
+		}
 	}
 
 	private AbstractApplicationContext applicationContext;
 	private IbisApplicationServlet servlet = null;
 	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
-	private final String SPRINGCONTEXT = "/springContext.xml";
 	private ServletManager servletManager = null;
 	private BootState STATE = BootState.FIRST_START;
+	private Map<String, String> iafModules = new HashMap<String, String>();
 
 	private NamespaceUriProviderManager namespaceUriProviderManager = new NamespaceUriProviderManager();
 
@@ -82,43 +95,48 @@ public class IbisApplicationContext {
 
 	/**
 	 * Create Spring Bean factory.
-	 * <p>
+	 *
 	 * Create the Spring Bean Factory using the default <code>springContext</code>,
 	 * if not <code>null</code>.
 	 *
 	 * @throws BeansException If the Factory can not be created.
+	 *
 	 */
 	public void createApplicationContext() throws BeansException {
 		log.debug("creating Spring Application Context");
-		if (!STATE.equals(BootState.FIRST_START))
+		if(!STATE.equals(BootState.FIRST_START))
 			STATE = BootState.STARTING;
 
 		long start = System.currentTimeMillis();
 
-		if (servlet == null) {
-			log.debug("no servlet found, using ClassPathApplicationContext");
-			applicationContext = createClassPathApplicationContext();
-		} else {
-			log.debug("found servletconfig, using WebApplicationContext");
-			applicationContext = createWebApplicationContext();
+		lookupApplicationModules();
 
-			//When the IBIS is started from a servlet, start the NamespaceUriProviderManager (servlet/rpcrouter)
-			namespaceUriProviderManager.init();
+		try {
+			if(servlet == null) {
+				log.debug("no servlet found, using ClassPathApplicationContext");
+				applicationContext = createClassPathApplicationContext();
+			}
+			else {
+				log.debug("found servletconfig, using WebApplicationContext");
+				applicationContext = createWebApplicationContext();
+	
+				//When the IBIS is started from a servlet, start the NamespaceUriProviderManager (servlet/rpcrouter)
+				namespaceUriProviderManager.init();
+			}
+		} catch (BeansException be) {
+			STATE = BootState.ERROR(be);
+			throw be;
 		}
 
-		registerApplicationModules();
-
-		log.info("created " + applicationContext.getClass().getSimpleName() + " in " + (System.currentTimeMillis() - start) + " ms");
+		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
 		STATE = BootState.STARTED;
 	}
 
 	/**
 	 * Creates the Spring Application Context when ran from a {@link IbisApplicationServlet servlet}
-	 *
 	 * @throws BeansException when the Context fails to initialize
 	 */
 	private XmlWebApplicationContext createWebApplicationContext() throws BeansException {
-		String springContext = XmlWebApplicationContext.CLASSPATH_URL_PREFIX + SPRINGCONTEXT;
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
@@ -126,7 +144,7 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 
-		applicationContext.setConfigLocation(springContext);
+		applicationContext.setConfigLocations(getSpringConfigurationFiles(applicationContext.getClassLoader()));
 		applicationContext.setServletConfig(servlet.getServletConfig());
 
 		applicationContext.refresh();
@@ -140,8 +158,8 @@ public class IbisApplicationContext {
 
 		//Retrieve and set the newly created SpringBus as default bus to use
 		Bus bus = (Bus) applicationContext.getBean("cxf");
-		if (bus instanceof SpringBus) {
-			log.debug("setting default CXF SpringBus[" + bus.getId() + "]");
+		if(bus instanceof SpringBus) {
+			log.debug("setting default CXF SpringBus["+bus.getId()+"]");
 			BusFactory.setDefaultBus(bus);
 		}
 
@@ -155,6 +173,44 @@ public class IbisApplicationContext {
 		return applicationContext;
 	}
 
+	/**
+	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * property in AppConstants.properties
+	 * 
+	 * @param classLoader to use in order to find and validate the Spring Configuration files
+	 * @return A String array containing all files to use.
+	 */
+	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+		List<String> springConfigurationFiles = new ArrayList<String>();
+		springConfigurationFiles.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/springContext.xml");
+		springConfigurationFiles.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
+		springConfigurationFiles.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+
+		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
+		while(locationTokenizer.hasMoreTokens()) {
+			String file = locationTokenizer.nextToken();
+			log.info("found spring configuration file to load ["+file+"]");
+
+			URL fileURL = classLoader.getResource(file);
+			if(fileURL == null) {
+				log.error("unable to locate Spring configuration file ["+file+"]");
+				System.out.println("unable to locate Spring configuration file ["+file+"]");
+			} else {
+				if(file.indexOf(":") == -1) {
+					file = XmlWebApplicationContext.CLASSPATH_URL_PREFIX+"/"+file;
+				}
+
+				springConfigurationFiles.add(file);
+			}
+		}
+
+		log.info("loading Spring configuration files "+springConfigurationFiles+"");
+		if(servlet != null) {
+			servlet.getServletContext().log("loading Spring configuration files "+springConfigurationFiles+"");
+		}
+		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+	}
+
 	private void loadIbisInitializers(AbstractApplicationContext applicationContext) {
 		BeanDefinitionRegistry factory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
 		try {
@@ -164,32 +220,32 @@ public class IbisApplicationContext {
 				Object clazz = interfaces.get(beanName);
 //				IbisInitializer metaData = clazz.getClass().getAnnotation(IbisInitializer.class);
 
-				if (servlet != null)
-					servlet.getServletContext().log("Autowiring IbisInitializer [" + beanName + "]");
+				if(servlet != null)
+					servlet.getServletContext().log("Autowiring IbisInitializer ["+beanName+"]");
 
-				if (clazz != null) {
-					if (servlet != null && STATE.equals(BootState.FIRST_START)) {
-						if (clazz instanceof DynamicRegistration.Servlet) {
+				if(clazz != null) {
+					if(servlet != null && STATE.equals(BootState.FIRST_START)) {
+						if(clazz instanceof DynamicRegistration.Servlet) {
 							DynamicRegistration.Servlet servlet = (DynamicRegistration.Servlet) clazz;
-							log.info("adding servlet [" + servlet.getName() + "] to context");
+							log.info("adding servlet ["+servlet.getName()+"] to context");
 							servletManager.register(servlet);
 						}
 
 						factory.removeBeanDefinition(beanName);
-						log.debug("unwired DynamicRegistration.Servlet [" + beanName + "]");
+						log.debug("unwired DynamicRegistration.Servlet ["+beanName+"]");
 					}
 
-					log.debug("instantiated IbisInitializer [" + beanName + "]");
+					log.debug("instantiated IbisInitializer ["+beanName+"]");
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch(Throwable t) {
 			t.printStackTrace();
 		}
 	}
 
 	/**
 	 * Creates the Spring Application Context when ran from the command line.
-	 *
 	 * @throws BeansException when the Context fails to initialize
 	 */
 	private ClassPathXmlApplicationContext createClassPathApplicationContext() throws BeansException {
@@ -199,7 +255,7 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
-		applicationContext.setConfigLocation(SPRINGCONTEXT);
+		applicationContext.setConfigLocations(getSpringConfigurationFiles(applicationContext.getClassLoader()));
 		applicationContext.refresh();
 
 		return applicationContext;
@@ -209,21 +265,21 @@ public class IbisApplicationContext {
 	 * Destroys the Spring context
 	 */
 	protected void destroyApplicationContext() {
-
+		
 		namespaceUriProviderManager.destroy();
 
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context [" + oldContextName + "]");
+			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
 
-			((ConfigurableApplicationContext) applicationContext).close();
+			applicationContext.close();
 
-			if (servlet != null)
+			if(servlet != null)
 				servlet.doDestroy();
 
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context [" + oldContextName + "]");
+			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 		}
 	}
 
@@ -259,75 +315,77 @@ public class IbisApplicationContext {
 	/**
 	 * Returns the Spring XML Bean Factory If non exists yet it will create one.
 	 * If initializing the context fails, it will return null
-	 *
+	 * 
 	 * @return Spring XML Bean Factory or NULL
 	 */
 	public AbstractApplicationContext getApplicationContext() {
-		if (applicationContext == null)
+		if(applicationContext == null)
 			createApplicationContext();
 
 		return applicationContext;
 	}
 
+	public BootState getBootState() {
+		return STATE;
+	}
 
 	/**
 	 * Register all IBIS modules that can be found on the classpath
 	 * TODO: retrieve this (automatically/) through Spring
 	 */
-	private void registerApplicationModules() {
-		List<String> iafModules = new ArrayList<String>();
+	private void lookupApplicationModules() {
+		List<String> modulesToScanFor = new ArrayList<String>();
 
-		iafModules.add("ibis-adapterframework-akamai");
-		iafModules.add("ibis-adapterframework-cmis");
-		iafModules.add("ibis-adapterframework-coolgen");
-		iafModules.add("ibis-adapterframework-core");
-		iafModules.add("ibis-adapterframework-ibm");
-		iafModules.add("ibis-adapterframework-idin");
-		iafModules.add("ibis-adapterframework-ifsa");
-		iafModules.add("ibis-adapterframework-ladybug");
-		iafModules.add("ibis-adapterframework-larva");
-		iafModules.add("ibis-adapterframework-sap");
-		iafModules.add("ibis-adapterframework-tibco");
-		iafModules.add("ibis-adapterframework-webapp");
+		modulesToScanFor.add("ibis-adapterframework-akamai");
+		modulesToScanFor.add("ibis-adapterframework-cmis");
+		modulesToScanFor.add("ibis-adapterframework-coolgen");
+		modulesToScanFor.add("ibis-adapterframework-core");
+		modulesToScanFor.add("ibis-adapterframework-ibm");
+		modulesToScanFor.add("ibis-adapterframework-idin");
+		modulesToScanFor.add("ibis-adapterframework-ifsa");
+		modulesToScanFor.add("ibis-adapterframework-ladybug");
+		modulesToScanFor.add("ibis-adapterframework-larva");
+		modulesToScanFor.add("ibis-adapterframework-sap");
+		modulesToScanFor.add("ibis-adapterframework-tibco");
+		modulesToScanFor.add("ibis-adapterframework-webapp");
 
-		registerApplicationModules(iafModules);
+		registerApplicationModules(modulesToScanFor);
 	}
 
 	/**
 	 * Register IBIS modules that can be found on the classpath
-	 *
 	 * @param iafModules list with modules to register
 	 */
-	private void registerApplicationModules(List<String> iafModules) {
-		for (String module : iafModules) {
+	private void registerApplicationModules(List<String> modules) {
+		for(String module: modules) {
 			String version = getModuleVersion(module);
 
-			if (version != null) {
-				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [" + module + "] version [" + version + "]");
+			if(version != null) {
+				iafModules.put(module, version);
+				APP_CONSTANTS.put(module+".version", version);
+				log.info("Loading IAF module ["+module+"] version ["+version+"]");
 			}
 		}
 	}
 
 	/**
 	 * Get IBIS module version
-	 *
 	 * @param module name of the module to fetch the version
 	 * @return module version or null if not found
 	 */
 	private String getModuleVersion(String module) {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		String basePath = "META-INF/maven/org.ibissource/";
-		URL pomProperties = classLoader.getResource(basePath + module + "/pom.properties");
+		URL pomProperties = classLoader.getResource(basePath+module+"/pom.properties");
 
-		if (pomProperties != null) {
+		if(pomProperties != null) {
 			try {
 				InputStream is = pomProperties.openStream();
 				Properties props = new Properties();
 				props.load(is);
 				return (String) props.get("version");
 			} catch (IOException e) {
-				log.warn("unable to read pom.properties file for module[" + module + "]", e);
+				log.warn("unable to read pom.properties file for module["+module+"]", e);
 
 				return "unknown";
 			}
@@ -335,14 +393,5 @@ public class IbisApplicationContext {
 
 		// unable to find module, assume it's not on the classpath
 		return null;
-	}
-
-	/**
-	 * Returns true if context's state is STARTED.
-	 *
-	 * @return true if state is STARTED.
-	 */
-	public boolean isStarted() {
-		return STATE.equals(BootState.STARTED);
 	}
 }

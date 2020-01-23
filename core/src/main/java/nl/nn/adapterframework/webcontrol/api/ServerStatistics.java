@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
@@ -81,16 +82,19 @@ public class ServerStatistics extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		List<Object> configurations = new ArrayList<Object>();
 
-		initBase(servletConfig);
+		AppConstants appConstants = AppConstants.getInstance();
 
-		for (Configuration configuration : ibisManager.getConfigurations()) {
-			Map<String, String> cfg = new HashMap<String, String>();
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
+			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
-			cfg.put("type", configuration.getClassLoaderType());
+			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() != null)
+			if(configuration.getConfigurationException() == null) {
+				cfg.put("type", configuration.getClassLoaderType());
+			} else {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
+			}
 
 			ClassLoader classLoader = configuration.getClassLoader().getParent();
 			if(classLoader instanceof DatabaseClassLoader) {
@@ -117,8 +121,14 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", ibisContext.getFrameworkVersion());
-		returnMap.put("name", ibisContext.getApplicationName());
+		returnMap.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("name", getIbisContext().getApplicationName());
+
+		String dtapStage = appConstants.getProperty("dtap.stage");
+		returnMap.put("dtap.stage", dtapStage);
+		String dtapSide = appConstants.getProperty("dtap.side");
+		returnMap.put("dtap.side", dtapSide);
+
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
@@ -129,7 +139,7 @@ public class ServerStatistics extends Base {
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
-		returnMap.put("uptime", ibisContext.getUptimeDate());
+		returnMap.put("uptime", getIbisContext().getUptimeDate());
 
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
@@ -140,7 +150,6 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerConfiguration() throws ApiException {
 
-		initBase(servletConfig);
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
 
@@ -149,7 +158,7 @@ public class ServerStatistics extends Base {
 		if(!showCountErrorStore)
 			totalErrorStoreCount = -1;
 
-		for (Configuration configuration : ibisManager.getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<String, Object>();
 
 			//Configuration specific exceptions
@@ -189,10 +198,12 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("warnings", warnings);
 
 			//Configuration specific messages
-			MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configuration.getName());
-			List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-			if(messages.size() > 0)
-				configurationsMap.put("messages", messages);
+			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
+			if(messageKeeper != null) {
+				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+				if(messages.size() > 0)
+					configurationsMap.put("messages", messages);
+			}
 
 			returnMap.put(configuration.getName(), configurationsMap);
 		}
@@ -210,7 +221,7 @@ public class ServerStatistics extends Base {
 		}
 
 		//Global messages
-		MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper();
+		MessageKeeper messageKeeper = getIbisContext().getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);
@@ -258,14 +269,11 @@ public class ServerStatistics extends Base {
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
-
-		for (Iterator<String> iterator = errorLevels.iterator(); iterator.hasNext();) {
-			String level = iterator.next();
-			if(rootLogger.getLevel() == Level.toLevel(level))
-				logSettings.put("loglevel", level);
-		}
+		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
+
+		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
 
 		return Response.status(Response.Status.CREATED).entity(logSettings).build();
 	}
@@ -276,11 +284,11 @@ public class ServerStatistics extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		Level loglevel = null;
 		Boolean logIntermediaryResults = true;
 		int maxMessageLength = -1;
+		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
 
 		Logger rootLogger = LogUtil.getRootLogger();
@@ -302,6 +310,9 @@ public class ServerStatistics extends Base {
 			}
 			else if(key.equalsIgnoreCase("maxMessageLength")) {
 				maxMessageLength = Integer.parseInt(""+value);
+			}
+			else if(key.equalsIgnoreCase("enableDebugger")) {
+				enableDebugger = Boolean.parseBoolean(""+value);
 			}
 		}
 
@@ -330,6 +341,22 @@ public class ServerStatistics extends Base {
 			}
 		}
 
+		if (enableDebugger!=null) {
+			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
+			if (testtoolEnabled!=enableDebugger) {
+				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
+				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
+				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
+				if (applicationEventPublisher!=null) {
+					log.info("setting debugger enabled ["+enableDebugger+"]");
+					applicationEventPublisher.publishEvent(event);
+				} else {
+					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+				}
+			}
+ 		}
+		
+		
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());
@@ -343,10 +370,22 @@ public class ServerStatistics extends Base {
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		List<IAdapter> adapters = ibisManager.getRegisteredAdapters();
+
+		try {
+			getIbisManager();
+		}
+		catch(ApiException e) {
+			Throwable c = e.getCause();
+			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
+			response.put("error", c.getMessage());
+			response.put("stacktrace", c.getStackTrace());
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+		}
+
+		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
 		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
 		List<String> errors = new ArrayList<String>();
 

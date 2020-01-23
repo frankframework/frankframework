@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -91,7 +92,9 @@ public interface IDbmsSupport {
 	String provideTrailingFirstRowsHint(int rowCount);
 
 	String getSchema(Connection conn) throws JdbcException;
-
+	
+	void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException;
+	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);

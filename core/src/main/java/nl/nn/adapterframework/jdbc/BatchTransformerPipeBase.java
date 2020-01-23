@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 
@@ -44,6 +45,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
 	protected FixedQuerySender querySender;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
@@ -52,6 +54,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		querySender.configure();
 	}
 	
+	@Override
 	public void start() throws PipeStartException {
 		try {
 			querySender.open();
@@ -61,6 +64,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		super.start();
 	}
 
+	@Override
 	public void stop() {
 		super.stop();
 		querySender.close();
@@ -76,6 +80,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			this.rs=rs;
 		}
 
+		@Override
 		public void close() throws IOException {
 			try {
 				super.close();
@@ -88,27 +93,26 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
 
+	@Override
 	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			PreparedStatement statement=null;
-			String msg = (String)input;
-			statement = querySender.getStatement(connection, streamId, msg, false);
+			Message msg = new Message(input);
 			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			if (querySender.paramList != null) {
-				querySender.applyParameters(statement, prc.getValues(querySender.paramList));
-			}
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+			PreparedStatement statement=queryContext.getStatement();
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
 			}
-			return new ResultSetReader(connection, rs,getReader(rs, getCharset(), streamId, session));
+			return new ResultSetReader(connection, rs, getReader(rs, getCharset(), streamId, session));
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot open reader",e);
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		querySender.addParameter(p);
 	}

@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.DateUtils;
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
@@ -44,8 +45,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result = null;
 		IAdapter adapter;
 		if ("input".equals(getFrom())) {
@@ -59,9 +60,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine());
 			wsdl.setDocumentation("Generated at "
-				+ AppConstants.getInstance().getResolvedProperty("otap.stage")
+				+ AppConstants.getInstance().getResolvedProperty("dtap.stage")
 				+ "-"
-				+ AppConstants.getInstance().getResolvedProperty("otap.side")
+				+ AppConstants.getInstance().getResolvedProperty("dtap.side")
 				+ " on " + DateUtils.getIsoTimeStamp() + ".");
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

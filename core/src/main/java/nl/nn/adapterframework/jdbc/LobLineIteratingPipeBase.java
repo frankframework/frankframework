@@ -44,6 +44,7 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 			this.rs=rs;
 		}
 		
+		@Override
 		public void close() throws SenderException {
 			try {
 				super.close();
@@ -54,7 +55,8 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 
 	}
 
-	protected IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException {
+	@Override
+	protected IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException {
 		return new ResultStreamIterator(conn, rs, getReader(rs));
 	}
 

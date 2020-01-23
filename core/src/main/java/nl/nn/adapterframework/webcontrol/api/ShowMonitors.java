@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -36,7 +35,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -58,14 +56,12 @@ import nl.nn.adapterframework.monitoring.Trigger;
 
 @Path("/")
 public final class ShowMonitors extends Base {
-	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMonitors() throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		MonitorManager mm = MonitorManager.getInstance();
@@ -149,7 +145,6 @@ public final class ShowMonitors extends Base {
 	@Path("/monitors/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response raiseMonitor(@PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
-		initBase(servletConfig);
 
 		MonitorManager mm = MonitorManager.getInstance();
 		Monitor monitor = mm.findMonitor(monitorName);
@@ -184,7 +179,6 @@ public final class ShowMonitors extends Base {
 	@Path("/monitors/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteMonitor(@PathParam("monitorName") String monitorName) throws ApiException {
-		initBase(servletConfig);
 
 		MonitorManager mm = MonitorManager.getInstance();
 		Monitor monitor = mm.findMonitor(monitorName);
@@ -209,7 +203,6 @@ public final class ShowMonitors extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addMonitor(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		String name = null;
 		EventTypeEnum type = null;

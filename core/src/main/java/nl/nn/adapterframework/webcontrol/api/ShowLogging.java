@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -44,7 +43,6 @@ import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
 @Path("/")
 public final class ShowLogging extends Base {
-	@Context ServletConfig servletConfig;
 	@Context HttpServletRequest servletRequest;
 
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
@@ -60,7 +58,6 @@ public final class ShowLogging extends Base {
 			@QueryParam("sizeFormat") String sizeFormatParam, 
 			@QueryParam("wildcard") String wildcard
 			) throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 

@@ -30,7 +30,6 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
 	private int scanInterval = 10;
 	private ScheduledFuture<?> future;
-	private File scanDirectory = null;
 
 	public ScanningDirectoryClassLoader(ClassLoader parent) throws ConfigurationException {
 		super(parent);
@@ -40,16 +39,8 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super.configure(ibisContext, configurationName);
 
-		scanDirectory = new File(getDirectory(), getBasePath());
-
 		if(scanInterval > 0) {
-			if(scanDirectory.exists()) {
-				log.info("starting auto-refresh schedule on directory ["+scanDirectory +"]");
-				schedule();
-			}
-			else {
-				log.warn("unable to determine scanDirectory ["+scanDirectory +"], unable to auto-refresh configurations");
-			}
+			schedule();
 		}
 	}
 
@@ -88,8 +79,8 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	}
 
 	protected synchronized void scan() {
-		if(log.isTraceEnabled()) log.trace("running directory scanner on directory ["+scanDirectory+"]");
-		File[] files = scanDirectory.listFiles();
+		if(log.isTraceEnabled()) log.trace("running directory scanner on directory ["+getDirectory()+"]");
+		File[] files = getDirectory().listFiles();
 		if(hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
 			getIbisContext().reload(getConfigurationName());

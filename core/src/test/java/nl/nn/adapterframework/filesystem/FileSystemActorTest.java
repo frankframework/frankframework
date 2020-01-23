@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import org.hamcrest.core.IsInstanceOf;
+import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TestAssertions;
@@ -108,7 +110,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
-		thrown.expectMessage("inputFolder [xxx] does not exist");
+		thrown.expectMessage("inputFolder [xxx], canonical name [");
+		thrown.expectMessage("does not exist");
 		actor.setAction("list");
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -140,7 +143,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setName("inputFolder");
 		p.setValue("folder2");
 		params.add(p);
-		thrown.expectMessage("inputFolder [folder1] does not exist");
+		thrown.expectMessage("inputFolder [folder1], canonical name [");
+		thrown.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 	}
@@ -163,10 +167,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
-		String message="";
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		Message message = new Message("");
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList pvl= createParameterValueList(null, message, session);
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
 
@@ -255,7 +258,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		assertTrue("File ["+filename2+"] expected to be present", _fileExists(inputFolder, filename2));
 		
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, null);
 		Object result = actor.doAction(message, pvl, session);
 		System.err.println(result);
@@ -275,14 +278,44 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals("mismatch in number of files", 2, resultCount);
 	}
 
-	@Test()
-	public void fileSystemActorReadActionTestForDestinationParameter() throws Exception {
-		actor.setAction("move");
-		thrown.expectMessage("the move action requires the parameter [destination] to be present");
+	public void fileSystemActorInfoActionTest(boolean fileViaAttribute) throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "Tekst om te lezen";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction("info");
+		if (fileViaAttribute) {
+			actor.setFilename(filename);
+		}
 		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		Message message= new Message(fileViaAttribute?null:filename);
+		ParameterValueList pvl= createParameterValueList(null, message, null);
+		String result = (String)actor.doAction(message, pvl, session);
+		assertThat(result,StringContains.containsString("<file name=\"senderfile1.txt\""));
+		assertThat(result,StringContains.containsString("size=\"17\""));
+		assertThat(result,StringContains.containsString("canonicalName="));
+		assertThat(result,StringContains.containsString("modificationDate="));
+		assertThat(result,StringContains.containsString("modificationTime="));
 	}
-	
-	public void fileSystemActorReadActionTest(String action) throws Exception {
+
+	@Test
+	public void fileSystemActorInfoActionTest() throws Exception {
+		fileSystemActorInfoActionTest(false);
+	}
+
+	@Test
+	public void fileSystemActorInfoActionTestFilenameViaAttribute() throws Exception {
+		fileSystemActorInfoActionTest(true);
+	}
+
+
+	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute) throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		
@@ -290,12 +323,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		actor.setAction(action);
+		if (fileViaAttribute) {
+			actor.setFilename(filename);
+		}
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl= createParameterValueList(null, message, null);
 		Object result = actor.doAction(message, pvl, session);
 		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
@@ -305,12 +341,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorReadActionTest() throws Exception {
-		fileSystemActorReadActionTest("read");
+		fileSystemActorReadActionTest("read",false);
+	}
+
+	@Test
+	public void fileSystemActorReadActionTestFilenameViaAttribute() throws Exception {
+		fileSystemActorReadActionTest("read",true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestCompatiblity() throws Exception {
-		fileSystemActorReadActionTest("download");
+		fileSystemActorReadActionTest("download",false);
 	}
 
 	@Test
@@ -336,7 +377,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, session);
 		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
@@ -376,7 +417,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, session);
 		Object result = actor.doAction(message, pvl, session);
 
@@ -418,7 +459,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, session);
 		Object result = actor.doAction(message, pvl, session);
 
@@ -503,7 +544,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		String message=filename;
+		Message message= new Message(filename);
 		for (int i=0;i<numOfWrites;i++) {
 			session.put("uploadActionTargetwString", contents+i);
 			ParameterValueList pvl= createParameterValueList(params, message, session);
@@ -552,7 +593,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
-		String message = filename;
+		Message message = new Message(filename);
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = createParameterValueList(params, message, session);
@@ -568,6 +609,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 	}
 	
+	
+	@Test()
+	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
+		actor.setAction("move");
+		thrown.expectMessage("the move action requires the parameter [destination] to be present");
+		actor.configure(fileSystem,null,owner);
+	}
 	
 	public void fileSystemActorMoveActionTest(String folder1, String folder2) throws Exception {
 		String filename = "sendermove" + FILE1;
@@ -595,7 +643,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, null);
 		Object result = actor.doAction(message, pvl, session);
 		
@@ -615,6 +663,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorMoveActionTestRootToFolder() throws Exception {
 		fileSystemActorMoveActionTest(null,"folder");
 	}
+	
 //	@Test
 //	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {
 //		fileSystemSenderMoveActionTest("folder",null);
@@ -626,10 +675,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorMkdirActionTest() throws Exception {
-		String filename = "mkdir" + DIR1;
+		String folder = "mkdir" + DIR1;
 		
-		if (_folderExists(filename)) {
-			_deleteFolder(filename);
+		if (_folderExists(folder)) {
+			_deleteFolder(folder);
 		}
 
 		actor.setAction("mkdir");
@@ -638,25 +687,25 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message = new Message(folder);
 		ParameterValueList pvl= createParameterValueList(null, message, null);
 		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		// test
 		
-		boolean actual = _folderExists(filename);
+		boolean actual = _folderExists(folder);
 		// test
-		assertEquals("result of sender should be input message",result,message);
-		assertTrue("Expected file[" + filename + "] to be present", actual);
+		assertEquals("result of actor should be name of created folder",folder,result);
+		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
 
 	@Test
 	public void fileSystemActorRmdirActionTest() throws Exception {
-		String filename = DIR1;
+		String folder = DIR1;
 		
 		if (!_folderExists(DIR1)) {
-			_createFolder(filename);
+			_createFolder(folder);
 		}
 
 		actor.setAction("rmdir");
@@ -665,17 +714,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message = new Message(folder);
 		ParameterValueList pvl= createParameterValueList(null, message, null);
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of actor should be name of removed folder",folder,result);
 		waitForActionToFinish();
 		
-		boolean actual = _fileExists(filename);
+		boolean actual = _folderExists(folder);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
 	}
 
 	@Test
@@ -692,7 +741,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(null, message, null);
 		Object result = actor.doAction(message, pvl, session);
 
@@ -700,7 +749,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of sender should be name of deleted file",filename,result);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
@@ -728,12 +777,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
-		String message=filename;
+		Message message = new Message(filename);
 		ParameterValueList pvl= createParameterValueList(params, message, null);
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of actor should be name of new file",dest,result);
 
 		boolean actual = _fileExists(filename);
 		// test
@@ -745,8 +794,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	
-	protected ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
-		ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl = prc.getValues(paramList);
 		return pvl;
 	}

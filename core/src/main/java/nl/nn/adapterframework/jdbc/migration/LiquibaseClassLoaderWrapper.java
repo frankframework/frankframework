@@ -43,17 +43,16 @@ public class LiquibaseClassLoaderWrapper extends ClassLoader {
 
 	/**
 	 * Make sure what the parent ClassLoader only traverses 1 layer (loader) deep.
-	 * The DatabaseChangelog.xml file should only ever be found in the current classloader and never in it's parent.
+	 * The DatabaseChangelog.xml file should only ever be found in the current ClassLoader and never in it's parent.
 	 * This in order to prevent the file from being executed multiple times by different configurations.
-	 * The file might be present on the classpath or in the WAR/EAR. If it would traverse more then 1 loader, 
+	 * The file might be present on the ClassPath or in the WAR/EAR. If it would traverse more then 1 loader, 
 	 * all configurations (!) would read this file and execute it.
 	 */
 	@Override
 	public URL getResource(String name) {
 		if(getParent() instanceof ClassLoaderBase) {
 			ClassLoaderBase classLoader = (ClassLoaderBase) getParent();
-			//When the basepath is null, search in the parent classloader
-			return classLoader.getResource(name, null == classLoader.getBasePath());
+			return classLoader.getResource(name, false);
 		}
 
 		// Return null by default if not an instance of ClassLoaderBase

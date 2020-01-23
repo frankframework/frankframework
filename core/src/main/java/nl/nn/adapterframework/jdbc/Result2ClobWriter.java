@@ -37,6 +37,7 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
  */
 public class Result2ClobWriter extends Result2LobWriterBase {
 	
+	@Override
 	protected Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException {
 		try {
 			return dbmsSupport.getClobUpdateHandle(rs, querySender.getClobColumn());
@@ -44,7 +45,9 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 			throw new SenderException(e);
 		}
 	}
-	protected void   updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
+	
+	@Override
+	protected void updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
 			dbmsSupport.updateClob(rs, querySender.getClobColumn(), lobHandle);
 		} catch (Exception e) {
@@ -52,6 +55,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 		}
 	}
 
+	@Override
 	protected Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
 			return dbmsSupport.getClobWriter(rs,querySender.getClobColumn(), lobHandle);

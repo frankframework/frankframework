@@ -150,7 +150,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	public int getSize() throws StorageException {
 		try {
-			return jdbcTemplate.queryForInt("select count(*) from " + table);
+			/* queryForInt() deprecated since version Spring 3.2.x
+			 * https://www.mkyong.com/spring/jdbctemplate-queryforint-is-deprecated/
+			 * return jdbcTemplate.queryForInt("select count(*) from " + table);
+			 */
+			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);			
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
 		}

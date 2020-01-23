@@ -12,10 +12,21 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.headers.post["Content-Type"] = "application/json";
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
-		this.Get = function (uri, callback, error, skipEtag) {
-			var skipEtag = (skipEtag===true);
+		this.Get = function (uri, callback, error, httpOptions) {
+			var defaultHttpOptions = { headers:{}};
 
-			return $http.get(buildURI(uri), (etags.hasOwnProperty(uri) && !skipEtag) ? { headers: {'If-None-Match': etags[uri]} } : {}).then(function(response) {
+			if(httpOptions) {
+				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
+				if(typeof httpOptions == "object") {
+					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
+					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
+				}
+			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+				var tag = etags[uri];
+				defaultHttpOptions.headers['If-None-Match'] = tag;
+			}
+
+			return $http.get(buildURI(uri), defaultHttpOptions).then(function(response) {
 				if(callback && typeof callback === 'function') {
 					if(response.headers("etag")) {
 						etags[uri] = response.headers("etag");
@@ -25,7 +36,7 @@ angular.module('iaf.beheerconsole')
 					}
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Post = function () { // uri, object, callback, error || uri, object, headers, callback, error
@@ -47,7 +58,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Put = function (uri, object, callback, error) {
@@ -71,7 +82,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Delete = function (uri, callback, error) {
@@ -80,7 +91,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		var errorException = function (response, callback) {
@@ -270,14 +281,17 @@ angular.module('iaf.beheerconsole')
 						data[x].setInterval(i, false);
 				},
 				start: function() {
+					Debug.info("starting all Pollers");
 					for(x in data)
-						data[x].start();
+						data[x].fn();
 				},
 				stop: function() {
+					Debug.info("stopping all Pollers");
 					for(x in data)
 						data[x].stop();
 				},
 				remove: function() {
+					Debug.info("removing all Pollers");
 					for(x in data)
 						data[x].remove();
 				},
@@ -525,15 +539,17 @@ angular.module('iaf.beheerconsole')
 		});
 
 		$rootScope.$on("$stateChangeStart", function(_, state) {
-			Debug.log("triggered state change");
+			Debug.log("triggered state change to ["+state.name+"]");
 			var url = state.url;
-			if(url.indexOf("?") > 0)
+			if(url && url.indexOf("?") > 0)
 				url = url.substring(0, url.indexOf("?"));
 
-			gTag.config({
-				'page_path': url,
-				'page_title': state.data.pageTitle
-			});
+			if(state.data && state.data.pageTitle) {
+				gTag.config({
+					'page_path': url,
+					'page_title': state.data.pageTitle
+				});
+			}
 		});
 	}])
 	.service('Debug', function() {
@@ -631,20 +647,23 @@ angular.module('iaf.beheerconsole')
 		};
 		this.defaults = function() {
 			var args = arguments || [];
-			var option = {};
-			if(args.length == 0 || args.length > 2)
-				Debug.warn("Invalid argument length specified for SweetAlert");
-
 			var options = angular.copy(this.defaultSettings);
 
-			if(typeof args[0] == "object")
-				option = args[0];
-			else if(typeof args[0] == "string")
+			if(args.length == 0 || args.length > 2)
+				Debug.error("Invalid argument length specified for SweetAlert.");
+
+			//expects (String, String) or (JsonObject, Function)
+			if(typeof args[0] == "object") {
+				angular.merge(options, options, args[0]);
+				if(args.length == 2 && typeof args[1] == "function") {
+					options.callback = args[1];
+				}
+			} else if(typeof args[0] == "string") {
 				options.title = args[0];
-			if(args.length == 2 && typeof args[1] == "string") {
-				options.text = args[1];
+				if(args.length == 2 && typeof args[1] == "string") {
+					options.text = args[1];
+				}
 			}
-			for(x in option) options[x] = option[x];
 
 			return options; //var [options, callback] = this.defaults.apply(this, arguments);
 		};
@@ -655,32 +674,34 @@ angular.module('iaf.beheerconsole')
 			options.showCancelButton = true;
 			return swal(options);
 		};
-		this.Confirm = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "question";
-			options.title = "Are you sure?";
-			options.showCancelButton = true;
-			return swal(options);
+		this.Confirm = function() { //(JsonObject, Callback)-> returns boolean
+			var options = {
+				type: "info",
+				title: "Are you sure?",
+				showCancelButton: true,
+			};
+			angular.merge(options, options, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Info = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "info";
-			return swal(options);
+			var options = {};
+			angular.merge(options, {type: "info"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Warning = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "warning";
-			return swal(options);
+			var options = {};
+			angular.merge(options, {type: "warning"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Error = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "error";
-			return swal(options);
+			var options = {};
+			angular.merge(options, {type: "error"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Success = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "success";
-			return swal(options);
+			var options = {};
+			angular.merge(options, {type: "success"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 	}]).service('Hooks', ['$rootScope', '$timeout', function($rootScope, $timeout) {
 		this.call = function() {

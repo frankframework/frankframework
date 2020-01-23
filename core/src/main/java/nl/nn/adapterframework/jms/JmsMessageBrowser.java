@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jms;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -29,14 +28,15 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Get the messages on a queue without deleting them
@@ -47,6 +47,10 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 
 	private long timeOut = 3000;
 	private String selector=null;
+
+	private String hideRegex = null;
+	private String hideMethod = "all";
+	
 	
 	public JmsMessageBrowser() {
 		super();
@@ -58,6 +62,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		this.selector=selector;
 	}
 	
+	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
 			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),getSelector());
@@ -66,6 +71,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
+	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
 		String selector=getSelector();
 		if (startTime!=null) {
@@ -111,6 +117,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	
+	@Override
 	public Object getMessage(String messageId) throws ListenerException {
 		Session session=null;
 		Object msg = null;
@@ -134,16 +141,18 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
+	@Override
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
 		return new JmsMessageBrowserIteratorItem(doBrowse("JMSMessageID", messageId));
 	}
 
+	@Override
 	public Object browseMessage(String messageId) throws ListenerException {
 		return doBrowse("JMSMessageID", messageId);
 	}
-	
-    
-    protected Message doBrowse(Map selectors) throws ListenerException {
+
+
+	protected Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
 		Message msg = null;
 		QueueBrowser queueBrowser=null;
@@ -167,14 +176,15 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			}
 			closeSession(session);
 		}
-    }
-    
-    protected Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
-        Map selectorMap = new HashMap();
-        selectorMap.put(selectorKey, selectorValue);
-        return doBrowse(selectorMap);
-    }
-    
+	}
+
+	protected Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
+		Map<String,String> selectorMap = new HashMap<>();
+		selectorMap.put(selectorKey, selectorValue);
+		return doBrowse(selectorMap);
+	}
+
+	@Override
 	public void deleteMessage(String messageId) throws ListenerException {
 		Session session=null;
 		MessageConsumer mc = null;
@@ -198,21 +208,19 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	protected String getCombinedSelector(String messageId) {
-        Map selectorMap = new HashMap();
-        selectorMap.put("JMSMessageID", messageId);
-        return getCombinedSelector(selectorMap);
+		Map<String,String> selectorMap = new HashMap<>();
+		selectorMap.put("JMSMessageID", messageId);
+		return getCombinedSelector(selectorMap);
 	}
 
-	protected String getCombinedSelector(Map selectors) {
-        StringBuffer result = new StringBuffer();
-        for (Iterator it = selectors.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry)it.next();
-            if (result.length() > 0) {
-                result.append(" AND ");
-            }
-            result.append(entry.getKey()).append("='").
-                    append(entry.getValue()).append("'");
-        }
+	protected String getCombinedSelector(Map<String,String> selectors) {
+		StringBuffer result = new StringBuffer();
+		for (Map.Entry<String,String> entry: selectors.entrySet()) {
+			if (result.length() > 0) {
+				result.append(" AND ");
+			}
+			result.append(entry.getKey()).append("='").append(entry.getValue()).append("'");
+		}
 
 		if (StringUtils.isNotEmpty(getSelector())) {
 			result.append(" AND ").append(getSelector());
@@ -230,6 +238,26 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 
 	public String getSelector() {
 		return selector;
+	}
+
+	@Override
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	public void setHideRegex(String hideRegex) {
+		this.hideRegex = hideRegex;
+	}
+	@Override
+	public String getHideRegex() {
+		return hideRegex;
+	}
+
+	@Override
+	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	public void setHideMethod(String hideMethod) {
+		this.hideMethod = hideMethod;
+	}
+	@Override
+	public String getHideMethod() {
+		return hideMethod;
 	}
 
 }

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-class ResultSetIterator implements IDataIterator {
+class ResultSetIterator implements IDataIterator<String> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Connection conn;
@@ -56,6 +56,7 @@ class ResultSetIterator implements IDataIterator {
 		rsmeta=rs.getMetaData();
 	}
 
+	@Override
 	public boolean hasNext() throws SenderException {
 		try {
 			if (!lineChecked) {
@@ -68,7 +69,8 @@ class ResultSetIterator implements IDataIterator {
 		}
 	}
 
-	public Object next() throws SenderException {
+	@Override
+	public String next() throws SenderException {
 		try {
 			lineChecked=false;
 			return DB2XMLWriter.getRowXml(rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toXML();
@@ -77,6 +79,7 @@ class ResultSetIterator implements IDataIterator {
 		}
 	}
 
+	@Override
 	public void close() {
 		JdbcUtil.fullClose(conn, rs);
 	}

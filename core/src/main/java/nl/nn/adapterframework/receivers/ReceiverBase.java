@@ -155,7 +155,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </ul>
  * </p>
  *
- * @author     Gerrit van Brakel
+ * @author Gerrit van Brakel
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
@@ -184,11 +184,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private boolean suspensionMessagePending=false;
 
 	private boolean configurationSucceeded = false;
-   
+
 	private BeanFactory beanFactory;
 
 	private int pollInterval=10;
-    
+
 	private String returnedSessionKeys=null;
 	private String hideRegex = null;
 	private String hideMethod = "all";
@@ -201,10 +201,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String labelNamespaceDefs;
 	private String labelXPath;
 	private String labelStyleSheet;
-    private String chompCharSize = null;
-    private String elementToMove = null;
-    private String elementToMoveSessionKey = null;
-    private String elementToMoveChain = null;
+	private String chompCharSize = null;
+	private String elementToMove = null;
+	private String elementToMoveSessionKey = null;
+	private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
 	private boolean recover = false;
 
@@ -221,13 +221,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
-	// the number of threads that are activily polling for messages (concurrently, only for pulling listeners)
+	// the number of threads that are actively polling for messages (concurrently, only for pulling listeners)
 	private int numThreadsPolling = 1;
-   
+
 	private PullingListenerContainer listenerContainer;
-    
+
 	private Counter threadsProcessing = new Counter(0);
-	        
+
 	private long lastMessageDate = 0;
 
 	// number of messages received
@@ -284,7 +284,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		protected boolean removeEldestEntry(Entry eldest) {
 			return size() > getPoisonMessageIdCacheSize();
 		}
-        
+
 	};
 
 	private LinkedHashMap<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
@@ -293,7 +293,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {
 			return size() > getProcessResultCacheSize();
 		}
-        
+
 	};
 
 	private class ProcessResultCacheItem {
@@ -361,13 +361,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 	}
-    
-    
-    
+
+
+
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
 	}	
-    
+
 	/** 
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
@@ -515,35 +515,35 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
 			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
-            // Check if we need to use the in-process storage as
-            // error-storage.
-            // In-process storage is no longer used, but is often
-            // still configured to be used as error-storage.
-            // The rule is:
-            // 1. if error-storage is configured, use it.
-            // 2. If error-storage is not configure but an error-sender is,
-            //    then use the error-sender.
-            // 3. If neither error-storage nor error-sender are configured,
-            //    but the in-process storage is, then use the in-process storage
-            //    for error-storage.
-            // Member variables are accessed directly, to avoid any possible
-            // aliasing-effects applied by getter methods. (These have been
-            // removed for now, but since the getter-methods were not
-            // straightforward in the earlier versions, I felt it was safer
-            // to use direct member variables).
-            if (this.tmpInProcessStorage != null) {
-                if (this.errorSender == null && this.errorStorage == null) {
-                    this.errorStorage = this.tmpInProcessStorage;
-                    info(getLogPrefix()+"has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-                    errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
-                } else {
-                    info(getLogPrefix()+"has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
-                }
-                // Set temporary in-process storage pointer to null
-                this.tmpInProcessStorage = null;
-            }
-            
-            // Do propagate-name AFTER changing the errorStorage!
+			// Check if we need to use the in-process storage as
+			// error-storage.
+			// In-process storage is no longer used, but is often
+			// still configured to be used as error-storage.
+			// The rule is:
+			// 1. if error-storage is configured, use it.
+			// 2. If error-storage is not configure but an error-sender is,
+			//    then use the error-sender.
+			// 3. If neither error-storage nor error-sender are configured,
+			//    but the in-process storage is, then use the in-process storage
+			//    for error-storage.
+			// Member variables are accessed directly, to avoid any possible
+			// aliasing-effects applied by getter methods. (These have been
+			// removed for now, but since the getter-methods were not
+			// straightforward in the earlier versions, I felt it was safer
+			// to use direct member variables).
+			if (this.tmpInProcessStorage != null) {
+				if (this.errorSender == null && this.errorStorage == null) {
+					this.errorStorage = this.tmpInProcessStorage;
+					info(getLogPrefix()+"has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
+					errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
+				} else {
+					info(getLogPrefix()+"has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
+				}
+				// Set temporary in-process storage pointer to null
+				this.tmpInProcessStorage = null;
+			}
+
+			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
 			if (getListener()==null) {
 				throw new ConfigurationException(getLogPrefix()+"has no listener");
@@ -551,11 +551,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 			}
-			if (!(getHideMethod().equalsIgnoreCase("all"))
-					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException(getLogPrefix()
-						+ "invalid value for hideMethod [" + getHideMethod()
-						+ "], must be 'all' or 'firstHalf'");
+			if (!(getHideMethod().equalsIgnoreCase("all")) && (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
+				throw new ConfigurationException(getLogPrefix() + "invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 			if (getListener() instanceof ReceiverAware) {
 				((ReceiverAware)getListener()).setReceiver(this);
@@ -565,10 +562,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				pl.setHandler(this);
 				pl.setExceptionListener(this);
 			}
-            if (getListener() instanceof IPortConnectedListener) {
-                IPortConnectedListener pcl = (IPortConnectedListener) getListener();
-                pcl.setReceiver(this);
-            }
+			if (getListener() instanceof IPortConnectedListener) {
+				IPortConnectedListener pcl = (IPortConnectedListener) getListener();
+				pcl.setReceiver(this);
+			}
 			if (getListener() instanceof IPullingListener) {
 				setListenerContainer(createListenerContainer());
 			}
@@ -671,6 +668,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
 				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
 			}
+			
+			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
+				getErrorStorage().setHideRegex(getHideRegex());
+				getErrorStorage().setHideMethod(getHideMethod());
+			}
+			if (StringUtils.isNotEmpty(getHideRegex()) && getMessageLog()!=null && StringUtils.isEmpty(getMessageLog().getHideRegex())) {
+				getMessageLog().setHideRegex(getHideRegex());
+				getMessageLog().setHideMethod(getHideMethod());
+			}
 
 			if (adapter != null) {
 				adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
@@ -757,12 +763,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (currentRunState.equals(RunStateEnum.STARTING)
 					|| currentRunState.equals(RunStateEnum.STOPPING)
 					|| currentRunState.equals(RunStateEnum.STOPPED)) {
-				String msg =
-					"receiver currently in state [" + currentRunState + "], ignoring stop() command";
-				warn(msg);
+				warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
 			}
-			runState.setRunState(RunStateEnum.STOPPING);
+			if (currentRunState.equals(RunStateEnum.ERROR)) {
+				warn("receiver currently in state [" + currentRunState + "], stopping immediately");
+				runState.setRunState(RunStateEnum.STOPPED);
+			} else {
+				runState.setRunState(RunStateEnum.STOPPING);
+			}
 		}
 		tellResourcesToStop();
 		NDC.remove();
@@ -846,26 +855,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					sobj=message;
 				}
 			}
-			if (hideRegex != null){
-				if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-					message = Misc.hideFirstHalf(message, hideRegex);
-				} else {
-					message = Misc.hideAll(message, hideRegex);
-				}
-				sobj=message;
-			}
 			if (errorStorage!=null) {
 				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
 			} 
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"Exception moving message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to error sender, original message: ["+message+"]",e);
+			log.error(getLogPrefix()+"Exception moving message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to error sender, original message: [" + Misc.cleanseMessage(message, getHideRegex(), getHideMethod()) + "]", e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error(getLogPrefix()+"Exception while rolling back transaction for message  with id ["+originalMessageId+"] correlationId ["+correlationId+"], original message: ["+message+"]", rbe);
+				log.error(getLogPrefix()+"Exception while rolling back transaction for message  with id ["+originalMessageId+"] correlationId ["+correlationId+"], original message: [" + Misc.cleanseMessage(message, getHideRegex(), getHideMethod()) + "]", rbe);
 			}
 		}
 	}
@@ -1071,7 +1072,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
+		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1101,7 +1102,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		//TransactionStatus txStatus = txManager.getTransaction(txDef);
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
-        
+
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
@@ -1433,7 +1434,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Iterator statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,null,"procStats");
 		if (statsIter != null) {
-			while(statsIter.hasNext()) {				    
+			while(statsIter.hasNext()) {
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(pstatData,pstat);
 				pstat.performAction(action);
@@ -1444,7 +1445,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		statsIter = getIdleStatisticsIterator();
 		if (statsIter != null) {
 			Object istatData=hski.openGroup(recData,null,"idleStats");
-			while(statsIter.hasNext()) {				    
+			while(statsIter.hasNext()) {
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(istatData,pstat);
 				pstat.performAction(action);
@@ -1455,7 +1456,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		statsIter = getQueueingStatisticsIterator();
 		if (statsIter!=null) {
 			Object qstatData=hski.openGroup(recData,null,"queueingStats");
-			while(statsIter.hasNext()) {				    
+			while(statsIter.hasNext()) {
 				StatisticsKeeper qstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(qstatData,qstat);
 				qstat.performAction(action);
@@ -1566,7 +1567,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isInRunState(RunStateEnum someRunState) {
 		return runState.isInState(someRunState);
 	}
-    
+
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
 		try {
@@ -1811,25 +1812,25 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	@IbisDoc({"The transactionAttribute declares transactional behavior of the receiver. "
 			+ "It applies both to database transactions and XA transactions. "
-	        + "The receiver uses this to start a new transaction or suspend the current one when required. "
+			+ "The receiver uses this to start a new transaction or suspend the current one when required. "
 			+ "For developers: it is equal "
-	        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
-	        + "Possible values for transactionAttribute: "
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
+			+ "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
+			+ "Possible values for transactionAttribute: "
+			+ "  <table border=\"1\">"
+			+ "	<tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Required</td> <td>none</td><td>T2</td></tr>"
+			+ "												  <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+			+ "												  <tr><td>T1</td>  <td>T2</td></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+			+ "												  <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+			+ "												  <tr><td>T1</td>  <td>none</td></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Supports</td>	<td>none</td><td>none</td></tr>"
+			+ " 											  <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Never</td>	   <td>none</td><td>none</td></tr>"
+			+ "												  <tr><td>T1</td>  <td>error</td></tr>"
+			+ "  </table>", "Supports"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -1840,16 +1841,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 	
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td><tr>"
-    	    + "</table>", "1"})
+	@IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
+			+ "option is represented with a number. The numbers mean:"
+			+ "<table>"
+			+ "<tr><td>0</td><td>Required</td></tr>"
+			+ "<tr><td>1</td><td>Supports</td></tr>"
+			+ "<tr><td>2</td><td>Mandatory</td></tr>"
+			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
+			+ "<tr><td>4</td><td>NotSupported</td></tr>"
+			+ "<tr><td>5</td><td>Never</td><tr>"
+			+ "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
@@ -1864,7 +1865,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getOnError() {
 		return onError;
 	}
-    
+
 	public boolean isOnErrorContinue() {
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
@@ -1877,7 +1878,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	/**
 	 *  Returns a toString of this class by introspection and the toString() value of its listener.
 	 *
-	 * @return    Description of the Return Value
+	 * @return Description of the Return Value
 	 */
 	@Override
 	public String toString() {
@@ -2036,7 +2037,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		this.processResultCacheSize = processResultCacheSize;
 	}
 	
-	@IbisDoc({"the number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. ifsa, jms, webservice or javalisteners)", "10"})
+	@IbisDoc({"The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners", "10"})
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
@@ -2044,7 +2045,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return pollInterval;
 	}
 
-	@IbisDoc({"if set to <code>true</code>, each message is checked for presence in the message log. if already present, it is not processed again. (only required for non xa compatible messaging). requires messagelog!</code>", "<code>false</code>"})
+	@IbisDoc({"If set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messagelog!", "<code>false</code>"})
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
 	}
@@ -2052,7 +2053,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicates;
 	}
 
-	@IbisDoc({"(only used when <code>checkforduplicates=true</code>) either 'correlationid' or 'messageid'. indicates whether the messageid or the correlationid is used for checking presence in the message log", "messageid"})
+	@IbisDoc({"(Only used when <code>checkForDuplicates=true</code>) Either 'CORRELATIONID' or 'MESSAGEID'. Indicates whether the messageid or the correlationid is used for checking presence in the message log", "MESSAGEID"})
 	public void setCheckForDuplicatesMethod(String method) {
 		checkForDuplicatesMethod=method;
 	}
@@ -2060,7 +2061,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicatesMethod;
 	}
 
-	@IbisDoc({"timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)</code>"})
+	@IbisDoc({"Timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)</code>"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -2068,7 +2069,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return transactionTimeout;
 	}
 
-	@IbisDoc({"xpath expression to extract correlationid from message", ""})
+	@IbisDoc({"XPath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
@@ -2080,12 +2081,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"stylesheet to extract correlationid from message", ""})
+	@IbisDoc({"Stylesheet to extract correlationID from message", ""})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
@@ -2093,7 +2094,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDStyleSheet;
 	}
 
-	@IbisDoc({"xpath expression to extract label from message", ""})
+	@IbisDoc({"XPath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
@@ -2105,12 +2106,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
 	
-	@IbisDoc({"stylesheet to extract label from message", ""})
+	@IbisDoc({"Stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
@@ -2118,7 +2119,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelStyleSheet;
 	}
 
-	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
+	@IbisDoc({"If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
@@ -2126,7 +2127,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return chompCharSize;
 	}
 
-	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
+	@IbisDoc({"If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
@@ -2134,7 +2135,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return elementToMove;
 	}
 
-	@IbisDoc({"(only used when <code>elementtomove</code> is set) name of the session key under which the character data is stored", "ref_ + the name of the element"})
+	@IbisDoc({"(Only used when <code>elementtomove</code> is set) Name of the session key under which the character data is stored", "ref_ + the name of the element"})
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
@@ -2142,7 +2143,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return elementToMoveSessionKey;
 	}
 
-	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
+	@IbisDoc({"Like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
 	}
@@ -2174,7 +2175,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return false;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the error/logstore. everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. for example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -2183,7 +2184,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return hideRegex;
 	}
 
-	@IbisDoc({"(only used when hideregex is not empty) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}

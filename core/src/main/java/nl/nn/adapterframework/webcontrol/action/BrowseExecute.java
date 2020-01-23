@@ -162,6 +162,8 @@ public class BrowseExecute extends Browse {
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
+				} else {
+					msg=Misc.cleanseMessage(msg, mb.getHideRegex(), mb.getHideMethod());
 				}
 				if (msgId==null) {
 					msgId="";

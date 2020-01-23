@@ -78,6 +78,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.setJmsRealm(form_jmsRealm);
 				qs.setQueryType(form_queryType);
 				qs.setBlobSmartGet(true);
+				qs.setSqlDialect("");
 				qs.configure(true);
 				qs.open();
 				result = qs.sendMessage("dummy", form_query);

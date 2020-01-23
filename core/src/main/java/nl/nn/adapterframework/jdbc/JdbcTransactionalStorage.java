@@ -182,6 +182,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private int retention = 30;
 	private String schemaOwner4Check=null;
 	private boolean onlyStoreWhenMessageIdUnique=false;
+
+	private String hideRegex = null;
+	private String hideMethod = "all";
 	
 	private String order;
 	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","");
@@ -235,7 +238,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		super();
 		setTransacted(true);
 	}
-	    
+
+	@Override
 	protected String getLogPrefix() {
 		return "JdbcTransactionalStorage ["+getName()+"] ";
 	}
@@ -379,10 +383,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 	
+	@Override
 	/**
 	 * Creates a connection, checks if the table is existing and creates it when necessary
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		setOperationControls();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException("Attribute [tableName] is not set");
@@ -400,6 +406,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		checkDatabase();
 	}
 
+	@Override
 	public void open() throws SenderException {
 		try {
 			initialize(getDbmsSupport());
@@ -876,6 +883,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return resultString;
 	}
 	
+	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
@@ -983,11 +991,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 
+		@Override
 		public boolean hasNext() throws ListenerException {
 			advance();
 			return current;
 		}
 
+		@Override
 		public IMessageBrowsingIteratorItem next() throws ListenerException {
 			if (!current) {
 				advance();
@@ -999,6 +1009,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return new JdbcTransactionalStorageIteratorItem(conn,rs,false);
 		}
 
+		@Override
 		public void close() throws ListenerException {
 			try {
 				rs.close();
@@ -1009,9 +1020,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		} 
 	}
 
+	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		return getIterator(null,null,false);
 	}
+
+	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
 		Connection conn;
 		try {
@@ -1082,6 +1096,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	
 	
 
+	@Override
 	public void deleteMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -1150,6 +1165,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	@Override
 	public int getMessageCount() throws ListenerException {
 		Connection conn;
 		try {
@@ -1180,7 +1196,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 
-    public boolean containsMessageId(String originalMessageId) throws ListenerException {
+	@Override
+	public boolean containsMessageId(String originalMessageId) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1207,9 +1224,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				log.error("error closing JdbcConnection", e);
 			}
 		}
-    }
+	}
 
-    public boolean containsCorrelationId(String correlationId) throws ListenerException {
+	@Override
+	public boolean containsCorrelationId(String correlationId) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1236,8 +1254,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				log.error("error closing JdbcConnection", e);
 			}
 		}
-    }
+	}
 
+	@Override
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -1260,6 +1279,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	@Override
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -1290,6 +1310,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	@Override
 	public Object getMessage(String messageId) throws ListenerException {
 		Object result = browseMessage(messageId);
 		deleteMessage(messageId);
@@ -1310,6 +1331,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			this.closeOnRelease=closeOnRelease;
 		}
 		
+		@Override
 		public String getId() throws ListenerException {
 			try {
 				return rs.getString(getKeyField());
@@ -1317,6 +1339,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public String getOriginalId() throws ListenerException {
 			try {
 				return rs.getString(getIdField());
@@ -1324,6 +1347,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public String getCorrelationId() throws ListenerException {
 			try {
 				return rs.getString(getCorrelationIdField());
@@ -1331,6 +1355,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public Date getInsertDate() throws ListenerException {
 			try {
 				return rs.getTimestamp(getDateField());
@@ -1338,6 +1363,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public Date getExpiryDate() throws ListenerException {
 			try {
 				return rs.getTimestamp(getExpiryDateField());
@@ -1345,6 +1371,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public String getType() throws ListenerException {
 			if (StringUtils.isEmpty(getTypeField())) {
 				return null;
@@ -1355,6 +1382,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException(e);
 			}
 		}
+		@Override
 		public String getHost() throws ListenerException {
 			if (StringUtils.isEmpty(getHostField())) {
 				return null;
@@ -1366,6 +1394,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 
+		@Override
 		public String getLabel() throws ListenerException {
 			if (StringUtils.isEmpty(getLabelField())) {
 				return null;
@@ -1377,6 +1406,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 
+		@Override
 		public String getCommentString() throws ListenerException {
 			try {
 				return rs.getString(getCommentField());
@@ -1385,6 +1415,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 
+		@Override
 		public void release() {
 			if (closeOnRelease) {
 				JdbcUtil.fullClose(conn, rs);
@@ -1397,6 +1428,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
 	}
@@ -1529,40 +1561,43 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		keyField = string;
 	}
 
-	public String getSlotId() {
-		return slotId;
-	}
 
+	@Override
 	@IbisDoc({"optional identifier for this storage, to be able to share the physical table between a number of receivers", ""})
 	public void setSlotId(String string) {
 		slotId = string;
+	}
+	@Override
+	public String getSlotId() {
+		return slotId;
 	}
 
 	public String getSlotIdField() {
 		return slotIdField;
 	}
-
 	@IbisDoc({"the name of the column slotids are stored in", "slotid"})
 	public void setSlotIdField(String string) {
 		slotIdField = string;
 	}
 
-	public String getType() {
-		return type;
-	}
 
+	@Override
 	@IbisDoc({"possible values are e (error store), m (message store), l (message log for pipe) or a (message log for receiver). receiverbase will always set type to e for errorstorage and always set type to a for messagelog. genericmessagesendingpipe will set type to l for messagelog (when type isn't specified). see {@link messagestoresender} for type m", "e for errorstorage on receiver, a for messagelog on receiver and l for messagelog on pipe"})
 	public void setType(String string) {
 		type = string;
 	}
-
-	public String getTypeField() {
-		return typeField;
+	@Override
+	public String getType() {
+		return type;
 	}
+
 
 	@IbisDoc({"the name of the column types are stored in", "type"})
 	public void setTypeField(String string) {
 		typeField = string;
+	}
+	public String getTypeField() {
+		return typeField;
 	}
 
 
@@ -1577,6 +1612,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public void setActive(boolean b) {
 		active = b;
 	}
+	@Override
 	public boolean isActive() {
 		return active;
 	}
@@ -1608,7 +1644,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the full message is stored with the log. can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "<code>true</code>"})
+	@IbisDoc({"when set to <code>true</code>, the messages are stored compressed", "<code>true</code>"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -1643,7 +1679,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
-
 	public int getRetention() {
 		return retention;
 	}
@@ -1652,24 +1687,44 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public void setSchemaOwner4Check(String string) {
 		schemaOwner4Check = string;
 	}
-
 	public String getSchemaOwner4Check() {
 		return schemaOwner4Check;
 	}
 
+
+	@IbisDoc({"when set to <code>true</code>, the full message is stored with the log. can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "<code>true</code>"})
+	public void setStoreFullMessage(boolean storeFullMessage) {
+		this.storeFullMessage = storeFullMessage;
+	}
 	public boolean isStoreFullMessage() {
 		return storeFullMessage;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the messages are stored compressed", "<code>true</code>"})
-	public void setStoreFullMessage(boolean storeFullMessage) {
-		this.storeFullMessage = storeFullMessage;
-	}
-
-	public boolean isOnlyStoreWhenMessageIdUnique() {
-		return onlyStoreWhenMessageIdUnique;
-	}
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}
+	public boolean isOnlyStoreWhenMessageIdUnique() {
+		return onlyStoreWhenMessageIdUnique;
+	}
+	
+	@Override
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	public void setHideRegex(String hideRegex) {
+		this.hideRegex = hideRegex;
+	}
+	@Override
+	public String getHideRegex() {
+		return hideRegex;
+	}
+
+	@Override
+	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	public void setHideMethod(String hideMethod) {
+		this.hideMethod = hideMethod;
+	}
+	@Override
+	public String getHideMethod() {
+		return hideMethod;
+	}
+
 }

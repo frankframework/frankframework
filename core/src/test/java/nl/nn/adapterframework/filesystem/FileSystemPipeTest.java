@@ -281,52 +281,52 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	@Test
 	public void fileSystemPipeMkdirActionTest() throws Exception {
-		String filename = "mkdir" + DIR1;
+		String folder = "mkdir" + DIR1;
 		
-		if (_folderExists(filename)) {
-			_deleteFolder(filename);
+		if (_folderExists(folder)) {
+			_deleteFolder(folder);
 		}
 
 		fileSystemPipe.setAction("mkdir");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=filename;
+		String message=folder;
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=(String)prr.getResult();
 		waitForActionToFinish();
 
 		// test
 		
-		boolean actual = _folderExists(filename);
+		boolean actual = _folderExists(folder);
 		// test
-		assertEquals("result of sender should be input message",result,message);
-		assertTrue("Expected file[" + filename + "] to be present", actual);
+		assertEquals("result of pipe should be name of created folder",folder,result);
+		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
 
 	@Test
 	public void fileSystemPipeRmdirActionTest() throws Exception {
-		String filename = DIR1;
+		String folder = DIR1;
 		
 		if (!_folderExists(DIR1)) {
-			_createFolder(filename);
+			_createFolder(folder);
 		}
 
 		fileSystemPipe.setAction("rmdir");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=filename;
+		String message=folder;
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
 		String result=(String)prr.getResult();
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of pipe should be name of removed folder",folder,result);
 		waitForActionToFinish();
 		
-		boolean actual = _fileExists(filename);
+		boolean actual = _fileExists(folder);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
 	}
 
 	@Test
@@ -349,7 +349,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of pipe should be name of deleted file",filename,result);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
@@ -378,7 +378,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		String result=(String)prr.getResult();
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of pipe should be name of new file",dest,result);
 
 		boolean actual = _fileExists(filename);
 		// test

@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 /**
  * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make 
@@ -94,12 +95,12 @@ public class ClassLoaderManager {
 
 				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 				Object castValue = getCastValue(method.getParameterTypes()[0], value);
-				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+classLoader.toString()+"]");
+				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+loader.toString()+"]");
 
 				try {
 					method.invoke(loader, castValue);
 				} catch (Exception e) {
-					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+classLoader.toString()+"]", e);
+					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+loader.toString()+"]", e);
 				}
 			}
 
@@ -107,16 +108,16 @@ public class ClassLoaderManager {
 				loader.configure(ibisContext, configurationName);
 			}
 			catch (ConfigurationException ce) {
-				String msg = "Could not get config '" + configurationName + "' from database, skipping";
+				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
 				switch(loader.getReportLevel()) {
 					case DEBUG:
-						LOG.debug(msg);
+						LOG.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(msg);
+						ibisContext.log(configurationName, null, msg, MessageKeeperMessage.INFO_LEVEL, ce);
 						break;
 					case WARN:
-						ConfigurationWarnings.getInstance().add(LOG, msg);
+						ConfigurationWarnings.getInstance().add(LOG, msg, ce);
 						break;
 					case ERROR:
 					default:
@@ -199,7 +200,7 @@ public class ClassLoaderManager {
 	}
 
 	/**
-	 * Returns the ClassLoader for a specific configuration.
+	 * Returns the ClassLoader for a specific configuration. Creates the ClassLoader if it doesn't exist yet.
 	 * @param configurationName to get the ClassLoader for
 	 * @param classLoaderType null or type of ClassLoader to load
 	 * @return ClassLoader or null on error
@@ -214,8 +215,17 @@ public class ClassLoaderManager {
 		return classLoader;
 	}
 
-	public void reload(String currentConfigurationName) throws ConfigurationException {
-		reload(get(currentConfigurationName));
+	/**
+	 * Reloads a configuration if it exists. Does not create a new one!
+	 * See {@link #reload(ClassLoader)} for more information
+	 */
+	public void reload(String configurationName) throws ConfigurationException {
+		ClassLoader classLoader = classLoaders.get(configurationName);
+		if (classLoader != null) {
+			reload(classLoader);
+		} else {
+			LOG.warn("classloader for configuration ["+configurationName+"] not found, ignoring reload");
+		}
 	}
 
 	/**
@@ -233,6 +243,8 @@ public class ClassLoaderManager {
 
 		if (classLoader instanceof ReloadAware) {
 			((ReloadAware)classLoader).reload();
+		} else {
+			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
 		}
 	}
 

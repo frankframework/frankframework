@@ -11,8 +11,8 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>3.2.16.RELEASE</spring.version>
-		<resteasy.version>3.0.4.Final</resteasy.version>
+		<spring.version>4.3.25.RELEASE</spring.version>
+		<resteasy.version>3.0.12.Final</resteasy.version>
 		<j2v8.version>4.6.0</j2v8.version>
 	</properties>
 
@@ -70,7 +70,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>javax.servlet</groupId>
-  					<artifactId>servlet-api</artifactId>
+					<artifactId>servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
