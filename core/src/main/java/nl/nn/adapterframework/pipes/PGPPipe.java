@@ -4,6 +4,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pgp.*;
 import nl.nn.adapterframework.stream.Message;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -88,9 +89,9 @@ public class PGPPipe extends FixedForwardPipe {
 	 */
 	private String secretPassword;
 	/**
-	 * Path to the recipient's public key. It will be used for encryption.
+	 * Path to the recipient's public key. It will be used for encryption and verification.
 	 */
-	private String[] publicKey;
+	private String[] publicKeys;
 
 	/**
 	 * This is the {@link PGPAction} object that executes the desired action.
@@ -110,7 +111,7 @@ public class PGPPipe extends FixedForwardPipe {
 
 		switch (action.toLowerCase()) {
 			case "encrypt":
-				pgpAction = new Encrypt(publicKey, recipients);
+				pgpAction = new Encrypt(publicKeys, recipients);
 				break;
 			case "decrypt":
 				pgpAction = new Decrypt(secretKey, secretPassword);
@@ -118,10 +119,10 @@ public class PGPPipe extends FixedForwardPipe {
 			case "sign":
 				if(senders == null || senders.length == 0)
 					throw new ConfigurationException("During signing action, senders has to be set.");
-				pgpAction = new Sign(publicKey, secretKey, secretPassword, recipients, senders[0]);
+				pgpAction = new Sign(publicKeys, secretKey, secretPassword, recipients, senders[0]);
 				break;
 			case "verify":
-				pgpAction = new Verify(publicKey, secretKey, secretPassword, senders);
+				pgpAction = new Verify(publicKeys, secretKey, secretPassword, senders);
 				break;
 			default:
 				throw new ConfigurationException("Unknown action. Action has to be set to one of [Encrypt, Decrypt, Sign, Verify]");
@@ -140,28 +141,37 @@ public class PGPPipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"Action to be taken when pipe is executed. It can be one of the followed: Encrypt (encrypts the input), Sign (Encrypts and Signs the input), Decrypt (Decrypts the input), Verify (Decrypts and verifies the input)"})
 	public void setAction(String action) {
 		this.action = action;
 	}
 
+	@IbisDoc({"Recipients to be used during encryption stage. If multiple, separate with ';' (semicolon)"})
 	public void setRecipients(String recipients) {
 		this.recipients = split(recipients);
 	}
 
+	@IbisDoc({"Emails of the senders. This will be used to verify that all the senders have signed the given message. " +
+			"If not set, and the action is verify; this pipe will validate that at least one person has signed. " +
+			"For signing action, it needs to be set to the email that was used to generate the private key " +
+			"that is being used for this process."})
 	public void setSenders(String senders) {
 		this.senders = split(senders);
 	}
 
+	@IbisDoc({"Path to the private key. It will be used when signing or decrypting."})
 	public void setSecretKey(String secretKey) {
 		this.secretKey = secretKey;
 	}
 
+	@IbisDoc({"Password for the private key."})
 	public void setSecretPassword(String secretPassword) {
 		this.secretPassword = secretPassword;
 	}
 
-	public void setPublicKey(String publicKey) {
-		this.publicKey = split(publicKey);
+	@IbisDoc({"Path to the recipient's public key. It will be used for encryption and verification."})
+	public void setPublicKeys(String publicKeys) {
+		this.publicKeys = split(publicKeys);
 	}
 
 	/**
