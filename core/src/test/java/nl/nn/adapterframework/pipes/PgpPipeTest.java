@@ -7,12 +7,14 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.StringTokenizer;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
@@ -70,7 +72,6 @@ public class PgpPipeTest {
 	}
 
 	public PgpPipeTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
-		setup();
 		this.expectation = expectation;
 		this.encryptParams = encryptParams;
 		this.decryptParams = decryptParams;
@@ -109,6 +110,7 @@ public class PgpPipeTest {
 	/**
 	 * Creates pipes and pipeline session base for testing.
 	 */
+	@Before
 	public void setup() {
 		session = new PipeLineSessionBase();
 
@@ -134,7 +136,7 @@ public class PgpPipeTest {
 		pipe.setAction(params[i++]);
 		pipe.setSecretKey(addFolderPath(params[i++]));
 		pipe.setSecretPassword(params[i++]);
-		pipe.setPublicKey(addFolderPath(params[i++]));
+		pipe.setPublicKeys(addFolderPath(params[i++]));
 		pipe.setSenders(params[i++]);
 		pipe.setRecipients(params[i]);
 		pipe.configure();
@@ -148,14 +150,16 @@ public class PgpPipeTest {
 	private String addFolderPath(String param) {
 		if (param == null)
 			return null;
-		String[] keys = param.split(";");
-		StringBuilder stringBuilder = new StringBuilder(param.length() + PGP_FOLDER.length() * keys.length);
-		for(int i = 0; i < keys.length; i++) {
+		StringTokenizer keys = new StringTokenizer(param, ";");
+		StringBuilder stringBuilder = new StringBuilder();
+		while (keys.hasMoreTokens()) {
+			String key = keys.nextToken();
 			stringBuilder
 					.append(PGP_FOLDER)
-					.append(keys[i])
-					.append(i != keys.length - 1 ? ";" : "");
+					.append(key)
+					.append(keys.hasMoreElements() ? ";" : "");
 		}
+
 		return stringBuilder.toString();
 	}
 
