@@ -20,6 +20,7 @@ Some example XML configurations:
 
 See them in action: http://ibis4example.ibissource.org/
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f191c229880d40738b919ef38712b533)](https://app.codacy.com/manual/nielsm5/iaf?utm_source=github.com&utm_medium=referral&utm_content=ibissource/iaf&utm_campaign=Badge_Grade_Dashboard)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
 
 
