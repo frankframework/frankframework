@@ -55,6 +55,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -227,7 +228,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	@Override
-	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	protected String sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		QueryContext queryContext;
 		try {
 			queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
@@ -528,7 +529,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if (reader!=null) {
 					Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
 				} else {
-					clobWriter.write(message.toString());
+//					if (message!=null) {
+						clobWriter.write(message.toString());
+//					} else {
+//						log.warn(getLogPrefix()+"message is null, CLOB will be emtpy");
+//					}
 				}
 			} finally {
 				if (clobWriter!=null) {
@@ -545,23 +550,22 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return clobWriter==null ? null : clobWriter.getWarnings().toXML();
 	}
 
-	@Override
 	public boolean canProvideOutputStream() {
 		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 
 	@Override
-	public boolean requiresOutputStream() {
-		return false; // not necessary, LOBs can be output streamed using InputStreams
-	}
-	
-	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
 	}
+
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			return null;
+		}
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
 		final Connection connection;
 		QueryContext queryContext;
 		try {
@@ -573,7 +577,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		try {
 			PreparedStatement statement=queryContext.getStatement();
 			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target) {
+				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
@@ -582,7 +586,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				};
 			}
 			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()),target) {
+				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()),target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
