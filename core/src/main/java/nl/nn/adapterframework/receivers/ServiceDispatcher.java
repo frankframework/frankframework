@@ -23,6 +23,7 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -41,6 +42,8 @@ import org.apache.log4j.Logger;
  */
 public class ServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private final boolean CONFIG_DYNAMIC_RELOAD = AppConstants.getInstance().getBoolean("configurations.dynamic.reload", false);
 
 	private Map<String, ServiceClient> registeredListeners = new HashMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;
@@ -97,9 +100,9 @@ public class ServiceDispatcher  {
 	}
 
 	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
-		//if (isRegisteredServiceListener(name)) {
-		//	log.warn("listener ["+name+"] already registered with ServiceDispatcher");
-		//}
+		if (!CONFIG_DYNAMIC_RELOAD && isRegisteredServiceListener(name)) {
+			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
+		}
 		registeredListeners.put(name, listener);
 		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");

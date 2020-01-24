@@ -20,8 +20,11 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class ApiDispatchConfig {
+	private final boolean CONFIG_DYNAMIC_RELOAD = AppConstants.getInstance().getBoolean("configurations.dynamic.reload", false);
+
 	private String uriPattern;
 	private Map<String, ApiListener> methods = new HashMap<String, ApiListener>();
 
@@ -31,8 +34,8 @@ public class ApiDispatchConfig {
 
 	public void register(String method, ApiListener listener) throws ListenerException {
 		method = method.toUpperCase();
-//		if(methods.containsKey(method))
-//			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
+		if (!CONFIG_DYNAMIC_RELOAD && methods.containsKey(method))
+			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
 		methods.put(method, listener);
 	}
 
