@@ -17,11 +17,10 @@ package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
@@ -227,7 +226,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 
 	private static synchronized Map<String, WebServiceListener> getAddressListeners() {
 		if (registeredAddressListeners == null) {
-			registeredAddressListeners = Collections.synchronizedMap(new HashMap());
+			registeredAddressListeners = new ConcurrentHashMap<>();
 		}
 		return registeredAddressListeners;
 	}
