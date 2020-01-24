@@ -58,6 +58,10 @@ public class JmsRealmFactory {
 
 	}
 
+	
+	public void clear() {
+		jmsRealms=new LinkedHashMap<String, JmsRealm>();
+	}
 	/**
 	 * Get a requested JmsRealm with the given name, null is returned if no realm
 	 * under given name
