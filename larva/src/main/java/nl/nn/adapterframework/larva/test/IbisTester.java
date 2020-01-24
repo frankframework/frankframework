@@ -1,3 +1,18 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva.test;
 
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -5,7 +20,9 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.larva.MessageListener;
 import nl.nn.adapterframework.larva.TestTool;
+import nl.nn.adapterframework.lifecycle.IbisApplicationContext.BootState;
 import nl.nn.adapterframework.util.*;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -17,7 +34,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.AccessControlException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -31,12 +47,10 @@ import java.util.concurrent.TimeUnit;
 public class IbisTester {
 
 	private AppConstants appConstants;
-	private String webAppPath;
 	private IbisContext ibisContext;
 	private final int MAX_TRIES = 30;
 	private final int TIMEOUT = 10000;
 	private final int CONTEXT_TIMEOUT = 300000;
-	private static Logger logger = LogUtil.getLogger(IbisTester.class);
 
 	public static void main(String[] args) throws IllegalArgumentException, IOException, URISyntaxException {
 		if(args.length != 7) {
@@ -92,7 +106,7 @@ public class IbisTester {
 	 * Initializes the environment, including ibisContext and all the registered adapters.
 	 * @return true if everything has been initialized successfully.
 	 */
-	public boolean initTester(){
+	public boolean initTester() {
 		try {
 			// fix for GitLab Runner
 			File file = new File("target/log");
@@ -105,7 +119,7 @@ public class IbisTester {
 		}
 		debug("Starting Larva CLI...");
 		System.setProperty("log.level", "INFO");
-		System.setProperty("otap.stage", "LOC");
+		System.setProperty("dtap.stage", "LOC");
 		System.setProperty("application.server.type", "IBISTEST");
 //		System.setProperty("flow.create.url", "");
 
@@ -115,11 +129,9 @@ public class IbisTester {
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
-		webAppPath = getWebContentDirectory();
 		String projectBaseDir = Misc.getProjectBaseDir();
 		appConstants.put("project.basedir", projectBaseDir);
-		debug("***set property with name [project.basedir] and value ["
-				+ projectBaseDir + "]***");
+		debug("***set property with name [project.basedir] and value [" + projectBaseDir + "]***");
 
 		System.setProperty("jdbc.migrator.active", "true");
 		// appConstants.put("validators.disabled", "true");
@@ -136,24 +148,22 @@ public class IbisTester {
 		try {
 			debug("Waiting for ibis context!");
 			long a = (System.currentTimeMillis() - configLoadStartTime);
-			while (!ibisContext.isStarted() && a < CONTEXT_TIMEOUT) {
+			while (!ibisContext.getBootState().equals(BootState.STARTED) && a < CONTEXT_TIMEOUT) {
 				Thread.sleep(100);
 				a = (System.currentTimeMillis() - configLoadStartTime);
 			}
 			debug("Waiting for ibis context!");
-
-		}catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		if(!ibisContext.isStarted()) {
+		if(!ibisContext.getBootState().equals(BootState.STARTED)) {
 			error("Ibis Context did not start in given timeout [" + CONTEXT_TIMEOUT + "]");
 			System.exit(42);
 		}
 
 		debug("Got Ibis context!");
 		long configLoadEndTime = System.currentTimeMillis();
-		debug("***configuration loaded in ["
-				+ (configLoadEndTime - configLoadStartTime) + "] msec***");
+		debug("***configuration loaded in [" + (configLoadEndTime - configLoadStartTime) + "] msec***");
 
 		boolean adaptersStarted = startAllAdapters(MAX_TRIES, TIMEOUT);
 		debug("Successfully initialized the environment.");
@@ -176,8 +186,6 @@ public class IbisTester {
 	 * @return true if all the adapters have been started successfully.
 	 */
 	private boolean startAllAdapters(int maxTries, int timeout) {
-		int adaptersStarted = 0;
-		int adaptersCount = 0;
 		IbisManager ibisManager = ibisContext.getIbisManager();
 		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
 		// is a magic number, increasing it more will add overhead processing on operating system side for thread management
@@ -195,8 +203,7 @@ public class IbisTester {
 		}
 		int started = getRunningAdapterCount();
 		int all = registeredAdapters.size();
-		String msg = "adapters started [" + started + "] from ["
-				+ all + "]";
+		String msg = "adapters started [" + started + "] from [" + all + "]";
 		if (started == all) {
 			debug(msg);
 			return true;
@@ -204,6 +211,7 @@ public class IbisTester {
 		error(msg);
 		return false;
 	}
+
 	public int getRunningAdapterCount() {
 		int result = 0;
 		for(IAdapter adapter : ibisContext.getIbisManager().getRegisteredAdapters()) {
@@ -233,38 +241,6 @@ public class IbisTester {
 		long totalMem = Runtime.getRuntime().totalMemory();
 		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem)
 				+ "/" + ProcessMetrics.normalizedNotation(totalMem) + "]";
-	}
-
-	private static String getWebContentDirectory() {
-		String buildOutputDirectory = Misc.getBuildOutputDirectory();
-		if (buildOutputDirectory != null
-				&& buildOutputDirectory.endsWith("classes")) {
-			String wcDirectory = null;
-			File file = new File(buildOutputDirectory);
-			while (wcDirectory == null) {
-				try {
-					File file2 = new File(file, "WebContent");
-					if (file2.exists() && file2.isAbsolute()) {
-						wcDirectory = file2.getPath();
-					} else {
-						file2 = new File(file, "src/main");
-						if (file2.exists() && file2.isAbsolute()) {
-							wcDirectory = new File(file2, "webapp").getPath();
-						} else {
-							file = file.getParentFile();
-							if (file == null) {
-								return null;
-							}
-						}
-					}
-				} catch (AccessControlException e) {
-					return null;
-				}
-			}
-			return wcDirectory;
-		} else {
-			return null;
-		}
 	}
 
 	public IbisContext getIbisContext() {

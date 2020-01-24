@@ -140,6 +140,7 @@
 			</plugin>
 		</plugins>
 	</build>
+
 	<profiles>
 		<profile>
 			<id>cmd-test</id>
@@ -214,9 +215,9 @@
 					<artifactId>kahadb</artifactId>
 					<version>5.6.0</version>
 				</dependency>
-
 			</dependencies>
 		</profile>
+
 		<!--
 		Copy dependencies from iaf-webapp/pom.xml to make m2e add dependent-module
 		elements to org.eclipse.wst.common.component. Maven doesn't need this copy

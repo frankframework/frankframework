@@ -1,3 +1,18 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva;
 
 import com.sun.syndication.io.XmlReader;
@@ -45,7 +60,7 @@ public class TestPreparer {
 			while (scenarioFilesIterator.hasNext()) {
 				File scenarioFile = (File) scenarioFilesIterator.next();
 				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-				Properties properties = readProperties(appConstants, scenarioFile);
+//				Properties properties = readProperties(appConstants, scenarioFile);
 				logger.debug("Add parent directories of '" + scenarioDirectory + "'");
 				int i = -1;
 				String scenarioDirectoryCanonicalPath;

@@ -1,13 +1,27 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
-import javax.servlet.ServletContext;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +31,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Jaco de Groot, Murat Kaan Meral
+ * @author Jaco de Groot
+ * @author Murat Kaan Meral
  */
 public class TestTool {
-//	@Autowired
 	private static IbisContext ibisContext;
 	private MessageListener messageListener;
 	public static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
@@ -30,9 +44,7 @@ public class TestTool {
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	static final int RESULT_AUTOSAVED = 2;
-	// dirty solution by Marco de Reus:
-	private static String zeefVijlNeem = "";
-	private static Writer silentOut = null;
+
 	static boolean autoSaveDiffs = false;
 	static final int DEFAULT_TIMEOUT = 30000;
 	static int globalTimeout = DEFAULT_TIMEOUT;
@@ -45,20 +57,6 @@ public class TestTool {
 		this.messageListener = messageListener;
 	}
 
-	/*
-	 * public static IbisContext getIbisContext(ServletContext application) {
-	 * AppConstants appConstants = AppConstants.getInstance(); String ibisContextKey
-	 * = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-	 * IbisContext ibisContext =
-	 * (IbisContext)application.getAttribute(ibisContextKey); return ibisContext; }
-	 */
-	public static IbisContext getIbisContext(ServletContext application) {
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		ibisContext = (IbisContext) application.getAttribute(ibisContextKey);
-		return ibisContext;
-	}
-
 	public static IbisContext getIbisContext() {
 		return ibisContext;
 	}
@@ -67,40 +65,26 @@ public class TestTool {
 		TestTool.ibisContext = ibisContext;
 	}
 
-	public static AppConstants getAppConstants(IbisContext ibisContext) {
-		// Load AppConstants using a class loader to get an instance that has
-		// resolved application.server.type in ServerSpecifics*.properties,
-		// SideSpecifics*.properties and StageSpecifics*.properties filenames
-		// See IbisContext.setDefaultApplicationServerType() and userstory
-		// 'Refactor ConfigurationServlet en AppConstants' too.
-		IbisManager ibisManager = ibisContext.getIbisManager();
-		List<Configuration> li = ibisManager.getConfigurations();
-		Configuration configuration = li.get(0);
-		return AppConstants.getInstance(configuration.getClassLoader());
-	}
-
 	/**
 	 * 
 	 * @return negative: error condition 0: all scenarios passed positive: number of
 	 *         scenarios that failed
 	 */
 	public int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
-		AppConstants appConstants = getAppConstants(ibisContext);
-		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
-		if (asd != null) {
-			autoSaveDiffs = Boolean.parseBoolean(asd);
+		AppConstants appConstants = AppConstants.getInstance();
+		String lda = appConstants.getResolvedProperty("larva.diffs.autosave");
+		if (lda != null) {
+			autoSaveDiffs = Boolean.parseBoolean(lda);
 		}
 
 		if(testTimeout < 0) {
 			testTimeout = Integer.MAX_VALUE;
 		}
 
-		messageListener.debugMessage(
-				"General", "Execute scenario(s) if execute parameter present and scenarios root directory did not change");
+		messageListener.debugMessage("General", "Execute scenario(s) if execute parameter present and scenarios root directory did not change");
 
 		// Get Ready For Execution
 		int[] scenarioResults = { 0, 0, 0 }; // [0] is for errors, [1] is for ok, [2] is for autosaved. positions
-
 
 		if (paramExecute != null) {
 			String paramExecuteCanonicalPath;

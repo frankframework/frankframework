@@ -1,13 +1,27 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva.api;
 
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.larva.MessageListener;
 import nl.nn.adapterframework.larva.TestPreparer;
 import nl.nn.adapterframework.larva.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.ApiException;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.webcontrol.api.Base;
+
 import org.jboss.resteasy.core.ExceptionAdapter;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -24,19 +38,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 @Path("/")
-public class LarvaApi {
+public class LarvaApi extends Base {
     @Context
     ServletConfig servletConfig;
-
-    private static IbisContext ibisContext;
-    private static String realPath;
-
-    private static Logger logger = LogUtil.getLogger(LarvaApi.class);
 
     /**
      * Returns the param names and possible values that will be required for execution.
@@ -48,12 +58,11 @@ public class LarvaApi {
     @Path("/larva/params")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getParams(@Context HttpServletRequest request) throws ApiException {
-        getContext();
         MessageListener messageListener = getOrCreateMessageListener(request);
         JSONArray logLevels = new JSONArray(messageListener.getLogLevels());
         JSONObject toReturn = new JSONObject();
         try {
-            Map<String, Object> scenarioList = getScenarioList(null, TestTool.getAppConstants(ibisContext), realPath);
+            Map<String, Object> scenarioList = getScenarioList(null);
             JSONObject rootDirectories = new JSONObject(TestPreparer.scenariosRootDirectories);
             toReturn.append("scenarios", scenarioList.get("scenarios"));
             toReturn.append("defaultRootDirectory", scenarioList.get("rootDirectory"));
@@ -61,10 +70,9 @@ public class LarvaApi {
             toReturn.append("logLevels", logLevels);
             toReturn.append("selectedLogLevel", messageListener.getSelectedLogLevel());
         } catch (JSONException e) {
-            e.printStackTrace();
-            throw new ApiException(e.getMessage());
+            throw new ApiException(e);
         }
-        logger.debug("Returning params.");
+        log.debug("Returning params.");
         return Response.status(Response.Status.OK).entity(toReturn.toString()).build();
     }
 
@@ -78,14 +86,13 @@ public class LarvaApi {
     @Path("/larva/messages/{timestamp}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMessages(@Context HttpServletRequest request, @PathParam("timestamp") long timestamp) {
-        getContext();
         MessageListener messageListener = getOrCreateMessageListener(request);
         JSONArray messages = messageListener.getMessages(timestamp);
         if(messages.length() == 0) {
-            logger.debug("No messages exist.");
+            log.debug("No messages exist.");
             return Response.status(Response.Status.NO_CONTENT).build();
         }
-        logger.debug("Returnin messages after " + timestamp);
+        log.debug("Returnin messages after " + timestamp);
         return Response.status(Response.Status.OK).entity(messages.toString()).build();
     }
 
@@ -95,11 +102,10 @@ public class LarvaApi {
      * @return Status.OK if the execution started successfully.
      */
     @POST
-    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @RolesAllowed("IbisTester")
     @Path("/larva/execute")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response executeTests(@Context HttpServletRequest request, MultipartFormDataInput input) {
-        getContext();
         MessageListener messageListener = getOrCreateMessageListener(request);
         int waitBeforecleanup = 100;
         int numberOfThreads = 1;
@@ -109,44 +115,40 @@ public class LarvaApi {
         messageListener.clean();
         Map<String, List<InputPart>> data = input.getFormDataMap();
 
-        logger.debug("Parsing parameters for execution.");
+        log.debug("Parsing parameters for execution.");
         try {
             waitBeforecleanup = data.get("waitBeforeCleanup").get(0).getBody(Integer.class, int.class);
-        }catch (IOException | NullPointerException | ExceptionAdapter e) {
-            e.printStackTrace();
-            logger.error("Could not decode waitBeforeCleanup, using default instead.\n");
+        } catch (IOException | NullPointerException | ExceptionAdapter e) {
+            log.error("Could not decode waitBeforeCleanup, using default instead.");
         }
         try {
             String logLevel = data.get("logLevel").get(0).getBodyAsString();
             messageListener.setSelectedLogLevel(logLevel);
         } catch (IOException | NullPointerException | ExceptionAdapter e) {
-            logger.debug("No log level found.");
+            log.debug("No log level found.");
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Error setting the log level: " + e.getMessage());
+            log.error("Error setting the log level", e);
         }
         try {
             numberOfThreads = data.get("numberOfThreads").get(0).getBody(Integer.class, int.class);
-        }catch (IOException | NullPointerException | ExceptionAdapter e) {
-            e.printStackTrace();
-            logger.error("Could not decode number of threads, using default instead." );
+        } catch (IOException | NullPointerException | ExceptionAdapter e) {
+            log.error("Could not decode number of threads, using default instead.");
         }
         try {
             timeout = data.get("timeout").get(0).getBody(Integer.class, int.class);
             if (timeout == -1)
                 timeout = Integer.MAX_VALUE;
-        }catch (IOException | NullPointerException | ExceptionAdapter e) {
-            e.printStackTrace();
-            logger.error("Could not decode number of threads, using default instead." );
+        } catch (IOException | NullPointerException | ExceptionAdapter e) {
+            log.error("Could not decode number of threads, using default instead.");
         }
         try {
             currentScenariosRootDirectory = data.get("rootDirectory").get(0).getBodyAsString();
             paramExecute = data.get("scenario").get(0).getBodyAsString();
-        }catch (IOException | NullPointerException e) {
-            logger.error("Could not decode parameters! " + e.getMessage());
+        } catch (IOException | NullPointerException e) {
+            log.error("Could not decode parameters! " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        logger.debug("Creating test runner thread.");
+        log.debug("Creating test runner thread.");
         Thread testRunner = new Thread() {
             String paramExecute, currentScenariosRootDirectory;
             int paramWaitBeforeCleanUp, numberOfThreads, timeout;
@@ -155,6 +157,7 @@ public class LarvaApi {
             @Override
             public void run() {
                 TestTool testTool = new TestTool(messageListener);
+                TestTool.setIbisContext(getIbisContext());
                 testTool.runScenarios(paramExecute, paramWaitBeforeCleanUp, currentScenariosRootDirectory, numberOfThreads, timeout);
             }
 
@@ -169,7 +172,7 @@ public class LarvaApi {
             }
         }.initTestParams(paramExecute, waitBeforecleanup, currentScenariosRootDirectory, numberOfThreads, timeout, messageListener);
 
-        logger.info("Starting to execute tests.");
+        log.info("Starting to execute tests.");
         testRunner.start();
 
         if(testRunner.isAlive())
@@ -184,16 +187,15 @@ public class LarvaApi {
      * @return Status.OK if it was set correctly, otherwise BAD request.
      */
     @POST
-    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @RolesAllowed("IbisTester")
     @Path("/larva/loglevel")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response setLogLevel(@Context HttpServletRequest request, LinkedHashMap<String, Object> json){
-        getContext();
         MessageListener messageListener = getOrCreateMessageListener(request);
         try {
             messageListener.setSelectedLogLevel(json.get("logLevel").toString());
             return Response.status(Response.Status.OK).build();
-        }catch (Exception e) {
+        } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
@@ -204,11 +206,10 @@ public class LarvaApi {
      * @return All messages above given log level.
      */
     @POST
-    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @RolesAllowed("IbisTester")
     @Path("/larva/messages")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getMessagesWithLogLevel(@Context HttpServletRequest request, LinkedHashMap<String, Object> json){
-        getContext();
         MessageListener messageListener = getOrCreateMessageListener(request);
         try {
             String logLevel = json.get("logLevel").toString();
@@ -217,7 +218,7 @@ public class LarvaApi {
             messageListener.setSelectedLogLevel(logLevel);
             JSONArray messages = messageListener.getMessages();
             return Response.status(Response.Status.OK).entity(messages.toString()).build();
-        }catch (Exception e) {
+        } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
@@ -228,13 +229,12 @@ public class LarvaApi {
      * @return List of scenarios in the given directory.
      */
     @POST
-    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @RolesAllowed("IbisTester")
     @Path("/larva/scenarios/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getScenarios(Map<String, Object> input){
-        getContext();
         String rootDirectory = input.get("rootDirectory").toString();
-        Map<String, Object> list = getScenarioList(rootDirectory, TestTool.getAppConstants(ibisContext), realPath);
+        Map<String, Object> list = getScenarioList(rootDirectory);
         if(list.size() == 0) {
            return Response.status(Response.Status.NO_CONTENT).build();
         }
@@ -243,7 +243,7 @@ public class LarvaApi {
     }
 
     @POST
-    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @RolesAllowed("IbisTester")
     @Path("/larva/save/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response savePipelineMessage(Map<String, Object> input) {
@@ -253,15 +253,13 @@ public class LarvaApi {
             content = input.get("content").toString();
             if(filePath == null || content == null)
                 return Response.status(Response.Status.BAD_REQUEST).build();
-        }catch (ClassCastException e) {
-            logger.error(e.getMessage());
-            throw new ApiException("Error getting the parameters: " + e.getMessage());
+        } catch (ClassCastException e) {
+            throw new ApiException("Error getting the parameters", e);
         }
         try {
             TestTool.writeFile(filePath, content);
         } catch (IOException e) {
-            logger.error(e.getMessage());
-            throw new ApiException("Error saving the pipeline message: " + e.getMessage());
+            throw new ApiException("Error saving the pipeline message" + e);
         }
         return Response.status(Response.Status.OK).build();
     }
@@ -273,13 +271,14 @@ public class LarvaApi {
      * @param realPath Path of the current execution.
      * @return List of scenarios and the root directory they were found in.
      */
-    private Map<String, Object> getScenarioList(String rootDirectory, AppConstants appConstants, String realPath) {
+    private Map<String, Object> getScenarioList(String rootDirectory) {
+        AppConstants appConstants = AppConstants.getInstance();
         String appConstantsRealPath = appConstants.getResolvedProperty("webapp.realpath");
+        String realPath = getRealPath();
         if(appConstantsRealPath != null) {
             realPath = appConstantsRealPath + "larva/";
         }
         rootDirectory = TestPreparer.initScenariosRootDirectories(realPath, rootDirectory, appConstants);
-        appConstants = TestTool.getAppConstants(ibisContext);
         Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(rootDirectory, false, appConstants);
         Collections.sort(scenarioFiles.get(""));
         Map<String, String> scenarioList = TestPreparer.getScenariosList(scenarioFiles, rootDirectory, appConstants);
@@ -292,15 +291,13 @@ public class LarvaApi {
     /**
      * Initializes the IbisContext.
      */
-    private void getContext() {
-        if(ibisContext!=null)
-            return;
+    private String getRealPath() {
         String servletPath = ResteasyProviderFactory.getContextData(HttpServletRequest.class).getServletPath();
-        logger.debug("Servlet Path: " + servletPath);
+        log.debug("Servlet Path: " + servletPath);
         int i = servletPath.lastIndexOf('/');
-        realPath = servletConfig.getServletContext().getRealPath(servletPath.substring(0, i));
-        logger.debug("Real Path: " + realPath);
-        ibisContext = TestTool.getIbisContext(servletConfig.getServletContext());
+        String realPath = servletConfig.getServletContext().getRealPath(servletPath.substring(0, i));
+        log.debug("Real Path: " + realPath);
+        return realPath;
     }
 
     private MessageListener getOrCreateMessageListener(@Context HttpServletRequest request) {

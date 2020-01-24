@@ -1,3 +1,18 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -49,8 +64,8 @@ public class MessageListener {
 		this.sysOut = new boolean[LOG_LEVEL.size()];
 	}
 
-	public MessageListener(){
-		this.messages = new LinkedList<>();
+	public MessageListener() {
+		this.messages = new LinkedList<Message>();
 		this.selectedLogLevel = MessageListener.DEFAULT_LOG_LEVEL;
 		this.saveLog = new boolean[LOG_LEVEL.size()];
 		this.sysOut = new boolean[LOG_LEVEL.size()];
@@ -215,7 +230,7 @@ public class MessageListener {
 	}
 
 	void stepMessage(String testName, String message) {
-		singleMessage(testName, message , "Step Passed/Failed");
+		singleMessage(testName, message, "Step Passed/Failed");
 	}
 
 	void scenarioMessage(String testName, String message) {
@@ -297,7 +312,7 @@ public class MessageListener {
 		Iterator<Map.Entry<String, String>> iter = map.entrySet().iterator();
 		String result = "";
 		Map.Entry<String, String> entry;
-		while(iter.hasNext()) {
+		while (iter.hasNext()) {
 			entry = iter.next();
 			result += entry.getKey() + "[" + entry.getValue() + "]  ";
 		}

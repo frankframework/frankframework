@@ -1,3 +1,18 @@
+/*
+   Copyright 2019-2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -245,8 +260,7 @@ public class ScenarioTester extends Thread {
 		return stepPassed;
 	}
 
-	private Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
-															   Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
+	private Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps, Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		messageListener.debugMessage(testName, "Get all queue names");
 		List<String> jmsSenders = new ArrayList<String>();
@@ -263,7 +277,7 @@ public class ScenarioTester extends Thread {
 		List<String> fileListeners = new ArrayList<String>();
 		List<String> xsltProviderListeners = new ArrayList<String>();
 
-		Iterator iterator = properties.keySet().iterator();
+		Iterator<Object> iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
 			String key = (String) iterator.next();
 			int i = key.indexOf('.');
@@ -274,59 +288,43 @@ public class ScenarioTester extends Thread {
 					messageListener.debugMessage(testName, "queuename openqueue: " + queueName);
 					String className = properties.getProperty(queueName + ".className");
 
-					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
-							&& !jmsSenders.contains(queueName)) {
+					if ("nl.nn.adapterframework.jms.JmsSender".equals(className) && !jmsSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding jmsSender queue: " + queueName);
 						jmsSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
-							&& !jmsListeners.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(className) && !jmsListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding jmsListener queue: " + queueName);
 						jmsListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(
-							properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(className) && !jdbcFixedQuerySenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding jdbcFixedQuerySender queue: " + queueName);
 						jdbcFixedQuerySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(
-							properties.get(queueName + ".className")) && !ibisWebServiceSenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(className) && !ibisWebServiceSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding ibisWebServiceSender queue: " + queueName);
 						ibisWebServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(
-							properties.get(queueName + ".className")) && !webServiceSenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(className) && !webServiceSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding webServiceSender queue: " + queueName);
 						webServiceSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(
-							properties.get(queueName + ".className")) && !webServiceListeners.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(className) && !webServiceListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding webServiceListener queue: " + queueName);
 						webServiceListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
-							&& !httpSenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.http.HttpSender".equals(className) && !httpSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding httpSender queue: " + queueName);
 						httpSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.IbisJavaSender"
-							.equals(properties.get(queueName + ".className")) && !ibisJavaSenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(className) && !ibisJavaSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding ibisJavaSender queue: " + queueName);
 						ibisJavaSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.senders.DelaySender"
-							.equals(properties.get(queueName + ".className")) && !delaySenders.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(className) && !delaySenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding delaySender queue: " + queueName);
 						delaySenders.add(queueName);
-					} else if ("nl.nn.adapterframework.receivers.JavaListener"
-							.equals(properties.get(queueName + ".className")) && !javaListeners.contains(queueName)) {
+					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(className) && !javaListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding javaListener queue: " + queueName);
 						javaListeners.add(queueName);
-					} else if (("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))
-							||  "nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className")))
-							&& !fileSenders.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.FileSender".equals(className) || "nl.nn.adapterframework.testtool.FileSender".equals(className)) && !fileSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding fileSender queue: " + queueName);
 						fileSenders.add(queueName);
-					} else if (("nl.nn.adapterframework.larva.FileListener".equals(properties.get(queueName + ".className"))
-							|| "nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className")))
-							&& !fileListeners.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.FileListener".equals(className) || "nl.nn.adapterframework.testtool.FileListener".equals(className)) && !fileListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding fileListener queue: " + queueName);
 						fileListeners.add(queueName);
-					} else if (("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))
-							|| "nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className")))
-							&& !xsltProviderListeners.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.XsltProviderListener".equals(className) || "nl.nn.adapterframework.testtool.XsltProviderListener".equals(className)) && !xsltProviderListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding xsltProviderListeners queue: " + queueName);
 						xsltProviderListeners.add(queueName);
 					}
