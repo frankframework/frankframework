@@ -749,12 +749,12 @@ public class JobDef {
 			return;
 		}
 		
-		String configJmsRealm = JmsRealmFactory.getInstance()
-				.getFirstDatasourceJmsRealm();
+		String errorMsg = null;
+		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
-			List<String> configNames = new ArrayList<String>();
-			List<String> configsToReload = new ArrayList<String>();
+			List<String> currentConfigNames = new ArrayList<String>();
+			List<String> configNamesToReload = new ArrayList<String>();
 
 			Connection conn = null;
 			ResultSet rs = null;
@@ -770,7 +770,7 @@ public class JobDef {
 				PreparedStatement stmt = conn.prepareStatement(selectQuery);
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
-					configNames.add(configName);
+					currentConfigNames.add(configName);
 					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
@@ -784,44 +784,50 @@ public class JobDef {
 										+ configVersion
 										+ "] will be reloaded with new version ["
 										+ ibisConfigVersion + "]");
-								configsToReload.add(configName);
+								configNamesToReload.add(configName);
 							}
 						}
 					}
 				}
 			} catch (Exception e) {
-				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+				errorMsg = "error while executing query [" + selectQuery + "] (as part of scheduled job execution)";
+				getMessageKeeper().add(errorMsg, e);
 			} finally {
 				qs.close();
 				JdbcUtil.fullClose(conn, rs);
 			}
 
-			if (!configsToReload.isEmpty()) {
-				for (String configToReload : configsToReload) {
-					ibisManager.getIbisContext().reload(configToReload);
-				}
-			}
-			
-			if (CONFIG_AUTO_DB_CLASSLOADER) {
-				// load new (activated) configs
-				List<String> dbConfigNames = null;
-				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("error while retrieving configuration names from database", e);
-				}
-				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext().load(currentDbConfigurationName);
-						}
+			if (errorMsg == null) {
+				if (!configNamesToReload.isEmpty()) {
+					for (String configNameToReload : configNamesToReload) {
+						ibisManager.getIbisContext().reload(configNameToReload);
 					}
 				}
-				// unload old (deactivated) configurations
-				if (configNames != null && !configNames.isEmpty()) {
-					for (String currentConfigurationName : configNames) {
-						if ((dbConfigNames == null || !dbConfigNames.contains(currentConfigurationName)) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType()) && !ConfigurationUtils.isTempConfigName(currentConfigurationName)) {
-							ibisManager.getIbisContext().unload(currentConfigurationName);
+				
+				if (CONFIG_AUTO_DB_CLASSLOADER) {
+					// load new (activated) configs
+					List<String> dbConfigNames = null;
+					try {
+						dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
+					} catch (ConfigurationException e) {
+						errorMsg = "error while retrieving configuration names from database";
+						getMessageKeeper().add(errorMsg, e);
+					}
+					if (errorMsg == null) {
+						if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+							for (String dbConfigName : dbConfigNames) {
+								if (!currentConfigNames.contains(dbConfigName)) {
+									ibisManager.getIbisContext().load(dbConfigName);
+								}
+							}
+						}
+						// unload old (deactivated) configs
+						if (currentConfigNames != null && !currentConfigNames.isEmpty()) {
+							for (String currentConfigName : currentConfigNames) {
+								if ((dbConfigNames == null || !dbConfigNames.contains(currentConfigName)) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigName).getClassLoaderType()) && !ConfigurationUtils.isTempConfigName(currentConfigName)) {
+									ibisManager.getIbisContext().unload(currentConfigName);
+								}
+							}
 						}
 					}
 				}
