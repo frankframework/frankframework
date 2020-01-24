@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.larva.api;
 
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.larva.MessageListener;
 import nl.nn.adapterframework.larva.TestPreparer;
 import nl.nn.adapterframework.larva.TestTool;
@@ -149,6 +150,7 @@ public class LarvaApi extends Base {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         log.debug("Creating test runner thread.");
+/*        final IbisContext ibisContext = getIbisContext();
         Thread testRunner = new Thread() {
             String paramExecute, currentScenariosRootDirectory;
             int paramWaitBeforeCleanUp, numberOfThreads, timeout;
@@ -157,7 +159,7 @@ public class LarvaApi extends Base {
             @Override
             public void run() {
                 TestTool testTool = new TestTool(messageListener);
-                TestTool.setIbisContext(getIbisContext());
+                TestTool.setIbisContext(ibisContext);
                 testTool.runScenarios(paramExecute, paramWaitBeforeCleanUp, currentScenariosRootDirectory, numberOfThreads, timeout);
             }
 
@@ -177,8 +179,12 @@ public class LarvaApi extends Base {
 
         if(testRunner.isAlive())
             return Response.status(Response.Status.OK).build();
+*/
+        TestTool testTool = new TestTool(messageListener);
+        TestTool.setIbisContext(getIbisContext());
+        testTool.runScenarios(paramExecute, waitBeforecleanup, currentScenariosRootDirectory, numberOfThreads, timeout);
 
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return Response.status(Response.Status.OK).build();
     }
 
     /**

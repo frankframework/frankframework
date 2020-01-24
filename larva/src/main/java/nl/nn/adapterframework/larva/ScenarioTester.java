@@ -64,11 +64,8 @@ public class ScenarioTester extends Thread {
 		listenerController = new ListenerController(this);
 		senderController = new SenderController(this);
 		webServiceController = new WebServiceController(this);
-		for(IAdapter adapter : ibisContext.getIbisManager().getRegisteredAdapters()) {
-			System.out.println(adapter.getName() + " : " + adapter.getRunState().toString());
-		}
 	}
-	
+
 	@Override
 	public void run() {
 		try {

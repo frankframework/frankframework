@@ -215,15 +215,13 @@ public class IbisTester {
 	public int getRunningAdapterCount() {
 		int result = 0;
 		for(IAdapter adapter : ibisContext.getIbisManager().getRegisteredAdapters()) {
-			System.out.println(adapter.getName() + ": " + adapter.getRunState().toString());
 			result += adapter.getRunState().isState("Started") ? 1 : 0;
 		}
 		return result;
 	}
 
 	private static void debug(String string) {
-		System.out.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
-				+ string);
+		System.out.println(getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
 	}
 
 	private static String error(String string) {
