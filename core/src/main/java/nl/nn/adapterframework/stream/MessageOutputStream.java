@@ -19,6 +19,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
@@ -27,6 +28,8 @@ import org.apache.log4j.Logger;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -37,54 +40,59 @@ public class MessageOutputStream implements AutoCloseable {
 	private INamedObject owner;
 	protected Object requestStream;
 	private Object response;
+	private PipeForward forward;
 	
-	private MessageOutputStream next;
+	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
-
+	
+	
 	private ThreadConnector threadConnector;
 	
-	private MessageOutputStream(INamedObject owner, MessageOutputStream next) {
+	private MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
 		this.owner=owner;
-		connect(next);
+		connect(nextStream, nextProvider);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream next) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
+		this(owner, nextStream, nextProvider);
 		this.requestStream=stream;
 	}
 	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream next) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
+		this(owner, nextStream, nextProvider);
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+		this(owner, nextStream, nextProvider);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream next, Object response) {
-		this(owner, stream, next);
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response) {
+		this(owner, stream, nextStream, nextProvider);
 		this.response=response;
 	}
 	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream next, Object response) {
-		this(owner, writer, next);
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response) {
+		this(owner, writer, nextStream, nextProvider);
 		this.response=response;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream next, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
-		this(owner, handler, next, threadLifeCycleEventListener, correlationID);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+		this(owner, handler, nextStream, nextProvider, threadLifeCycleEventListener, correlationID);
 		this.response=response;
 	}
 
-	private void connect(MessageOutputStream next) {
-		this.next=next;
-		if (next==null) {
+	private void connect(MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
+		this.nextStream=nextStream;
+		if (nextStream==null) {
 			tail=this;			
 		} else {
-			tail=next.tail;
+			tail=nextStream.tail;
+		}
+		if (nextProvider!=null && nextProvider instanceof IPipe) {
+			setForward(new PipeForward("success", ((IPipe)nextProvider).getName()));
 		}
 	}
 
@@ -108,8 +116,8 @@ public class MessageOutputStream implements AutoCloseable {
 			closeRequestStream();
 		} finally {
 			try {
-				if (next!=null) {
-					next.close();
+				if (nextStream!=null) {
+					nextStream.close();
 				}
 			} finally {
 				afterClose();
@@ -197,12 +205,27 @@ public class MessageOutputStream implements AutoCloseable {
 		this.response = response;
 	}
 
-	public Object getResponse() {
-		return tail.response;
+	public void setForward(PipeForward forward) {
+		this.forward = forward;
 	}
 
-	public String getResponseAsString() {
-		return getResponse() == null ? null : getResponse().toString();
+
+	public StreamingResult getPipeRunResult() {
+		Object response = tail.response;
+		if (response instanceof StringWriter) {
+			response = response.toString();
+		}
+		return new StreamingResult(getForward(), response, true);
+	}
+
+	public PipeForward getForward() {
+		if (nextStream!=null) {
+			PipeForward result = nextStream.getForward();
+			if (result!=null) {
+				return result;
+			}
+		}
+		return forward;
 	}
 
 }

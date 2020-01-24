@@ -26,31 +26,31 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	public abstract StreamingResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException;
 	@Override
-	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
+	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
 
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		Object result = sendMessage(correlationID, new Message(message), prc, null);
+		StreamingResult result = sendMessage(correlationID, new Message(message), prc, null);
 		try {
-			return result==null?null:new Message(result).asString();
+			return result==null?null:new Message(result.getResult()).asString();
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	@Override
-	public boolean requiresOutputStream() {
-		return false;
-	}
-
-	@Override
-	public boolean canProvideOutputStream() {
-		return true;
-	}
+//	@Override
+//	public boolean requiresOutputStream() {
+//		return false;
+//	}
+//
+//	@Override
+//	public boolean canProvideOutputStream() {
+//		return true;
+//	}
 	
 	@Override
 	public boolean supportsOutputStreamPassThrough() {

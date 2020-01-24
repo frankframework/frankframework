@@ -32,7 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -159,7 +159,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
@@ -170,7 +170,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		log.debug(getLogPrefix(session) + "stored [" + srcPrefix
 				+ "] in pipeLineSession under key [" + SRCPREFIX + "]");
 
-		PipeRunResult prr = super.doPipe(input, session, target);
+		PipeRunResult prr = super.doPipe(input, session, next);
 		String result = (String) prr.getResult();
 
 		log.debug("transforming page [" + result + "] to view");

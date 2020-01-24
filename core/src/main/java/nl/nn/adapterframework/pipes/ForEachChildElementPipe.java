@@ -38,9 +38,10 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingResult;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -142,18 +143,18 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	}
 
 	
-	@Override
-	protected boolean senderAffectsStreamProvidingCapability() {
-		return false;
-	}
+//	@Override
+//	protected boolean senderAffectsStreamProvidingCapability() {
+//		return false;
+//	}
+//
+//	@Override
+//	protected boolean senderAffectsStreamWritingCapability() {
+//		return false;
+//	}
 
 	@Override
-	protected boolean senderAffectsStreamWritingCapability() {
-		return false;
-	}
-
-	@Override
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
+	protected StreamingResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
 		return super.sendMessage(input, session, correlationID, sender, threadContext, null);
 	}
 

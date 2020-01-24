@@ -33,8 +33,9 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingResult;
 
 /**
  * Sender to work with Amazon S3. 
@@ -89,9 +90,9 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public StreamingResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
-			return super.sendMessage(correlationID, message, prc, target);
+			return super.sendMessage(correlationID, message, prc, next);
 		}
 
 		String result = null;
@@ -116,18 +117,20 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		} else if (getAction().equalsIgnoreCase("deleteBucket")) { //deleteBucket block
 			result = getFileSystem().deleteBucket();
 		} else if (getAction().equalsIgnoreCase("copy")) { //copy file block
-			if (pvl.getParameterValue("destinationFileName") != null)
+			if (pvl.getParameterValue("destinationFileName") != null) {
 				if (pvl.getParameterValue("destinationFileName").getValue() != null) {
 					String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
 					result = getFileSystem().copyObject(fileName, destinationFileName);
-				} else
+				} else {
 					throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
-			else
+				}
+			} else {
 				throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
-		} else if (getAction().equalsIgnoreCase("restore")) //restore block
+			}
+		} else if (getAction().equalsIgnoreCase("restore")) { //restore block
 			result = getFileSystem().restoreObject(fileName);
-		
-		return result;
+		}
+		return new StreamingResult(null, result, false);
 	}
 	
 	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })

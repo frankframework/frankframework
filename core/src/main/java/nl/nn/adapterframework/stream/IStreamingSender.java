@@ -20,8 +20,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport{
+public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
 
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	public StreamingResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException;
 
 }

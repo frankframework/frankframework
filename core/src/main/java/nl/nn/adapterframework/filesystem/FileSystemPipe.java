@@ -29,6 +29,7 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -101,27 +102,31 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		}
 	}
 
-	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && actor.canProvideOutputStream();
-	}
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() && actor.requiresOutputStream();  
-	}
+//	@Override
+//	public boolean canProvideOutputStream() {
+//		return super.canProvideOutputStream() && actor.canProvideOutputStream();
+//	}
+//	@Override
+//	public boolean requiresOutputStream() {
+//		return super.requiresOutputStream() && actor.requiresOutputStream();  
+//	}
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;  
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return actor.provideOutputStream(correlationID, session, target);
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream result = actor.provideOutputStream(correlationID, session, nextProvider);
+		if (result!=null && result.getForward()==null) {
+			result.setForward(getForward());
+		}
+ 		return result;
 	}
 
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
