@@ -1,1 +1,1 @@
-${testdata.dir}/bftp/in/CUSTOMER.TXT
+c:/temp/testdata/bftp/in/CUSTOMER.TXT

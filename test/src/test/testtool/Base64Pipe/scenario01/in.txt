@@ -1,1 +1,1 @@
-${testdata.dir}/b64/file.txt
+c:/temp/testdata/b64/file.txt
