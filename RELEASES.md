@@ -60,6 +60,7 @@ Upcoming
 - HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 - Add option to use username and password from authAlias in Paramter values
 - Bugfix autoReload new configuration on other nodes
+- No outage when reloading new configuration version
 
 
 ### Non backwards compatible changes

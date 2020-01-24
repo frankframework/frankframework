@@ -119,7 +119,11 @@ public class JmxMbeanHelper {
     	Configuration config = adapter == null?null:adapter.getConfiguration();
 		String configString = null;
 		if (config != null) {
-			configString = config.getName();
+			String configName = config.getName();
+			if (ConfigurationUtils.isTempConfigName(configName)) {
+				configName = ConfigurationUtils.getOriginalConfigName(configName);
+			}
+			configString = configName;
 			if (StringUtils.isNotEmpty(config.getVersion())) {
 				configString = configString + "-" + config.getVersion();
 			}

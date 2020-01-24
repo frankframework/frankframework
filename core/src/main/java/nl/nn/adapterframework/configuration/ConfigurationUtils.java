@@ -561,4 +561,8 @@ public class ConfigurationUtils {
 	public static boolean isTempConfigName(String configName) {
 		return configName.startsWith("$") && configName.endsWith("$");
 	}
+
+	public static String getOriginalConfigName(String tempConfigName) {
+		return StringUtils.removeEnd(StringUtils.removeStart(tempConfigName, "$"), "$");
+	}
 }
