@@ -388,6 +388,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Creates a connection, checks if the table is existing and creates it when necessary
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		setOperationControls();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException("Attribute [tableName] is not set");

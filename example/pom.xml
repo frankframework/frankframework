@@ -81,7 +81,7 @@
               <value>DEBUG</value>
             </systemProperty>
             <systemProperty>
-              <name>otap.stage</name>
+              <name>dtap.stage</name>
               <value>LOC</value>
             </systemProperty>
           </systemProperties>

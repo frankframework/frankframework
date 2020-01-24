@@ -989,6 +989,10 @@ public class JobDef {
 			}
 			if (StringUtils.isNotEmpty(getAdapterName())) {
 				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
+				if (iAdapter == null) {
+					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
+					return;
+				}
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}

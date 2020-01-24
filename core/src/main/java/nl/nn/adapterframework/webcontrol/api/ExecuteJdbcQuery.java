@@ -51,7 +51,7 @@ public final class ExecuteJdbcQuery extends Base {
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
@@ -129,7 +129,7 @@ public final class ExecuteJdbcQuery extends Base {
 				}
 			}
 		} catch (Throwable t) {
-			throw new ApiException("An error occured on executing jdbc query: " + t.getMessage(), 400);
+			throw new ApiException("Error executing query", t);
 		} finally {
 			qs.close();
 		}

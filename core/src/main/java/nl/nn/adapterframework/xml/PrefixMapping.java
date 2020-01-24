@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2020 Integration Partners B.V.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,32 +12,25 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
-package nl.nn.adapterframework.parameters;
-
-/**
- * Simple parameter object.
  */
-public class SimpleParameter {
-	private String name = null;
-	private String type = null;
-	private Object value = null;
+package nl.nn.adapterframework.xml;
 
-	public SimpleParameter(String name, String type, Object value) {
-		this.name = name;
-		this.type = type;
-		this.value = value;
+public class PrefixMapping {
+
+	private String prefix;
+	private String uri;
+
+	public PrefixMapping(String prefix, String uri) {
+		this.prefix = prefix;
+		this.uri = uri;
 	}
 
-	public String getName() {
-		return name;
+	public String getPrefix() {
+		return prefix;
 	}
 
-	public String getType() {
-		return type;
+	public String getUri() {
+		return uri;
 	}
 
-	public Object getValue() {
-		return value;
-	}
 }

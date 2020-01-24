@@ -1,0 +1,9 @@
+<prefix- uri="urn:tja">
+	<a xmlns="urn:tja">x</a>
+</prefix->
+<prefix- uri="urn:tja">
+	<a xmlns="urn:tja">y</a>
+</prefix->
+<prefix- uri="urn:tja">
+	<a xmlns="urn:tja">y</a>
+</prefix->

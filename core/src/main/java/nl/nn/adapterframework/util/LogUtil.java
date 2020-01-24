@@ -117,7 +117,7 @@ public class LogUtil {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can startup if no log.level property has been found, it has to be explicitly set
-			String stage = System.getProperty("otap.stage");
+			String stage = System.getProperty("dtap.stage");
 			String logLevel = "DEBUG";
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";

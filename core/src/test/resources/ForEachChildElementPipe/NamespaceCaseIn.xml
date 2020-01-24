@@ -1,0 +1,8 @@
+
+<DocOutputPrintDocumentRequest xmlns="urn:test">
+<DocOutputPrintDocumentRequestCont>
+<XDOC>
+<VR_OMA_RCNR_OMA xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+</XDOC>
+</DocOutputPrintDocumentRequestCont>
+</DocOutputPrintDocumentRequest>

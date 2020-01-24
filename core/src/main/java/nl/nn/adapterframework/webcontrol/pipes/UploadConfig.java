@@ -49,31 +49,25 @@ public class UploadConfig extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration()
-				.getIbisManager().getIbisContext();
+		ibisContext = ((Adapter) getAdapter()).getConfiguration().getIbisManager().getIbisContext();
 	}
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if ("GET".equalsIgnoreCase(method)) {
 			return doGet(session);
 		} else if ("POST".equalsIgnoreCase(method)) {
 			return doPost(session);
 		} else {
-			throw new PipeRunException(this,
-					getLogPrefix(session) + "Illegal value for method ["
-							+ method + "], must be 'GET' or 'POST'");
+			throw new PipeRunException(this, getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}
 	}
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
-		String otapStage = AppConstants.getInstance()
-				.getResolvedProperty("otap.stage");
+		String dtapStage = APP_CONSTANTS.getResolvedProperty("dtap.stage");
 		session.put(ACTIVE_CONFIG, "on");
-		if ("DEV".equalsIgnoreCase(otapStage)
-				|| "TEST".equalsIgnoreCase(otapStage)) {
+		if ("DEV".equalsIgnoreCase(dtapStage) || "TEST".equalsIgnoreCase(dtapStage)) {
 			session.put(AUTO_RELOAD, "on");
 		} else {
 			session.put(AUTO_RELOAD, "off");

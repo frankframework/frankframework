@@ -62,7 +62,6 @@ Upcoming
 - Bugfix autoReload new configuration on other nodes
 - No outage when reloading new configuration version
 
-
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 

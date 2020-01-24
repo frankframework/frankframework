@@ -1,0 +1,11 @@
+<root xmlns:nsroot="urn:nsroot" xmlns="urn:defroot">
+<DocOutputPrintDocumentRequest xmlns="urn:defns1" xmlns:ns="urn:ns1" xmlns:extraouter="urn:nsextra-outer">
+    <DLHeader>
+    </DLHeader>
+    <DocOutputPrintDocumentRequestCont xmlns:nscont="urn:nscont" xmlns="urn:defcont">
+        
+<XDOC xmlns="urn:defns2" xmlns:ns="urn:ns2" xmlns:extrainner="urn:nsextra-inner1"><data xmlns="urn:i" xmlns:i="urn:i1"/></XDOC>
+<XDOC xmlns="urn:defns2" xmlns:ns="urn:ns2" xmlns:extrainner="urn:nsextra-inner2"><data xmlns="urn:j" xmlns:i="urn:i2"/></XDOC>
+    </DocOutputPrintDocumentRequestCont>
+</DocOutputPrintDocumentRequest>
+</root>

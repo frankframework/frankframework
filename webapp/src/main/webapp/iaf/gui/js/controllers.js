@@ -35,10 +35,10 @@ angular.module('iaf.beheerconsole')
 				$rootScope.instanceName = data.name;
 				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
-				$rootScope.otapStage = data["otap.stage"];
-				$rootScope.otapSide = data["otap.side"];
+				$rootScope.dtapStage = data["dtap.stage"];
+				$rootScope.dtapSide = data["dtap.side"];
 
-				if($rootScope.otapStage == "LOC") {
+				if($rootScope.dtapStage == "LOC") {
 					Debug.setLevel(3);
 				}
 
