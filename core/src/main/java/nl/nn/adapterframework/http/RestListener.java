@@ -176,7 +176,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return uriPattern;
 	}
 
-	@IbisDoc({"uri pattern to match. ", ""})
+	@IbisDoc({"uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
