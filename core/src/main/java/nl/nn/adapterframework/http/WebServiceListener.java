@@ -29,12 +29,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cxf.MessageProvider;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -52,15 +49,13 @@ import org.apache.cxf.jaxws.EndpointImpl;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues, IWithParameters {
+public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private static final long serialVersionUID = 1L;
 
 	private boolean soap = true;
 	private String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
-
-	private ParameterList paramList = null;
 
 	/* CXF Implementation */
 	private String address;
@@ -101,10 +96,6 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
 			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
 			ConfigurationWarnings.getInstance().add(log, msg, true);
-		}
-
-		if (paramList!=null) {
-			paramList.configure();
 		}
 	}
 
@@ -153,8 +144,6 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			endpoint.stop();
 
 		unregisterAddressListener();
-		//TODO maybe unregister oldschool rpc based serviceclients!?
-		//How does this work when reloading a configuration??
 	}
 
 	@Override
@@ -299,28 +288,5 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 
 	private static String getAddressDefaultValue(String name) {
 		return "/" + name;
-	}
-
-	@Override
-	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
-		paramList.add(p);
-	}
-
-	public String getParameterValueAsString(String parameterName) {
-		if (paramList != null) {
-			Parameter p = paramList.findParameter(parameterName);
-			if (p != null) {
-				return p.getValue();
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public ParameterList getParameterList() {
-		return paramList;
 	}
 }
