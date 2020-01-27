@@ -2,11 +2,14 @@
 <Context>
 	<Resource
 		name="jdbc/ibis4test"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:1521:xe"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		username="testiaf_user"
 		password="testiaf_user"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:@localhost:1521:xe"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
 	/>
 	<Resource
 		name="jms/qcf_tibco_esb_ff"

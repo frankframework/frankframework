@@ -49,9 +49,15 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
+<<<<<<< HEAD
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
 		String xmlOut=result.getResult().toString();
+=======
+		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
+		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String xmlOut=result.toString();
+>>>>>>> refs/heads/master
 		assertEquals(expectedXml,xmlOut);
 	}
 

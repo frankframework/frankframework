@@ -260,7 +260,6 @@ public class MailSender extends MailSenderBase {
 					ByteArrayDataSource bads = new ByteArrayDataSource(attachment.getContent(), attachment.getMimeType());
 					bads.setName(attachment.getName());
 					messageBodyPart.setDataHandler(new DataHandler(bads));
-					messageBodyPart.setHeader("Content-Transfer-Encoding", "7bit");
 				} catch (IOException e) {
 					log.error("error attaching attachment to MailSession", e);
 				}

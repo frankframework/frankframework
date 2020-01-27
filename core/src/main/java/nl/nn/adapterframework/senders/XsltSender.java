@@ -74,7 +74,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private String namespaceDefs = null; 
 	private String outputType=null;
 	private Boolean omitXmlDeclaration;
-	private boolean indentXml=true;
+	private boolean indentXml=false; // some existing ibises expect default for indent to be false 
 	private boolean removeNamespaces=false;
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
