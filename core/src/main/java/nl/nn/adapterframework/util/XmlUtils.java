@@ -821,12 +821,9 @@ public class XmlUtils {
 		}
 		try {
 			String xslt;
-			if (XPATH_NAMESPACE_REMOVAL_VIA_XSLT && StringUtils.isEmpty(namespaceDefs)) {
-				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, true, null, xsltVersion);
-			} else {
-				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
-			}
-			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs,!includeXmlDeclaration,false,xsltVersion);
+			xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
+			if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
+			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs+"|"+xsltVersion,!includeXmlDeclaration,false,xsltVersion);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
 		}
