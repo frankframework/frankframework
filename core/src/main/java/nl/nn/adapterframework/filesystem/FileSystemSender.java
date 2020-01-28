@@ -96,15 +96,6 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 	}
 
-//	@Override
-//	public boolean canProvideOutputStream() {
-//		return super.canProvideOutputStream() && actor.canProvideOutputStream();
-//	}
-//	@Override
-//	public boolean requiresOutputStream() {
-//		return super.requiresOutputStream() && actor.requiresOutputStream();  
-//	}
-//	
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		return actor.provideOutputStream(correlationID, session, nextProvider);

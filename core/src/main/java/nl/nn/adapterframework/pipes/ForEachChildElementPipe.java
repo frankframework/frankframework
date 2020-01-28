@@ -143,16 +143,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	}
 
 	
-//	@Override
-//	protected boolean senderAffectsStreamProvidingCapability() {
-//		return false;
-//	}
-//
-//	@Override
-//	protected boolean senderAffectsStreamWritingCapability() {
-//		return false;
-//	}
-
 	@Override
 	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
 		return super.sendMessage(input, session, correlationID, sender, threadContext, null);

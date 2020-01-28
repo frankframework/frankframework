@@ -529,11 +529,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if (reader!=null) {
 					Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
 				} else {
-//					if (message!=null) {
-						clobWriter.write(message.toString());
-//					} else {
-//						log.warn(getLogPrefix()+"message is null, CLOB will be emtpy");
-//					}
+					clobWriter.write(message.toString());
 				}
 			} finally {
 				if (clobWriter!=null) {

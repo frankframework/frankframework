@@ -102,14 +102,6 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		}
 	}
 
-//	@Override
-//	public boolean canProvideOutputStream() {
-//		return super.canProvideOutputStream() && actor.canProvideOutputStream();
-//	}
-//	@Override
-//	public boolean requiresOutputStream() {
-//		return super.requiresOutputStream() && actor.requiresOutputStream();  
-//	}
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;  
