@@ -75,7 +75,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = (String)prr.getResult();
 		assertResultsAreCorrect(expected,result.trim(),session);
 		
 	}

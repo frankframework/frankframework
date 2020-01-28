@@ -17,19 +17,21 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.StringWriter;
 
-import nl.nn.adapterframework.doc.IbisDocRef;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -97,20 +99,32 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		Message message = new Message(input);
 		ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware()); 
 		try {
-			Object result = sender.sendMessage(null, message, prc, target);
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				nextProvider=null;
+			} else {
+				if (nextProvider==null) {
+					nextProvider = getStreamTarget();
+				}
+			}
+			PipeRunResult prr = sender.sendMessage(null, message, prc, nextProvider);
+			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();
 			}
-
+			PipeForward forward = prr.getPipeForward();
+			if (forward==null) {
+				forward=getForward();
+			}
+			
 			if (StringUtils.isEmpty(getSessionKey())) {
-				return new PipeRunResult(getForward(), result);
+				return new PipeRunResult(forward, result);
 			}
 			session.put(getSessionKey(), result);
 			return new PipeRunResult(getForward(), input);
@@ -120,24 +134,14 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && sender.canProvideOutputStream();
-	}
-
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() && sender.requiresOutputStream();
-	}
-
-	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
 	}
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return sender.provideOutputStream(correlationID, session, target);
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return sender.provideOutputStream(correlationID, session, nextProvider);
 	}
 
 	@Override

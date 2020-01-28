@@ -23,13 +23,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -38,6 +31,15 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Get a description of a specified pipe. The description contains the XML
@@ -59,7 +61,8 @@ public class PipeDescriptionProvider {
 	 */
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
-		String adapterName = pipeLine.getOwner().getName();
+		INamedObject pipeLineOwner = pipeLine.getOwner();
+		String adapterName = pipeLineOwner==null? "?": pipeLineOwner.getName();
 		String pipeName = pipe.getName();
 		String checkpointName = null;
 		String xpathExpression = null;
@@ -113,7 +116,8 @@ public class PipeDescriptionProvider {
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			Configuration configuration = pipeLine.getAdapter().getConfiguration();
+			Adapter adapter = pipeLine.getAdapter();
+			Configuration configuration = adapter==null? null : adapter.getConfiguration();
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.get(configuration);
 			if (pipeDescriptionCache == null) {
 				pipeDescriptionCache = new HashMap<String, PipeDescription>();

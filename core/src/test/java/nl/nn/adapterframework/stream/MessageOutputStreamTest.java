@@ -58,7 +58,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -75,7 +75,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 		
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -92,7 +92,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
@@ -112,7 +112,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 			
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -130,7 +130,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -147,7 +147,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	
@@ -174,7 +174,7 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			try {
 				OutputStream outputstream=null;
@@ -199,7 +199,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null,this,null,"fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
 		
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -216,7 +216,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null,this,null,"fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -242,7 +242,7 @@ public class MessageOutputStreamTest {
 			
 		};
 		
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -274,7 +274,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,transformerHandler,null,this,null,"fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -306,7 +306,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,transformerHandler,null,this,null,"fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -338,7 +338,7 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	
@@ -393,7 +393,7 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null,target,null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	

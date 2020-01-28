@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.Writer;
 import java.util.Arrays;
@@ -42,41 +43,66 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
 		PipeRunResult prr;
 		if (provideStreamForInput) {
-			CloseObservableCap cap=writeOutputToStream?new CloseObservableCap(null):null;
-			Object result;
-			try (MessageOutputStream target = pipe.provideOutputStream(null, session, cap)) {
+			CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
+			//Object result;
+			try (MessageOutputStream target = pipe.provideOutputStream(null, session, capProvider)) {
 		
 				try (Writer writer = target.asWriter()) {
 					writer.write((String)input); // TODO: proper conversion of non-string classes..
 				}
-				result=target.getResponse();
+				prr=target.getPipeRunResult();
 			}
-			if (cap!=null) {
-				assertEquals("PipeResult must be equal to result of cap",result,cap.getResponse());
-				assertEquals(1,cap.getCloseCount());
+			if (capProvider!=null) {
+				assertEquals("PipeResult must be equal to result of cap",capProvider.getCap().getPipeRunResult().getResult(),prr.getResult());
+				assertEquals(1,capProvider.getCap().getCloseCount());
 			}
-			return new PipeRunResult(null, result);
+			return prr;
 		} else {
 			if (classic) {
 				prr = pipe.doPipe(input,session);
 			} else {
-				CloseObservableCap cap=writeOutputToStream?new CloseObservableCap(null):null;
-				prr = pipe.doPipe(input,session,cap);
-				if (cap!=null) {
-					assertEquals("PipeResult must be equal to result of cap",prr.getResult(),cap.getResponse());
-					assertEquals(1,cap.getCloseCount());
+				CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
+				prr = pipe.doPipe(input, session, capProvider);
+				if (capProvider!=null) {
+					assertEquals("PipeResult must be equal to result of cap",capProvider.getCap().getPipeRunResult().getResult(),prr.getResult());
+					assertEquals(1,capProvider.getCap().getCloseCount());
+					assertNotNull(prr.getPipeForward());
 				}
-			}		
+			}
 			return prr;
 		}
 	}
 
+	private class CapProvider implements IOutputStreamingSupport {
+
+		private CloseObservableCap cap;
+		
+		public CapProvider(INamedObject owner) {
+			cap=new CloseObservableCap(owner);
+		}
+		
+		@Override
+		public boolean supportsOutputStreamPassThrough() {
+			return false;
+		}
+
+		@Override
+		public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+			return cap;
+		}
+		
+		public CloseObservableCap getCap() {
+			return cap;
+		}
+		
+	}
+	
 	private class CloseObservableCap extends MessageOutputStreamCap {
 
 		private int closeCount=0;
 		
 		public CloseObservableCap(INamedObject owner) {
-			super(owner);
+			super(owner, null);
 		}
 		
 		@Override
