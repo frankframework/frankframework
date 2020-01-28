@@ -26,6 +26,7 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -35,7 +36,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingResult;
 
 /**
  * Sender to work with Amazon S3. 
@@ -90,7 +90,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public StreamingResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
 			return super.sendMessage(correlationID, message, prc, next);
 		}
@@ -130,7 +130,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		} else if (getAction().equalsIgnoreCase("restore")) { //restore block
 			result = getFileSystem().restoreObject(fileName);
 		}
-		return new StreamingResult(null, result, false);
+		return new PipeRunResult(null, result);
 	}
 	
 	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })

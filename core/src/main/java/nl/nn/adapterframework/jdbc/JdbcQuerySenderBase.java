@@ -565,7 +565,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
+		MessageOutputStream target=null;
 		final Connection connection;
 		QueryContext queryContext;
 		try {
@@ -577,7 +577,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		try {
 			PreparedStatement statement=queryContext.getStatement();
 			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target, nextProvider) {
+				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
@@ -586,7 +586,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				};
 			}
 			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()),target, nextProvider) {
+				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();

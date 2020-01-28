@@ -37,7 +37,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingResult;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 
@@ -114,13 +113,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 					nextProvider = getStreamTarget();
 				}
 			}
-			StreamingResult prr = sender.sendMessage(null, message, prc, nextProvider);
+			PipeRunResult prr = sender.sendMessage(null, message, prc, nextProvider);
 			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();
 			}
 			PipeForward forward = prr.getPipeForward();
-			if (forward==null || !prr.isResultHasBeenStreamed()) {
+			if (forward==null) {
 				forward=getForward();
 			}
 			

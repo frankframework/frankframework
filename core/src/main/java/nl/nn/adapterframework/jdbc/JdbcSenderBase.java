@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -32,7 +33,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingResult;
 
 /**
  * Base class for building JDBC-senders.
@@ -113,7 +113,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		StreamingResult result = sendMessage(correlationID, new Message(message), prc, null);
+		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
 		try {
 			return result==null?null:new Message(result.getResult()).asString();
 		} catch (IOException e) {
@@ -122,12 +122,12 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	}
 
 	@Override
-	public StreamingResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
 				c = getConnectionWithTimeout(getTimeout());
-				return new StreamingResult(null,sendMessage(c, correlationID, message, prc), false);
+				return new PipeRunResult(null,sendMessage(c, correlationID, message, prc));
 			} catch (JdbcException e) {
 				throw new SenderException(e);
 			} finally {
@@ -142,7 +142,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 			
 		} 
 		synchronized (connection) {
-			return new StreamingResult(null,sendMessage(connection, correlationID, message, prc), false);
+			return new PipeRunResult(null,sendMessage(connection, correlationID, message, prc));
 		}
 	}
 
