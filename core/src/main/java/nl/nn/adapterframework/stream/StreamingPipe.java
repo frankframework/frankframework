@@ -36,7 +36,8 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	
 	private boolean determinedStreamTarget=false;
 	private IOutputStreamingSupport streamTarget;
-	
+
+
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
@@ -122,19 +123,6 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	}
 
 	
-//	private PipeForward getFinalForward(List<IOutputStreamingSupport> streamTargets) {
-//		FixedForwardPipe lastPipe = (FixedForwardPipe)streamTargets.get(streamTargets.size()-1);
-//		return lastPipe.findForward(lastPipe.getForwardName());
-//	}
-//	
-//	private MessageOutputStream getNextPipesOutputStream(List<IOutputStreamingSupport> streamTargets, IPipeLineSession session) throws StreamingException {
-//		String correlationID=session.getMessageId();
-//		MessageOutputStream result=null;
-//		for(int i=streamTargets.size()-1; i>=0; i--) {
-//			result = streamTargets.get(i).provideOutputStream(correlationID, session, next);
-//		}
-//		return result;
-//	}
 
 	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})
 	public void setStreamingActive(boolean streamingActive) {
@@ -144,22 +132,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return streamingActive;
 	}
 
-
-//	// TODO: Arrange that this name is used in Ladybug and statistics display. Avoid changing the actual name, that will cause the pipe not being found anymore. 
-//	public String geDisplayName() {
-//		if (streamTargets!=null) { // use cached copy of streamTargets, do not generate a new one; it might be too early to do that.
-//			String result = "Stream: "+super.getName();
-//			for(IOutputStreamingSupport step:streamTargets) {
-//				if (step instanceof INamedObject) {
-//					result+="->"+((INamedObject)step).getName();
-//				} else {
-//					result+="->"+step.getClass().getSimpleName();
-//				}
-//			}
-//			return result;
-//		}
-//		return super.getName();
-//	}
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 
 }

@@ -30,6 +30,7 @@ import org.xml.sax.ContentHandler;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -210,12 +211,12 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 
-	public StreamingResult getPipeRunResult() {
+	public PipeRunResult getPipeRunResult() {
 		Object response = tail.response;
 		if (response instanceof StringWriter) {
 			response = response.toString();
 		}
-		return new StreamingResult(getForward(), response, true);
+		return new PipeRunResult(getForward(), response);
 	}
 
 	public PipeForward getForward() {
