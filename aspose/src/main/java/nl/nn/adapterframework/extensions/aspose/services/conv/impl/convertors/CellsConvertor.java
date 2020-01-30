@@ -29,6 +29,7 @@ import com.aspose.cells.Workbook;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
+import nl.nn.adapterframework.util.LogUtil;
 
 class CellsConvertor extends AbstractConvertor {
 

@@ -36,6 +36,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
 import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.

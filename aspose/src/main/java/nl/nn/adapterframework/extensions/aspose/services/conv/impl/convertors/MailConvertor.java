@@ -47,6 +47,7 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 class MailConvertor extends AbstractConvertor {
 

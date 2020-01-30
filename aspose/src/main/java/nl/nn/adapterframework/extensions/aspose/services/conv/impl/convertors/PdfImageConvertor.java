@@ -37,6 +37,7 @@ import com.aspose.pdf.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose pdf

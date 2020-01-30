@@ -36,6 +36,7 @@ import com.aspose.words.SaveOptions;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose words

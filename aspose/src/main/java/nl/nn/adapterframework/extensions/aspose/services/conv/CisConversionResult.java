@@ -91,7 +91,6 @@ public class CisConversionResult {
 	 *
 	 * @param conversionOption
 	 * @param mediaTypeReceived
-	 * @param documentNameOriginal
 	 * @param pdfResultFile
 	 * @param attachments
 	 * @return
@@ -203,9 +202,6 @@ public class CisConversionResult {
 
 	/**
 	 * Creates and xml containing conversion results both attachments and the main document.
-	 * @param main
-	 * @param cisConversionResult 
-	 * @param session
 	 */
 	public void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
 		if(isRoot) {
