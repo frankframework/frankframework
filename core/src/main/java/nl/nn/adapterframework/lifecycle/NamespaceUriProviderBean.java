@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.lifecycle;
 
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProvider;
+import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.cxf.Bus;
@@ -28,6 +30,22 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * This bean creates an (CXF) endpoint with the /rpcrouter mapping for older SOAP based requests.
+ * 
+ * When a {@link WebServiceListener} is registered without the `address` attribute, the listener uses 
+ * the `serviceNamespaceURI` or `name` attribute to register the service in the {@link ServiceDispatcher}.
+ * </br></br>
+ * Requests that come in on this endpoint, will be dispatched to the appropriate {@link WebServiceListener} based 
+ * on their default namespace.
+ * </br></br>
+ * Example: request with xmlns="urn:ws", will be dispatched to the {@link WebServiceListener} with serviceNamespaceURI="urn:ws"
+ * </br></br>
+ * See {@link NamespaceUriProvider} for more information.
+ * 
+ * @author Niels Meijer
+ *
+ */
 @IbisInitializer
 public class NamespaceUriProviderBean implements ApplicationContextAware, InitializingBean, DisposableBean {
 

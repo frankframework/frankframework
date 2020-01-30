@@ -4,7 +4,7 @@
        xsi:schemaLocation="
           http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd">
   <!--
-  This calls is loaded/included via the SPRING.CONFIG.LOCATIONS property in AppConstants.properties
+  This Spring file is loaded/included via the SPRING.CONFIG.LOCATIONS property in AppConstants.properties
   -->
 
   <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
