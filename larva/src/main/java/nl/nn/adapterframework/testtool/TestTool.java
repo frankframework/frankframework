@@ -73,6 +73,7 @@ import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -87,7 +88,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
  * @author Jaco de Groot
@@ -116,10 +116,7 @@ public class TestTool {
 	}
 	
 	public static IbisContext getIbisContext(ServletContext application) {
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
-		return ibisContext;
+		return IbisApplicationServlet.getIbisContext(application);
 	}
 
 	public static AppConstants getAppConstants(IbisContext ibisContext) {

@@ -415,6 +415,7 @@ public class CmisSessionBuilder {
 	@Override
 	public String toString() {
 		return (new ReflectionToStringBuilder(this) {
+			@Override
 			protected boolean accept(Field f) {
 				return super.accept(f) && !f.getName().contains("password");
 			}
