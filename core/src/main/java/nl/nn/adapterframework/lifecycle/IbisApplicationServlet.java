@@ -101,7 +101,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		getServletContext().log("Shutting down IbisContext...");
+		getServletContext().log("Shutting down IbisContext");
 		ibisContext.destroy();
 		super.destroy();
 	}
