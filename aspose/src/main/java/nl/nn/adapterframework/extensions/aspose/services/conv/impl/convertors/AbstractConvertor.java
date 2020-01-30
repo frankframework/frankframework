@@ -35,6 +35,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 abstract class AbstractConvertor implements Convertor {
 

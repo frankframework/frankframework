@@ -411,7 +411,6 @@
         <module>test</module>
         <module>ear-test</module>
         <module>ladybug</module>
-<!--        <module>iaf-aspose</module> -->
       </modules>
     </profile>
     <profile>
@@ -451,6 +450,7 @@
         <module>sap</module>
         <module>tibco</module>
         <module>idin</module>
+        <module>aspose</module>
       </modules>
       <repositories>
         <repository>

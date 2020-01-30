@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.

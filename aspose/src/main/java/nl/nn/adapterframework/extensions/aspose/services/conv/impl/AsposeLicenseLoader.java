@@ -41,6 +41,7 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 

@@ -26,6 +26,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
  *         Hoorn</a> (d937275)

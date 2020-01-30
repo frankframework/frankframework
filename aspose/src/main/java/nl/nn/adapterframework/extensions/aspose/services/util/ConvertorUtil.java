@@ -33,9 +33,6 @@ public class ConvertorUtil {
 	/**
 	 * Creates a filename. If the file already contains a file extension it will be
 	 * removed.
-	 * 
-	 * @param filename
-	 * @return
 	 */
 	public static String createTidyNameWithoutExtension(String argFilename) {
 		String filename = argFilename;
@@ -53,9 +50,6 @@ public class ConvertorUtil {
 	/**
 	 * Creates a filename which always contains pdf as file type. If the file
 	 * already contains a extension it will be replaced with pdf.
-	 * 
-	 * @param filename
-	 * @return
 	 */
 	public static String createTidyPdfFilename(String argFilename) {
 		return createTidyFilename(argFilename, PDF_FILETYPE);
@@ -66,7 +60,7 @@ public class ConvertorUtil {
 	 * (without period). If the file already contains a extension it will be
 	 * replaced with the given extension.
 	 * 
-	 * @param filename
+	 * @param argFilename
 	 * @param extension
 	 *            (without the period).
 	 * @return

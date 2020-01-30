@@ -36,6 +36,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
