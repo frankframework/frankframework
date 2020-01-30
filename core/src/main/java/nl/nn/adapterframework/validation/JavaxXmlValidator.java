@@ -36,6 +36,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
+import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -44,12 +45,14 @@ import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -132,34 +135,8 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return schema.newValidatorHandler();
 	}
 
-	@Override
-	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, PipeRunException {
-		SAXParser parser;
-		try {
-			SAXParserFactory parserFactory=SAXParserFactory.newInstance();
-			parserFactory.setValidating(false);
-			parserFactory.setNamespaceAware(true);
-			parserFactory.setFeature(PARSING_FEATURE_SECURE, true);
-			//parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
-			//parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
-			//parserFactory.setFeature(PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE, true);
 
-			Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
-			parserFactory.setSchema(schema);
-			
-			parser = parserFactory.newSAXParser();
-			return parser.getXMLReader();
-		} catch (ParserConfigurationException e) {
-			throw new XmlValidatorException(logPrefix + "cannot configure parser", e);
-		} catch (ConfigurationException e) {
-			throw new XmlValidatorException(logPrefix + "cannot configure parser", e);
-		} catch (SAXException e) {
-			throw new XmlValidatorException(logPrefix + "cannot create parser", e);
-		}
-	}
-
-
-//	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
+	//	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
 //        init();
 //		String schemasId = schemasProvider.getSchemasId();
 //		if (schemasId == null) {

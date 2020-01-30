@@ -114,6 +114,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private String preparseResultId;
 	private PreparseResult preparseResult;
 
+	// To be able to allow users to specify 1.0.
+	// Technically xsd 1.1 should be backwards compatible.
+	private double xsdVersion = 1.1;
+
 	private static EhCache cache;
 	static {
 		if (maxInitialised != -1) {
@@ -181,6 +185,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparser.setFeature(VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+		preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY,
+				(xsdVersion == 1.0) ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
 		MyErrorHandler errorHandler = new MyErrorHandler();
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
@@ -257,13 +263,20 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return result;
 	}
 	
+	@Override
+	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+		ValidatorHandler validatorHandler;
 
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
-
-		ValidatorHandler validatorHandler=null;
 		try {
+			javax.xml.validation.Schema schemaObject;
+			if (xsdVersion == 1.0) {
 			XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
-			javax.xml.validation.Schema schemaObject=schemaFactory.newSchema(((XercesValidationContext)context).getGrammarPool());
+				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+			} else {
+				XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
+				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+			}
+
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
 			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
@@ -273,6 +286,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			validatorHandler.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+
+			SecurityManager securityManager = new SecurityManager();
+			securityManager.setEntityExpansionLimit(entityExpansionLimit);
+			validatorHandler.setProperty(SECURITY_MANAGER_PROPERTY_ID, securityManager);
+
+			validatorHandler.setContentHandler(context.getContentHandler());
 			validatorHandler.setErrorHandler(context.getErrorHandler());
 		} catch (SAXNotRecognizedException e) {
 			throw new ConfigurationException(logPrefix + "ValidatorHandler does not recognize necessary feature", e);
@@ -319,6 +341,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
+	public void setXsdVersion(double xsdVersion) {
+		this.xsdVersion = xsdVersion;
+	}
 }
 
 

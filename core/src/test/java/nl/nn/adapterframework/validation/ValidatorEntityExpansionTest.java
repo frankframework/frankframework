@@ -16,13 +16,15 @@ import org.xml.sax.helpers.DefaultHandler;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.EntityResolvingTest;
 
+import javax.xml.validation.ValidatorHandler;
+
 @RunWith(value = Parameterized.class)
 public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
 	
     private Class<? extends AbstractXmlValidator> implementation;
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters (name = "{index}, {0}")
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][]{
             {XercesXmlValidator.class}
@@ -55,7 +57,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
         PipeLineSessionBase session = new PipeLineSessionBase();
         ValidationContext context = instance.createValidationContext(session, null, null);
-        XMLReader reader = instance.getValidatingParser(session, context, false);
+        ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
         StringReader sr = new StringReader(xmlIn);
     	InputSource is = new InputSource(sr);
     	final StringBuffer sb=new StringBuffer();
@@ -109,12 +111,10 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 //			throw new XmlValidatorException("caught DomBuilderException", e);
 //		}
 //		System.out.println("TestStr:"+testString);
-    	
-    	reader.setContentHandler(ch);
 
-    	reader.parse(is);
-    	
-    	instance.finalizeValidation(context, session, null);
+		validatorHandler.setContentHandler(ch);
+
+		instance.validate(is, validatorHandler, session, context, false);
     	
     	XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
     	if (errorHandler.hasErrorOccured()) {
