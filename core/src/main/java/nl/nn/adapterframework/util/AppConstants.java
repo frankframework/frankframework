@@ -296,10 +296,10 @@ public final class AppConstants extends Properties implements Serializable {
 					log.info("Application constants loaded from url [" + url.toString() + "]");
 				}
 
-				if (loadAdditionalPropertiesFiles) {
+				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additonal properties if it's defined...
+				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
-					String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
 					if (StringUtils.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);

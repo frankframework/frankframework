@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 
 @IbisInitializer
 public class BrowserBinding extends CmisBrowserBindingServlet implements DynamicRegistration.ServletWithParameters {
@@ -61,5 +63,10 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	@Override
 	public String[] getRoles() {
 		return "IbisWebService,IbisTester".split(",");
+	}
+
+	@Autowired
+	public void setServletManager(ServletManager servletManager) {
+		servletManager.register(this);
 	}
 }

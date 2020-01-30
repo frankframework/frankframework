@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServlet;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import nl.nn.adapterframework.lifecycle.ServletManager;
+
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * It is important that we register the correct CXF bus, or else JAX-RS won't work properly
@@ -60,5 +63,10 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 	@Override
 	public String[] getRoles() {
 		return "IbisWebService,IbisTester".split(",");
+	}
+
+	@Autowired
+	public void setServletManager(ServletManager servletManager) {
+		servletManager.register(this);
 	}
 }

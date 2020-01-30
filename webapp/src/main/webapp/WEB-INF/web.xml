@@ -71,15 +71,14 @@
 		<servlet-name>action</servlet-name>
 	</filter-mapping>
 
-	<!-- Configuration servlet -->
-	<servlet>
-		<description>Legacy Reload Page</description>
-		<display-name>Ibis Configuration Servlet</display-name>
-		<servlet-name>ConfigurationServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.ConfigurationServlet</servlet-class>
-	</servlet>
-
-	<!-- Starting the application through IbisApplicationServlet -->
+	<!--
+		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
+		After loading the ROOT context with all HTTP/CXF servlets (endpoints), the all servlets will be initialized.
+		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
+	-->
+	<listener>
+		<listener-class>nl.nn.adapterframework.lifecycle.IbisApplicationInitializer</listener-class>
+	</listener>
 	<servlet>
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
@@ -88,14 +87,21 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
+	<servlet>
+		<description>CXF Servlet for SOAP WebServices</description>
+		<display-name>CXF Servlet</display-name>
+		<servlet-name>CXFServlet</servlet-name>
+		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+	</servlet>
+
 	<servlet-mapping>
-		<servlet-name>IbisApplicationServlet</servlet-name>
+		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/services/*</url-pattern>
 	</servlet-mapping>
 
 	<!-- legacy; to be removed in the year 2020 -->
 	<servlet-mapping>
-		<servlet-name>IbisApplicationServlet</servlet-name>
+		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/servlet/*</url-pattern>
 	</servlet-mapping>
 	<!-- END Soap Router -->
@@ -214,10 +220,6 @@
 	<servlet-mapping>
 		<servlet-name>FileViewerServlet</servlet-name>
 		<url-pattern>/FileViewerServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>ConfigurationServlet</servlet-name>
-		<url-pattern>/ConfigurationServlet</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>DumpIbisConsole</servlet-name>

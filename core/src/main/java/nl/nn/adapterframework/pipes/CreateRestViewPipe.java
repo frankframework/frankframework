@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -39,7 +40,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
  * Create a view for {@link nl.nn.adapterframework.http.RestListener}.
@@ -193,11 +193,8 @@ public class CreateRestViewPipe extends XsltPipe {
 		return new PipeRunResult(getForward(), newResult);
 	}
 
-	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest,
-			ServletContext servletContext, String srcPrefix)
-			throws DomBuilderException {
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext) servletContext.getAttribute(attributeKey);
+	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest, ServletContext servletContext, String srcPrefix) throws DomBuilderException {
+		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
 		Map<String,Object> parameters = new Hashtable<String,Object>();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
