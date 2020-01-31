@@ -48,6 +48,7 @@
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
+	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -85,7 +86,6 @@
 	&ForEachChildElementPipe;
 	&ResultSetIteratingPipe;
 	&InputOutputWrapper;
-
 	&EsbSoapValidator;
 	&WsdlGeneratorPipe;
 	&FxF3;
@@ -100,4 +100,5 @@
 	&CreateLargeFile;
 	&MemoryLeak; 
 	&Javascript;
+	&SoapValidator;
 </configuration>

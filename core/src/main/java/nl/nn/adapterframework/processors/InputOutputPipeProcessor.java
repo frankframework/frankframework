@@ -56,10 +56,16 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+				if (StringUtils.isNotEmpty(pe.getStoreReplacedInputInSessionKey())) {
+					pipeLineSession.put(pe.getStoreReplacedInputInSessionKey(), message);
+				}
 				message=pipeLineSession.get(pe.getGetInputFromSessionKey());
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
+				if (StringUtils.isNotEmpty(pe.getStoreReplacedInputInSessionKey())) {
+					pipeLineSession.put(pe.getStoreReplacedInputInSessionKey(), message);
+				}
 				message=pe.getGetInputFromFixedValue();
 			}
 			if ((message == null || StringUtils.isEmpty(message.toString()))

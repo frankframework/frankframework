@@ -67,6 +67,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @since   4.9
  */
 public class XsltSender extends StreamingSenderBase implements IThreadCreator {
+	private static final String ENVIRONMENT = "environment";
 
 	private String styleSheetName;
 	private String styleSheetNameSessionKey=null;
@@ -95,6 +96,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		ParameterList parameterList = getParameterList();
+		if (parameterList == null || parameterList.findParameter(ENVIRONMENT) == null) {
+			Parameter p = new Parameter();
+			p.setName(ENVIRONMENT);
+			p.setValue(AppConstants.getInstance().getResolvedProperty("otap.stage"));
+			addParameter(p);
+		}
 		super.configure();
 		
 		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
@@ -115,7 +123,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 
 		if (getXsltVersion()>=2) {
-			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				for (int i=0; i<parameterList.size(); i++) {
 					Parameter parameter = parameterList.getParameter(i);

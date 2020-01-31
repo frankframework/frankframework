@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
+	<xsl:param name="environment"/>
 	<xsl:param name="mode"/>
 	<xsl:param name="cmhVersion"/>
 	<xsl:param name="namespace"/>
@@ -8,6 +9,8 @@
 	<xsl:param name="errorReason"/>
 	<xsl:param name="errorDetailCode"/>
 	<xsl:param name="errorDetailText"/>
+	<xsl:param name="errorRootTag"/>
+	<xsl:param name="originalMessage"/>
 	<xsl:param name="serviceName"/>
 	<xsl:param name="serviceContext"/>
 	<xsl:param name="operationName"/>
@@ -23,6 +26,7 @@
 		 - the root tag of the input message is copied
 		 - a result tag is wrapped in this copied root tag
 	-->
+	<xsl:variable name="rootTag" select="local-name(*)"/>
 	<xsl:variable name="ns">
 		<xsl:choose>
 			<xsl:when test="string-length($namespace)=0">
@@ -47,8 +51,13 @@
 			<xsl:when test="string-length($errorCode)=0">
 				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="ok"/>
 			</xsl:when>
-			<xsl:otherwise>
+			<xsl:when test="string-length($errorRootTag)=0">
 				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:element name="{$errorRootTag}">
+					<xsl:call-template name="Result"/>
+				</xsl:element>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
@@ -141,22 +150,62 @@
 									</xsl:element>
 								</xsl:element>
 							</xsl:element>
-							<xsl:if test="string-length($errorDetailCode)&gt;0">
-								<xsl:element name="DetailList" namespace="{$ns}">
-									<xsl:element name="Detail" namespace="{$ns}">
-										<xsl:element name="Code" namespace="{$ns}">
-											<xsl:value-of select="$errorDetailCode"/>
-										</xsl:element>
-										<xsl:if test="string-length($errorDetailText)&gt;0">
+							<xsl:choose>
+								<xsl:when test="string-length($errorRootTag)&gt;0 and $rootTag='errorMessage' and not($environment='ACC' or $environment='PRD')">
+									<xsl:element name="DetailList" namespace="{$ns}">
+										<xsl:element name="Detail" namespace="{$ns}">
+											<xsl:element name="Code" namespace="{$ns}">
+												<xsl:text>ERROR_1</xsl:text>
+											</xsl:element>
 											<xsl:element name="Text" namespace="{$ns}">
-												<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
-												<xsl:value-of select="$errorDetailText"/>
-												<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
+												<xsl:value-of select="errorMessage/@message"/>
+											</xsl:element>
+										</xsl:element>
+									</xsl:element>
+								</xsl:when>
+								<xsl:when test="string-length($errorRootTag)&gt;0 and $rootTag='reasons' and not($environment='ACC' or $environment='PRD')">
+									<xsl:element name="DetailList" namespace="{$ns}">
+										<xsl:if test="string-length($originalMessage)&gt;0">
+											<xsl:element name="Detail" namespace="{$ns}">
+												<xsl:element name="Code" namespace="{$ns}">
+													<xsl:text>ORIGINAL_MESSAGE</xsl:text>
+												</xsl:element>
+												<xsl:element name="Text" namespace="{$ns}">
+													<xsl:value-of select="normalize-space($originalMessage)"/>
+												</xsl:element>
 											</xsl:element>
 										</xsl:if>
+										<xsl:for-each select="reasons/reason">
+											<xsl:element name="Detail" namespace="{$ns}">
+												<xsl:element name="Code" namespace="{$ns}">
+													<xsl:value-of select="concat('ERROR_',position())"/>
+												</xsl:element>
+												<xsl:element name="Text" namespace="{$ns}">
+													<xsl:value-of select="string-join((xpath,location,message)[string-length(.)&gt;0],': ')"/>
+												</xsl:element>
+											</xsl:element>
+										</xsl:for-each>
 									</xsl:element>
-								</xsl:element>
-							</xsl:if>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:if test="string-length($errorDetailCode)&gt;0">
+										<xsl:element name="DetailList" namespace="{$ns}">
+											<xsl:element name="Detail" namespace="{$ns}">
+												<xsl:element name="Code" namespace="{$ns}">
+													<xsl:value-of select="$errorDetailCode"/>
+												</xsl:element>
+												<xsl:if test="string-length($errorDetailText)&gt;0">
+													<xsl:element name="Text" namespace="{$ns}">
+														<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
+														<xsl:value-of select="$errorDetailText"/>
+														<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
+													</xsl:element>
+												</xsl:if>
+											</xsl:element>
+										</xsl:element>
+									</xsl:if>
+								</xsl:otherwise>
+							</xsl:choose>
 						</xsl:element>
 					</xsl:element>
 				</xsl:otherwise>

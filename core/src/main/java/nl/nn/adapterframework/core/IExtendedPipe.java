@@ -72,6 +72,10 @@ public interface IExtendedPipe extends IPipe {
 	public void setGetInputFromFixedValue(String string);
 	public String getGetInputFromFixedValue();
 
+	@IbisDoc({"when set, the original input (which will be replaced) is stored under this session key", ""})
+	public void setStoreReplacedInputInSessionKey(String string);
+	public String getStoreReplacedInputInSessionKey();
+
 	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
