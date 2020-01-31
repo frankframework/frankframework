@@ -1575,7 +1575,9 @@ angular.module('iaf.beheerconsole')
 		Api.Get(url, function(data) {
 			$scope.alert = false;
 			$.extend($scope, data);
-			$state.transitionTo('pages.logging', {directory: data.directory}, { notify: false, reload: false });
+			if(data.count > 500) {
+				$scope.alert = "Total number of items ("+data.count+") exceeded maximum number, only showing first 500 items!";
+			}
 		}, function(data) {
 			$scope.alert = (data) ? data.error : "An unknown error occured!";
 		});
@@ -1583,7 +1585,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.open = function(file) {
 		if(file.type == "directory")
-			openDirectory(file.path);
+			$state.transitionTo('pages.logging', {directory: file.path});
 		else
 			openFile(file);
 	};
