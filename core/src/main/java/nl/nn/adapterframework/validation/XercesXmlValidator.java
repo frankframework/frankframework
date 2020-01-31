@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +62,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
@@ -152,7 +154,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		super.configure(logPrefix);
 	}
-	
 
 	@Override
 	protected void init() throws ConfigurationException {
@@ -198,7 +199,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparser.setFeature(VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-		preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
+		try {
+			preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
+		} catch (NoSuchFieldError e) {
+			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ("+org.apache.xerces.impl.Version.getVersion()+"]";
+			if (isXmlSchema1_0()) {
+				log.warn(msg+", assuming XML-Schema version 1.0 will be supported", e);
+			} else {
+				throw new ConfigurationException(msg, e);
+			}
+		}
 		MyErrorHandler errorHandler = new MyErrorHandler();
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
@@ -218,11 +228,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static Grammar preparse(XMLGrammarPreparser preparser,
 			String schemasId, Schema schema) throws ConfigurationException {
 		try {
-			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
-					stringToXMLInputSource(schema));
+			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXMLInputSource(schema));
 		} catch (IOException e) {
-			throw new ConfigurationException("cannot compile schema's ["
-					+ schemasId + "]", e);
+			throw new ConfigurationException("cannot compile schema's [" + schemasId + "]", e);
 		}
 	}
 
