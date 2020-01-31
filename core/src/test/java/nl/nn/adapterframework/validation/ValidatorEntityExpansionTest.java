@@ -4,38 +4,37 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.xml.validation.ValidatorHandler;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.EntityResolvingTest;
 
-import javax.xml.validation.ValidatorHandler;
-
 @RunWith(value = Parameterized.class)
 public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
 	
-    private Class<? extends AbstractXmlValidator> implementation;
+	private Class<? extends AbstractXmlValidator> implementation;
 
-    @Parameterized.Parameters (name = "{index}, {0}")
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][]{
-            {XercesXmlValidator.class}
-            ,{JavaxXmlValidator.class}
-        };
-        return Arrays.asList(data);
-    }
+	@Parameterized.Parameters(name = "{index}, {0}")
+	public static Collection<Object[]> data() {
+		Object[][] data = new Object[][] { 
+			{ XercesXmlValidator.class }, 
+			{ JavaxXmlValidator.class } 
+		};
+		return Arrays.asList(data);
+	}
 
-    public ValidatorEntityExpansionTest(Class<? extends AbstractXmlValidator> implementation) {
-        this.implementation = implementation;
-    }
+	public ValidatorEntityExpansionTest(Class<? extends AbstractXmlValidator> implementation) {
+		this.implementation = implementation;
+	}
 
 	@Override
 	public String parseAndRenderString(String xsd, String xmlIn) throws Exception {
@@ -48,24 +47,24 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 //        System.out.println("Validation Result:"+result);
 //        return instance.get
 //		return result;
-        AbstractXmlValidator instance = implementation.newInstance();
-        System.out.println("Created instance ["+instance.getClass().getName()+"]");
-        instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
-        instance.setThrowException(true);
-        instance.setFullSchemaChecking(true);
-        instance.configure("init");
+		AbstractXmlValidator instance = implementation.newInstance();
+		System.out.println("Created instance [" + instance.getClass().getName() + "]");
+		instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
+		instance.setThrowException(true);
+		instance.setFullSchemaChecking(true);
+		instance.configure("init");
 
-        PipeLineSessionBase session = new PipeLineSessionBase();
-        ValidationContext context = instance.createValidationContext(session, null, null);
-        ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
-        StringReader sr = new StringReader(xmlIn);
-    	InputSource is = new InputSource(sr);
-    	final StringBuffer sb=new StringBuffer();
-    	
-    	ContentHandler ch = new DefaultHandler() {
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		ValidationContext context = instance.createValidationContext(session, null, null);
+		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
+		StringReader sr = new StringReader(xmlIn);
+		InputSource is = new InputSource(sr);
+		final StringBuffer sb = new StringBuffer();
 
-    		boolean elementOpen;
-    		
+		ContentHandler ch = new DefaultHandler() {
+
+			boolean elementOpen;
+
 			@Override
 			public void characters(char[] ch, int start, int length) throws SAXException {
 				if (elementOpen) {
@@ -100,10 +99,9 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 			public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 				//ignore
 			}
-    		
-    	};
-    	
-    	
+
+		};
+
 //		String testString;
 //		try {
 //			testString = XmlUtils.identityTransform((String) xmlIn);
@@ -115,12 +113,12 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		validatorHandler.setContentHandler(ch);
 
 		instance.validate(is, validatorHandler, session, context, false);
-    	
-    	XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
-    	if (errorHandler.hasErrorOccured()) {
-    		throw new SAXException(errorHandler.getReasons());
-    	}
-    	return sb.toString();
+
+		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
+		if (errorHandler.hasErrorOccured()) {
+			throw new SAXException(errorHandler.getReasons());
+		}
+		return sb.toString();
 	}
 	
 }

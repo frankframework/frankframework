@@ -16,7 +16,11 @@
 package nl.nn.adapterframework.validation;
 
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,9 +28,6 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
-import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -35,16 +36,21 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * baseclass for validating input message against a XML-Schema.
- * <p>
+ *
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  *
  * @author Johan Verrips IOS
@@ -77,39 +83,9 @@ public abstract class AbstractXmlValidator {
 	protected boolean useBaseImportedSchemaLocationsToIgnore = false;
 	protected String importedNamespacesToIgnore;
 	protected Boolean ignoreUnknownNamespaces;
-	protected boolean ignoreCaching = false;
-
-	public boolean isAddNamespaceToSchema() {
-		return addNamespaceToSchema;
-	}
-
-	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		this.addNamespaceToSchema = addNamespaceToSchema;
-	}
-
-	public void setImportedSchemaLocationsToIgnore(String string) {
-		importedSchemaLocationsToIgnore = string;
-	}
-
-	public String getImportedSchemaLocationsToIgnore() {
-		return importedSchemaLocationsToIgnore;
-	}
-
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setImportedNamespacesToIgnore(String string) {
-		importedNamespacesToIgnore = string;
-	}
-
-	public String getImportedNamespacesToIgnore() {
-		return importedNamespacesToIgnore;
-	}
+	private boolean ignoreCaching = false;
+	private String xmlSchemaVersion=null;
+	
 
 	/**
 	 * Configure the XmlValidator
@@ -186,8 +162,8 @@ public abstract class AbstractXmlValidator {
 	 */
 	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
-		ValidatorHandler parser = getValidatorHandler(session, context);
-		return validate(input, session, logPrefix, parser, null, context, resolveExternalEntities);
+		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
+		return validate(input, session, logPrefix, validatorHandler, null, context, resolveExternalEntities);
 	}
 
 	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
@@ -240,29 +216,9 @@ public abstract class AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
 
-	/**
-	 * Enable full schema grammar constraint checking, including checking which
-	 * may be time-consuming or memory intensive. Currently, particle unique
-	 * attribution constraint checking and particle derivation resriction
-	 * checking are controlled by this option.
-	 * <p>
-	 * see property
-	 * http://apache.org/xml/features/validation/schema-full-checking
-	 * </p>
-	 * Defaults to <code>false</code>;
-	 */
-	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
-	public void setFullSchemaChecking(boolean fullSchemaChecking) {
-		this.fullSchemaChecking = fullSchemaChecking;
-	}
-
-	public boolean isFullSchemaChecking() {
-		return fullSchemaChecking;
-	}
 
 	/**
 	 * Sets schemas provider.
-	 *
 	 * @since 5.0
 	 */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
@@ -279,61 +235,6 @@ public abstract class AbstractXmlValidator {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}
 		return sb.toString();
-	}
-
-	/**
-	 * Indicates wether to throw an error (piperunexception) when the xml is not compliant.
-	 */
-	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
-	public void setThrowException(boolean throwException) {
-		this.throwException = throwException;
-	}
-
-	public boolean isThrowException() {
-		return throwException;
-	}
-
-	/**
-	 * The sessionkey to store the reasons of misvalidation in.
-	 */
-	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
-	public void setReasonSessionKey(String reasonSessionKey) {
-		this.reasonSessionKey = reasonSessionKey;
-	}
-
-	public String getReasonSessionKey() {
-		return reasonSessionKey;
-	}
-
-	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
-	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
-		this.xmlReasonSessionKey = xmlReasonSessionKey;
-	}
-
-	public String getXmlReasonSessionKey() {
-		return xmlReasonSessionKey;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
-	public void setValidateFile(boolean b) {
-		validateFile = b;
-	}
-
-	public boolean isValidateFile() {
-		return validateFile;
-	}
-
-	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
-	public void setCharset(String string) {
-		charset = string;
-	}
-
-	public String getCharset() {
-		return charset;
-	}
-
-	public void setWarn(boolean warn) {
-		this.warn = warn;
 	}
 
 	protected InputSource getInputSource(Object input) throws XmlValidatorException {
@@ -353,34 +254,137 @@ public abstract class AbstractXmlValidator {
 		return is;
 	}
 
-	public void setIgnoreUnknownNamespaces(boolean b) {
-		this.ignoreUnknownNamespaces = b;
+
+	/**
+	 * Enable full schema grammar constraint checking, including checking which
+	 * may be time-consuming or memory intensive. Currently, particle unique
+	 * attribution constraint checking and particle derivation resriction
+	 * checking are controlled by this option.
+	 * <p>
+	 * see property
+	 * http://apache.org/xml/features/validation/schema-full-checking
+	 * </p>
+	 * Defaults to <code>false</code>;
+	 */
+	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
+	public void setFullSchemaChecking(boolean fullSchemaChecking) {
+		this.fullSchemaChecking = fullSchemaChecking;
+	}
+	public boolean isFullSchemaChecking() {
+		return fullSchemaChecking;
+	}
+
+	/**
+	 * Indicates whether to throw an error (PipeRunexception) when the xml is not compliant.
+	 */
+	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
+	public void setThrowException(boolean throwException) {
+		this.throwException = throwException;
+	}
+	public boolean isThrowException() {
+		return throwException;
+	}
+
+	/**
+	 * The sessionkey to store the reasons of misvalidation in.
+	 */
+	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
+	public void setReasonSessionKey(String reasonSessionKey) {
+		this.reasonSessionKey = reasonSessionKey;
+	}
+	public String getReasonSessionKey() {
+		return reasonSessionKey;
+	}
+
+	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
+	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
+		this.xmlReasonSessionKey = xmlReasonSessionKey;
+	}
+	public String getXmlReasonSessionKey() {
+		return xmlReasonSessionKey;
+	}
+
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
+	public void setValidateFile(boolean b) {
+		validateFile = b;
+	}
+	public boolean isValidateFile() {
+		return validateFile;
+	}
+
+	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
+	public void setCharset(String string) {
+		charset = string;
+	}
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setWarn(boolean warn) {
+		this.warn = warn;
+	}
+
+	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+		this.addNamespaceToSchema = addNamespaceToSchema;
+	}
+	public boolean isAddNamespaceToSchema() {
+		return addNamespaceToSchema;
+	}
+
+	public void setImportedSchemaLocationsToIgnore(String string) {
+		importedSchemaLocationsToIgnore = string;
+	}
+	public String getImportedSchemaLocationsToIgnore() {
+		return importedSchemaLocationsToIgnore;
+	}
+
+	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
+	}
+	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+		return useBaseImportedSchemaLocationsToIgnore;
+	}
+
+	public void setImportedNamespacesToIgnore(String string) {
+		importedNamespacesToIgnore = string;
+	}
+	public String getImportedNamespacesToIgnore() {
+		return importedNamespacesToIgnore;
 	}
 
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
-
-	public boolean isIgnoreCaching() {
-		return ignoreCaching;
+	public void setIgnoreUnknownNamespaces(boolean b) {
+		this.ignoreUnknownNamespaces = b;
 	}
 
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}
-
-	public boolean isLazyInit() {
-		return lazyInit;
+	public boolean isIgnoreCaching() {
+		return ignoreCaching;
 	}
 
 	public void setLazyInit(boolean lazyInit) {
 		this.lazyInit = lazyInit;
 	}
+	public boolean isLazyInit() {
+		return lazyInit;
+	}
+
+	public void setXmlSchemaVersion(String xmlSchemaVersion) {
+		this.xmlSchemaVersion = xmlSchemaVersion;
+	}
+	public String getXmlSchemaVersion() {
+		return xmlSchemaVersion;
+	}
+	public boolean isXmlSchema1_0() {
+		return getXmlSchemaVersion()==null || "1.0".equals(getXmlSchemaVersion());
+	}
 
 	/**
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 *
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
 	 */
 	public ClassLoader getConfigurationClassLoader() {
 		return configurationClassLoader;

@@ -26,9 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -36,7 +33,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -45,14 +41,10 @@ import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -77,6 +69,14 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 	private Map<String, Schema> javaxSchemas = new HashMap<String, Schema>();
 
+	@Override
+	public void configure(String logPrefix) throws ConfigurationException {
+		if (!isXmlSchema1_0()) {
+			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
+		};
+		super.configure(logPrefix);
+	}
+	
 	@Override
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
@@ -136,44 +136,6 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 
-	//	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
-//        init();
-//		String schemasId = schemasProvider.getSchemasId();
-//		if (schemasId == null) {
-//			schemasId = schemasProvider.getSchemasId(session);
-//			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
-//		}
-//		Schema xsd = javaxSchemas.get(schemasId);
-//		try {
-//			Validator validator = xsd.newValidator();
-//			validator.setResourceResolver(new LSResourceResolver() {
-//				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
-//                    System.out.println("--");
-//					return null;//To change body of implemented methods Settings | File Templates.
-//				}
-//			});
-//			validator.setErrorHandler(new ErrorHandler() {
-//				public void warning(SAXParseException e) throws SAXException {
-//                    log.warn(e.getMessage());
-//				}
-//
-//				public void error(SAXParseException e) throws SAXException {
-//					log.error(e.getMessage());
-//                }
-//
-//				public void fatalError(SAXParseException e) throws SAXException {
-//					log.error(e.getMessage());
-//				}
-//			});
-//			//validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true); /// DOESNT" WORK any more?
-//			validator.validate(source);
-//		} catch (SAXException e) {
-//			throw new XmlValidatorException(e.getClass() + " " + e.getMessage());
-//		} catch (IOException e) {
-//			throw new XmlValidatorException(e.getMessage(), e);
-//		}
-//		return XML_VALIDATOR_VALID_MONITOR_EVENT;
-//	}
 
 	/**
 	 * Returns the {@link Schema} associated with this validator. This is an XSD schema containing knowledge about the

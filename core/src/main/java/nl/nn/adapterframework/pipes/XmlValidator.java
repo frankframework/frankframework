@@ -45,7 +45,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -94,8 +93,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String schemaLocation;
 	protected String noNamespaceSchemaLocation;
 	protected String schemaSessionKey;
-
-	protected double xsdProcessorVersion = AppConstants.getInstance(getConfigurationClassLoader()).getDouble("xsd.processor.version", 1.1);
 
 	protected ConfigurationException configurationException;
 
@@ -156,10 +153,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
-
-			// Set xsd processor version if xsdProcessorVersion is set
-			if (validator instanceof XercesXmlValidator)
-				((XercesXmlValidator) validator).setXsdVersion(xsdProcessorVersion);
 
 			//do initial schema check
 			if (getSchemasId()!=null) {
@@ -888,12 +881,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 
 	@IbisDoc({"When set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
-	public void setVersion(double version) {
-		xsdProcessorVersion = version;
-	}
-
-	public double getVersion() {
-		return xsdProcessorVersion;
+	public void setXmlSchemaVersion(String xmlSchemaVersion) {
+		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
 
 	public Map<List<String>, List<String>> getInvalidRootNamespaces() {

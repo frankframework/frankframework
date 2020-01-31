@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -81,6 +82,8 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
 
+	private String DEFAULT_XML_SCHEMA_VERSION="1.1";
+
 	/** Property identifier: grammar pool. */
 	public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
@@ -109,8 +112,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 	protected static final String XML_SCHEMA_VERSION_PROPERTY = Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
 
-	private static final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
-
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
@@ -120,14 +121,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private String preparseResultId;
 	private PreparseResult preparseResult;
 
-	// To be able to allow users to specify 1.0.
-	// Technically xsd 1.1 should be backwards compatible.
-	private double xsdVersion = 1.1;
-
-	private static EhCache cache;
+	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache();
+			cache = new EhCache<>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
@@ -135,9 +132,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			} catch (ConfigurationException e) {
 				cache = null;
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log,
-						"Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)",
-						e);
+				configWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 			cache.open();
 		}
@@ -146,6 +141,18 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	public XercesXmlValidator() {
 		preparseResultId = "" + counter.getAndIncrement();
 	}
+
+	@Override
+	public void configure(String logPrefix) throws ConfigurationException {
+		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
+			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
+			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
+				throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0 and 1.1, no ["+getXmlSchemaVersion()+"]");
+			}
+		}
+		super.configure(logPrefix);
+	}
+	
 
 	@Override
 	protected void init() throws ConfigurationException {
@@ -164,12 +171,12 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
-    private static class SymbolTableSingletonHelper{
-        private static final SymbolTable INSTANCE = new SymbolTable(sharedSymbolTableSize);
-    }
+	private static class SymbolTableSingletonHelper {
+		private static final SymbolTable INSTANCE = new SymbolTable(sharedSymbolTableSize);
+	}
 
-    public static SymbolTable getSymbolTableInstance() {
-    	return SymbolTableSingletonHelper.INSTANCE;
+	public static SymbolTable getSymbolTableInstance() {
+		return SymbolTableSingletonHelper.INSTANCE;
 	}
 
 	private SymbolTable getSymbolTable() {
@@ -191,8 +198,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparser.setFeature(VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-		preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY,
-				(xsdVersion == 1.0) ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
+		preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
 		MyErrorHandler errorHandler = new MyErrorHandler();
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
@@ -247,7 +253,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 					preparseResult = this.preparseResult;
 				}
 			} else {
-				preparseResult = (PreparseResult)cache.getObject(preparseResultId);
+				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
 					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
 					cache.putObject(preparseResultId, preparseResult);
@@ -275,8 +281,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		try {
 			javax.xml.validation.Schema schemaObject;
-			if (xsdVersion == 1.0) {
-			XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
+			if (isXmlSchema1_0()) {
+				XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
 				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
 			} else {
 				XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
@@ -347,9 +353,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
-	public void setXsdVersion(double xsdVersion) {
-		this.xsdVersion = xsdVersion;
-	}
 }
 
 
