@@ -266,7 +266,7 @@ public abstract class AbstractXmlValidator {
 	 * </p>
 	 * Defaults to <code>false</code>;
 	 */
-	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
+	@IbisDoc({"Perform addional memory intensive checks", "<code>false</code>"})
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
@@ -277,7 +277,7 @@ public abstract class AbstractXmlValidator {
 	/**
 	 * Indicates whether to throw an error (PipeRunexception) when the xml is not compliant.
 	 */
-	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -288,7 +288,7 @@ public abstract class AbstractXmlValidator {
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */
-	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
+	@IbisDoc({"If set: key of session variable to store reasons of mis-validation in", "failureReason"})
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}
@@ -296,7 +296,7 @@ public abstract class AbstractXmlValidator {
 		return reasonSessionKey;
 	}
 
-	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
+	@IbisDoc({"Like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive", "xmlFailureReason"})
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		this.xmlReasonSessionKey = xmlReasonSessionKey;
 	}
@@ -304,7 +304,7 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
+	@IbisDoc({"When set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -312,7 +312,7 @@ public abstract class AbstractXmlValidator {
 		return validateFile;
 	}
 
-	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
+	@IbisDoc({"Character set used for reading file, only used when <code>validateFile</code> is <code>true</code>", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -320,10 +320,12 @@ public abstract class AbstractXmlValidator {
 		return charset;
 	}
 
+	@IbisDoc({"When set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
+	@IbisDoc({"When set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -331,6 +333,7 @@ public abstract class AbstractXmlValidator {
 		return addNamespaceToSchema;
 	}
 
+	@IbisDoc({"Comma separated list of schemaLocations which are excluded from an import or include in the schema document", ""})
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		importedSchemaLocationsToIgnore = string;
 	}
@@ -338,6 +341,7 @@ public abstract class AbstractXmlValidator {
 		return importedSchemaLocationsToIgnore;
 	}
 
+	@IbisDoc({"When set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -345,6 +349,7 @@ public abstract class AbstractXmlValidator {
 		return useBaseImportedSchemaLocationsToIgnore;
 	}
 
+	@IbisDoc({"Comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
 	public void setImportedNamespacesToIgnore(String string) {
 		importedNamespacesToIgnore = string;
 	}
@@ -352,6 +357,7 @@ public abstract class AbstractXmlValidator {
 		return importedNamespacesToIgnore;
 	}
 
+	@IbisDoc({"Ignore namespaces in the input message which are unknown", "<code>true</code> when schema or nonamespaceschemalocation is used, <code>false</code> otherwise"})
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
