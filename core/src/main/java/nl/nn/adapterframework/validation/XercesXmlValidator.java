@@ -304,8 +304,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-			validatorHandler.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			validatorHandler.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 
 
 			SecurityManager securityManager = new SecurityManager();
