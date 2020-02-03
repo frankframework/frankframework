@@ -153,6 +153,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
+
 			//do initial schema check
 			if (getSchemasId()!=null) {
 				getSchemas(true);
@@ -465,7 +466,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
     /**
      * Not ready yet (namespace not yet correctly parsed)
-     *
      */
     public QName getRootTag() {
         return new QName(getSchema()/* TODO*/, getRoot());
@@ -877,6 +877,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	@IbisDoc({"when set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
 	public void setLazyInit(boolean lazyInit) {
 		validator.setLazyInit(lazyInit);
+	}
+
+
+	@IbisDoc({"When set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
+	public void setXmlSchemaVersion(String xmlSchemaVersion) {
+		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
 
 	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
