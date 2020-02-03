@@ -19,15 +19,15 @@ import static org.junit.Assert.assertThat;
 @RunWith(Parameterized.class)
 public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 
-	@Override
-	public XmlValidator createPipe() {
-		return new XmlValidator();
-	}
-
 	private String xsdLocation;
 	private String xmlLocation;
 	private String expectedOutcome;
 	private String xmlSchemaVersion;
+
+	@Override
+	public XmlValidator createPipe() {
+		return new XmlValidator();
+	}
 
 	@Parameterized.Parameters(name = "{0}")
 	public static Collection<Object[]> data() {

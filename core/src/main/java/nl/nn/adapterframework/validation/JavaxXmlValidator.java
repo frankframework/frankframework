@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	public void configure(String logPrefix) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
 			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
-		};
+		}
 		super.configure(logPrefix);
 	}
 	
