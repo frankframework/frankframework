@@ -41,11 +41,11 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -238,18 +238,22 @@ public abstract class AbstractXmlValidator {
 	}
 
 	protected InputSource getInputSource(Object input) throws XmlValidatorException {
-		Variant in = new Variant(input);
+		Message in = new Message(input);
 		final InputSource is;
 		if (isValidateFile()) {
+			String filename=null;
 			try {
-				is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()), getCharset()));
+				filename = in.asString();
+				is = new InputSource(new InputStreamReader(new FileInputStream(filename), getCharset()));
 			} catch (FileNotFoundException e) {
-				throw new XmlValidatorException("could not find file [" + in.asString() + "]", e);
+				throw new XmlValidatorException("could not find file [" + filename + "]", e);
 			} catch (UnsupportedEncodingException e) {
-				throw new XmlValidatorException("could not use charset [" + getCharset() + "]", e);
+				throw new XmlValidatorException("could not use charset [" + getCharset() + "] for file [" + filename + "]", e);
+			} catch (IOException e) {
+				throw new XmlValidatorException("could not determine filename", e);
 			}
 		} else {
-			is = in.asXmlInputSource();
+			is = in.asInputSource();
 		}
 		return is;
 	}
