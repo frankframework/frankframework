@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.doc.objects;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
@@ -34,6 +36,8 @@ public class AMethod {
     private int order;
     private boolean deprecated;
     private String referredClassName = "";
+    private static final Logger LOGGER = LogUtil.getLogger(AMethod.class);
+
 
     public AMethod(String name) {
         this.name = name;
@@ -106,9 +110,10 @@ public class AMethod {
      * @return the IbisDoc of the method
      */
     public IbisDoc getRefValues(String className, String methodName) {
+
         IbisDoc ibisDoc = null;
         try {
-            Class<?> parentClass = Class.forName(className);
+            Class parentClass = Class.forName(className);
             for (Method parentMethod : parentClass.getDeclaredMethods()) {
                 if (parentMethod.getName().equals(methodName)) {
 
@@ -119,8 +124,7 @@ public class AMethod {
             }
 
         } catch (ClassNotFoundException e) {
-            System.out.println("Could not find [" + className + "]");
-            e.printStackTrace();
+            LOGGER.warn("Super class [" + e +  "] was not found!");
         }
 
         return ibisDoc;

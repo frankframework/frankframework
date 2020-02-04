@@ -47,14 +47,13 @@ public class AFolder {
         for (IbisBean ibisBean : groups.get(folder.getName())) {
             Map<String, Method> beanProperties = IbisDocPipe.getBeanProperties(ibisBean.getClazz());
             if (!beanProperties.isEmpty()) {
-                AClass aClass = new AClass(ibisBean.getName());
+                AClass aClass = new AClass(ibisBean.getClazz());
 
                 // Get the javadoc link for the class
                 String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
 
                 // Create a new class and add the methods (attributes) to it, then add it to the folder object
                 aClass.setJavadocLink(javadocLink);
-                aClass.setPackageName(ibisBean.getClazz().getName());
                 aClass.setMethods(beanProperties, aClass);
                 folder.addClass(aClass);
             }

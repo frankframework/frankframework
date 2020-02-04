@@ -32,16 +32,15 @@ import java.util.TreeSet;
  */
 public class AClass {
 
-    private String name;
-    private String packageName; // Contains the entire class name
+    private Class clazz;
     private String javadocLink;
     private ArrayList<String> superClasses;
     private ArrayList<AMethod> methods;
     private String referredClassName = "";
 
 
-    public AClass(String name) {
-        this.name = name;
+    public AClass(Class clazz) {
+        this.clazz = clazz;
         this.superClasses = new ArrayList<>();
         this.methods = new ArrayList<>();
     }
@@ -56,19 +55,12 @@ public class AClass {
         if (!referredClassName.isEmpty()) {
             superClasses.add(referredClassName);
         }
-        Class<?> clazz = null;
-        try {
-            clazz = Class.forName(packageName);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("["  + packageName + "] is not found");
-        }
-
-        while (clazz != null && clazz.getSuperclass() != null) {
+        Class superClass = this.clazz;
+        while (superClass.getSuperclass() != null) {
 
             // Assign a string to the array of superclasses
-            superClasses.add(clazz.getSuperclass().getSimpleName());
-            clazz = clazz.getSuperclass();
+            superClasses.add(superClass.getSuperclass().getSimpleName());
+            superClass = superClass.getSuperclass();
         }
     }
 
@@ -138,20 +130,8 @@ public class AClass {
         methods.add(method);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
+    public Class getClazz() {
+        return this.clazz;
     }
 
     public String getJavadocLink() {

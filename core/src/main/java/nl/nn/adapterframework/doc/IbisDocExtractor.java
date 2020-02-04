@@ -51,8 +51,8 @@ public class IbisDocExtractor {
                 newClasses = new JSONArray();
                 for (AClass aClass : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
-                    classObject.put("name", aClass.getName());
-                    classObject.put("packageName", aClass.getPackageName());
+                    classObject.put("name", aClass.getClazz().getSimpleName());
+                    classObject.put("packageName", aClass.getClazz().getName());
                     classObject.put("javadocLink", aClass.getJavadocLink());
                     classObject.put("superClasses", aClass.getSuperClasses());
 
