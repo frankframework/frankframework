@@ -141,7 +141,6 @@ public class StreamUtil {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream,ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		ByteOrderMark bom = bOMInputStream.getBOM();
 		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
-		System.out.println("charset ["+charsetName+"] BOM charset ["+(bom==null?null:bom.getCharsetName())+"]");
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 	
