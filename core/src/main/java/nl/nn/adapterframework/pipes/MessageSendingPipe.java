@@ -784,9 +784,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 		if (isStreamResultToServlet()) {
 			Message mia = new Message(result);
-			InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 			
 			try {
+				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 				String contentType = (String) session.get("contentType");
 				if (StringUtils.isNotEmpty(contentType)) {
 					RestListenerUtils.setResponseContentType(session, contentType);

@@ -227,7 +227,7 @@ public class LogUtil {
 		Writer stringWriter = new StringWriter();
 		InputStream stream = url.openStream();
 		try {
-			Reader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			Reader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 			int n;
 			while ((n = reader.read(buff))!=-1) {
 				stringWriter.write(buff, 0, n);

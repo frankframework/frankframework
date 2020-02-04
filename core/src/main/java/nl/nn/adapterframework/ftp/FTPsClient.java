@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
@@ -31,10 +30,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.MalformedServerReplyException;
 import org.apache.commons.net.ftp.FTPClient;
@@ -42,6 +37,11 @@ import org.apache.commons.net.ftp.FTPCommand;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Apaches FTPCLient doesn't support FTPS; This class does support
@@ -52,6 +52,8 @@ import org.apache.log4j.Logger;
 public class FTPsClient extends FTPClient {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	
+	public final String FTP_CLIENT_CHARSET="ISO-8859-1";
 
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactoryBase socketFactory;
@@ -247,7 +249,7 @@ public class FTPsClient extends FTPClient {
 	private String _sendCommand(String cmd, OutputStream out, InputStream in) throws IOException {
 		// send the command
 		log.debug("_sendCommand ["+cmd+"]"); 
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "ISO-8859-1"));
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, FTP_CLIENT_CHARSET));
 		writer.write(cmd + "\r\n");
 		writer.flush();
 		
@@ -261,7 +263,7 @@ public class FTPsClient extends FTPClient {
 	
 	private Object _readReply(InputStream in, boolean concatenateLines) throws IOException { 
 		// obtain the result
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "ISO-8859-1"));
+		BufferedReader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(in, FTP_CLIENT_CHARSET));
 	
 		int replyCode = 0;
 		StringBuffer reply = new StringBuffer();

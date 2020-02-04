@@ -306,7 +306,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
-			src = new Message(input).asInputSource();
+			try {
+				src = new Message(input).asInputSource();
+			} catch (IOException e) {
+				throw new SenderException("could not get InputSource",e);
+			}
 		}
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;

@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Map;
 
@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ReaderLineIterator;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
@@ -43,8 +44,11 @@ public class StreamLineIteratorPipe extends IteratingPipe<String> {
 		if (!(input instanceof InputStream)) {
 			throw new SenderException("input must be of type InputStream");
 		}
-		Reader reader=new InputStreamReader((InputStream)input);
-		return reader;
+		try {
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream)input);
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 	}
 
 	@Override
