@@ -18,6 +18,7 @@ package nl.nn.adapterframework.doc;
 import nl.nn.adapterframework.doc.objects.AClass;
 import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.IbisBean;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,16 +85,25 @@ public class IbisDocExtractor {
      *
      * @return The Json String
      */
-    public String getJsonString() {
+    public String getJson() {
+        Map<String, TreeSet<IbisBean>> groups = IbisDocPipe.getGroups();
+        addFolders(groups);
+        writeToJsonUrl();
         return this.json;
     }
 
     /**
-     * Adds a folder to the folder array
+     * Add folders to the Json.
      *
-     * @param folder - The folder to be added
+     * @param groups    - Contains all information
      */
-    public void addFolder(AFolder folder) {
-        folders.add(folder);
+    public void addFolders(Map<String, TreeSet<IbisBean>> groups) {
+        AFolder allFolder = new AFolder("All");
+        for (String folder : groups.keySet()) {
+            AFolder newFolder = new AFolder(folder);
+            newFolder.setClasses(groups, newFolder);
+            folders.add(newFolder);
+        }
+        folders.add(allFolder);
     }
 }
