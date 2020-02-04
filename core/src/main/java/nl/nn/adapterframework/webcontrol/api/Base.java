@@ -131,7 +131,7 @@ public abstract class Base {
 		try {
 			URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), xslt);
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+			String dotOutput = XmlUtils.transformXml(transformer, dotInput, true);
 
 			return dotOutput;
 		}
