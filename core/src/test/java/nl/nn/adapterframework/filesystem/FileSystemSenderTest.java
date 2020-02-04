@@ -46,13 +46,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	@Test
-	public void fileSenderTestConfigure() throws Exception {
+	public void fileSystemSenderTestConfigure() throws Exception {
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 	}
 
 	@Test
-	public void fileSenderTestOpen() throws Exception {
+	public void fileSystemSenderTestOpen() throws Exception {
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		fileSystemSender.open();
