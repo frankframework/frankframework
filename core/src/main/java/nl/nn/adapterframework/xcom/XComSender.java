@@ -15,23 +15,27 @@
 */
 package nl.nn.adapterframework.xcom;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * XCom client voor het versturen van files via XCom.
@@ -139,7 +143,7 @@ public class XComSender extends SenderWithParametersBase {
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 
 				// read the output of the process
-				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
 				StringBuffer output = new StringBuffer();
 				String line = null;
 				while ((line = br.readLine()) != null) {

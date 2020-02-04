@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -474,7 +474,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
 				} else if (message instanceof InputStream) {
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						inputStream = new ReaderInputStream(new InputStreamReader((InputStream)message, getBlobCharset()));
+						inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
 					} else {
 						inputStream = (InputStream)message;
 					}
@@ -521,9 +521,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				} else if (message instanceof InputStream) {
 					InputStream inStream = (InputStream)message;
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						reader = new InputStreamReader(inStream,getStreamCharset());
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
 					} else {
-						reader = new InputStreamReader(inStream);
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
 					}
 				}
 				if (reader!=null) {

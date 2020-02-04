@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
@@ -26,6 +25,13 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -33,16 +39,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Transforms between ascii-ADIOS and an XML representation of ADIOS.
@@ -262,7 +262,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				if (url==null) {
 					throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
 				}
-		    	BufferedReader bufinput = new BufferedReader(new InputStreamReader(url.openStream()));
+		    	BufferedReader bufinput = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(url.openStream()));
 		 		String line,labelnr,waarde;
 		
 		 		line = bufinput.readLine();
