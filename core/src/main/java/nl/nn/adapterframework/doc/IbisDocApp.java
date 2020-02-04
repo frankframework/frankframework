@@ -58,7 +58,6 @@ public class IbisDocApp {
      */
     public void addFolders(Map<String, TreeSet<IbisBean>> groups, IbisDocExtractor extractor) {
         AFolder allFolder = new AFolder("All");
-
         for (String folder : groups.keySet()) {
             AFolder newFolder = new AFolder(folder);
             addClasses(groups, newFolder);
@@ -81,12 +80,8 @@ public class IbisDocApp {
                 // Get the javadoc link for the class
                 String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
 
-                // Get the superclasses
-                ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
-                // Create a new class and add the methods (attributes) to it, then add it to the
-                // folder object
-                AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink,
-                        superClasses);
+                // Create a new class and add the methods (attributes) to it, then add it to the folder object
+                AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink);
                 AClass updatedClass = addMethods(beanProperties, newClass);
                 folder.addClass(updatedClass);
             }
@@ -102,6 +97,7 @@ public class IbisDocApp {
      */
     public AClass addMethods(Map<String, Method> beanProperties, AClass newClass) {
         Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+        referredClassName = "";
         while (iterator.hasNext()) {
 
             // Get the method
@@ -142,6 +138,9 @@ public class IbisDocApp {
                 newClass.addMethod(new AMethod(property, originalClassName, values[0], values[1], Integer.parseInt(order), isDeprecated));
             }
         }
+
+        newClass.addSuperClasses(referredClassName);
+
         return newClass;
     }
 
@@ -176,26 +175,6 @@ public class IbisDocApp {
         }
 
         return ibisDoc;
-    }
-
-    /**
-     * Get the superclasses of a certain class.
-     *
-     * @param clazz - The class we have to derive the superclasses from
-     * @return An ArrayList containing all the superclasses with priority given to
-     *         them
-     */
-    public ArrayList<String> getSuperClasses(Class<?> clazz) {
-        ArrayList<String> superClasses = new ArrayList<String>();
-        while (clazz.getSuperclass() != null) {
-
-            // Assign a string with a priority number attached to it and add it to the array
-            // of superclasses
-            superClasses.add(clazz.getSuperclass().getSimpleName());
-            clazz = clazz.getSuperclass();
-        }
-
-        return superClasses;
     }
 
     /**

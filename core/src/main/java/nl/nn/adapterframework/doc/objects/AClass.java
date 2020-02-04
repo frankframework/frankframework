@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
+
 import java.util.ArrayList;
 
 /**
@@ -30,13 +33,40 @@ public class AClass {
     private ArrayList<String> superClasses;
     private ArrayList<AMethod> methods;
 
-    public AClass(String name, String packageName, String javadocLink, ArrayList<String> superClasses) {
+    public AClass(String name, String packageName, String javadocLink) {
         this.name = name;
         this.packageName = packageName;
         this.javadocLink = javadocLink;
-        this.superClasses = superClasses;
+        this.superClasses = new ArrayList<>();
         this.methods = new ArrayList<AMethod>();
     }
+    /**
+     * Get the superclasses of a certain class.
+     *
+     * @param referredClassName - The class we have to derive the superclasses from
+     * @return An ArrayList containing all the superclasses with priority given to
+     *         them
+     */
+    public void addSuperClasses(String referredClassName) {
+        if (!referredClassName.isEmpty()) {
+            superClasses.add(referredClassName);
+        }
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName(packageName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("["  + packageName + "] is not found");
+        }
+
+        while (clazz != null && clazz.getSuperclass() != null) {
+
+            // Assign a string to the array of superclasses
+            superClasses.add(clazz.getSuperclass().getSimpleName());
+            clazz = clazz.getSuperclass();
+        }
+    }
+
 
     public void addMethod(AMethod method) {
         methods.add(method);
