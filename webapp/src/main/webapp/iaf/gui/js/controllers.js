@@ -851,8 +851,8 @@ angular.module('iaf.beheerconsole')
 	$scope.jmsRealms = {};
 
 	Api.Get("jdbc", function(data) {
-		$scope.form.realm = $scope.jmsRealms[0];
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.form = {
@@ -1609,6 +1609,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.submit = function(formData) {
@@ -1735,6 +1736,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.submit = function(formData) {
@@ -1768,6 +1770,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$scope.jmsRealms = data.jmsRealms;
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 	$scope.submit = function(formData) {
 		if(!formData || !formData.table) {
