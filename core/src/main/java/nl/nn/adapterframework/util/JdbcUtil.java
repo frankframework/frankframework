@@ -239,9 +239,9 @@ public class JdbcUtil {
 			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (blobIsCompressed) {
-			result = new InputStreamReader(new InflaterInputStream(input), charset);
+			result = StreamUtil.getCharsetDetectingInputStreamReader(new InflaterInputStream(input), charset);
 		} else {
-			result = new InputStreamReader(input, charset);
+			result = StreamUtil.getCharsetDetectingInputStreamReader(input, charset);
 		}
 		return result;
 	}

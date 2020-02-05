@@ -148,7 +148,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			transformerPool.close();
 		}
 		
-		if (!dynamicTransformerPoolMap.isEmpty()) {
+		if (dynamicTransformerPoolMap!=null && !dynamicTransformerPoolMap.isEmpty()) {
 			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
 				tp.close();
 			}

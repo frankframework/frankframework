@@ -244,7 +244,7 @@ public abstract class AbstractXmlValidator {
 			String filename=null;
 			try {
 				filename = in.asString();
-				is = new InputSource(new InputStreamReader(new FileInputStream(filename), getCharset()));
+				is = new InputSource(StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(filename), getCharset()));
 			} catch (FileNotFoundException e) {
 				throw new XmlValidatorException("could not find file [" + filename + "]", e);
 			} catch (UnsupportedEncodingException e) {
@@ -253,7 +253,11 @@ public abstract class AbstractXmlValidator {
 				throw new XmlValidatorException("could not determine filename", e);
 			}
 		} else {
-			is = in.asInputSource();
+			try {
+				is = in.asInputSource();
+			} catch (IOException e) {
+				throw new XmlValidatorException("cannot obtain InputSource", e);
+			}
 		}
 		return is;
 	}

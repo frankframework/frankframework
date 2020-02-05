@@ -49,13 +49,13 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
-	public void fileSenderTestConfigure() throws Exception {
+	public void fileSystemPipeTestConfigure() throws Exception {
 		fileSystemPipe.setAction("list");
 		fileSystemPipe.configure();
 	}
 
 	@Test
-	public void fileSenderTestOpen() throws Exception {
+	public void fileSystemPipeTestOpen() throws Exception {
 		fileSystemPipe.setAction("list");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();

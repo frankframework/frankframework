@@ -18,10 +18,10 @@ package nl.nn.adapterframework.stream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -76,7 +76,7 @@ public class Message {
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
-	public Reader asReader() {
+	public Reader asReader() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -85,22 +85,16 @@ public class Message {
 			return (Reader) request;
 		}
 		if (request instanceof InputStream) {
-			try {
-				log.debug("returning InputStream as Reader");
-				return new InputStreamReader((InputStream) request, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-			} catch (UnsupportedEncodingException e) {
-				log.warn(e);
-				return null;
-			}
+			log.debug("returning InputStream as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request);
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream());
 		}
 		if (request instanceof byte[]) {
-			try {
-				log.debug("returning byte[] as Reader");
-				return new InputStreamReader(new ByteArrayInputStream((byte[]) request), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-			} catch (UnsupportedEncodingException e) {
-				log.warn(e);
-				return null;
-			}
+			log.debug("returning byte[] as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request));
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -109,13 +103,17 @@ public class Message {
 	/**
 	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
-	public InputStream asInputStream() {
+	public InputStream asInputStream() throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputStream");
 			return (InputStream) request;
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputStream");
+			return ((URL) request).openStream();
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputStream");
@@ -137,7 +135,7 @@ public class Message {
 	/**
 	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
-	public InputSource asInputSource() {
+	public InputSource asInputSource() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -148,6 +146,10 @@ public class Message {
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
 			return (new InputSource((InputStream) request));
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputSource");
+			return (new InputSource(((URL) request).openStream()));
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
@@ -164,7 +166,7 @@ public class Message {
 	/**
 	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
-	public Source asSource() {
+	public Source asSource() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -175,6 +177,10 @@ public class Message {
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
 			return (new StreamSource((InputStream) request));
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputSource");
+			return (new StreamSource(((URL) request).openStream()));
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");

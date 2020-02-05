@@ -659,7 +659,7 @@ public class XmlUtils {
 		Document output;
 
 		try {
-			in = new InputStreamReader(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
+			in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}

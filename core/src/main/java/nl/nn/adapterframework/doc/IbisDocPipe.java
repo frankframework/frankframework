@@ -331,7 +331,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = new IbisDocApp().getJson();
+			result = new IbisDocExtractor().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -690,7 +690,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return ignore;
 	}
 
-	static Map<String, Method> getBeanProperties(Class<?> clazz) {
+	public static Map<String, Method> getBeanProperties(Class<?> clazz) {
 		Map<String, Method> result = new HashMap<String, Method>();
 		getBeanProperties(clazz, "set", result);
 		Set<String> remove = new HashSet<String>();
