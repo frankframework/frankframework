@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -14,7 +14,7 @@ import microsoft.exchange.webservices.data.core.EwsServiceMultiResponseXmlReader
 import microsoft.exchange.webservices.data.core.EwsXmlReader;
 import microsoft.exchange.webservices.data.security.XmlNodeType;
 
-public class ExchangeListenerTest {
+public class StaxParserTest {
 	final String validDocument   = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>testContent</test>";
 	final String invalidDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>test&#x3;Content</test>";
 
@@ -41,13 +41,14 @@ public class ExchangeListenerTest {
 	}
 
 	@Test
-	public void testReadInvalidDocument() throws Exception {
+	public void testAcceptXml10InvalidCharacters() throws Exception {
 		byte[] bytes = invalidDocument.getBytes("UTF-8");
 		EwsXmlReader impl = new EwsXmlReader(new ByteArrayInputStream(bytes));
 		impl.read(new XmlNodeType(XmlNodeType.START_DOCUMENT));
 		impl.read(new XmlNodeType(XmlNodeType.START_ELEMENT));
 		String content = impl.readValue();
-		assertEquals(content, "test\u0005Content");
+		assertEquals(content, "test\u0003Content");
 		impl.read(new XmlNodeType(XmlNodeType.END_DOCUMENT));
 	}
+	
 }
