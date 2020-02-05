@@ -28,13 +28,13 @@ import org.springframework.mock.web.MockServletContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 public class IbisTester {
 	private AppConstants appConstants;
@@ -68,7 +68,7 @@ public class IbisTester {
 			boolean silent;
 			if (scenario == null) {
 				String ibisContextKey = appConstants
-						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+						.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;

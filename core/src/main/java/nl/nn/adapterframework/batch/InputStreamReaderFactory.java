@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.batch;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Basic InputStreamReaderFactory.
@@ -32,13 +32,15 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class InputStreamReaderFactory implements IInputStreamReaderFactory {
 
+	@Override
 	public void configure() throws ConfigurationException {
 	}
 
+	@Override
 	public Reader getReader(InputStream inputstream, String charset, String streamId, IPipeLineSession session) throws SenderException {
 		try {
-			return new InputStreamReader(inputstream, charset);
-		} catch (UnsupportedEncodingException e) {
+			return StreamUtil.getCharsetDetectingInputStreamReader(inputstream, charset);
+		} catch (IOException e) {
 			throw new SenderException("cannot use charset ["+charset+"] to read stream ["+streamId+"]",e);
 		}
 	}

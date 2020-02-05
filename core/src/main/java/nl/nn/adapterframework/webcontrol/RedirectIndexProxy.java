@@ -3,7 +3,7 @@ package nl.nn.adapterframework.webcontrol;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class RedirectIndexProxy extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -35,11 +36,11 @@ public class RedirectIndexProxy extends HttpServlet {
 				response.setHeader("Cache-Control", "no-cache, must-revalidate, max-age=60, post-check=0, pre-check=0");
 				response.setHeader("Pragma", "no-cache");
 
-				InputStreamReader fr = null;
+				Reader fr = null;
 				BufferedReader br = null;
 
 				try {
-					fr = new InputStreamReader(index);
+					fr = StreamUtil.getCharsetDetectingInputStreamReader(index);
 					br = new BufferedReader(fr);
 
 					String sCurrentLine;

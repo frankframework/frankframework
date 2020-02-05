@@ -31,11 +31,13 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -72,7 +74,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private String namespaceDefs = null; 
 	private String outputType=null;
 	private Boolean omitXmlDeclaration;
-	private boolean indentXml=true;
+	private boolean indentXml=false; // some existing ibises expect default for indent to be false 
 	private boolean removeNamespaces=false;
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
@@ -146,7 +148,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			transformerPool.close();
 		}
 		
-		if (!dynamicTransformerPoolMap.isEmpty()) {
+		if (dynamicTransformerPoolMap!=null && !dynamicTransformerPoolMap.isEmpty()) {
 			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
 				tp.close();
 			}
@@ -166,9 +168,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
 		if (target==null) {
-			target=new MessageOutputStreamCap(this);
+			target=new MessageOutputStreamCap(this, nextProvider);
 		}
 		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,correlationID);
@@ -270,17 +273,18 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this)) {
+			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, prc.getSession(), null);
+			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this, nextProvider)) {
 				ContentHandler handler = createHandler(correlationID, message, prc.getSession(), outputStream);
 				InputSource source = message.asInputSource();
 				XMLReader reader = getXmlReader(handler);
 				reader.parse(source);
-				return outputStream.getResponse();
+				return outputStream.getPipeRunResult();
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
@@ -333,7 +337,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return omitXmlDeclaration;
 	}
 
-	@IbisDoc({"6", "For xpathExpression only: namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace", ""})
+	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}

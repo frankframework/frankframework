@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -55,6 +54,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -62,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -227,7 +228,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	@Override
-	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	protected String sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		QueryContext queryContext;
 		try {
 			queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
@@ -473,7 +474,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
 				} else if (message instanceof InputStream) {
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						inputStream = new ReaderInputStream(new InputStreamReader((InputStream)message, getBlobCharset()));
+						inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
 					} else {
 						inputStream = (InputStream)message;
 					}
@@ -520,9 +521,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				} else if (message instanceof InputStream) {
 					InputStream inStream = (InputStream)message;
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						reader = new InputStreamReader(inStream,getStreamCharset());
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
 					} else {
-						reader = new InputStreamReader(inStream);
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
 					}
 				}
 				if (reader!=null) {
@@ -545,23 +546,22 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return clobWriter==null ? null : clobWriter.getWarnings().toXML();
 	}
 
-	@Override
 	public boolean canProvideOutputStream() {
 		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 
 	@Override
-	public boolean requiresOutputStream() {
-		return false; // not necessary, LOBs can be output streamed using InputStreams
-	}
-	
-	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
 	}
+
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			return null;
+		}
+		MessageOutputStream target=null;
 		final Connection connection;
 		QueryContext queryContext;
 		try {
@@ -573,7 +573,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		try {
 			PreparedStatement statement=queryContext.getStatement();
 			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target) {
+				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
@@ -582,7 +582,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				};
 			}
 			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()),target) {
+				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();

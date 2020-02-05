@@ -457,6 +457,7 @@
         <module>sap</module>
         <module>tibco</module>
         <module>idin</module>
+        <module>aspose</module>
       </modules>
       <repositories>
         <repository>

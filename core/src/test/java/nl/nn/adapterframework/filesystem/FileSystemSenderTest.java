@@ -46,13 +46,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	@Test
-	public void fileSenderTestConfigure() throws Exception {
+	public void fileSystemSenderTestConfigure() throws Exception {
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 	}
 
 	@Test
-	public void fileSenderTestOpen() throws Exception {
+	public void fileSystemSenderTestOpen() throws Exception {
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -185,10 +185,11 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		assertTrue(fileSystemSender.canProvideOutputStream());
+		//assertTrue(fileSystemSender.canProvideOutputStream());
 
 		String correlationId="fakecorrelationid";
 		MessageOutputStream target = fileSystemSender.provideOutputStream(correlationId, session, null);
+		assertNotNull(target);
 
 		// stream the contents
 		try (Writer writer = target.asWriter()) {
@@ -196,7 +197,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 
 		// verify the filename is properly returned
-		String stringResult=target.getResponseAsString();
+		String stringResult=(String)target.getPipeRunResult().getResult();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
 		// verify the file contents

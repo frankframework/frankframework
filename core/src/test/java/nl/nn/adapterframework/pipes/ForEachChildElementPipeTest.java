@@ -722,7 +722,23 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expected, actual);
 	}
-	
+
+	@Test
+	public void testNamespacedXPath() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setElementXPathExpression("//x:directoryUrl");
+		pipe.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/input.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/expected.xml");
+		PipeRunResult prr = pipe.doPipe(input, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expected, actual);
+	}
+
 	
 	private class SwitchCounter {
 		public int count;

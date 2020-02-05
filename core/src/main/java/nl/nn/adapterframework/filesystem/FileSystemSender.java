@@ -21,11 +21,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -95,21 +97,12 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && actor.canProvideOutputStream();
-	}
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() && actor.requiresOutputStream();  
-	}
-	
-	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return actor.provideOutputStream(correlationID, session, target);
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return actor.provideOutputStream(correlationID, session, nextProvider);
 	}
 
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
@@ -122,7 +115,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			return actor.doAction(message, pvl, prc.getSession());
+			Object result=actor.doAction(message, pvl, prc.getSession());
+			if (result instanceof PipeRunResult) {
+				return (PipeRunResult)result;
+			}
+			return new PipeRunResult(null, result);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -49,19 +48,19 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ServletManager {
 
-	private IbisApplicationServlet servlet = null;
+	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<String>();
 	private Logger log = LogUtil.getLogger(this);
 
-	public ServletManager(IbisApplicationServlet servlet) {
-		this.servlet = servlet;
+	private ServletContext getServletContext() {
+		return servletContext;
+	}
+
+	public ServletManager(ServletContext servletContext) {
+		this.servletContext = servletContext;
 
 		//Add the default IBIS roles
 		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
-	}
-
-	private ServletContext getServletContext() {
-		return servlet.getServletContext();
 	}
 
 	/**
@@ -84,6 +83,10 @@ public class ServletManager {
 	}
 
 	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+		log.info("instantiated IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
+		getServletContext().log("instantiated IbisInitializer servlet ["+servletName+"]");
+
+
 		AppConstants appConstants = AppConstants.getInstance();
 		String propertyPrefix = "servlet."+servletName+".";
 
@@ -116,6 +119,9 @@ public class ServletManager {
 		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
 
 		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
+		if(!urlMappingCopy.startsWith("/")) {
+			urlMappingCopy = "/"+urlMappingCopy;
+		}
 		serv.addMapping(urlMappingCopy);
 
 		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
