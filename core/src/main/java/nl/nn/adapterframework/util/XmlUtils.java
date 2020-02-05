@@ -170,10 +170,10 @@ public class XmlUtils {
 		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
 		// last woodstox was used (giving "Response already committed" error
 		// when a WSDL was generated).
-		EVENT_FACTORY = XMLEventFactory.newInstance();
-		INPUT_FACTORY = XMLInputFactory.newInstance();
-		OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-		REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+		EVENT_FACTORY = new com.sun.xml.stream.events.ZephyrEventFactory();
+		INPUT_FACTORY = new com.sun.xml.stream.ZephyrParserFactory();
+		OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
+		REPAIR_NAMESPACES_OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
