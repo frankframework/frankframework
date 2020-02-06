@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015-2017, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -72,6 +72,8 @@ public class MessageStoreListener extends JdbcQueryListener {
 				sessionKeysList.add((String)stringTokenizer.nextElement());
 			}
 		}
+		setPreSelectQuery("SELECT TOP 1 MESSAGEKEY FROM IBISSTORE "
+				+ "WHERE TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 		setSelectQuery("SELECT MESSAGEKEY, MESSAGE FROM IBISSTORE "
 				+ "WHERE TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 				// This class was initially developed as DelayStoreListener with

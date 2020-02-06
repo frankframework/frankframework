@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IPullingTriggerListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
@@ -173,10 +174,19 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							if (receiver.isTransacted()) {
-								txStatus = txManager.getTransaction(txNew);
+							boolean retrieveMessage = true;
+							if (listener instanceof IPullingTriggerListener) {
+								IPullingTriggerListener triggerListener = (IPullingTriggerListener) listener;
+								retrieveMessage = triggerListener.getRawMessageTrigger();
 							}
-							rawMessage = listener.getRawMessage(threadContext);
+							if (!retrieveMessage) {
+								rawMessage = null;
+							} else {
+								if (receiver.isTransacted()) {
+									txStatus = txManager.getTransaction(txNew);
+								}
+								rawMessage = listener.getRawMessage(threadContext);
+							}
 							resetRetryInterval();
 							setIdle(rawMessage==null);
 						} catch (Exception e) {

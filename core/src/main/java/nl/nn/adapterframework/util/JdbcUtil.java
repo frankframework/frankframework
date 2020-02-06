@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -672,10 +672,14 @@ public class JdbcUtil {
 	 * exectues query that returns a string. Returns null if no results are found. 
 	 */
 	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
+		return executeStringQuery(connection, query, false);
+	}
+
+	public static String executeStringQuery(Connection connection, String query, boolean disableLogging) throws JdbcException {
 		PreparedStatement stmt = null;
 
 		try {
-			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			if (!disableLogging && log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
 			stmt = connection.prepareStatement(query);
 			ResultSet rs = stmt.executeQuery();
 			try {
