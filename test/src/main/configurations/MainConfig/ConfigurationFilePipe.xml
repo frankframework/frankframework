@@ -60,6 +60,43 @@
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
+			<!-- Read binary file as bytes -->
+			<pipe
+				name="read binary file as bytes"
+				className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read"
+				outputType="bytes"
+				getInputFromFixedValue="FilePipe/file.pdf"
+				fileSource="classpath">
+			</pipe>
+			<pipe name="encode binary file bytes" className="nl.nn.adapterframework.pipes.Base64Pipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<!-- Read binary file as stream -->
+			<pipe
+				name="read binary file as stream"
+				className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read"
+				outputType="stream"
+				getInputFromFixedValue="FilePipe/file.pdf"
+				fileSource="classpath">
+			</pipe>
+			<pipe name="encode binary file stream" className="nl.nn.adapterframework.pipes.Base64Pipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<!-- Read binary file as base64 -->
+			<pipe
+				name="read binary file as base64"
+				className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read"
+				outputType="base64"
+				getInputFromFixedValue="FilePipe/file.pdf"
+				fileSource="classpath">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
 			<!-- Delete file with use of directory and fileNam e-->
 			<pipe
 				name="delete file"
