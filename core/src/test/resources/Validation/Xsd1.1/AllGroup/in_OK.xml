@@ -1,0 +1,21 @@
+<personName xmlns="http://www.example.org/ns/personName/1">
+    <given>Dave</given>
+    <family>Orchard</family>
+</personName>
+
+<personName xmlns="http://www.example.org/ns/personName/1">
+<family>Orchard</family>
+<given>Dave</given>
+</personName>
+
+<personName xmlns="http://www.example.org/ns/personName/1">
+<middle>Bryce</middle>
+<given>Dave</given>
+<family>Orchard</family>
+</personName>
+
+<personName xmlns="http://www.example.org/ns/personName/1">
+<addr:Address xmlns:addr="http://www.example.org/ns/address/1">Vancouver</addr:Address>
+<given>Dave</given>
+<family>Orchard</family>
+</personName>

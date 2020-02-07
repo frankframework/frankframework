@@ -17,9 +17,10 @@ package nl.nn.adapterframework.stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -32,14 +33,17 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.hamcrest.core.StringContains;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.XmlWriter;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MessageOutputStreamTest {
 
 	private boolean TEST_CDATA=true;
@@ -50,103 +54,118 @@ public class MessageOutputStreamTest {
 	
 	
 	@Test
-	public void testStreamAsStream() throws Exception {
+	public void test11StreamAsStream() throws Exception {
 		
-		ByteArrayOutputStream target = new ByteArrayOutputStream();
+		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
-		try (OutputStream outputstream = stream.asStream()) {
-			outputstream.write(testString.getBytes());
+			try (OutputStream outputstream = stream.asStream()) {
+				outputstream.write(testString.getBytes());
+			}
 		}
-
+		
 		String actual = new String (target.toByteArray());
 		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
 	}
 	
 	@Test
-	public void testWriterAsWriter() throws Exception {
+	public void test12StreamAsWriter() throws Exception {
 		
-		StringWriter target = new StringWriter();
-
-		MessageOutputStream stream = new MessageOutputStream(target,null);
-
-		try (Writer writer = stream.asWriter()) {
-			writer.write(testString);
+		CloseObservableOutputStream target = new CloseObservableOutputStream();
+		
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testString);
+			}
+			
 		}
-
-		String actual = new String (target.toString());
-		assertEquals(testString, actual);
-	}
-
-	@Test
-	public void testWriterAsStream() throws Exception {
-		
-		StringWriter target = new StringWriter();
-
-		MessageOutputStream stream = new MessageOutputStream(target,null);
-
-		try (OutputStream outputstream = stream.asStream()) {
-			outputstream.write(testString.getBytes());
-		}
-
-		String actual = new String (target.toString());
-		assertEquals(testString, actual);
-	}
-
-	@Test
-	public void testStreamAsWriter() throws Exception {
-		
-		ByteArrayOutputStream target = new ByteArrayOutputStream();
-		
-		MessageOutputStream stream = new MessageOutputStream(target,null);
-		
-		try (Writer writer = stream.asWriter()) {
-			writer.write(testString);
-		}
-		
 		String actual = new String (target.toByteArray());
 		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
-	public void testContentHandlerAsWriter() throws Exception {
+	public void test13StreamAsContentHandler() throws Exception {
 		
-		XmlWriter target = new XmlWriter();
+		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		MessageOutputStream stream = new MessageOutputStream(target,null,this,null,"fakecorrelationid");
-		
-		try (Writer writer = stream.asWriter()) {
-			writer.write(testString);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+
+			ContentHandler handler = stream.asContentHandler();
+
+			InputSource inputSource = new InputSource(new StringReader(testString)); 
+			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
+			reader.parse(inputSource);
+			
 		}
-		
 		String actual = new String (target.toString());
-		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertTrue(target.isCloseCalled());
+	}
+
+
+	@Test
+	public void test21WriterAsStream() throws Exception {
+		
+		CloseObservableWriter target = new CloseObservableWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+			
+			try (OutputStream outputstream = stream.asStream()) {
+				outputstream.write(testString.getBytes());
+			}
+			
+		}
+		String actual = new String (target.toString());
 		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
+	}
+
+	
+	@Test
+	public void test22WriterAsWriter() throws Exception {
+		
+		CloseObservableWriter target = new CloseObservableWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testString);
+			}
+			
+		}
+		String actual = new String (target.toString());
+		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
-	public void testWriterAsContentHandler() throws Exception {
+	public void test23WriterAsContentHandler() throws Exception {
 		
-		Writer target = new StringWriter();
+		CloseObservableWriter target = new CloseObservableWriter();
 
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
-		ContentHandler handler = stream.asContentHandler();
+			ContentHandler handler = stream.asContentHandler();
+	
+			InputSource inputSource = new InputSource(new StringReader(testString)); 
+			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
+			reader.parse(inputSource);
 
-		InputSource inputSource = new InputSource(new StringReader(testString)); 
-		XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-		reader.parse(inputSource);
-		
+		}
 		String actual = new String (target.toString());
 		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
 		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
-	public void testWriterAsStreamError() throws Exception {
+	public void testX21WriterAsStreamError() throws Exception {
 		
-		StringWriter target = new StringWriter() {
+		CloseObservableWriter target = new CloseObservableWriter() {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
@@ -155,22 +174,66 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
-		try {
+			try {
+				OutputStream outputstream=null;
+				try { 
+					outputstream = stream.asStream();
+					outputstream.write(testString.getBytes());
+				} finally {
+					outputstream.close();
+				}
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
+		}
+		assertTrue(target.isCloseCalled());
+	}
+
+	
+	
+	@Test
+	public void test31ContentHandlerAsStream() throws Exception {
+		
+		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
+		
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
-			fail("exception should be thrown");
-		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+		
 		}
+		String actual = new String (target.toString());
+		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
-	public void testStreamAsWriterError() throws Exception {
+	public void test32ContentHandlerAsWriter() throws Exception {
 		
-		ByteArrayOutputStream target = new ByteArrayOutputStream() {
+		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
+		
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testString);
+			}
+
+		}
+		String actual = new String (target.toString());
+		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertEquals(testString, actual);
+		assertTrue(target.isCloseCalled());
+	}
+
+
+	@Test
+	public void testX12StreamAsWriterError() throws Exception {
+		
+		CloseObservableOutputStream target = new CloseObservableOutputStream() {
 
 			@Override
 			public synchronized void write(byte[] arg0, int arg1, int arg2) {
@@ -179,24 +242,26 @@ public class MessageOutputStreamTest {
 			
 		};
 		
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 		
-		try {
-			try (Writer writer = stream.asWriter()) {
-				writer.write(testString);
+			try {
+				try (Writer writer = stream.asWriter()) {
+					writer.write(testString);
+				}
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-			fail("exception should be thrown");
-		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			
 		}
+		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
-	public void testContentHandlerAsWriterError() throws Exception {
+	@Ignore("No contract to call endDocument() in case of an Exception")
+	public void testX32ContentHandlerAsWriterError() throws Exception {
 		
-        SAXTransformerFactory tf = (SAXTransformerFactory)TransformerFactory.newInstance();
-        TransformerHandler transformerHandler = tf.newTransformerHandler();
-		StringWriter sw = new StringWriter() {
+		CloseObservableWriter cow = new CloseObservableWriter() {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
@@ -204,25 +269,97 @@ public class MessageOutputStreamTest {
 			}
 			
 		};
-        Result result = new StreamResult(sw);
-        transformerHandler.setResult(result);
+		Result result = new StreamResult(cow);
+		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+		TransformerHandler transformerHandler = tf.newTransformerHandler();
+		transformerHandler.setResult(result);
 
-		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null,this,null,"fakecorrelationid");
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
 		
-		try {
-			try (Writer writer = stream.asWriter()) {
-				writer.write(testString);
+			try {
+				try (Writer writer = stream.asWriter()) {
+					writer.write(testString);
+				}
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-			fail("exception should be thrown");
-		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			
 		}
+		assertTrue(cow.isCloseCalled());
 	}
 
 	@Test
-	public void testWriterAsContentHandlerError() throws Exception {
+	@Ignore("No contract to call endDocument() in case of an Exception")
+	public void testX31ContentHandlerAsStreamError() throws Exception {
 		
-		StringWriter target = new StringWriter() {
+		CloseObservableOutputStream cos = new CloseObservableOutputStream() {
+
+			@Override
+			public void write(byte[] arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure");
+			}
+			
+		};
+		Result result = new StreamResult(cos);
+		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+		TransformerHandler transformerHandler = tf.newTransformerHandler();
+		transformerHandler.setResult(result);
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
+
+			try {
+				try (Writer writer = stream.asWriter()) {
+					writer.write(testString);
+				}
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
+
+		}
+		assertTrue(cos.isCloseCalled());
+	}
+
+	@Test
+	public void testX13StreamAsContentHandlerError() throws Exception {
+		
+		CloseObservableOutputStream target = new CloseObservableOutputStream() {
+
+			@Override
+			public void write(byte[] arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 1");
+			}
+
+			@Override
+			public void write(byte[] b) throws IOException {
+				throw new RuntimeException("fakeFailure 2");
+			}
+			
+		};
+
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+
+			ContentHandler handler = stream.asContentHandler();
+	
+			try {
+				InputSource inputSource = new InputSource(new StringReader(testString)); 
+				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
+				reader.parse(inputSource);
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
+
+		}
+		assertTrue(target.isCloseCalled());
+		
+	}
+
+	@Test
+	public void testX23WriterAsContentHandlerError() throws Exception {
+		
+		CloseObservableWriter target = new CloseObservableWriter() {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
@@ -256,18 +393,21 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
 
-		ContentHandler handler = stream.asContentHandler();
+			ContentHandler handler = stream.asContentHandler();
+	
+			try {
+				InputSource inputSource = new InputSource(new StringReader(testString)); 
+				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
+				reader.parse(inputSource);
+				fail("exception should be thrown");
+			} catch (Exception e) {
+				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
+			}
 
-		try {
-			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
-			fail("exception should be thrown");
-		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 		}
+		assertTrue(target.isCloseCalled());
 		
 	}
 

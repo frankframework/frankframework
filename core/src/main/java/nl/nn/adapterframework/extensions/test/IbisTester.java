@@ -28,13 +28,13 @@ import org.springframework.mock.web.MockServletContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 public class IbisTester {
 	private AppConstants appConstants;
@@ -68,7 +68,7 @@ public class IbisTester {
 			boolean silent;
 			if (scenario == null) {
 				String ibisContextKey = appConstants
-						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+						.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;
@@ -139,7 +139,7 @@ public class IbisTester {
 			System.setProperty("log.dir", "target/log");
 		}
 		System.setProperty("log.level", "INFO");
-		System.setProperty("otap.stage", "LOC");
+		System.setProperty("dtap.stage", "LOC");
 		System.setProperty("application.server.type", "IBISTEST");
 		System.setProperty("flow.create.url", "");
 		debug("***start***");

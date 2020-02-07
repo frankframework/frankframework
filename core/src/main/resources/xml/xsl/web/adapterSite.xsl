@@ -98,39 +98,39 @@
 				<xsl:variable name="stubConfig">
 					<xsl:value-of select="$applicationConstants/properties/property[@name='stub4testtool.configuration']"/>
 				</xsl:variable>
-				<xsl:variable name="otapStage">
-					<xsl:value-of select="$applicationConstants/properties/property[@name='otap.stage']"/>
+				<xsl:variable name="dtapStage">
+					<xsl:value-of select="$applicationConstants/properties/property[@name='dtap.stage']"/>
 				</xsl:variable>
-				<xsl:variable name="otapSide">
-					<xsl:value-of select="$applicationConstants/properties/property[@name='otap.side']"/>
+				<xsl:variable name="dtapSide">
+					<xsl:value-of select="$applicationConstants/properties/property[@name='dtap.side']"/>
 				</xsl:variable>
 				<xsl:choose>
 					<xsl:when test="$stubConfig='true'">stub</xsl:when>
-					<xsl:when test="$otapStage='DEV'">
+					<xsl:when test="$dtapStage='DEV'">
 						<xsl:choose>
-							<xsl:when test="$otapSide='AS'">dev_as</xsl:when>
-							<xsl:when test="$otapSide='EP'">dev_ep</xsl:when>
+							<xsl:when test="$dtapSide='AS'">dev_as</xsl:when>
+							<xsl:when test="$dtapSide='EP'">dev_ep</xsl:when>
 							<xsl:otherwise>dev</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
-					<xsl:when test="$otapStage='TST'">
+					<xsl:when test="$dtapStage='TST'">
 						<xsl:choose>
-							<xsl:when test="$otapSide='AS'">tst_as</xsl:when>
-							<xsl:when test="$otapSide='EP'">tst_ep</xsl:when>
+							<xsl:when test="$dtapSide='AS'">tst_as</xsl:when>
+							<xsl:when test="$dtapSide='EP'">tst_ep</xsl:when>
 							<xsl:otherwise>tst</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
-					<xsl:when test="$otapStage='ACC'">
+					<xsl:when test="$dtapStage='ACC'">
 						<xsl:choose>
-							<xsl:when test="$otapSide='AS'">acc_as</xsl:when>
-							<xsl:when test="$otapSide='EP'">acc_ep</xsl:when>
+							<xsl:when test="$dtapSide='AS'">acc_as</xsl:when>
+							<xsl:when test="$dtapSide='EP'">acc_ep</xsl:when>
 							<xsl:otherwise>acc</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
-					<xsl:when test="$otapStage='PRD'">
+					<xsl:when test="$dtapStage='PRD'">
 						<xsl:choose>
-							<xsl:when test="$otapSide='AS'">prd_as</xsl:when>
-							<xsl:when test="$otapSide='EP'">prd_ep</xsl:when>
+							<xsl:when test="$dtapSide='AS'">prd_as</xsl:when>
+							<xsl:when test="$dtapSide='EP'">prd_ep</xsl:when>
 							<xsl:otherwise>prd</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>

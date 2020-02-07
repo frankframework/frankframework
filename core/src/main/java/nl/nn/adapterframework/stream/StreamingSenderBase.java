@@ -18,6 +18,7 @@ package nl.nn.adapterframework.stream;
 import java.io.IOException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -26,30 +27,27 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	public abstract PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
 	@Override
-	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
+	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
 
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		Object result = sendMessage(correlationID, new Message(message), prc, null);
+		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
 		try {
-			return result==null?null:new Message(result).asString();
+			return result==null?null:new Message(result.getResult()).asString();
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
+	
 	@Override
-	public boolean requiresOutputStream() {
+	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
-
-	@Override
-	public boolean canProvideOutputStream() {
-		return true;
-	}
+	
 
 }

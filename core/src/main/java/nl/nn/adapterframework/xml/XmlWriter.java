@@ -51,7 +51,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private List<PrefixMapping> firstLevelNamespaceDefinitions=new ArrayList<>();
 	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 	
 	private class PrefixMapping {
@@ -116,56 +115,15 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
 	}
 
-	private void writeFirstLevelNamespacePrefixMappingIfNotOverridden(int position) throws IOException {
-		PrefixMapping prefixMapping=firstLevelNamespaceDefinitions.get(position);
-		String prefix=prefixMapping.prefix;
-		for (int i=position+1; i<firstLevelNamespaceDefinitions.size();i++) {
-			if (firstLevelNamespaceDefinitions.get(i).prefix.equals(prefix)) {
-				return;
-			}
-		}
-		for (int i=0; i<namespaceDefinitions.size();i++) {
-			if (namespaceDefinitions.get(i).prefix.equals(prefix)) {
-				return;
-			}
-		}
-		writePrefixMapping(prefixMapping);
-	}
-	
 	private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
 		PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
 		prefixMappingList.add(prefixMapping);
 	}
 
-	private void removePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix) {
-		int last=prefixMappingList.size()-1;
-		if (last<0) {
-			log.warn("prefix mapping list is empty, cannot remove prefix ["+prefix+"]");
-			return;
-		}
-		PrefixMapping prefixMapping = prefixMappingList.get(last);
-		if (!prefixMapping.prefix.equals(prefix)) {
-			log.warn("top of prefix mapping lists prefix ["+prefixMapping.prefix+"] is not equal to prefix to remove ["+prefix+"], removing top anyhow");
-		}
-		prefixMappingList.remove(last);
-	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		if (elementLevel==0 ) {
-			storePrefixMapping(firstLevelNamespaceDefinitions, prefix, uri);
-		} else {
-			storePrefixMapping(namespaceDefinitions, prefix, uri);
-		}
-	}
-
-	@Override
-	public void endPrefixMapping(String prefix) throws SAXException {
-		if (elementLevel==0) {
-			removePrefixMapping(firstLevelNamespaceDefinitions, prefix);
-		} else {
-			removePrefixMapping(namespaceDefinitions, prefix);
-		}
+		storePrefixMapping(namespaceDefinitions, prefix, uri);
 	}
 
 
@@ -180,11 +138,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append("<"+qName);
 				for (int i=0; i<attributes.getLength(); i++) {
 					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
-				}
-				if (elementLevel==0) {
-					for (int i=0;i<firstLevelNamespaceDefinitions.size();i++) {
-						writeFirstLevelNamespacePrefixMappingIfNotOverridden(i);
-					}
 				}
 				for (int i=0; i<namespaceDefinitions.size(); i++) {
 					writePrefixMapping(namespaceDefinitions.get(i));
@@ -319,6 +272,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void endEntity(String arg0) throws SAXException {
 //		System.out.println("endEntity ["+arg0+"]");
+	}
+
+	public Writer getWriter() {
+		return writer;
 	}
 
 	@Override

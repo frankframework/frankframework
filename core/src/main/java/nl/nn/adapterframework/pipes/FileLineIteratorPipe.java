@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -65,7 +65,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
@@ -77,7 +77,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 		try {
 			
-			PipeRunResult result = super.doPipe(file,session,target);
+			PipeRunResult result = super.doPipe(file,session,next);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 

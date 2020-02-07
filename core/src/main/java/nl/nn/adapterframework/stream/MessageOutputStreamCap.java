@@ -17,10 +17,12 @@ package nl.nn.adapterframework.stream;
 
 import java.io.StringWriter;
 
+import nl.nn.adapterframework.core.INamedObject;
+
 public class MessageOutputStreamCap extends MessageOutputStream {
 
-	public MessageOutputStreamCap() {
-		super(new StringWriter(),null);
+	public MessageOutputStreamCap(INamedObject owner, IOutputStreamingSupport nextProvider) {
+		super(owner, new StringWriter(), null, nextProvider);
 		try {
 			setResponse((StringWriter)asWriter());
 		} catch (StreamingException e) {

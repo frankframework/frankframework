@@ -215,7 +215,7 @@ public final class ShowConfiguration extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

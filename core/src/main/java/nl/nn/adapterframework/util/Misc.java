@@ -290,7 +290,7 @@ public class Misc {
 	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
-		return readerToString(new InputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
+		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
 	}
 
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
@@ -516,7 +516,7 @@ public class Misc {
 				p = r.exec("env");
 			}
 //			props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = br.readLine()) != null) {
 				int idx = line.indexOf('=');

@@ -806,7 +806,7 @@ public class JobDef {
 				// load new (activated) configs
 				List<String> dbConfigNames = null;
 				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm);
+					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
 				} catch (ConfigurationException e) {
 					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
@@ -989,6 +989,10 @@ public class JobDef {
 			}
 			if (StringUtils.isNotEmpty(getAdapterName())) {
 				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
+				if (iAdapter == null) {
+					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
+					return;
+				}
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}

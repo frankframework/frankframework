@@ -48,13 +48,13 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
  * Test a PipeLine.
@@ -79,7 +79,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {
 		Map<String, Object> result = new HashMap<String, Object>();
-		
+
 		IbisManager ibisManager = getIbisManager();
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
@@ -179,7 +179,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		returnResult.put("result", result);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		IPipeLineSession pls = new PipeLineSessionBase();
@@ -210,18 +210,15 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		}
 		return adapter.processMessage(messageId, message, pls);
 	}
-	
+
 	private IbisManager getIbisManager() {
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
-		if (ibisContext != null) {
-			IbisManager ibisManager = ibisContext.getIbisManager();
-			if (ibisManager==null) {
-				log.warn("Could not retrieve ibisManager from context");
-			} else {
-				log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
-				return ibisManager;
-			}
+		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+		IbisManager ibisManager = ibisContext.getIbisManager();
+		if (ibisManager == null) {
+			log.warn("Could not retrieve ibisManager from context");
+		} else {
+			if(log.isTraceEnabled()) log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context");
+			return ibisManager;
 		}
 		return null;
 	}

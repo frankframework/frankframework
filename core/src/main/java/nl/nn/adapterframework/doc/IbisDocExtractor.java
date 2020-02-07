@@ -1,17 +1,43 @@
+/*
+   Copyright 2019, 2020 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.doc;
 
+import nl.nn.adapterframework.doc.objects.AClass;
+import nl.nn.adapterframework.doc.objects.AFolder;
+import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.IbisBean;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
 
+/**
+ * Extracts the IbisDoc data from the data objects and turns it into a JSON object
+ * 
+ * @author Chakir el Moussaoui
+ */
 public class IbisDocExtractor {
 
     private ArrayList<AFolder> folders = new ArrayList<AFolder>();
-    private ArrayList<AClass> classes = new ArrayList<AClass>();
     private String json = "";
 
+    /**
+     * Writes the folders object containing all information to a Json.
+     */
     public void writeToJsonUrl() {
         JSONArray newFolders = new JSONArray();
         JSONArray newClasses;
@@ -20,28 +46,26 @@ public class IbisDocExtractor {
         try {
             for (AFolder folder : folders) {
                 JSONObject folderObject = new JSONObject();
-                folderObject.put("name", folder.name);
+                folderObject.put("name", folder.getName());
 
                 newClasses = new JSONArray();
                 for (AClass aClass : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
-                    classObject.put("name", aClass.name);
-                    classObject.put("packageName", aClass.packageName);
+                    classObject.put("name", aClass.getClazz().getSimpleName());
+                    classObject.put("packageName", aClass.getClazz().getName());
+                    classObject.put("javadocLink", aClass.getJavadocLink());
+                    classObject.put("superClasses", aClass.getSuperClasses());
 
                     newMethods = new JSONArray();
                     for (AMethod method : aClass.getMethods()) {
                         JSONObject methodObject = new JSONObject();
-                        methodObject.put("name", method.name);
-                        methodObject.put("description", method.description);
-                        methodObject.put("defaultValue", method.defaultValue);
-                        methodObject.put("className", method.className);
-                        methodObject.put("folderName", method.folderName);
-                        methodObject.put("originalClassName", method.originalClassName);
-                        methodObject.put("superClasses", method.superClasses);
-                        methodObject.put("javadocLink", method.javadocLink);
-                        methodObject.put("order",  method.order);
+                        methodObject.put("name", method.getName());
+                        methodObject.put("originalClassName", method.getOriginalClassName());
+                        methodObject.put("description", method.getDescription());
+                        methodObject.put("defaultValue", method.getDefaultValue());
+                        methodObject.put("order", method.getOrder());
+                        methodObject.put("deprecated", method.isDeprecated());
                         newMethods.put(methodObject);
-
                     }
                     classObject.put("methods", newMethods);
                     newClasses.put(classObject);
@@ -56,134 +80,30 @@ public class IbisDocExtractor {
         json = newFolders.toString();
     }
 
-    public String getJsonString() {
+    /**
+     * Get the Json in String format.
+     *
+     * @return The Json String
+     */
+    public String getJson() {
+        Map<String, TreeSet<IbisBean>> groups = IbisDocPipe.getGroups();
+        addFolders(groups);
+        writeToJsonUrl();
         return this.json;
     }
 
-    public void addAllFolder() {
+    /**
+     * Add folders to the Json.
+     *
+     * @param groups    - Contains all information
+     */
+    public void addFolders(Map<String, TreeSet<IbisBean>> groups) {
         AFolder allFolder = new AFolder("All");
-        for (AFolder folder : folders) {
-            for (AClass clazz : folder.getClasses()) {
-                allFolder.addClass(clazz);
-            }
+        for (String folder : groups.keySet()) {
+            AFolder newFolder = new AFolder(folder);
+            newFolder.setClasses(groups, newFolder);
+            folders.add(newFolder);
         }
         folders.add(allFolder);
-    }
-
-    public void addMethods(String currentFolder, String currentClass, String packageName, String methodName, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
-
-        // Check if the folder already exists (there is only one of each)
-        boolean folderExists = false;
-        for (AFolder folder : folders) {
-            if (currentFolder.equals(folder.getName())) {
-                folderExists = true;
-                break;
-            }
-        }
-
-        if (!folderExists) {
-            folders.add(new AFolder(currentFolder));
-        }
-
-        // Check if the class already exists (We assume there is only one of each)
-        boolean classExists = false;
-        for (AClass aClass : classes) {
-            if (currentClass.equals(aClass.getName())) {
-                classExists = true;
-                break;
-            }
-        }
-
-        if (!classExists) {
-            for (AFolder folder : folders) {
-                if (currentFolder.equals(folder.getName())) {
-                    folder.addClass(new AClass(currentClass, packageName));
-                    classes.add(new AClass(currentClass, packageName));
-                }
-            }
-        }
-
-        for (AFolder folder : folders) {
-            if (currentFolder.equals(folder.getName())) {
-                for (AClass aClass : folder.getClasses()) {
-                    if (currentClass.equals(aClass.getName())) {
-                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName, superClasses, javadocLink, order));
-                    }
-                }
-            }
-        }
-
-    }
-
-    class AMethod {
-
-        private String name;
-        private String description;
-        private String defaultValue;
-        private String className;
-        private String packageName;
-        private String folderName;
-        private String originalClassName;
-        private ArrayList<String> superClasses;
-        private String javadocLink;
-        private int order;
-
-        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
-            this.folderName = folderName;
-            this.className = className;
-            this.name = name;
-            this.description = description;
-            this.defaultValue = defaultValue;
-            this.originalClassName = originalClassName;
-            this.superClasses = superClasses;
-            this.javadocLink = javadocLink;
-            this.order = order;
-        }
-    }
-
-    class AClass {
-        private String name;
-        private String packageName;
-        private ArrayList<AMethod> methods;
-
-        public AClass(String name, String packageName) {
-            this.name = name;
-            this.packageName = packageName;
-            this.methods = new ArrayList<AMethod>();
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public void addMethod(AMethod method) {
-            this.methods.add(method);
-        }
-
-        public ArrayList<AMethod> getMethods() {
-            return this.methods;
-        }
-    }
-
-    class AFolder {
-        private String name;
-        private ArrayList<AClass> classes;
-
-        public AFolder(String name) {
-            this.name = name;
-            this.classes = new ArrayList<AClass>();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void addClass(AClass clazz) {
-            this.classes.add(clazz);
-        }
-
-        public ArrayList<AClass> getClasses() {
-            return this.classes;
-        }
     }
 }

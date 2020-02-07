@@ -35,10 +35,10 @@ angular.module('iaf.beheerconsole')
 				$rootScope.instanceName = data.name;
 				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
-				$rootScope.otapStage = data["otap.stage"];
-				$rootScope.otapSide = data["otap.side"];
+				$rootScope.dtapStage = data["dtap.stage"];
+				$rootScope.dtapSide = data["dtap.side"];
 
-				if($rootScope.otapStage == "LOC") {
+				if($rootScope.dtapStage == "LOC") {
 					Debug.setLevel(3);
 				}
 
@@ -851,8 +851,8 @@ angular.module('iaf.beheerconsole')
 	$scope.jmsRealms = {};
 
 	Api.Get("jdbc", function(data) {
-		$scope.form.realm = $scope.jmsRealms[0];
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.form = {
@@ -1575,7 +1575,9 @@ angular.module('iaf.beheerconsole')
 		Api.Get(url, function(data) {
 			$scope.alert = false;
 			$.extend($scope, data);
-			$state.transitionTo('pages.logging', {directory: data.directory}, { notify: false, reload: false });
+			if(data.count > 500) {
+				$scope.alert = "Total number of items ("+data.count+") exceeded maximum number, only showing first 500 items!";
+			}
 		}, function(data) {
 			$scope.alert = (data) ? data.error : "An unknown error occured!";
 		});
@@ -1583,7 +1585,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.open = function(file) {
 		if(file.type == "directory")
-			openDirectory(file.path);
+			$state.transitionTo('pages.logging', {directory: file.path});
 		else
 			openFile(file);
 	};
@@ -1607,6 +1609,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.submit = function(formData) {
@@ -1733,6 +1736,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 
 	$scope.submit = function(formData) {
@@ -1766,6 +1770,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$scope.jmsRealms = data.jmsRealms;
+		$scope.form = {realm: data.jmsRealms[0]};
 	});
 	$scope.submit = function(formData) {
 		if(!formData || !formData.table) {

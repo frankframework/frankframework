@@ -39,6 +39,7 @@
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
+			<pipe name="WaitForClobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteClobViaInputMessage2" getInputFromSessionKey="">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateClob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="clobKey" />
@@ -106,6 +107,7 @@
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
+			<pipe name="WaitForBlobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteBlobViaInputMessage2" getInputFromSessionKey="">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="blobKey" />

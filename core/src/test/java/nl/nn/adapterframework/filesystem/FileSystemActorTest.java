@@ -510,7 +510,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		// verify the filename is properly returned
-		String stringResult=target.getResponseAsString();
+		String stringResult=(String)target.getPipeRunResult().getResult();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		
 		// verify the file contents

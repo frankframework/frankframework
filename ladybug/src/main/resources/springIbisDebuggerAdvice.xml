@@ -68,50 +68,65 @@
 				method="debugPipeGetInputFrom"
 				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
 			/>
+	 			<aop:around
+	 				pointcut=
+	 					"
+	 					execution(
+	 						*
+	 						nl.nn.adapterframework.core.ISender.sendMessage(
+	 							String, String
+	 						)
+	 					)
+	 					and
+	 					args(correlationId, message)
+	 					"
+	 				method="debugSenderInputOutputAbort"
+	 				arg-names="correlationId, message"
+	 			/>
+	 			<aop:around
+	 				pointcut=
+	 					"
+	 					execution(
+	 						*
+	 						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
+	 							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+	 						)
+	 					)
+	 					and
+	 					args(correlationId, message, parameterResolutionContext)
+	 					"
+	 				method="debugSenderWithParametersInputOutputAbort"
+	 				arg-names="correlationId, message, parameterResolutionContext"
+	 			/>
+	 			<aop:around
+	 				pointcut=
+	 					"
+	 					execution(
+	 						*
+	 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
+	 							String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.IOutputStreamingSupport
+	 						)
+	 					)
+	 					and
+	 					args(correlationId, message, parameterResolutionContext, next)
+	 					"
+	 				method="debugStreamingSenderInputOutputAbort"
+	 				arg-names="correlationId, message, parameterResolutionContext, next"
+	 			/>
 			<aop:around
 				pointcut=
 					"
-					execution(
-						*
-						nl.nn.adapterframework.core.ISender.sendMessage(
-							String, String
-						)
-					)
-					and
-					args(correlationId, message)
-					"
-				method="debugSenderInputOutputAbort"
-				arg-names="correlationId, message"
-			/>
-			<aop:around
-				pointcut=
-					"
-					execution(
-						*
-						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
-							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
-						)
-					)
-					and
-					args(correlationId, message, parameterResolutionContext)
-					"
-				method="debugSenderWithParametersInputOutputAbort"
-				arg-names="correlationId, message, parameterResolutionContext"
-			/>
-			<aop:around
-				pointcut=
-					"
-					execution(
-						*
-						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.MessageOutputStream
-						)
-					)
-					and
-					args(correlationId, message, parameterResolutionContext, target)
-					"
-				method="debugStreamingSenderInputOutputAbort"
-				arg-names="correlationId, message, parameterResolutionContext, target"
+	 					execution(
+	 						*
+	 						nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
+	 							String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport
+	 						)
+	 					)
+	 					and
+	 					args(correlationId, session, nextProvider)
+	 					"
+				method="debugProvideOutputStream"
+				arg-names="correlationId, session, nextProvider"
 			/>
 			<aop:around
 				pointcut=

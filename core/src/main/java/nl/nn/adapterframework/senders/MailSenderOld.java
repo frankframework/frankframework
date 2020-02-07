@@ -52,6 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -236,7 +237,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		String threadTopic=null;
 		String messageType=null;
 		String messageBase64=null;
-		String charset=null;
+		String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		Collection<Recipient> recipients=null;
 		Collection<Attachment> attachments=null;
 		ParameterValueList pvl;

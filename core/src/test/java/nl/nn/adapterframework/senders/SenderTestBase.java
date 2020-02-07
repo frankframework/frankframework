@@ -19,6 +19,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -31,6 +33,9 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
 	protected Log log = LogFactory.getLog(this.getClass());
 	protected S sender;
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	protected IPipeLineSession session;

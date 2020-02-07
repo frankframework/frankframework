@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.net.URL;
 
 /**
  * Default IBIS Configuration ClassLoader.
- * Looks nice in the GUI... has no special purpose :)
  * 
  * @author Niels Meijer
  */
@@ -31,12 +30,12 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	}
 
 	/**
-	 * The name that's being requested contains the basepath of the configuration.
+	 * The name that's being requested should only contain the BasePath of the configuration when set.
 	 * The {@link WebAppClassLoader} does not contain any further logic and must always 
-	 * search for the resource with basepath in it's parent (the classpath).
+	 * search for the resource with BasePath in it's parent (the ClassPath or another ClassLoader).
 	 */
 	@Override
 	public URL getLocalResource(String name) {
-		return getParent().getResource(name);
+		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
 }
