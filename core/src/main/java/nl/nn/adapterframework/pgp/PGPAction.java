@@ -20,6 +20,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.Keyrin
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.openpgp.PGPException;
 
@@ -27,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
 /**
  * This is an abstraction of general pgp actions
@@ -74,13 +76,15 @@ public abstract class PGPAction {
 			// Add public keys
 			if (publicKeys != null) {
 				for (String s : publicKeys) {
-					keyringConfig.addPublicKey(IOUtils.toByteArray(new FileInputStream(s)));
+					URL url = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), s);
+					keyringConfig.addPublicKey(IOUtils.toByteArray(new FileInputStream(url.toString())));
 				}
 			}
 			// Add private key
-			if (secretKey != null)
-				keyringConfig.addSecretKey(IOUtils.toByteArray(new FileInputStream(secretKey)));
-
+			if (secretKey != null) {
+				URL url = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), secretKey);
+				keyringConfig.addSecretKey(IOUtils.toByteArray(new FileInputStream(url.toString())));
+			}
 		} catch (IOException | PGPException e) {
 			throw new ConfigurationException("Unknown exception has occurred.", e);
 		}
