@@ -1,9 +1,12 @@
 angular.module('iaf.beheerconsole')
 
-.directive('pageTitle', ['$rootScope', '$timeout', '$state', function($rootScope, $timeout, $state) {
+.directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transitions', 'Debug', function($rootScope, $timeout, $state, $transitions, Debug) {
 	return {
 		link: function(scope, element) {
-			var listener = function(_, toState) {
+			var listener = function() {
+				var toState = $state.current;
+				Debug.info("state change", toState);
+
 				var title = 'Loading...'; // Default title
 				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.dtapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
 				else if($rootScope.startupError) title = "ERROR";
@@ -11,10 +14,8 @@ angular.module('iaf.beheerconsole')
 					element.text(title);
 				});
 			};
-			$rootScope.$on('$stateChangeStart', listener);
-			$rootScope.$watch('::instanceName', function() {
-				listener(null, $state.current);
-			});
+			$transitions.onSuccess({}, listener); //Fired on every state change
+			$rootScope.$watch('::instanceName', listener); //Fired once, once the instance name is known.
 		}
 	};
 }])
