@@ -48,6 +48,7 @@ public class AMethod {
      *
      * @param packageName - The name full name of the class (with a method attached to it)
      * @param method  - The current method
+     * @return the IbisDoc of the referred method
      */
     public IbisDoc getIbisDocRef(String packageName, Method method) {
 
