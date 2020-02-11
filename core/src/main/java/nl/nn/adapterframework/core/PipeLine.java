@@ -703,7 +703,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		+ "applies both to database transactions and XA transactions."
         + "The pipeline uses this to start a new transaction or suspend the current one when required. "
 		+ "For developers: it is equal"
-        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
+        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
         + "Possible values for transactionAttribute:"
         + "  <table border=\"1\">"
         + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
@@ -738,7 +738,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	    + "<tr><td>2</td><td>Mandatory</td></tr>"
 	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
 	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-	    + "<tr><td>5</td><td>Never</td><tr>"
+	    + "<tr><td>5</td><td>Never</td></tr>"
 	    + "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
@@ -782,7 +782,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return outputWrapper;
 	}
 
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)</code>"})
+	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
