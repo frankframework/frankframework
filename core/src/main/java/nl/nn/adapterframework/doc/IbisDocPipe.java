@@ -71,10 +71,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaRequesterSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CommandSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.EchoSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.FixedResultSender");
