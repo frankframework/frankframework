@@ -193,8 +193,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (clazz != null && clazz.isInterface()) {
 			Set<SpringBean> springBeans = getSpringBeans(clazz);
 			for (SpringBean springBean : springBeans) {
-				addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
-						springBean.getClazz(), ibisBeans);
+				if (clazz.isAssignableFrom(springBean.getClazz())) {
+					addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
+							springBean.getClazz(), ibisBeans);
+				}
 			}
 		}
 		groups.put(group, ibisBeans);
