@@ -38,6 +38,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	private String cacheName;
 	private KeyTransformer keyTransformer = new KeyTransformer();
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(cacheName)) {
@@ -47,8 +48,8 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		ibisCacheManager = IbisCacheManager.getInstance();
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String cacheKey = keyTransformer.transformKey((String)input, session);
 		Cache cache = ibisCacheManager.getCache(cacheName);
 		if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
@@ -123,9 +124,11 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
  */
 class KeyTransformer extends CacheAdapterBase {
 
+	@Override
 	public void close() {
 	}
 
+	@Override
 	public void open() {
 	}
 
@@ -139,17 +142,13 @@ class KeyTransformer extends CacheAdapterBase {
 	}
 
 	@Override
-	protected Object getElementObject(Object key) {
-		return null;
-	}
-
-	@Override
-	protected void putElementObject(Object key, Object value) {
-	}
-
-	@Override
 	protected boolean removeElement(Object key) {
 		return false;
+	}
+
+	@Override
+	protected Object stringToValue(String value) {
+		return value;
 	}
 
 }

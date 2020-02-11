@@ -74,7 +74,7 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							String, String
+	 							String, nl.nn.adapterframework.stream.Message
 	 						)
 	 					)
 	 					and
@@ -89,7 +89,7 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
-	 							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+	 							String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext
 	 						)
 	 					)
 	 					and
@@ -134,7 +134,7 @@
 					execution(
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							nl.nn.adapterframework.senders.SenderWrapperBase, String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+							nl.nn.adapterframework.senders.SenderWrapperBase, String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext
 						)
 					)
 					and

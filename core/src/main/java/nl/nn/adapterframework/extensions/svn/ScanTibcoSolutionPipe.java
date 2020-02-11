@@ -24,10 +24,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.xpath.XPathExpressionException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -40,8 +41,6 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe which scans TIBCO sources in Subversion and creates a report in xml.
@@ -77,13 +76,10 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "XPathExpressionException", e);
 		}
 
-		return new PipeRunResult(getForward(), stringWriter.getBuffer()
-				.toString());
+		return new PipeRunResult(getForward(), stringWriter.getBuffer().toString());
 	}
 
-	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel)
-			throws XMLStreamException, DomBuilderException,
-			XPathExpressionException {
+	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, DomBuilderException, XPathExpressionException {
 		String html;
 		try {
 			html = getHtml(cUrl);
