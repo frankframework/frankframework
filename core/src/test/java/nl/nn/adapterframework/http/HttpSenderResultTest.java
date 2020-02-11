@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -24,12 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -43,6 +37,13 @@ import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
 
 public class HttpSenderResultTest extends Mockito {
 
@@ -136,7 +137,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "", prc);
+		String result = sender.sendMessage(null, new Message(""), prc).asString();
 		assertEquals("<dummy result/>", result);
 	}
 
@@ -154,7 +155,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "", prc);
+		String result = sender.sendMessage(null, new Message(""), prc).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -182,7 +183,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -201,7 +202,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("", result);
 		pls = prc.getSession();
 
@@ -224,7 +225,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("", result);
 		pls = prc.getSession();
 
@@ -247,7 +248,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("", result);
 		pls = prc.getSession();
 
@@ -270,7 +271,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("", result);
 		pls = prc.getSession();
 
@@ -291,7 +292,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("text default", result);
 		pls = prc.getSession();
 
@@ -322,7 +323,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(null, new Message("tralala"), prc).asString();
 		assertEquals("<soap:Envelope/>", result.trim());
 
 		pls = prc.getSession();

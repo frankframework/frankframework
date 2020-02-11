@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Sender that sleeps for a specified time, which defaults to 5000 msecs.
@@ -29,8 +31,8 @@ public class DelaySender extends SenderBase {
 
 	private long delayTime=5000;
 
-
-	public String sendMessage(String correlationID, String message) throws SenderException {
+	@Override
+	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException {
 		try {
 			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());

@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.extensions.idin;
 
-import static org.junit.Assert.*;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -18,19 +16,20 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.xml.sax.SAXException;
+
 import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.xml.sax.SAXException;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -98,23 +97,23 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void randomMessage() throws SenderException, TimeOutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
-		String result = sender.sendMessage(null, message, null);
+		String result = sender.sendMessage(null, new Message(message), null).asString();
 		//TODO compare
 	}
 
 	@Ignore
 	@Test
-	public void normal() throws SenderException, TimeOutException {
+	public void normal() throws SenderException, TimeOutException, IOException {
 		String message = "<idin/>";
-		String result = sender.sendMessage(null, message, null);
+		String result = sender.sendMessage(null, new Message(message), null).asString();
 		//TODO assertEquals("result", result);
 	}
 
 	@Ignore
 	@Test
-	public void issuersByCountry() throws SenderException, TimeOutException {
+	public void issuersByCountry() throws SenderException, TimeOutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
-		String result = sender.sendMessage(null, message, null);
+		String result = sender.sendMessage(null, new Message(message), null).asString();
 		//TODO assertEquals("result", result);
 	}
 }

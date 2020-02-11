@@ -28,6 +28,7 @@ import com.eclipsesource.v8.V8Object;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -96,9 +97,9 @@ public class J2V8 implements JavascriptEngine<V8> {
 			@Override
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
-					String msg = parameters.get(0).toString();
+					Message msg = new Message(parameters.get(0));
 					if(sender instanceof ISenderWithParameters)
-						return ((ISenderWithParameters) sender).sendMessage(null, msg, prc);
+						return ((ISenderWithParameters) sender).sendMessage(null, msg, prc).asString();
 					else
 						return sender.sendMessage(null, msg);
 				} catch (Exception e) {

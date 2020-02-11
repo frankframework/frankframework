@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -29,8 +29,10 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -101,7 +103,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -136,7 +138,7 @@ public class ShadowSender extends ParallelSenders {
 		resultsXml.addAttribute("correlationID", correlationID);
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message),false);
+		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
 		resultsXml.addSubElement(originalMessageXml);
 
 		// First loop through all (Shadow)Senders and handle their results
@@ -186,10 +188,10 @@ public class ShadowSender extends ParallelSenders {
 		try {
 			if(resultISender instanceof ISenderWithParameters) {
 				ParameterResolutionContext newPrc2 = new ParameterResolutionContext(resultsXml.toXML(), prc.getSession());
-				((ISenderWithParameters) resultISender).sendMessage(correlationID, resultsXml.toXML(), newPrc2);
+				((ISenderWithParameters) resultISender).sendMessage(correlationID, new Message(resultsXml.toXML()), newPrc2);
 			}
 			else {
-				resultISender.sendMessage(correlationID, resultsXml.toXML());
+				resultISender.sendMessage(correlationID, new Message(resultsXml.toXML()));
 			}
 		}
 		catch(SenderException se) {
@@ -199,7 +201,7 @@ public class ShadowSender extends ParallelSenders {
 		if (originalSender.getThrowable() != null) {
 			throw new SenderException(originalSender.getThrowable());
 		}
-		return originalSender.getReply().toString();
+		return originalSender.getReply();
 	}
 
 	protected Iterator<ISender> getExecutableSenders() {

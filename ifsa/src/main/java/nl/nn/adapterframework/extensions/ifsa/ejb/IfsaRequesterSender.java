@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
-import com.ing.ifsa.exceptions.IFSAException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ing.ifsa.api.BusinessMessage;
 import com.ing.ifsa.api.Connection;
 import com.ing.ifsa.api.ConnectionManager;
@@ -24,8 +27,8 @@ import com.ing.ifsa.api.RequestReplyAccessBean;
 import com.ing.ifsa.api.ServiceReply;
 import com.ing.ifsa.api.ServiceRequest;
 import com.ing.ifsa.api.ServiceURI;
-import java.util.HashMap;
-import java.util.Map;
+import com.ing.ifsa.exceptions.IFSAException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
@@ -38,6 +41,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * IFSA Request sender for FF and RR requests implemented using the IFSA
@@ -95,12 +99,12 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
 	}
 
 	@Override
-	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
+	public Message sendMessage(String dummyCorrelationId, Message message) throws SenderException, TimeOutException, IOException {
 		return sendMessage(dummyCorrelationId, message, (Map<String, String>) null);
 	}
 
 	@Override
-	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String dummyCorrelationId, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		Map<String, String> params = convertParametersToMap(prc);
 		return sendMessage(dummyCorrelationId, message, params);
 	}
@@ -109,7 +113,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
      * Execute a request to the IFSA service.
      * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
      */
-    public String sendMessage(String dummyCorrelationId, String message, Map<String, String> params) throws SenderException, TimeOutException {
+    public Message sendMessage(String dummyCorrelationId, Message message, Map<String, String> params) throws SenderException, TimeOutException, IOException {
         Connection conn = null;
         Map<String, String> udzMap = null;
         
@@ -141,7 +145,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
             conn = ConnectionManager.getConnection(getApplicationId());
 
             // Create the request, and set the Service URI to the Service ID
-            ServiceRequest request = new ServiceRequest(new BusinessMessage(message));
+            ServiceRequest request = new ServiceRequest(new BusinessMessage(message.asString()));
             request.setServiceURI(new ServiceURI(realServiceId));
             addUdzMapToRequest(udzMap, request);
             if (isSynchronous()) {
@@ -151,7 +155,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
                 }
                 RequestReplyAccessBean rrBean = RequestReplyAccessBean.getInstance();
                 ServiceReply reply = rrBean.sendReceive(conn, request);
-                return reply.getBusinessMessage().getText();
+                return new Message(reply.getBusinessMessage().getText());
             } else {
                 // FF handling
                 FireForgetAccessBean ffBean = FireForgetAccessBean.getInstance();

@@ -23,6 +23,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+
 import org.junit.Test;
 
 public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
@@ -37,7 +39,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	@Test
 	public void simpleMockedWss() throws Throwable {
 		WebServiceSender sender = getSender();
-		String input = "<hallo/>";
+		Message input = new Message("<hallo/>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -46,7 +48,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -56,7 +58,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	@Test
 	public void simpleMockedWssSoapAction() throws Throwable {
 		WebServiceSender sender = getSender();
-		String input = "<hallo/>";
+		Message input = new Message("<hallo/>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -67,7 +69,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();;
 			assertEquals(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -77,7 +79,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	@Test
 	public void simpleMockedWssMultipart() throws Throwable {
 		WebServiceSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -98,7 +100,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();;
 			assertEquals(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -108,7 +110,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	@Test
 	public void simpleMockedWssMultipart2() throws Throwable {
 		WebServiceSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -131,7 +133,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();;
 			assertEquals(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -141,7 +143,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	@Test
 	public void simpleMockedWssMtom() throws Throwable {
 		WebServiceSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -163,7 +165,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();;
 			assertEquals(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

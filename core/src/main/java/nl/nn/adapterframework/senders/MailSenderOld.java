@@ -30,7 +30,7 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.URLDataSource;
 import javax.mail.BodyPart;
-import javax.mail.Message;
+//import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
@@ -40,26 +40,26 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
@@ -231,7 +231,8 @@ public class MailSenderOld extends SenderWithParametersBase {
 
 
 
-	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		String from=null;
 		String subject=null;
 		String threadTopic=null;
@@ -245,7 +246,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		
 		String messageInMailSafeForm;
 		if (paramList==null) {
-			messageInMailSafeForm = sendEmail(message, prc);
+			messageInMailSafeForm = sendEmail(message.asString(), prc);
 		} else {
 			try {
 				pvl = prc.getValues(paramList);
@@ -266,7 +267,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 				}
 				pv = pvl.getParameterValue("message");
 				if (pv != null) {
-					message = pv.asStringValue(message);  
+					message = new Message(pv.asStringValue(message.asString()));  
 					log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
 				}
 				pv = pvl.getParameterValue("messageType");
@@ -297,10 +298,10 @@ public class MailSenderOld extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
 			}
-			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
+			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message.asString(), messageType, messageBase64, charset, recipients, attachments);
 		}
 		prc.getSession().put(SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM, messageInMailSafeForm);
-		return correlationID;
+		return new Message(correlationID);
 	}
 	
 	private Collection<Recipient> retrieveRecipients(Collection<Node> recipientsNode) {
@@ -475,13 +476,13 @@ public class MailSenderOld extends SenderWithParametersBase {
 				Recipient recipient = (Recipient) iter.next();
 				String value = recipient.value;
 				String type = recipient.type;
-				Message.RecipientType recipientType;
+				javax.mail.Message.RecipientType recipientType;
 				if ("cc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.CC;
+					recipientType = javax.mail.Message.RecipientType.CC;
 				} else if ("bcc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.BCC;
+					recipientType = javax.mail.Message.RecipientType.BCC;
 				} else {
-					recipientType = Message.RecipientType.TO;
+					recipientType = javax.mail.Message.RecipientType.TO;
 				}
 				msg.addRecipient(recipientType, new InternetAddress(value));
 				recipientsFound = true;
@@ -571,7 +572,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 			return new String(bytesDecoded);
 	}
 
-	protected void putOnTransport(Message msg) throws SenderException {
+	protected void putOnTransport(javax.mail.Message msg) throws SenderException {
 		// connect to the transport 
 		Transport transport=null;
 		try {

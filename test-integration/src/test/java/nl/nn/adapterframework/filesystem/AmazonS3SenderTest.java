@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
@@ -20,12 +21,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -83,13 +82,13 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException {
+	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
 		fileSystemSender.setAction("createBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		fileSystemSender.configure();
 		fileSystemSender.getFileSystem().open();
-		String result = fileSystemSender.sendMessage("fakecorrelationid", bucketNameTobeCreatedAndDeleted);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", new Message(bucketNameTobeCreatedAndDeleted)).asString();
 
 		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertTrue(exists);
@@ -97,13 +96,13 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException {
+	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
 		fileSystemSender.setAction("deleteBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		fileSystemSender.configure();
 		fileSystemSender.getFileSystem().open();
-		String result = fileSystemSender.sendMessage("fakecorrelationid", bucketNameTobeCreatedAndDeleted);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", new Message(bucketNameTobeCreatedAndDeleted)).asString();
 
 		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertFalse(exists);
@@ -145,7 +144,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		objectTobeCopied.setKey(fileName);
 		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
 		out.close();
-		String result = fileSystemSender.sendMessage("fakecorrelationid", fileName, prc);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", new Message(fileName)).asString();
 		assertEquals(dest, result);
 	}
 

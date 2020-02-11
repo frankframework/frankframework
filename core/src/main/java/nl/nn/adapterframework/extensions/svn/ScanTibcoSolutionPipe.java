@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.svn;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
@@ -36,6 +37,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -52,13 +54,12 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private String url;
 	private int level = 0;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
 		XMLStreamWriter xmlStreamWriter;
 		try {
-			xmlStreamWriter = XmlUtils.OUTPUT_FACTORY
-					.createXMLStreamWriter(stringWriter);
+			xmlStreamWriter = XmlUtils.OUTPUT_FACTORY.createXMLStreamWriter(stringWriter);
 			xmlStreamWriter.writeStartDocument();
 			xmlStreamWriter.writeStartElement("root");
 			xmlStreamWriter.writeAttribute("url", getUrl());
@@ -411,8 +412,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		xmlStreamWriter.writeEndElement();
 	}
 
-	private String getHtml(String urlString) throws ConfigurationException,
-			SenderException, TimeOutException {
+	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -423,7 +423,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setXhtml(true);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, "");
+			String result = httpSender.sendMessage(null, new Message("")).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {

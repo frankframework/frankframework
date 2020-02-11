@@ -1,16 +1,19 @@
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
+
 import javax.mail.Provider;
-import javax.mail.Session;
 import javax.mail.Provider.Type;
+import javax.mail.Session;
+
+import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
 import nl.nn.adapterframework.senders.mail.TransportMock;
-
-import org.junit.Test;
+import nl.nn.adapterframework.stream.Message;
 
 public class MailSenderTest extends MailSenderTestBase<MailSender> {
 
@@ -33,10 +36,10 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+			public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 				super.sendMessage(correlationID, message, prc);
 				prc.getSession().put("mailSession", mailSession);
-				return correlationID;
+				return new Message(correlationID);
 			}
 		};
 		mailSender.setSmtpHost("localhost");

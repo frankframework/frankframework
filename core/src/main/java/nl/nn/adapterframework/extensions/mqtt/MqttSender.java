@@ -16,6 +16,8 @@
 
 package nl.nn.adapterframework.extensions.mqtt;
 
+import java.io.IOException;
+
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -25,6 +27,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -89,16 +92,16 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
 		return sendMessage(correlationID, message, null);
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		return sendMessage(correlationID, message, prc, null);
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
 		try {
 			if(!client.isConnected()) {
 				super.open();
@@ -106,7 +109,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 			log.debug(message);
 			MqttMessage MqttMessage = new MqttMessage();
-			MqttMessage.setPayload(message.getBytes());
+			MqttMessage.setPayload(message.asByteArray());
 			MqttMessage.setQos(getQos());
 			client.publish(getTopic(), MqttMessage);
 		}

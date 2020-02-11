@@ -20,6 +20,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -39,13 +44,9 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.log4j.Logger;
-import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -285,7 +286,7 @@ public class DefaultIbisManager implements IbisManager {
 				localSender.configure();
 				localSender.open();
 				try {
-					localSender.sendMessage(null, "");
+					localSender.sendMessage(null, new Message(""));
 				} finally {
 					localSender.close();
 				}

@@ -20,9 +20,9 @@ import java.io.IOException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
@@ -34,13 +34,9 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
-	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public final Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
-		try {
-			return result==null?null:new Message(result.getResult()).asString();
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
+		return result==null?null:new Message(result.getResult());
 	}
 
 	

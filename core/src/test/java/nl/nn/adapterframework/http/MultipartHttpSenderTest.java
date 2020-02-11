@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartHttp1() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -52,7 +53,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -66,7 +67,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartHttp2() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -83,7 +84,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -97,7 +98,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartHttp3() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -114,7 +115,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -128,7 +129,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartMtom1() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -146,7 +147,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -160,7 +161,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartMtom2() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -178,7 +179,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -192,7 +193,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	@Test
 	public void simpleMockedMultipartMtom3() throws Throwable {
 		MultipartHttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -210,7 +211,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(null, input, prc).asString();
 			assertEquals(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

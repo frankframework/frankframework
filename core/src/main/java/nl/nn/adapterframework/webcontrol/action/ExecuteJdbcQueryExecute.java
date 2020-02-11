@@ -26,18 +26,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
+
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.DynaActionForm;
 
 /**
  * @author m168309 
@@ -52,12 +53,8 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		addSecLogParamName("queryType");
 	}
 
-	public ActionForward executeSub(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response)
-		throws IOException, ServletException {
+	@Override
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 		// Initialize action
 		initAction(request);
@@ -81,7 +78,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.setSqlDialect("");
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", form_query);
+				result = qs.sendMessage("dummy", new Message(form_query)).asString();
 				if ("csv".equalsIgnoreCase(form_resultType)) {
 					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
 					if (url!=null) {

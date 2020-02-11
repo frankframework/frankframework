@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.ldap;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -38,7 +39,6 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 
@@ -48,10 +48,13 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -1054,14 +1057,14 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message)	throws SenderException {
+	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
 		return sendMessage(correlationID, message, new ParameterResolutionContext(message,null));
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		try {
-			return performOperation(message, prc);
+			return new Message(performOperation(message.asString(), prc));
 		} catch (Exception e) {
 			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
 		}

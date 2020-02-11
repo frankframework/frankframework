@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -25,5 +28,5 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {
 	
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException;
 }

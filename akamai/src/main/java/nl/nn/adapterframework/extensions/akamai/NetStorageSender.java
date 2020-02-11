@@ -51,6 +51,7 @@ import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -153,13 +154,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String path, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message path, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 
 		//The input of this sender is the path where to send or retrieve info from.
-		staticUri = buildUri(path); // TODO: this is not thread safe!
+		staticUri = buildUri(path.asString()); // TODO: this is not thread safe!
 
 		//We don't need to send any message to the HttpSenderBase
-		return super.sendMessage(correlationID, "", prc);
+		return super.sendMessage(correlationID, new Message(""), prc);
 	}
 
 	@Override

@@ -28,21 +28,22 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
+
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -185,7 +186,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	
 	}
 
-	private void processMessage(JmsSender qms, String messageId, String message) {
+	private void processMessage(JmsSender qms, String messageId, String message) throws IOException {
 		//PipeLineSession pls=new PipeLineSession();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
 		String technicalCorrelationId = messageId;
@@ -208,7 +209,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 
 		try {
 			qms.open();
-			qms.sendMessage(technicalCorrelationId,message);
+			qms.sendMessage(technicalCorrelationId,new Message(message));
 		} catch (SenderException e) {
 			error("error occured sending message",e);
 		} catch (TimeOutException e) {

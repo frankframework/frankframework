@@ -15,19 +15,23 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import static org.quartz.JobBuilder.newJob;
+
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
-import static org.quartz.JobBuilder.*;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -82,7 +86,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, IOException {
 		try {
 			ParameterValueList values = prc.getValues(paramList);
 			String jobName = getName() + correlationID;
@@ -90,8 +94,8 @@ public class SchedulerSender extends SenderWithParametersBase {
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
 				jobName = values.getParameterValue("_jobname").getValue().toString();
 			}
-			schedule(jobName, cronExpression, correlationID, message);
-			return jobName;
+			schedule(jobName, cronExpression, correlationID, message.asString());
+			return new Message(jobName);
 		}
 		catch(SenderException e) {
 			throw e;

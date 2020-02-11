@@ -18,6 +18,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * MailSender can be replaced with MailSenderNew to test MailSenderNew vice versa
@@ -132,9 +133,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, "<dummy><a>s</a></dummy>", prc);
-		assertEquals(input, result);
+		String correlationId = "FakeCorrelationId";
+		String result = sender.sendMessage(correlationId, new Message("<dummy><a>s</a></dummy>"), prc).asString();
+		assertEquals(correlationId, result);
 	}
 
 	@Test
@@ -194,9 +195,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(correlationID, null, prc).asString();
+		assertEquals(correlationID, result);
 	}
 
 	@Test
@@ -259,9 +260,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(correlationID, null, prc).asString();
+		assertEquals(correlationID, result);
 	}
 
 	@Test
@@ -311,9 +312,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(correlationID, null, prc).asString();
+		assertEquals(correlationID, result);
 	}
 
 	public void sendMessage(String filePath)
@@ -330,9 +331,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		}
 		bufReader.close();
 		String xml2String = sb.toString();
-		String sampleMailXML = xml2String;
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, sampleMailXML);
-		assertEquals(input, result);
+		Message sampleMailXML = new Message(xml2String);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(correlationID, sampleMailXML).asString();
+		assertEquals(correlationID, result);
 	}
 }

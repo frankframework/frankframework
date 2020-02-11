@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -109,7 +110,8 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message input, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+		String message = input.asString();
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey()));
@@ -125,7 +127,7 @@ public class BisJmsSender extends JmsSender {
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String replyMessage = super.sendMessage(correlationID, payload, prc, isMessageHeaderInSoapBody() ? null : messageHeader);
+		String replyMessage = super.sendMessage(correlationID, new Message(payload), prc, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		if (isSynchronous()) {
 			String bisError;
 			String bisErrorList;
@@ -153,14 +155,14 @@ public class BisJmsSender extends JmsSender {
 					}
 					replyMessage = XmlUtils.nodeToString(soapBodyElement);
 				}
-				return replyMessage;
+				return new Message(replyMessage);
 
 			} catch (Exception e) {
 				throw new SenderException(e);
 			}
 
 		} else {
-			return replyMessage;
+			return new Message(replyMessage);
 		}
 	}
 

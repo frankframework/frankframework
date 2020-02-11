@@ -15,13 +15,16 @@
 */
 package nl.nn.adapterframework.ftp;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * FTP client voor het versturen van files via FTP.
@@ -40,22 +43,25 @@ public class FtpSender extends SenderWithParametersBase {
 		this.ftpSession = new FtpSession();
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ftpSession.configure();
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		try {
 			IPipeLineSession session=null;
 			if (prc!=null) {
 				session=prc.getSession();
 			}
-			ftpSession.put(paramList, session, message, remoteDirectory, remoteFilenamePattern, true);
+			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {
 			throw e;
 		} catch(Exception e) {

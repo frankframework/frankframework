@@ -15,7 +15,8 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import java.io.IOException;
+
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -24,11 +25,12 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -42,14 +44,14 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled, ConfigurationAware {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String>, ConfigurationAware {
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey; 
 	private boolean preserveInput=false; 
 	protected SenderWrapperProcessor senderWrapperProcessor;
-	private ICacheAdapter cache=null;
+	private ICacheAdapter<String,String> cache=null;
 	private Configuration configuration;
 
 	@Override
@@ -87,10 +89,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
+	public abstract Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException; 
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
 		}
@@ -103,11 +105,11 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void registerCache(ICacheAdapter cache) {
+	public void registerCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter getCache() {
+	public ICacheAdapter<String,String> getCache() {
 		return cache;
 	}
 

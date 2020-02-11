@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,12 +32,12 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -66,7 +67,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		MailSession mailSession;
 		try {
 			mailSession = extract(message, prc);
@@ -75,7 +76,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		sendEmail(mailSession);
 
-		return correlationID;
+		return new Message(correlationID);
 	}
 
 	/**
@@ -85,8 +86,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * @return MailSession 
 	 * @throws SenderException
 	 * @throws DomBuilderException
+	 * @throws IOException 
 	 */
-	public MailSession extract(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
+	public MailSession extract(Message input, ParameterResolutionContext prc) throws SenderException, DomBuilderException, IOException {
 		MailSession mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, prc);
@@ -281,7 +283,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return attachment;
 	}
 
-	private MailSession parseXML(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
+	private MailSession parseXML(Message input, ParameterResolutionContext prc) throws SenderException, DomBuilderException, IOException {
 		Element from;
 		String subject;
 		String threadTopic;
@@ -295,7 +297,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		MailSession mailSession = new MailSession();
 
-		Element emailElement = XmlUtils.buildElement(input);
+		Element emailElement = XmlUtils.buildElement(input.asString());
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
 		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
 		if (StringUtils.isEmpty(subject)) {

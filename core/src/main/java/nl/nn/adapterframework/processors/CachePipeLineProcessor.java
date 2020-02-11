@@ -44,8 +44,8 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		String result;
 		String state;
 		synchronized (cache) {
-			result = cache.getString("r"+key);
-			state = cache.getString("s"+key);
+			result = cache.get("r"+key);
+			state = cache.get("s"+key);
 		}
 		if (result!=null && state!=null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
@@ -59,8 +59,8 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 		String cacheValue=cache.transformValue(prr.getResult(), pipeLineSession);
 		synchronized (cache) {
-			cache.putString("r"+key, cacheValue);
-			cache.putString("s"+key, prr.getState());
+			cache.put("r"+key, cacheValue);
+			cache.put("s"+key, prr.getState());
 		}
 		return prr;
 	}

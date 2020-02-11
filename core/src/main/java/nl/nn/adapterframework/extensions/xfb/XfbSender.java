@@ -16,18 +16,20 @@
 package nl.nn.adapterframework.extensions.xfb;
 
 import java.io.File;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.ProcessUtil;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
@@ -93,6 +95,7 @@ public class XfbSender extends SenderWithParametersBase {
 	private boolean copy = true;
 	private String copyPrefix = "IBIS_";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getScript())) {
 			throw new ConfigurationException("XfbSender ["+getName()+"] attribute script must be specified");
@@ -105,8 +108,9 @@ public class XfbSender extends SenderWithParametersBase {
 		}
  	} 
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		File file = new File(message);
+	@Override
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+		File file = new File(message.asString());
 		if (getCopy()) {
 			File fromFile = file;
 			String name = fromFile.getName();
@@ -130,7 +134,7 @@ public class XfbSender extends SenderWithParametersBase {
 		}
 		command = command + " filename=" +file.getAbsolutePath();
 		String output = ProcessUtil.executeCommand(command);
-		return output;
+		return new Message(output);
 	}
 
 	public void setScript(String script) {

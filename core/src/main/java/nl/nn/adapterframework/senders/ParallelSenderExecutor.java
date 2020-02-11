@@ -15,15 +15,16 @@
 */
 package nl.nn.adapterframework.senders;
 
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
@@ -32,7 +33,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Guard guard;
 	private StatisticsKeeper sk;
 
-	public ParallelSenderExecutor(ISender sender, String correlationID, String message, ParameterResolutionContext prc, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, String correlationID, Message message, ParameterResolutionContext prc, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
 		this.correlationID=correlationID;

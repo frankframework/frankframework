@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Interface to be implemented by an Ibis debugger. The debugger will be
@@ -43,9 +44,9 @@ public interface IbisDebugger {
 
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
-	public String senderInput(ISender sender, String correlationId, Object input);
+	public Message senderInput(ISender sender, String correlationId, Message input);
 
-	public String senderOutput(ISender sender, String correlationId, Object output);
+	public Message senderOutput(ISender sender, String correlationId, Message output);
 
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 

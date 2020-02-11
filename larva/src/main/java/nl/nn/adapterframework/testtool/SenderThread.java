@@ -1,13 +1,16 @@
 package nl.nn.adapterframework.testtool;
 
+import java.io.IOException;
+
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
@@ -22,6 +25,7 @@ public class SenderThread extends Thread {
     private String request;
     private String response;
     private SenderException senderException;
+    private IOException ioException;
     private TimeOutException timeOutException;
     private boolean convertExceptionToMessage = false;
 
@@ -47,9 +51,9 @@ public class SenderThread extends Thread {
     public void run() {
         try {
         	if (senderWithParameters == null) {
-				response = sender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, request);
+				response = sender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, new Message(request)).asString();
         	} else {
-				response = senderWithParameters.sendMessage(TestTool.TESTTOOL_CORRELATIONID, request, parameterResolutionContext);
+				response = senderWithParameters.sendMessage(TestTool.TESTTOOL_CORRELATIONID,  new Message(request), parameterResolutionContext).asString();
         	}
         } catch(SenderException e) {
         	if (convertExceptionToMessage) {
@@ -58,6 +62,13 @@ public class SenderThread extends Thread {
 				log.error("SenderException for ISender '" + name + "'", e);
 				senderException = e;
         	}
+        } catch(IOException e) {
+			if (convertExceptionToMessage) {
+				response = Util.throwableToXml(e);
+			} else {
+				log.error("IOException for ISender '" + name + "'", e);
+				ioException = e;
+			}
         } catch(TimeOutException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
@@ -87,6 +98,16 @@ public class SenderThread extends Thread {
             }
         }
         return senderException;
+    }
+
+    public IOException getIOException() {
+        while (this.isAlive()) {
+            try {
+                Thread.sleep(100);
+            } catch(InterruptedException e) {
+            }
+        }
+        return ioException;
     }
 
     public TimeOutException getTimeOutException() {

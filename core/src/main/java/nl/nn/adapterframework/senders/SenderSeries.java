@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -86,7 +88,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		long t1 = System.currentTimeMillis();
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();

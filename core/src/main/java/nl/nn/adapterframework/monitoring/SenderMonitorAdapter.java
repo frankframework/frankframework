@@ -18,15 +18,16 @@ package nl.nn.adapterframework.monitoring;
 import java.util.Iterator;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlBuilder;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * IMonitorAdapter that uses a {@link nl.nn.adapterframework.core.ISender sender} to send its message.
@@ -40,6 +41,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	
 	private boolean senderConfigured=false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (getSender()==null) {
 			throw new ConfigurationException("must have sender configured");
@@ -65,9 +67,10 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 		}
 	}
 
+	@Override
 	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		try {
-			getSender().sendMessage(null,makeXml(subSource,eventType,severity,message,t));
+			getSender().sendMessage(null,new Message(makeXml(subSource,eventType,severity,message,t)));
 		} catch (Exception e) {
 			log.error("Could not signal event",e);
 		}

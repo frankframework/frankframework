@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ConfigurationAware;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -72,9 +73,9 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
-			return psender.sendMessage(session.getMessageId(), xml,prc); 
+			return psender.sendMessage(session.getMessageId(), new Message(xml),prc).asString(); 
 		}
-		return sender.sendMessage(session.getMessageId(), xml); 
+		return sender.sendMessage(session.getMessageId(), new Message(xml)).asString(); 
 	}
 	
 

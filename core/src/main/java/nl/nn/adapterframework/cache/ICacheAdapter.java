@@ -45,15 +45,6 @@ public interface ICacheAdapter<K,V> {
 	
 
 	/**
-	 * Obtain a potentially cached value, set by putString().
-	 */
-	String getString(K key);
-	/**
-	 * store a value in the cache, that can be retrieved later using getString().
-	 */
-	void putString(K key, String value);
-
-	/**
 	 * Obtain a potentially cached value, set by put().
 	 */
 	V get(K key);

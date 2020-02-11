@@ -27,6 +27,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
@@ -113,7 +114,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
@@ -128,7 +129,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			if (StringUtils.isEmpty(getFunctionName())) {
 				pvl.removeParameterValue(getFunctionNameParam());
 			}
-		    message2FunctionCall(function, message, correlationID, pvl);
+		    message2FunctionCall(function, message.asString(), correlationID, pvl);
 		    if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
 			JCO.Client client = getClient(prc.getSession(), sapSystem);
 			try {
@@ -144,7 +145,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			if (isSynchronous()) {
 				return functionResult2message(function);
 			} else {
-				return tid;
+				return new Message(tid);
 			}
 		} catch (Exception e) {
 			throw new SenderException(e);

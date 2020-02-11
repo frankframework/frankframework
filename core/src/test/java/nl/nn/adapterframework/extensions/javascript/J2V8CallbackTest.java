@@ -2,6 +2,8 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -14,6 +16,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.stream.Message;
 
 public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 
@@ -26,8 +29,8 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	@Test
-	public void simpleSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException {
-		String dummyInput = "dummyinput";
+	public void simpleSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException, IOException {
+		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f2");
 		sender.setEngineName("J2V8");
@@ -49,13 +52,13 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("7", sender.sendMessage(null, dummyInput, prc));
+		assertEquals("7", sender.sendMessage(null, dummyInput, prc).asString());
 	}
 
 	//An EchoSender will be called in the javascript code.
 	@Test
-	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException {
-		String dummyInput = "dummyinput";
+	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException, IOException {
+		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f4");
 		sender.setEngineName("J2V8");
@@ -82,6 +85,6 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
-		assertEquals("true", sender.sendMessage(null,dummyInput,prc));
+		assertEquals("true", sender.sendMessage(null,dummyInput,prc).asString());
 	}
 }

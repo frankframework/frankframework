@@ -35,6 +35,7 @@ import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -120,7 +121,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
-			result = qs.sendMessage("dummy", query);
+			result = qs.sendMessage("dummy", new Message(query)).asString();
 			if (resultType.equalsIgnoreCase("csv")) {
 				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
 				if (url!=null) {

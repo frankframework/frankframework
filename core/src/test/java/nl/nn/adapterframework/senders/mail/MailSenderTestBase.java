@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
@@ -31,6 +30,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -48,7 +48,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 
 		sender.configure();
 		sender.open();
-		sender.sendMessage(null, mailInput);
+		sender.sendMessage(null, new Message(mailInput));
 	}
 
 	private void validateAuthentication(Session session) {
@@ -152,7 +152,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -180,7 +180,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -208,7 +208,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 	}
 
 	@Test
@@ -232,7 +232,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -263,7 +263,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -294,7 +294,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -313,7 +313,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -337,7 +337,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
 
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -369,7 +369,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		session.put("attachment3", new ByteArrayInputStream(bytes));
 		session.put("attachment4", new ByteArrayInputStream(base64Bytes));
 
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -402,7 +402,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -433,7 +433,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(null, new Message(mailInput), prc);
 		Session session = (Session) prc.getSession().get("mailSession");
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
@@ -474,12 +474,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 					sender2.open();
 
 					ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
-					sender2.sendMessage(null, mailInput, prc);
+					sender2.sendMessage(null, new Message(mailInput), prc);
 					Session session = (Session) prc.getSession().get("mailSession");
 					session.getProperties().setProperty("bounce", bounce);
 
 					ParameterResolutionContext prc2 = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
-					sender2.sendMessage(null, mailInput, prc2);
+					sender2.sendMessage(null, new Message(mailInput), prc2);
 					Session session2 = (Session) prc.getSession().get("mailSession");
 					assertEquals("same session should be used", session, session2);
 					validateNDR(session, bounce);

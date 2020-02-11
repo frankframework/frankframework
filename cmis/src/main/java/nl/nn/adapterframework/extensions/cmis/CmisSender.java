@@ -33,24 +33,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -77,6 +59,25 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -339,28 +340,30 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		try {
-			if(runtimeSession || !isKeepSession())
+			if(runtimeSession || !isKeepSession()) {
 				session = createSession(prc);
-
+			}
+			String result;
 			if (getAction().equalsIgnoreCase("get")) {
-				return sendMessageForActionGet(correlationID, message, prc);
+				result = sendMessageForActionGet(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("create")) {
-				return sendMessageForActionCreate(correlationID, message, prc);
+				result = sendMessageForActionCreate(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("delete")) {
-				return sendMessageForActionDelete(correlationID, message, prc);
+				result = sendMessageForActionDelete(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("find")) {
-				return sendMessageForActionFind(correlationID, message, prc);
+				result = sendMessageForActionFind(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("update")) {
-				return sendMessageForActionUpdate(correlationID, message, prc);
+				result = sendMessageForActionUpdate(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("fetch")) {
-				return sendMessageForDynamicActions(correlationID, message, prc);
+				result = sendMessageForDynamicActions(correlationID, message.asString(), prc);
 			} else if (getAction().equalsIgnoreCase("dynamic")) {
-				return sendMessageForDynamicActions(correlationID, message, prc);
+				result = sendMessageForDynamicActions(correlationID, message.asString(), prc);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}
+			return new Message(result);
 		} finally {
 			if (session != null && !isKeepSession()) {
 				session.clear();

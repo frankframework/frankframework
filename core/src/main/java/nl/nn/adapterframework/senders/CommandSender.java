@@ -15,19 +15,19 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ProcessUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
@@ -48,12 +48,13 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean commandWithArguments = false;
 	private boolean synchronous=true;
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
 		} else {
-			commandline = commandToList(message);
+			commandline = commandToList(message.asString());
 		}
 		if (paramList!=null) {
 			ParameterValueList pvl;
@@ -66,7 +67,7 @@ public class CommandSender extends SenderWithParametersBase {
 				commandline.add(pvl.getParameterValue(i).getValue());
 			}
 		}
-		return ProcessUtil.executeCommand(commandline, timeOut);
+		return new Message(ProcessUtil.executeCommand(commandline, timeOut));
 	}
 
 	private List commandToList(String command) {
@@ -80,6 +81,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return list;
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

@@ -15,14 +15,15 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import com.sap.mw.idoc.IDoc;
+import com.sap.mw.jco.JCO;
+
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import com.sap.mw.idoc.IDoc;
-import com.sap.mw.jco.JCO;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
@@ -65,14 +66,14 @@ public class IdocSender extends SapSenderBase {
 
 	
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
 			pvl=prc.getValues(paramList);
 			SapSystem sapSystem = getSystem(pvl);
 			
-			IDoc.Document idoc = parseIdoc(sapSystem,message);
+			IDoc.Document idoc = parseIdoc(sapSystem,message.asString());
 			
 			try {
 				log.debug(getLogPrefix()+"checking syntax");
@@ -94,7 +95,7 @@ public class IdocSender extends SapSenderBase {
 			} finally {
 				releaseClient(client,sapSystem);
 			}
-			return tid;
+			return new Message(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

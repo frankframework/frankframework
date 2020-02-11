@@ -42,6 +42,7 @@ import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -182,8 +183,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return null;
 	}
 
-	protected String itemToMessage(I item) throws SenderException {
-		return (String)item;
+	protected Message itemToMessage(I item) throws SenderException {
+		return new Message(item);
 	}
 	
 	/**
@@ -217,7 +218,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				executorList = new ArrayList<ParallelSenderExecutor>();
 			}
 		}
-		public boolean handleItem(I item) throws SenderException, TimeOutException {
+		public boolean handleItem(I item) throws SenderException, TimeOutException, IOException {
 			if (isParallel() && isCollectResults()) {
 				guard.addResource();
 			}
@@ -235,7 +236,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				session.put(getItemNoSessionKey(),""+count);
 			}
 			ParameterResolutionContext prc=null;
-			String message=itemToMessage(item);
+			Message message=itemToMessage(item);
 			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
 			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
 				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
@@ -244,11 +245,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (msgTransformerPool!=null) {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
-					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
+					String transformedMsg=msgTransformerPool.transform(message.asSource(),prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
-					message=transformedMsg;
+					message=new Message(transformedMsg);
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
 					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
@@ -270,9 +271,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} else {
 					long senderStartTime= System.currentTimeMillis();
 					if (psender!=null) {
-						itemResult = psender.sendMessage(correlationID, message, prc);
+						itemResult = psender.sendMessage(correlationID, message, prc).asString();
 					} else {
-						itemResult = sender.sendMessage(correlationID, message);
+						itemResult = sender.sendMessage(correlationID, message).asString();
 					}
 					long senderEndTime = System.currentTimeMillis();
 					long senderDuration = senderEndTime - senderStartTime;
@@ -329,7 +330,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
 		}
-		private void addResult(int count, String message, String itemResult) {
+		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
@@ -337,13 +338,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
 			String itemInput="";
 			if (isAddInputToResult()) {
-				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message):message)+"</input>";
+				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
 			}
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
 		}
 		
-		public StringBuffer getResults() throws SenderException {
+		public StringBuffer getResults() throws SenderException, IOException {
 			if (isParallel()) {
 				try {
 					guard.waitForAllResources();
@@ -356,7 +357,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						} else {
 							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}
-						addResult(count, pse.getRequest().toString(), itemResult);
+						addResult(count, pse.getRequest(), itemResult);
 					}
 				} catch (InterruptedException e) {
 					throw new SenderException(getLogPrefix(session)+"was interupted",e);
@@ -371,7 +372,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;
