@@ -635,6 +635,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 						beanHtml.append("<td>" + property + "</td>");
 					}
 					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+					if (ibisDocRef != null) {
+						AMethod aMethod = new AMethod(property);
+						ibisDoc = aMethod.getIbisDocRef(ibisDocRef.value()[1], method);
+					}
 					if (ibisDoc != null) {
 						String[] ibisDocValues = ibisDoc.value();
 						if (beanComplexType != null) {
