@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
@@ -70,6 +72,8 @@ public class IMSSender extends MQSender {
 	private static final int MQENC_NATIVE = 273;				// copied from com.ibm.mq.MQC in com.ibm.mq.jar
 	private static final int CCSID_ISO_8859_1 = 819;
 	
+	private static final Charset CHARSET= StandardCharsets.ISO_8859_1;
+	
 	private String transactionCode;
 	
 	/**
@@ -106,28 +110,28 @@ public class IMSSender extends MQSender {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		
 		try {
-			bos.write(IIH_HEADER_STRUCT_ID.getBytes());
+			bos.write(IIH_HEADER_STRUCT_ID.getBytes(CHARSET));
 			bos.write(intToBytes(IIH_HEADER_VERSION));
 			bos.write(intToBytes(IIH_HEADER_LENGTH));
 			bos.write(intToBytes(IIH_HEADER_ENCODING));
 			bos.write(intToBytes(IIH_HEADER_CODECHARSET));
-			bos.write(IIH_HEADER_FORMAT.getBytes());
+			bos.write(IIH_HEADER_FORMAT.getBytes(CHARSET));
 			bos.write(intToBytes(IIH_HEADER_FLAGS));
-			bos.write(IIH_HEADER_LTERM_OR.getBytes());
-			bos.write(IIH_HEADER_MFS_MAPNAME.getBytes());
-			bos.write(IIH_HEADER_REPLY_FORMAT.getBytes());
-			bos.write(IIH_HEADER_MFS_AUTH.getBytes());
+			bos.write(IIH_HEADER_LTERM_OR.getBytes(CHARSET));
+			bos.write(IIH_HEADER_MFS_MAPNAME.getBytes(CHARSET));
+			bos.write(IIH_HEADER_REPLY_FORMAT.getBytes(CHARSET));
+			bos.write(IIH_HEADER_MFS_AUTH.getBytes(CHARSET));
 			bos.write(IIH_HEADER_TRAN_INSTANCE);
-			bos.write(IIH_HEADER_TRAN_STATE.getBytes());
-			bos.write(IIH_HEADER_COMMIT_MODE.getBytes());
-			bos.write(IIH_HEADER_SECURITY_SCOPE.getBytes());
-			bos.write(IIH_HEADER_RESERVED.getBytes());
+			bos.write(IIH_HEADER_TRAN_STATE.getBytes(CHARSET));
+			bos.write(IIH_HEADER_COMMIT_MODE.getBytes(CHARSET));
+			bos.write(IIH_HEADER_SECURITY_SCOPE.getBytes(CHARSET));
+			bos.write(IIH_HEADER_RESERVED.getBytes(CHARSET));
 			
-			byte[] data = message.getBytes();
+			byte[] data = message.getBytes(CHARSET);
 			
 			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
-			bos.write((transactionCode + " ").getBytes());
+			bos.write((transactionCode + " ").getBytes(CHARSET));
 			
 			bos.write(data);
 			
@@ -157,43 +161,43 @@ public class IMSSender extends MQSender {
 			return null;
 		}
 		
-		String characterSet = message.getStringProperty("JMS_IBM_Character_Set");
+		String charset = message.getStringProperty("JMS_IBM_Character_Set");
 		
 		byte[] headerBuffer = new byte[IIH_HEADERSIZE];
 		message.readBytes(headerBuffer);
 		
 		// Put header fields in the context
 		ByteBuffer byteBuffer = ByteBuffer.wrap(headerBuffer);
-		context.put("MQIIH_StrucID", byteToString(byteBuffer, characterSet, 4));
+		context.put("MQIIH_StrucID", byteToString(byteBuffer, charset, 4));
 		context.put("MQIIH_Version", byteBuffer.getInt());
 		context.put("MQIIH_StrucLength", byteBuffer.getInt());
 		context.put("MQIIH_Encoding", byteBuffer.getInt());
 		context.put("MQIIH_CodedCharSetId", byteBuffer.getInt());
-		context.put("MQIIH_Format", byteToString(byteBuffer, characterSet, 8));
+		context.put("MQIIH_Format", byteToString(byteBuffer, charset, 8));
 		context.put("MQIIH_Flags", byteBuffer.getInt());
-		context.put("MQIIH_LTermOverride", byteToString(byteBuffer, characterSet, 8));
-		context.put("MQIIH_MFSMapName", byteToString(byteBuffer, characterSet, 8));
-		context.put("MQIIH_ReplyToFormat", byteToString(byteBuffer, characterSet, 8));
-		context.put("MQIIH_Authenticator", byteToString(byteBuffer, characterSet, 8));
-		context.put("MQIIH_TranInstanceId", byteToString(byteBuffer, characterSet, 16));
-		context.put("MQIIH_TranState", byteToString(byteBuffer, characterSet, 1));
-		context.put("MQIIH_CommitMode", byteToString(byteBuffer, characterSet, 1));
-		context.put("MQIIH_SecurityScope", byteToString(byteBuffer, characterSet, 1));
-		context.put("MQIIH_Reserved", byteToString(byteBuffer, characterSet, 1));
+		context.put("MQIIH_LTermOverride", byteToString(byteBuffer, charset, 8));
+		context.put("MQIIH_MFSMapName", byteToString(byteBuffer, charset, 8));
+		context.put("MQIIH_ReplyToFormat", byteToString(byteBuffer, charset, 8));
+		context.put("MQIIH_Authenticator", byteToString(byteBuffer, charset, 8));
+		context.put("MQIIH_TranInstanceId", byteToString(byteBuffer, charset, 16));
+		context.put("MQIIH_TranState", byteToString(byteBuffer, charset, 1));
+		context.put("MQIIH_CommitMode", byteToString(byteBuffer, charset, 1));
+		context.put("MQIIH_SecurityScope", byteToString(byteBuffer, charset, 1));
+		context.put("MQIIH_Reserved", byteToString(byteBuffer, charset, 1));
 		
 		int readBufferLength = (int)message.getBodyLength() - IIH_HEADERSIZE; // Get the length of the message to extract
 		
 		byte[] readBuffer = new byte[readBufferLength];
 		message.readBytes(readBuffer);
 				
-		return new String(readBuffer, characterSet);
+		return new String(readBuffer, charset);
 	}
 	
-	private String byteToString(ByteBuffer byteBuffer, String characterSet, int size) throws UnsupportedEncodingException {
+	private String byteToString(ByteBuffer byteBuffer, String charset, int size) throws UnsupportedEncodingException {
 		byte[] bytes = new byte[size];
 		byteBuffer.get(bytes);
 		
-		return new String(bytes, characterSet);
+		return new String(bytes, charset);
 	}
 	
 	private byte[] intToBytes(int i) {
