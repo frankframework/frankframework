@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -72,6 +73,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	private ReportXmlTransformer reportXmlTransformer;
 	private String exclude;
 	private Pattern excludeRegexPattern;
+	private ReportNameComparator reportNameComparator;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -83,6 +85,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
 		}
+		reportNameComparator = new ReportNameComparator();
 	}
 
 	@Override
@@ -106,8 +109,10 @@ public class LadybugPipe extends FixedForwardPipe {
 		}
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
+		reportRunner.setDebugStorage(debugStorage);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
-		
+
+		reports.sort(reportNameComparator);
 		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
 		if(enableReportGenerator) {
@@ -133,7 +138,7 @@ public class LadybugPipe extends FixedForwardPipe {
 			} else {
 				Report runResultReport = null;
 				try {
-					runResultReport = ReportRunner.getRunResultReport(debugStorage, runResult.correlationId);
+					runResultReport = reportRunner.getRunResultReport(runResult.correlationId);
 				} catch (StorageException e) {
 					addExceptionElement(results, e);
 				}
@@ -146,7 +151,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					if (report.toXml().equals(runResultReport.toXml())) {
+					if(report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
 						equal = true;
 						reportsPassed++;
 					}
@@ -278,5 +283,12 @@ class IbisSecurityContext implements SecurityContext {
 			return true;
 		}
 	}
+}
 
+class ReportNameComparator implements Comparator<Report> {
+
+	@Override
+	public int compare(Report o1, Report o2) {
+		return o1.getFullPath().compareTo(o2.getFullPath());
+	}
 }

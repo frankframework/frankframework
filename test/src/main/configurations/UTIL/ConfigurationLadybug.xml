@@ -10,7 +10,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="RunTestReports" className="nl.nn.ibistesttool.LadybugPipe"
-				writeToLog="true">
+				writeToLog="true" enableReportGenerator="true" exclude="${ladybug.adapter.excludeRegex}">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
