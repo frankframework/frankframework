@@ -597,6 +597,14 @@
 			<artifactId>bouncy-gpg</artifactId>
 			<version>2.2.0</version>
 		</dependency>
+<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
+			and causes problems during loading from classpath.
+			So, it requires to add explicit dependency.-->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.64</version>
+		</dependency>
 	</dependencies>
 
 	<build>
