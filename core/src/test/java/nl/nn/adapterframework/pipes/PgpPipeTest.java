@@ -28,7 +28,7 @@ public class PgpPipeTest {
 	private String[] encryptParams, decryptParams;
 
 	private final String MESSAGE = "My Secret!!";
-	private final String PGP_FOLDER = "src/test/resources/PGP/";
+	private final String PGP_FOLDER = "PGP/";
 
 	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc", "first/public.asc;second/public.asc"};
 	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc", "first/public.asc;second/public.asc"};
