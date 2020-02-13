@@ -74,7 +74,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 				errorMessage = "Adapter '" + RESEND_ADAPTER + "' not found";
 			}
 		} else {
-			errorMessage = super.rerun(correlationId, originalReport, securityContext);
+			errorMessage = super.rerun(correlationId, originalReport, securityContext, reportRunner);
 		}
 		return errorMessage;
 	}
