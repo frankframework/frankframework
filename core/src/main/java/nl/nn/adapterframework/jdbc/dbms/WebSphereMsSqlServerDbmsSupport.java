@@ -21,9 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -82,7 +82,7 @@ public class WebSphereMsSqlServerDbmsSupport extends MsSqlServerDbmsSupport {
 		File clobFile = (File)clobUpdateHandle;
 		try {
 			InputStream is = new FileInputStream(clobFile); 
-			InputStreamReader isr = new InputStreamReader(is,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			Reader isr = StreamUtil.getCharsetDetectingInputStreamReader(is);
 			rs.updateCharacterStream(column, isr, (int)clobFile.length()); // FIXME: should use character count instead of byte count!
 		} catch (Exception e) {
 			throw new JdbcException("cannot read clob for column ["+column+"] from file ["+clobFile.toString()+"]",e);
@@ -92,7 +92,7 @@ public class WebSphereMsSqlServerDbmsSupport extends MsSqlServerDbmsSupport {
 		File clobFile = (File)clobUpdateHandle;
 		try {
 			InputStream is = new FileInputStream(clobFile); 
-			InputStreamReader isr = new InputStreamReader(is,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			Reader isr = StreamUtil.getCharsetDetectingInputStreamReader(is);
 			rs.updateCharacterStream(column, isr, (int)clobFile.length()); // FIXME: should use character count instead of byte count!
 		} catch (Exception e) {
 			throw new JdbcException("cannot read clob for column ["+column+"] from file ["+clobFile.toString()+"]",e);

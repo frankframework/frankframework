@@ -880,17 +880,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return queueConnectionFactoryName;
 	}
 
-	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>true</code>.
-	 * The corresponding connection factory should support XA transactions.
-	 * @deprecated please use 'setQueueConnectionFactoryName()' instead
-	 */
-	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
-		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
-		}
-	}
-
 
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
@@ -904,16 +893,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return topicConnectionFactoryName;
 	}
 
-	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>true</code>.
-	 * The corresponding connection factory should support XA transactions.
-	 * @deprecated please use 'setTopicConnectionFactoryName()' instead
-	 */
-	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
-		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
-		}
-	}
 
 	/**
 	 * Controls the use of JMS transacted session.

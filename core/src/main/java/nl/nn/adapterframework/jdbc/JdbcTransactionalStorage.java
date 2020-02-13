@@ -388,6 +388,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Creates a connection, checks if the table is existing and creates it when necessary
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		setOperationControls();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException("Attribute [tableName] is not set");
@@ -1432,7 +1433,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
 	}
 
-	@IbisDoc({"the name of the sequence used to generate the primary key (only for oracle)<br>n.b. the default name has been changed in version 4.6", "seq_ibisstore"})
+	@IbisDoc({"the name of the sequence used to generate the primary key (only for oracle) n.b. the default name has been changed in version 4.6", "seq_ibisstore"})
 	public void setSequenceName(String string) {
 		sequenceName = string;
 	}

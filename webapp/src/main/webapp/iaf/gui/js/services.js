@@ -13,18 +13,17 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
 		this.Get = function (uri, callback, error, httpOptions) {
-			var defaultHttpOptions = {};
+			var defaultHttpOptions = { headers:{}};
 
 			if(httpOptions) {
-				if(typeof httpOptions != "object") { //legacy boolean skipEtag
-					if(etags.hasOwnProperty(uri) && !(httpOptions===true)) {
-						Debug.log("skipEtag ["+httpOptions+"] for uri ["+uri+"]");
-						defaultHttpOptions.headers = {'If-None-Match': etags[uri]};
-					}
-				} else {
+				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
+				if(typeof httpOptions == "object") {
 					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
 					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 				}
+			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+				var tag = etags[uri];
+				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}
 
 			return $http.get(buildURI(uri), defaultHttpOptions).then(function(response) {
@@ -37,7 +36,7 @@ angular.module('iaf.beheerconsole')
 					}
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Post = function () { // uri, object, callback, error || uri, object, headers, callback, error
@@ -59,7 +58,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Put = function (uri, object, callback, error) {
@@ -83,7 +82,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Delete = function (uri, callback, error) {
@@ -92,7 +91,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		var errorException = function (response, callback) {
@@ -221,7 +220,6 @@ angular.module('iaf.beheerconsole')
 				}
 				else
 					this.poller = setInterval(this.fn, this.pollerInterval);
-				this.run(); //First run!
 			};
 			this.setInterval = function(interval, restart) {
 				var restart = (!restart || restart === false) ? false : true;
@@ -280,7 +278,7 @@ angular.module('iaf.beheerconsole')
 				start: function() {
 					Debug.info("starting all Pollers");
 					for(x in data)
-						data[x].start();
+						data[x].fn();
 				},
 				stop: function() {
 					Debug.info("stopping all Pollers");
@@ -541,10 +539,12 @@ angular.module('iaf.beheerconsole')
 			if(url && url.indexOf("?") > 0)
 				url = url.substring(0, url.indexOf("?"));
 
-			gTag.config({
-				'page_path': url,
-				'page_title': state.data.pageTitle
-			});
+			if(state.data && state.data.pageTitle) {
+				gTag.config({
+					'page_path': url,
+					'page_title': state.data.pageTitle
+				});
+			}
 		});
 	}])
 	.service('Debug', function() {

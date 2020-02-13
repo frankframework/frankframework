@@ -25,6 +25,7 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -58,8 +59,8 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
-		return false; // JsonParser requires inputSource
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return null; // JsonParser requires inputSource
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(correlationID, input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(xjw,target,this,threadLifeCycleEventListener,correlationID);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,correlationID);
 		return super.createHandler(correlationID, input, session, prev);
 	}
 

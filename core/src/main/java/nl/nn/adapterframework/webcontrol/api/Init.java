@@ -55,6 +55,7 @@ public class Init extends Base {
 
 	@Context Dispatcher dispatcher;
 	@Context HttpServletRequest httpServletRequest;
+
 	@GET
 	@PermitAll
 	@Path("/")

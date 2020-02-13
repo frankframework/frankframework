@@ -10,7 +10,7 @@ To prevent problems with data transactionality, we will be using an Oracle datab
 
 ## 1. Proprietary modules and JAR dependencies
 
-Download the following JARs, and place them in your Tomcat server's lib folder. If you do not yet have a lib folder, you can create one directly under your Tomcat server's root directory.
+Download the following JAR files. We advice you to place them in the Servers\lib folder of your Eclipse workspace. If you don't have this folder, you can create it.
 * [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
 * [geronimo-j2ee-management\_1.1_spec-1.0.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-j2ee-management_1.1_spec/1.0.1)
 * [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)

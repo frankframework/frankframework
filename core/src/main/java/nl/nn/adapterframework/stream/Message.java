@@ -18,10 +18,10 @@ package nl.nn.adapterframework.stream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -73,7 +73,10 @@ public class Message {
 		return request;
 	}
 
-	public Reader asReader() {
+	/**
+	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
+	public Reader asReader() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -82,34 +85,35 @@ public class Message {
 			return (Reader) request;
 		}
 		if (request instanceof InputStream) {
-			try {
-				log.debug("returning InputStream as Reader");
-				return new InputStreamReader((InputStream) request, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-			} catch (UnsupportedEncodingException e) {
-				log.warn(e);
-				return null;
-			}
+			log.debug("returning InputStream as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request);
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream());
 		}
 		if (request instanceof byte[]) {
-			try {
-				log.debug("returning byte[] as Reader");
-				return new InputStreamReader(new ByteArrayInputStream((byte[]) request), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-			} catch (UnsupportedEncodingException e) {
-				log.warn(e);
-				return null;
-			}
+			log.debug("returning byte[] as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request));
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
 	}
 
-	public InputStream asInputStream() {
+	/**
+	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
+	public InputStream asInputStream() throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputStream");
 			return (InputStream) request;
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputStream");
+			return ((URL) request).openStream();
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputStream");
@@ -128,7 +132,10 @@ public class Message {
 		}
 	}
 
-	public InputSource asInputSource() {
+	/**
+	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
+	public InputSource asInputSource() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -139,6 +146,10 @@ public class Message {
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
 			return (new InputSource((InputStream) request));
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputSource");
+			return (new InputSource(((URL) request).openStream()));
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
@@ -152,7 +163,10 @@ public class Message {
 		return (new InputSource(new StringReader(request.toString())));
 	}
 
-	public Source asSource() {
+	/**
+	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
+	public Source asSource() throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -163,6 +177,10 @@ public class Message {
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
 			return (new StreamSource((InputStream) request));
+		}
+		if (request instanceof URL) {
+			log.debug("returning URL as InputSource");
+			return (new StreamSource(((URL) request).openStream()));
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
@@ -176,23 +194,44 @@ public class Message {
 		return (new StreamSource(new StringReader(request.toString())));
 	}
 
-	public String asString() throws IOException {
+	/**
+	 * return the request object as a byte array. Has the side effect of preserving the input as byte array.
+	 */
+	public byte[] asByteArray() throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof String) {
-			return (String) request;
+			return ((String)request).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
-		return StreamUtil.readerToString(asReader(), null);
+		if (!(request instanceof byte[])) {
+			request = StreamUtil.streamToByteArray(asInputStream(), false);
+		}
+		return (byte[]) request;
 	}
 
+	/**
+	 * return the request object as a String. Has the side effect of preserving the input as a String.
+	 */
+	public String asString() throws IOException {
+		if (request == null) {
+			return null;
+		}
+		if (!(request instanceof String)) {
+			request = StreamUtil.readerToString(asReader(), null);
+		}
+		return (String) request;
+	}
+
+	/**
+	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
+	 */
 	@Override
 	public String toString() {
-		try {
-			return asString();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (request==null) {
+			return "null";
 		}
+		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Integration Partners B.V.
+Copyright 2018, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,9 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
@@ -67,9 +64,6 @@ public class TransactionalStorage extends Base {
 
 	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-	@Context ServletConfig servletConfig;
-	@Context Request request;
-
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}")
@@ -80,8 +74,7 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -113,8 +106,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -158,9 +150,7 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		initBase(servletConfig);
-
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -212,8 +202,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -241,8 +230,7 @@ public class TransactionalStorage extends Base {
 			MultipartFormDataInput input
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -287,8 +275,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -316,8 +303,7 @@ public class TransactionalStorage extends Base {
 			MultipartFormDataInput input
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -361,8 +347,7 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -386,8 +371,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -423,9 +407,7 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		initBase(servletConfig);
-
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -478,7 +460,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException(e, 404);
 		}
 
-		PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
+		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = transactionManager.getTransaction(TXNEW);
