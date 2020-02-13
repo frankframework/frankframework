@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -112,7 +113,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		reportRunner.setDebugStorage(debugStorage);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
 
-		reports.sort(reportNameComparator);
+		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
 		if(enableReportGenerator) {
