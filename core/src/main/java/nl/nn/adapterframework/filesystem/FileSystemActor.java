@@ -122,11 +122,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
+	private INamedObject owner;
 	private FS fileSystem;
 	private ParameterList parameterList;
 
 	
 	public void configure(FS fileSystem, ParameterList parameterList, INamedObject owner) throws ConfigurationException {
+		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
 		if (fileSystem instanceof IWritableFileSystem) {
@@ -415,18 +417,21 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	
 	
-	@Override
-	public boolean requiresOutputStream() {
-		return false;
-	}
-	@Override
 	public boolean canProvideOutputStream() {
 		return (ACTION_WRITE1.equals(getAction()) || ACTION_APPEND.equals(getAction())) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
 
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
+	}
+
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			return null;
+		}
 		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
@@ -445,7 +450,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(out,null);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, null, nextProvider);
 			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
 			return stream;
 		} catch (FileSystemException | IOException e) {

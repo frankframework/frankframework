@@ -18,7 +18,6 @@
 		'ui.router',                    // Routing
 		'oc.lazyLoad',                  // ocLazyLoad
 		'ui.bootstrap',                 // Ui Bootstrap
-		'pascalprecht.translate',       // Angular Translate
 		'ngIdle',                       // Idle timer
 		'ngSanitize',                   // ngSanitize
 		'angular-ladda'                 // Ladda
@@ -47,6 +46,13 @@
 		//These will automatically be updated.
 		"timeOffset": 0,
 		"init": 0,
+		getString: function(variable) {
+			return this[variable];
+		},
+		getBoolean: function(variable, dfault) {
+			if(this[variable] != undefined) return (this[variable] === "true");
+			return dfault;
+		}
 	});
 	console.timeEnd("startup");
 })();

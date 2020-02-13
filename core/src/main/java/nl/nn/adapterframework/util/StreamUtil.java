@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +28,8 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -94,9 +97,8 @@ public class StreamUtil {
 		return sb.toString();
 	}
 
-	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding)
-		throws IOException {
-		return readerToString(new InputStreamReader(stream,streamEncoding), endOfLineString);
+	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
+		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream,streamEncoding), endOfLineString);
 	}
 
 	public static byte[] streamToByteArray(InputStream servletinputstream, int contentLength) throws IOException {
@@ -129,6 +131,23 @@ public class StreamUtil {
 		}
 		//log.debug("no UTF-8 BOM found");
 		return result;
+	}
+	
+	/**
+	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, the default character set UTF-8 is used.
+	 */
+	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
+		return getCharsetDetectingInputStreamReader(inputStream, DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	
+	/**
+	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
+	 */
+	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
+		BOMInputStream bOMInputStream = new BOMInputStream(inputStream,ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+		ByteOrderMark bom = bOMInputStream.getBOM();
+		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
+		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 	
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {

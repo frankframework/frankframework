@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,13 +26,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -59,7 +57,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
-	@Context ServletConfig servletConfig;
 
 	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -67,7 +64,6 @@ public final class ShowIbisstoreSummary extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
@@ -90,7 +86,7 @@ public final class ShowIbisstoreSummary extends Base {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
-			qs = (IbisstoreSummaryQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
+			qs = (IbisstoreSummaryQuerySender) getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
 			qs.setSlotmap(getSlotmap());
 			try {
 				qs.setName("QuerySender");
@@ -126,7 +122,7 @@ public final class ShowIbisstoreSummary extends Base {
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
 
-		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
+		for(IAdapter iAdapter : getIbisManager().getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iAdapter;
 			for(Iterator<?> receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
 				ReceiverBase receiver=(ReceiverBase)receiverIt.next();

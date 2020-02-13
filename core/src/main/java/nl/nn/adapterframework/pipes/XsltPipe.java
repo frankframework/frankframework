@@ -21,15 +21,17 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -53,6 +55,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	private String sessionKey=null;
 	
 	private XsltSender sender = createXsltSender();
+	
+	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
@@ -95,20 +99,32 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		Message message = new Message(input);
 		ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware()); 
 		try {
-			Object result = sender.sendMessage(null, message, prc, target);
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				nextProvider=null;
+			} else {
+				if (nextProvider==null) {
+					nextProvider = getStreamTarget();
+				}
+			}
+			PipeRunResult prr = sender.sendMessage(null, message, prc, nextProvider);
+			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();
 			}
-
+			PipeForward forward = prr.getPipeForward();
+			if (forward==null) {
+				forward=getForward();
+			}
+			
 			if (StringUtils.isEmpty(getSessionKey())) {
-				return new PipeRunResult(getForward(), result);
+				return new PipeRunResult(forward, result);
 			}
 			session.put(getSessionKey(), result);
 			return new PipeRunResult(getForward(), input);
@@ -118,19 +134,14 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && sender.canProvideOutputStream();
-	}
-
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() && sender.requiresOutputStream();
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
 	}
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return sender.provideOutputStream(correlationID, session, target);
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return sender.provideOutputStream(correlationID, session, nextProvider);
 	}
 
 	@Override
@@ -145,22 +156,22 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 
-	@IbisDoc({"1", "Location of stylesheet to apply to the input message", ""})
+	@IbisDocRef({"1", XSLTSENDER})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	@IbisDocRef({"2", XSLTSENDER})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	@IbisDocRef({"3", XSLTSENDER})
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
-	
-	@IbisDoc({"4", "xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
+
+	@IbisDocRef({"4", XSLTSENDER})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -168,12 +179,12 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	@IbisDocRef({"5", XSLTSENDER})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
-	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDocRef({"6", XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -181,31 +192,31 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
+	@IbisDocRef({"7", XSLTSENDER})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
 
-	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
+	@IbisDocRef({"8", XSLTSENDER})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
+	@IbisDocRef({"9", XSLTSENDER})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed", "false"})
+	@IbisDocRef({"10", XSLTSENDER})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDocRef({"11", XSLTSENDER})
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDoc({"12", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDocRef({"12", XSLTSENDER})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -214,7 +225,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		sender.setXslt2(b);
 	}
 	
-	@IbisDoc({"14", "controls namespace-awareness of transformation", "application default"})
+	@IbisDocRef({"14", XSLTSENDER})
 	@Override
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
@@ -224,14 +235,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
-	@IbisDoc({"15", "Sets the name of the key in the <code>PipeLineSession</code> to store the input in", ""})
+	@IbisDocRef({"15", XSLTSENDER})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 	public String getSessionKey() {
 		return sessionKey;
 	}
-
 
 	@Override
 	public void setName(String name) {

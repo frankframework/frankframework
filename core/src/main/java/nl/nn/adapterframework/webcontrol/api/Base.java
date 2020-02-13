@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
+import javax.ws.rs.core.Context;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -32,11 +33,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,32 +56,53 @@ import org.xml.sax.InputSource;
  */
 
 public abstract class Base {
+	@Context ServletConfig servletConfig;
 
 	protected Logger log = LogUtil.getLogger(this);
-	protected IbisContext ibisContext = null;
-	protected IbisManager ibisManager = null;
+	private IbisContext ibisContext = null;
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
 	private static final String ADAPTER2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
 
 	/**
-	 * Retrieves ibisContext and ibisManager from <code>servletConfig</code>.
-	 *
-	 * @param servletConfig serveletConfig to derive ibisContext from.
+	 * Retrieves the IbisContext from <code>servletConfig</code>.
 	 */
-	protected void initBase(ServletConfig servletConfig) throws ApiException {
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
-		ibisManager = null;
-		if (ibisContext != null) {
-			ibisManager = ibisContext.getIbisManager();
+	private void retrieveIbisContextFromServlet() {
+		if(servletConfig == null) {
+			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
 		}
+
+		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
+	}
+
+	public IbisContext getIbisContext() {
+		if(ibisContext == null) {
+			retrieveIbisContextFromServlet();
+		}
+
+		if(ibisContext.getBootState().getException() != null) {
+			throw new ApiException(ibisContext.getBootState().getException());
+		}
+
+		return ibisContext;
+	}
+
+	/**
+	 * Retrieves the IbisManager from the IbisContext
+	 */
+	public IbisManager getIbisManager() {
+		IbisManager ibisManager = getIbisContext().getIbisManager();
+
 		if (ibisManager==null) {
-			String msg = "Could not retrieve ibisManager from context";
-			log.warn(msg);
-			throw new ApiException(msg);
+			throw new ApiException(new IllegalStateException("Could not retrieve ibisManager from context"));
 		}
+
+		return ibisManager;
+	}
+
+	public ClassLoader getClassLoader() {
+		return this.getClass().getClassLoader();
 	}
 
 	protected String getFlow(IAdapter adapter) {
@@ -107,9 +129,9 @@ public abstract class Base {
 
 	private String generateFlow(String dotInput, String xslt) {
 		try {
-			URL xsltSource = ClassUtils.getResourceURL(this, xslt);
+			URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), xslt);
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+			String dotOutput = XmlUtils.transformXml(transformer, dotInput, true);
 
 			return dotOutput;
 		}
@@ -170,7 +192,7 @@ public abstract class Base {
 				return inputDataMap.get(key).get(0).getBody(clazz, null);
 			}
 		} catch (Exception e) {
-			throw new ApiException("Failed to parse parameter", e);
+			log.debug("Failed to parse parameter ["+key+"]", e);
 		}
 		if(defaultValue != null) {
 			return defaultValue;

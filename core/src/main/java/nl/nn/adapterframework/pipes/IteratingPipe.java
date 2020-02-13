@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -155,16 +156,22 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
+	private StatisticsKeeper preprocessingStatisticsKeeper;
 	private StatisticsKeeper senderStatisticsKeeper;
+	private StatisticsKeeper stopConditionStatisticsKeeper;
 
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		if (msgTransformerPool!=null) {
+			preprocessingStatisticsKeeper =  new StatisticsKeeper("-> message preprocessing");
+		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
+				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
@@ -236,11 +243,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			if (msgTransformerPool!=null) {
 				try {
+					long preprocessingStartTime = System.currentTimeMillis();
 					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
 					message=transformedMsg;
+					long preprocessingEndTime = System.currentTimeMillis();
+					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
+					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
 				}
@@ -257,11 +268,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					getTaskExecutor().execute(pse);
 				} else {
+					long senderStartTime= System.currentTimeMillis();
 					if (psender!=null) {
 						itemResult = psender.sendMessage(correlationID, message, prc);
 					} else {
 						itemResult = sender.sendMessage(correlationID, message);
 					}
+					long senderEndTime = System.currentTimeMillis();
+					long senderDuration = senderEndTime - senderStartTime;
+					senderStatisticsKeeper.addValue(senderDuration);
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
@@ -293,7 +308,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					return false;
 				}
 				if (getStopConditionTp()!=null) {
+					long stopConditionStartTime = System.currentTimeMillis();
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
+					long stopConditionEndTime = System.currentTimeMillis();
+					long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
+					stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 						return false;
@@ -352,7 +371,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;
@@ -432,7 +451,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				results = "<results count=\""+callback.getCount()+"\"/>";
 			}
-			return results;
+			return new PipeRunResult(getForward(), results);
 		} finally {
 			if (it!=null) {
 				try {
@@ -459,16 +478,19 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		super.iterateOverStatistics(hski, data, action);
+		if (preprocessingStatisticsKeeper!=null) {
+			hski.handleStatisticsKeeper(data, preprocessingStatisticsKeeper);
+		}
 		hski.handleStatisticsKeeper(data, senderStatisticsKeeper);
+		if (stopConditionStatisticsKeeper!=null) {
+			hski.handleStatisticsKeeper(data, stopConditionStatisticsKeeper);
+		}
 	}
 
-	public void setSender(Object sender) {
-		if (sender instanceof ISender) {
-			super.setSender((ISender)sender);
-		} else {
-			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
-		}
-		senderStatisticsKeeper =  new StatisticsKeeper("-> "+ClassUtils.nameOf(sender));
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender(sender);
+		senderStatisticsKeeper =  new StatisticsKeeper("-> "+(StringUtils.isNotEmpty(sender.getName())?sender.getName():ClassUtils.nameOf(sender)));
 	}
 
 	public void setTaskExecutor(TaskExecutor executor) {
@@ -498,7 +520,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"3", "Namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"3", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}

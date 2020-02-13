@@ -74,8 +74,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		} else {
 			if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName)) {
 				int i = configurationFile.lastIndexOf('/');
-				if (i != -1) {
+				if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
 					setBasePath(configurationFile.substring(0, i + 1));
+					setConfigurationFile(configurationFile.substring(i + 1));
 					log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
 				} else {
 					setBasePath(getConfigurationName());
@@ -83,7 +84,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			}
 		}
 
-		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"]");
+		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"] basepath ["+getBasePath()+"]");
 	}
 
 	/**
@@ -95,14 +96,17 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			if(!basePath.endsWith("/"))
 				basePath += "/";
 
-			this.basePath = basePath;
+			this.basePath = FilenameUtils.normalize(basePath, true);
 		}
 	}
 
 	/**
+	 * The root directory where all resources are located. This may purely be used within the ClassLoader and resources
+	 * should not be aware of this 'root' directory.
+	 * 
 	 * @return the path prefix that is used for retrieving files through this ClassLoader
 	 */
-	public String getBasePath() {
+	protected String getBasePath() {
 		return basePath;
 	}
 
@@ -157,15 +161,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
 		if(getBasePath() != null && name.equals(getConfigurationFile())) {
-			URL url = null;
-			if(name.startsWith(getBasePath())) { //An absolute path has explicitly set, use that instead!
-				url = getLocalResource(name); //Search for the resource in the local classloader without basepath
-			}
-			if(url == null) { //If no explicit path was provided or the resource couldn't be found, try with basepath!
-				url = getResource(name, false); //Search with basepath and don't search in the classloader's parent
-			}
-
-			return url;
+			return getResource(name, false); //Search for the resource in the local ClassLoader only
 		}
 
 		return getResource(name, true);
@@ -185,11 +181,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
-		if(getBasePath() != null) {
-			String normalizedFilename = FilenameUtils.normalize(getBasePath() + name, true);
-			url = getLocalResource(normalizedFilename);
-			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
-		}
+		String normalizedFilename = FilenameUtils.normalize(name, true);
+		url = getLocalResource(normalizedFilename);
+		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 
 		//URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {

@@ -16,16 +16,20 @@
 package nl.nn.adapterframework.stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URL;
 
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import static org.hamcrest.core.StringStartsWith.startsWith;
 
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -36,8 +40,9 @@ public class MessageTest {
 	private boolean TEST_CDATA=true;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
 	private String CDATA_END=TEST_CDATA?"]]>":"";
-
-	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub></root>";
+	
+	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub><data attr=\"één €\">één €</data></root>";
+	protected String testStringFile="/Message/testString.txt";
 	
 	
 	protected void testAsStream(Message adapter) throws IOException {
@@ -65,34 +70,62 @@ public class MessageTest {
 		String actual = adapter.asString();
 		assertEquals(testString, actual);
 	}
+
+	protected void testAsByteArray(Message adapter) throws IOException {
+		byte[] actual = adapter.asByteArray();
+		byte[] expected = testString.getBytes("UTF-8");
+		assertEquals("lengths differ", expected.length, actual.length);
+		for(int i=0; i<expected.length; i++) {
+			assertEquals("byte arrays differ at position ["+i+"]",expected[i],actual[i]);
+		}
+	}
 	
+	protected void testToString(Message adapter, Class clazz) {
+		String actual = adapter.toString();
+		assertThat(actual, startsWith(clazz.getSimpleName()));
+		assertEquals(adapter.asObject().getClass().getName(), clazz.getName());
+	}
 	
 	@Test
 	public void testStreamAsStream() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 	
 	@Test
 	public void testStreamAsReader() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 	
 	@Test
 	public void testStreamAsInputSource() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 	
 	@Test
+	public void testStreamAsByteArray() throws Exception {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
 	public void testStreamAsString() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
 		testAsString(adapter);
+	}
+
+	@Test
+	public void testStreamToString() throws Exception {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
+		Message adapter = new Message(source);
+		testToString(adapter, ByteArrayInputStream.class);
 	}
 
 	
@@ -118,12 +151,27 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testReaderAsByteArray() throws Exception {
+		StringReader source = new StringReader(testString);
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
 	public void testReaderAsString() throws Exception {
 		StringReader source = new StringReader(testString);
 		Message adapter = new Message(source);
 		testAsString(adapter);
 	}
 
+	@Test
+	public void testReaderToString() throws Exception {
+		StringReader source = new StringReader(testString);
+		Message adapter = new Message(source);
+		testToString(adapter, StringReader.class);
+	}
+
+	
 	@Test
 	public void testStringAsStream() throws Exception {
 		String source = testString;
@@ -146,6 +194,13 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testStringAsByteArray() throws Exception {
+		String source = testString;
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
 	public void testStringAsString() throws Exception {
 		String source = testString;
 		Message adapter = new Message(source);
@@ -153,30 +208,96 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testStringToString() throws Exception {
+		String source = testString;
+		Message adapter = new Message(source);
+		testToString(adapter, String.class);
+	}
+
+	
+	@Test
 	public void testByteArrayAsStream() throws Exception {
-		byte[] source = testString.getBytes();
+		byte[] source = testString.getBytes("utf-8");
 		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsReader() throws Exception {
-		byte[] source = testString.getBytes();
+		byte[] source = testString.getBytes("utf-8");
 		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsInputSource() throws Exception {
-		byte[] source = testString.getBytes();
+		byte[] source = testString.getBytes("utf-8");
 		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
+	public void testByteArrayAsByteArray() throws Exception {
+		byte[] source = testString.getBytes("utf-8");
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
 	public void testByteArrayAsString() throws Exception {
-		byte[] source = testString.getBytes();
+		byte[] source = testString.getBytes("utf-8");
 		Message adapter = new Message(source);
 		testAsString(adapter);
 	}
+
+	@Test
+	public void testByteArrayToString() throws Exception {
+		byte[] source = testString.getBytes("utf-8");
+		Message adapter = new Message(source);
+		testToString(adapter,byte[].class);
+	}
+	
+	
+	@Test
+	public void testURLArrayAsStream() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsStream(adapter);
+	}
+
+	@Test
+	public void testURLAsReader() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testURLAsInputSource() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testURLAsByteArray() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testURLAsString() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testURLToString() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testToString(adapter,URL.class);
+	}
+
 }

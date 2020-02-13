@@ -1,19 +1,21 @@
 angular.module('iaf.beheerconsole')
 
-.directive('pageTitle', ['$rootScope', '$timeout', '$state', function($rootScope, $timeout, $state) {
+.directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transitions', 'Debug', function($rootScope, $timeout, $state, $transitions, Debug) {
 	return {
 		link: function(scope, element) {
-			var listener = function(_, toState) {
+			var listener = function() {
+				var toState = $state.current;
+				Debug.info("state change", toState);
+
 				var title = 'Loading...'; // Default title
-				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.otapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
+				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.dtapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
+				else if($rootScope.startupError) title = "ERROR";
 				$timeout(function() {
 					element.text(title);
 				});
 			};
-			$rootScope.$on('$stateChangeStart', listener);
-			$rootScope.$watch('instanceName', function() {
-				listener(null, $state.current);
-			});
+			$transitions.onSuccess({}, listener); //Fired on every state change
+			$rootScope.$watch('::instanceName', listener); //Fired once, once the instance name is known.
 		}
 	};
 }])
@@ -25,7 +27,7 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			scope.$watch('time', updateTime);
+			scope.$watch('::time', updateTime);
 			function updateTime(time) {
 				if(isNaN(time))
 					time = new Date(time).getTime();
@@ -138,7 +140,7 @@ angular.module('iaf.beheerconsole')
 		replace: true,
 		link: function(scope, element, attributes) {
 			scope.customViews = [];
-			scope.$watch('otapStage', function() {
+			scope.$watch('::dtapStage', function() {
 				var customViews = appConstants["customViews.names"];
 				if(customViews == undefined)
 					return;
@@ -266,19 +268,25 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', function($uibModal, GDPR) {
+.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', 'appConstants', '$rootScope', function($uibModal, GDPR, appConstants, $rootScope) {
 	return {
 		restrict: 'A',
 		require: 'icheck',
 		templateUrl: 'views/common/cookie.html',
 		controller: function ($scope) {
-			$scope.bottomNotification = GDPR.showCookie();
-			$scope.cookies = {
-					necessary: true,
-					personalization: true,
-					analytical: true,
-					functional: true
-			};
+			$scope.bottomNotification = false;
+			$scope.cookies = GDPR.defaults;
+
+			$rootScope.$on('appConstants', function() {
+				$scope.cookies = {
+						necessary: true,
+						personalization: appConstants.getBoolean("console.cookies.personalization", true),
+						analytical: appConstants.getBoolean("console.cookies.analytical", true),
+						functional: appConstants.getBoolean("console.cookies.functional", true)
+				};
+
+				$scope.bottomNotification = GDPR.showCookie();
+			});
 
 			$scope.savePreferences = function(cookies) {
 				GDPR.setSettings(cookies);

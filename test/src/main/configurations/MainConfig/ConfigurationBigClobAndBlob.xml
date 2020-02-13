@@ -127,14 +127,9 @@
 			<pipe name="readBigBlobBinary">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true">
+					jmsRealm="jdbc" scalar="true" blobCharset="">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
-				<forward name="success" path="encodeBigBlobBinary" />
-			</pipe>
-
-			<pipe name="encodeBigBlobBinary" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

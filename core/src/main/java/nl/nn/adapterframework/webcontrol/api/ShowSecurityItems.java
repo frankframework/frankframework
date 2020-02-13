@@ -65,7 +65,6 @@ import org.xml.sax.InputSource;
 public final class ShowSecurityItems extends Base {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 
-	@Context ServletConfig servletConfig;
 	@Context HttpServletRequest httpServletRequest;
 
 	@GET
@@ -74,11 +73,6 @@ public final class ShowSecurityItems extends Base {
 	@Relation("securityitems")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSecurityItems() throws ApiException {
-		initBase(servletConfig);
-
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
@@ -219,7 +213,7 @@ public final class ShowSecurityItems extends Base {
 			String dsInfo = null;
 			String qcfInfo = null;
 
-			DirectQuerySender qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+			DirectQuerySender qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealm);
 			try {
 				dsName = qs.getDataSourceNameToUse();
@@ -308,7 +302,7 @@ public final class ShowSecurityItems extends Base {
 
 	private List<String> getAuthEntries() {
 		List<String> entries = new ArrayList<String>();
-		for (Configuration configuration : ibisManager.getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
 			if(configString == null) continue; //If a configuration can't be found, continue...
 
@@ -343,8 +337,10 @@ public final class ShowSecurityItems extends Base {
 			String passWord;
 			try {
 				userName = cf.getUsername();
-				passWord = StringUtils.repeat("*", cf.getPassword().length());
+				passWord = cf.getPassword();
+				passWord = (passWord==null) ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
 			} catch (Exception e) {
+				log.warn(e.getMessage());
 				userName = "*** ERROR ***";
 				passWord = "*** ERROR ***";
 			}

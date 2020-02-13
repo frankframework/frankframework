@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight">
+<div class="wrapper wrapper-content">
 <!--     <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert> -->
 
     <ul ng-if="alerts.length > 0" class="alert p-n m-n">
@@ -19,8 +19,8 @@
         </li>
         <li class="list-group-item" ng-repeat="alert in alerts" ng-class="['alert-' + alert.type]" ng-if="selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
             <i class="m-r-md fa" ng-class="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
-            <span ng-if="selectedConfiguration=='All'">Configuration [{{alert.configuration}}] - {{alert.message}}</span>
-            <span ng-if="selectedConfiguration!='All'">{{alert.message}}</span>
+            <span ng-if="selectedConfiguration=='All'">Configuration [{{::alert.configuration}}] - {{::alert.message}}</span>
+            <span ng-if="selectedConfiguration!='All'">{{::alert.message}}</span>
         </li>
     </ul>
 
@@ -29,7 +29,7 @@
             <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
                 <li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
                 <li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
-                    <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+                    <a ng-click="changeConfiguration(configuration.name)">{{::configuration.name}}</a>
                 </li>
             </ul> 
         </div>
@@ -40,7 +40,7 @@
                 </div>
                 <div class="ibox-content">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -102,14 +102,14 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="row" id="adapterFilters">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
@@ -161,8 +161,7 @@
                 <div ng-click="msgBox.expanded = !msgBox.expanded" class="ibox-title pointer" ng-class="{
                     'warning': messageLog[selectedConfiguration].messageLevel=='WARN',
                     'danger': messageLog[selectedConfiguration].messageLevel=='ERROR'
-                }
-                ">
+                }">
                     <div class="ibox-tools pull-right">
                         <a> <i class="fa fa-chevron-{{(msgBox.expanded) ? 'up' : 'down' }}"></i></a>
                     </div>
@@ -178,19 +177,19 @@
                             <div class="table-responsive">
                                 <table class="table table-striped table-nohead m-b-none">
                                     <tbody>
-                                        <tr ng-repeat="message in messageLog[selectedConfiguration].messages" ng-class="{
+                                        <tr ng-repeat="message in messageLog[selectedConfiguration].messages" ng-class="::{
                                             'text-warning' : message.level == 'WARN',
                                             'text-danger' : message.level == 'ERROR'
                                         }">
                                             <td style="width:40px;" class="text-center">
-                                                <i class="m-l-md fa" ng-class="{
+                                                <i class="m-l-md fa" ng-class="::{
                                                     'fa-info': message.level == 'INFO',
                                                     'fa-warning' : message.level == 'WARN',
                                                     'fa-times' : message.level == 'ERROR'
                                                 }"></i>
                                             </td>
-                                            <td style="width:200px;" class="text-center"><span to-date time="{{message.date}}"></span></td>
-                                            <td>{{message.message}}</td>
+                                            <td style="width:200px;" class="text-center"><span to-date time="{{::message.date}}"></span></td>
+                                            <td>{{::message.message}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -204,14 +203,14 @@
 
     <div class="row">
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
-            <div ng-init="showContent = showContent(adapter)" class="ibox float-e-margins" id="{{adapter.name}}">
-                <div ng-click="showContent = !showContent" class="ibox-title {{(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')}}" title="Click to open">
+            <div ng-init="showContent = showContent(adapter)" class="ibox float-e-margins" id="{{::adapter.name}}">
+                <div ng-click="showContent = !showContent" class="ibox-title" title="Click to open" ng-class="(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')">
                     <div class="ibox-tools pull-right">
                         <a> <i class="fa fa-chevron-{{(showContent) ? 'up' : 'down' }}"></i></a>
                     </div>
                     <div class="row almost-full-width">
                         <div class="col-lg-6 col-md-12 clear">
-                            <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
+                            <h5>{{::adapter.name}} <small class="m-l-sm">&nbsp;{{::adapter.description}}</small></h5>
                         </div>
                         <div class="col-lg-6 col-md-12">
                             <div class="row">
@@ -220,8 +219,8 @@
                                 </div>
                                 <div class="col-sm-5" ng-if="adapter.upSince == 0">
                                 </div>
-                                <div class="col-sm-5" ng-if="adapter.lastMessage > 0" title="Last Message">
-                                    <span to-date time="{{adapter.lastMessage}}"></span> (<span time-since time="{{adapter.lastMessage}}"></span>)
+                                <div class="col-sm-5" ng-if="::adapter.lastMessage > 0" title="Last Message">
+                                    <span to-date time="{{::adapter.lastMessage}}"></span> (<span time-since time="{{adapter.lastMessage}}"></span>)
                                 </div>
                                 <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
                                 </div>
@@ -318,13 +317,13 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="receiver in adapter.receivers">
-                                            <td>{{receiver.name}}</td>
-                                            <td>{{receiver.listener.class}} ({{receiver.listener.destination}})</td>
-                                            <td>{{receiver.messages.retried}}</td>
-                                            <td>{{receiver.messages.received}}</td>
-                                            <td>{{receiver.messages.rejected}}</td>
-                                            <td ng-if="receiver.threadCount">{{receiver.threadCount}}/{{receiver.maxThreadCount}} Threads 
-                                                <span ng-if="receiver.threadCountControllable">
+                                            <td>{{::receiver.name}}</td>
+                                            <td>{{::receiver.listener.class}} ({{::receiver.listener.destination}})</td>
+                                            <td>{{::receiver.messages.retried}}</td>
+                                            <td>{{::receiver.messages.received}}</td>
+                                            <td>{{::receiver.messages.rejected}}</td>
+                                            <td ng-if="::receiver.threadCount">{{::receiver.threadCount}}/{{::receiver.maxThreadCount}} Threads 
+                                                <span ng-if="::receiver.threadCountControllable">
                                                     <button ng-disabled="receiver.state=='loading'" class="btn btn-xs btn-default m-l-xs" ng-click="addThread(adapter, receiver)" type="button" title="Increase the maximum numbers of threads"><i class="fa fa-plus"></i> Inc</button>
                                                     <button ng-disabled="receiver.state=='loading' || receiver.maxThreadCount < 2" class="btn btn-xs btn-default m-l-xs" ng-click="removeThread(adapter, receiver)" type="button" title="Decrease the maximum numbers of threads"><i class="fa fa-minus"></i> Dec</button>
                                                 </span>
@@ -338,13 +337,13 @@
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
 
                                                     <span class="text-danger">
-                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-times-circle"></i> ({{receiver.errorStorageCount}})
+                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
                                                         </button>
                                                     </span>
                                                     <span class="text-success">
-                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-envelope-o"></i> ({{receiver.messageLogCount}})
+                                                        <button ng-show="{{::receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
                                                         </button>
                                                     </span>
                                                 </span>
@@ -369,13 +368,13 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
-                                            <td>{{pipes.name}}</td>
-                                            <td>{{pipes.sender}}<span ng-if="pipes.destination"> ({{pipes.destination}})</span></td>
+                                            <td>{{::pipes.name}}</td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination"> ({{::pipes.destination}})</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
                                                         <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog.list({pipe: pipes.name, adapter: adapter.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-envelope-o"></i> ({{pipes.messageLogCount}})
+                                                            <i class="fa fa-envelope-o"></i> ({{::pipes.messageLogCount}})
                                                         </button>
                                                     </span>
                                                 </span>
@@ -392,30 +391,30 @@
                             <table class="table table-striped" style="min-width: 620px;">
                                 <tbody>
                                     <tr ng-repeat="message in adapter.messages">
-                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'INFO'">
+                                        <td style="width:40px;" class="text-center" ng-if-start="::message.level == 'INFO'">
                                             &nbsp;<i class="fa fa-info"></i>
                                         </td>
-                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end>{{message.message|truncate:700}}</td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+                                        <td ng-if-end>{{::message.message|truncate:700}}</td>
 
-                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
+                                        <td style="width:40px;" class="text-center" ng-if-start="::message.level == 'WARN'">
                                             &nbsp;<i class="fa fa-warning"></i>
                                         </td>
-                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end class="text-warning">{{message.message|truncate:700}}</td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+                                        <td ng-if-end class="text-warning">{{::message.message|truncate:700}}</td>
 
-                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
+                                        <td style="width:40px;" class="text-center" ng-if-start="::message.level == 'ERROR'">
                                             &nbsp;<i class="fa fa-times"></i>
                                         </td>
-                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end class="text-danger">{{message.message|truncate:700}}</td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+                                        <td ng-if-end class="text-danger">{{::message.message|truncate:700}}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <div class="col-lg-3 col-md-0 flow">
                             <h4>Flow</h4>
-                            <a ng-href="{{adapter.flow}}" target="_blank"><img ng-src="{{adapter.flow}}" alt="Flow diagram"></a>
+                            <a ng-href="{{::adapter.flow}}" target="_blank"><img ng-src="{{::adapter.flow}}" alt="Flow diagram"></a>
                         </div>
                     </div>
                 </div>

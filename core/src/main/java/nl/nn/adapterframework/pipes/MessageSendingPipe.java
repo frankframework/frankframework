@@ -336,7 +336,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
 				}
-			}			
+			}
 			if (getMaxRetries()>0) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
@@ -362,7 +362,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (messageLog==null) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
-					configWarnings.add(log, msg);
+					configWarnings.add(log, msg, true);
 				}
 			}
 		}
@@ -430,60 +430,87 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
-	/**
-	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
-	 * Descender classes may override this method when necessary.
-	 */
-	protected boolean senderAffectsStreamProvidingCapability() {
-		return true;
+//	/**
+//	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
+//	 * Descender classes may override this method when necessary.
+//	 */
+//	protected boolean senderAffectsStreamProvidingCapability() {
+//		return true;
+//	}
+//	/**
+//	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
+//	 * Descender classes may override this method when necessary.
+//	 */
+//	protected boolean senderAffectsStreamWritingCapability() {
+//		return true;
+//	}
+//	
+//	@Override
+//	public boolean canProvideOutputStream() {
+//		return super.canProvideOutputStream() 
+//				&& (!senderAffectsStreamProvidingCapability() || 
+//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
+//				   )
+//				&& getInputWrapper()==null
+//				&& getInputValidator()==null;
+//	}
+//
+//	@Override
+//	public boolean requiresOutputStream() {
+//		return super.requiresOutputStream() 
+//				&& (!senderAffectsStreamWritingCapability() || 
+//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
+//				   )
+//				&& getOutputWrapper()==null
+//				&& getOutputValidator()==null
+//				&& !isStreamResultToServlet();
+//	}
+
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false; // TODO to be implemented!
 	}
-	/**
-	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
-	 * Descender classes may override this method when necessary.
-	 */
-	protected boolean senderAffectsStreamWritingCapability() {
-		return true;
+
+	@Override
+	public IOutputStreamingSupport getStreamTarget() {
+		if (getOutputValidator()!=null || getOutputWrapper()!=null || isStreamResultToServlet()) {
+			return null;
+		}
+		return super.getStreamTarget();
 	}
+
+
 	
 	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() 
-				&& (!senderAffectsStreamProvidingCapability() || 
-					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
-				   )
-				&& getInputWrapper()==null
-				&& getInputValidator()==null;
-	}
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() 
-				&& (!senderAffectsStreamWritingCapability() || 
-					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
-				   )
-				&& getOutputWrapper()==null
-				&& getOutputValidator()==null
-				&& !isStreamResultToServlet();
-	}
-
-	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-
-		// TODO insert output validator
-		// TODO insert output wrapper
-		IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
-		MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, target);
-		// TODO insert input wrapper
-		// TODO insert input validator
-		return result;
+		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
+			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
+			return null;
+		}
+		
+		if (sender instanceof IOutputStreamingSupport) {
+			// TODO insert output validator
+			// TODO insert output wrapper
+			IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
+			if (nextProvider == null) {
+				nextProvider = getStreamTarget();
+			}
+			MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, nextProvider);
+			return result;
+			// TODO insert input wrapper
+			// TODO insert input validator
+		}
+		return null;
 	}
 
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
-		String originalMessage = input==null?null:input.toString();
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
+ 		String originalMessage = input==null?null:input.toString();
 		Object result = null;
 		String correlationID = session.getMessageId();
+		PipeForward forward = getForward();
 
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
@@ -538,7 +565,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
 				int retryInterval = getRetryMinInterval();
-				Object sendResult = null;
+				PipeRunResult sendResult = null;
 				boolean replyIsValid = false;
 				int retriesLeft = 0;
 				if (getMaxRetries()>0) {
@@ -546,11 +573,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				} else {
 					retriesLeft = 1;
 				}
+				if (nextProvider == null) {
+					nextProvider = getStreamTarget();
+				}
 				while (retriesLeft-->=1 && !replyIsValid) {
 					try {
-						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext, target);
+						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext, nextProvider);
 						if (retryTp!=null) {
-							String retry=retryTp.transform(new Message(sendResult).asString(),null);
+							String retry=retryTp.transform(new Message(sendResult.getResult()).asString(),null);
 							if (retry.equalsIgnoreCase("true")) {
 								if (retriesLeft>=1) {
 									retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
@@ -579,21 +609,25 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (!replyIsValid){
 					throw new PipeRunException(this, getLogPrefix(session)+"invalid reply message is received");
 				}
-	
+
+				if (sendResult.getPipeForward()!=null) {
+					forward = sendResult.getPipeForward();
+				}
+				
 				if (getSender().isSynchronous()) {
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
 					}
-					result = sendResult;
+					result = sendResult.getResult().toString();
 				} else {
-					messageID = new Message(sendResult).asString();
+					messageID = new Message(sendResult.getResult()).asString();
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
-						correlationID = new Message(sendResult).asString();
+						correlationID = new Message(sendResult.getResult()).asString();
 						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
 				}
@@ -659,7 +693,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (getListener() != null) {
 					result = listenerProcessor.getMessage(getListener(), correlationID, session);
 					} else {
-					result = sendResult;
+					result = sendResult.getResult();
 				}
 				if (result == null) {
 					result = "";
@@ -720,6 +754,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
 			}
 		}
+		
 		try {
 			if (!validResult(result)) {
 				PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
@@ -749,9 +784,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 		if (isStreamResultToServlet()) {
 			Message mia = new Message(result);
-			InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 			
 			try {
+				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 				String contentType = (String) session.get("contentType");
 				if (StringUtils.isNotEmpty(contentType)) {
 					RestListenerUtils.setResponseContentType(session, contentType);
@@ -760,9 +795,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
 			}
-			return new PipeRunResult(getForward(), "");
+			return new PipeRunResult(forward, "");
 		} else {
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(forward, result.toString());
 		}
 	}
 
@@ -776,9 +811,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return validResult;
 	}
 
-	protected Object sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException, InterruptedException {
+	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, InterruptedException {
 		long startTime = System.currentTimeMillis();
-		Object sendResult = null;
+		PipeRunResult sendResult = null;
 		String exitState = null;
 		try {
 			PipeLine pipeline = getPipeLine();
@@ -798,7 +833,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext, target);
+				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext, nextProvider);
 			} catch (SenderException se) {
 				exitState = EXCEPTION_FORWARD;
 				throw se;
@@ -810,11 +845,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				exitState = INTERRUPT_FORWARD;
 				throw new InterruptedException();
 			}
-			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
+			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult.getResult().toString())) {
 				exitState = TIMEOUT_FORWARD;
 				throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 			}
-			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
+			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult.getResult().toString())) {
 				exitState = EXCEPTION_FORWARD;
 				throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 			}
@@ -841,11 +876,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sendResult;
 	}
 	
-	protected Object sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
+	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
 			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, target);
+			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, next);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {
@@ -859,9 +894,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, session, isNamespaceAware());
-			return psender.sendMessage(correlationID, (String) input, prc);
+			String result = psender.sendMessage(correlationID, (String) input, prc);
+			return new PipeRunResult(null, result);
 		} 
-		return sender.sendMessage(correlationID, (String) input);
+		Object result = sender.sendMessage(correlationID, (String) input);
+		return new PipeRunResult(null,result);
 	}
 
 	public int increaseRetryIntervalAndWait(IPipeLineSession session, int retryInterval, String description) throws InterruptedException {

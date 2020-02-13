@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package nl.nn.ibistesttool;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.testtool.echo2.Echo2Application;
 
 /**
@@ -49,10 +48,9 @@ public class Servlet extends WebContainerServlet {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@Override
 	public ApplicationInstance newApplicationInstance() {
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)getServletContext().getAttribute(ibisContextKey);
+		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(getServletContext());
 		return (Echo2Application)ibisContext.getBean("echo2Application");
 	}
 

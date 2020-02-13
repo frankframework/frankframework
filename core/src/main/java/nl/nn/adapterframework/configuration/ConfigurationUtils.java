@@ -131,6 +131,11 @@ public class ConfigurationUtils {
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		} else {
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) { //Trim the BasePath, why is it even here!?
+				configurationFile = configurationFile.substring(i + 1);
+			}
 		}
 		return configurationFile;
 	}
@@ -464,6 +469,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -482,6 +491,9 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if (onlyAutoReload) {
+				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();

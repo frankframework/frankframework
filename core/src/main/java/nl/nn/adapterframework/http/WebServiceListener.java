@@ -210,7 +210,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		setApplicationFaultsAsExceptions(b);
 	}
 
-	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/<address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
+	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/</address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
 			if(address.startsWith("/"))
