@@ -110,7 +110,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	public void basicNoIndent() throws Exception {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
-		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart-noIndent.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
 		Boolean omitXmlDeclaration=null;
 		Boolean indent=false;
 		Boolean skipEmptyTags=null;
