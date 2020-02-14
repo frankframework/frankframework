@@ -290,12 +290,13 @@ body.mini-navbar .navbar-default .nav > li > .nav-second-level li a {
   font-weight: normal;
 }
 .logo-element {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
   display: none;
-  padding: 18px 0;
+  height: 60px;
+  padding: 15px;
+}
+.logo-element object {
+  max-height: 100%;
+  max-width: 100%;
 }
 .pace-done .navbar-static-side,
 .pace-done .nav-header,
@@ -4104,6 +4105,9 @@ table.table-mail tr td {
   margin-top: 0;
 }
 /* COLORS */
+.text-frank {
+  color: #fdc300;
+}
 .text-primary {
   color: #1ab394;
 }
