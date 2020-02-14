@@ -849,15 +849,15 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('UploadConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0]};
 	});
 
 	$scope.form = {
-			realm:"",
+			datasource:"",
 			name:"",
 			version:"",
 			encoding:"",
@@ -891,10 +891,10 @@ angular.module('iaf.beheerconsole')
 		if($scope.file == null) return;
 
 		var fd = new FormData();
-		if($scope.form.realm && $scope.form.realm != "")
-			fd.append("realm", $scope.form.realm);
+		if($scope.form.datasource && $scope.form.datasource != "")
+			fd.append("datasource", $scope.form.datasource);
 		else 
-			fd.append("realm", $scope.jmsRealms[0]);
+			fd.append("datasource", $scope.datasources[0]);
 
 		fd.append("name", $scope.form.name);
 		fd.append("version", $scope.form.version);
@@ -908,7 +908,7 @@ angular.module('iaf.beheerconsole')
 			$scope.error = "";
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
-					realm: $scope.jmsRealms[0],
+					datasource: $scope.datasources[0],
 					name:"",
 					version:"",
 					encoding:"",
@@ -927,7 +927,7 @@ angular.module('iaf.beheerconsole')
 		$scope.result = "";
 		$scope.error = "";
 		$scope.form = {
-				realm: $scope.jmsRealms[0],
+				datasource: $scope.datasources[0],
 				name:"",
 				version:"",
 				encoding:"",
@@ -1606,17 +1606,17 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0]};
 	});
 
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};
 
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 
 		Api.Post("jdbc/summary", JSON.stringify(formData), function(data) {
 			$scope.error = "";
@@ -1778,7 +1778,7 @@ angular.module('iaf.beheerconsole')
 			$scope.error = "Please specify a datasource and table name!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.datasources[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		$scope.columnNames = [{

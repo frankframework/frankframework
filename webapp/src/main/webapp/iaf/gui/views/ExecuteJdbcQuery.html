@@ -16,13 +16,13 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label">Datasource</label>
                             <div class="col-sm-9">
-                                <select class="form-control m-b" name="realm" ng-model="form.datasource">
+                                <select class="form-control m-b" name="datasource" ng-model="form.datasource">
                                     <option ng-repeat="datasource in datasources">{{datasource}}</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Select a result type</label>
+                            <label class="col-sm-3 control-label">Result format</label>
                             <div class="col-sm-9">
                                 <select class="form-control m-b" name="resultType" ng-model="form.resultType">
                                     <option ng-repeat="resultType in resultTypes" selected="{{$first ? 'selected' : ''}}">{{resultType}}</option>

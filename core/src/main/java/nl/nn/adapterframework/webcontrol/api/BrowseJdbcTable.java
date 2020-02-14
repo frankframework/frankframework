@@ -44,13 +44,6 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Executes a query.
- * 
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
 @Path("/")
 public final class BrowseJdbcTable extends Base {
 
