@@ -18,10 +18,13 @@ package nl.nn.ibistesttool.tibet2;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -78,5 +81,13 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 		}
 		return errorMessage;
 	}
-
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
+		ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
+		if (applicationEventPublisher!=null) {
+			applicationEventPublisher.publishEvent(event);
+		}
+	}
 }

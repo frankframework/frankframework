@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -31,6 +33,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -322,5 +325,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		}
 		return name;
 	}
-
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
+		ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
+		if (applicationEventPublisher!=null) {
+			applicationEventPublisher.publishEvent(event);
+		}
+	}
 }
