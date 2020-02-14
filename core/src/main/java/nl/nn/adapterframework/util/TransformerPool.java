@@ -47,8 +47,10 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
@@ -415,10 +417,24 @@ public class TransformerPool {
 		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware),parameters);
 	}
 
+	public String transform(Source s) throws TransformerException, IOException {
+		return transform(s,(Map<String,Object>)null);
+	}
+	
+	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+		return transform(s, null, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
+	}
+	
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
+	public String transform(Source s, Result r) throws TransformerException, IOException {
+		return transform(s, r, (Map<String,Object>)null);
+	}
+	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+		return transform(s, r, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
+	}
 	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {

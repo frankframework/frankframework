@@ -18,18 +18,14 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.transform.Source;
 
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -91,47 +87,13 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * Get value as a <link>ParameterValue<link> object
-	 */
-	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p) throws ParameterException {
-		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, this));
-	}
-	
-	/**
 	 * Returns an array list of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
-		if (parameters == null)
+		if (parameters == null) {
 			return null;
-		
-		ParameterValueList result = new ParameterValueList();
-		for (Iterator<Parameter> parmIterator= parameters.iterator(); parmIterator.hasNext(); ) {
-			Parameter parm = parmIterator.next();
-			String parmSessionKey = parm.getSessionKey();
-			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to 
-			// each session variable whose name starts with the name of the original parameter
-			if ("*".equals(parmSessionKey)) {
-				String parmName = parm.getName();
-				for (String sessionKey: session.keySet()) {
-					if (!PipeLineSessionBase.tsReceivedKey.equals(sessionKey) && !PipeLineSessionBase.tsSentKey.equals(sessionKey)) {
-						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
-							Parameter newParm = new Parameter();
-							newParm.setName(sessionKey);
-							newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
-							try {
-								newParm.configure();
-							} catch (ConfigurationException e) {
-								throw new ParameterException(e);
-							}
-							result.add(getValue(result, newParm));
-						}
-					}
-				}
-			} else {
-				result.add(getValue(result, parm));
-			}
 		}
-		return result;
+		return parameters.getValues(getMessage(), getSession(), isNamespaceAware());
 	}
 
 	/**
@@ -141,26 +103,10 @@ public class ParameterResolutionContext {
 		if (parameters==null) {
 			return null;
 		}
-		Map<String, ParameterValue> paramValuesMap = getValues(parameters).getParameterValueMap();
-
-		// convert map with parameterValue to map with value		
-		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
-		for (Iterator<ParameterValue> it= paramValuesMap.values().iterator(); it.hasNext(); ) {
-			ParameterValue pv = it.next();
-			result.put(pv.getDefinition().getName(), pv.getValue());
-		}
-		return result;
+		return parameters.getValues(getMessage(), getSession(), isNamespaceAware()).getValueMap();
 	}
 	
 
-	public ParameterValueList forAllParameters(ParameterList parameters, IParameterHandler handler) throws ParameterException {
-		ParameterValueList values = getValues(parameters);
-		if (values != null) {
-			values.forAllParameters(handler);
-		}
-		return values;
-	}
-		
 	
 	public Source getInputSource(boolean namespaceAware) throws DomBuilderException {
 		Source result = xmlSource!=null?xmlSource.get(namespaceAware):null;

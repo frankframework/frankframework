@@ -98,7 +98,7 @@ public class JsonPipe extends FixedForwardPipe {
 				if ("2".equals(actualVersion)) {
 					stringResult = (String) input;
 					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
-					stringResult = tpXml2Json.transform(prc.getInputSource(isNamespaceAware()), null);
+					stringResult = tpXml2Json.transform(prc.getInputSource(isNamespaceAware()));
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(stringResult);
 					stringResult = jsonObject.toString();

@@ -299,7 +299,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
 						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + newParameterList.getParameter(i).getName() + "]");
 						try {
-							InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, prc);
+							InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, prc.getMessage(), prc.getSession(), true);
 							inputStream.close();
 						} catch (Exception e) {
 							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));

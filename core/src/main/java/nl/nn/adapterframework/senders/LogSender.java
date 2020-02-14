@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -59,7 +60,10 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		log.log(level,message);
 		if (prc != null) {
 			try {
-				prc.forAllParameters(paramList, this);
+				ParameterValueList pvl = prc.getValues(getParameterList());
+				if (pvl != null) {
+					pvl.forAllParameters(this);
+				}
 			} catch (ParameterException e) {
 				throw new SenderException("exception determining value of parameters", e);
 			}
