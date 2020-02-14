@@ -1731,21 +1731,21 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0], resultType: data.resultTypes[0] };
 	});
 
 	$scope.submit = function(formData) {
 		if(!formData || !formData.query) {
-			$scope.error = "Please specify a jms realm, resulttype and query!";
+			$scope.error = "Please specify a datasource, resulttype and query!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
@@ -1765,20 +1765,20 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 
 	Api.Get("jdbc", function(data) {
-		$scope.jmsRealms = data.jmsRealms;
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.datasources = data.datasources;
+		$scope.form = {datasource: data.datasources[0]};
 	});
 	$scope.submit = function(formData) {
 		if(!formData || !formData.table) {
-			$scope.error = "Please specify a jms realm and table name!";
+			$scope.error = "Please specify a datasource and table name!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.realm) formData.realm = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		$scope.columnNames = [{
