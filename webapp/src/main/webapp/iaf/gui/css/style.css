@@ -3343,7 +3343,7 @@ body.tour-open .animated {
   border-bottom: 1px solid #e7eaec;
 }
 body {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #2f4050;
   font-size: 13px;
   color: #676a6c;
@@ -4105,6 +4105,9 @@ table.table-mail tr td {
   margin-top: 0;
 }
 /* COLORS */
+.text-frank {
+  color: #fdc300;
+}
 .text-primary {
   color: #1ab394;
 }
