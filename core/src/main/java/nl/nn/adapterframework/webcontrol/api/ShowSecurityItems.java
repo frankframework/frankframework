@@ -337,8 +337,10 @@ public final class ShowSecurityItems extends Base {
 			String passWord;
 			try {
 				userName = cf.getUsername();
-				passWord = StringUtils.repeat("*", cf.getPassword().length());
+				passWord = cf.getPassword();
+				passWord = (passWord==null) ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
 			} catch (Exception e) {
+				log.warn(e.getMessage());
 				userName = "*** ERROR ***";
 				passWord = "*** ERROR ***";
 			}

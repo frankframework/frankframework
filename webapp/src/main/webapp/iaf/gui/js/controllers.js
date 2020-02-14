@@ -80,6 +80,7 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
+					$rootScope.$broadcast('appConstants');
 				}
 			});
 		}
@@ -395,7 +396,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.openOldGui = function() {
-		location.href = Misc.getServerPath();
+		location.href = Misc.getServerPath() + "rest/showConfigurationStatus";
 	};
 }])
 

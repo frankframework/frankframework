@@ -36,6 +36,7 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
@@ -199,9 +200,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 	public Object preserveInput(String correlationId, Object input) {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
-
+	
 	@Override
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
 		if (securityContext.isUserInRoles(rerunRoles)) {
 			int i = 0;
@@ -210,7 +211,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 			String checkpointName = checkpoint.getName();
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
-				String message = checkpoint.getMessage();
+				String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
 				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					IPipeLineSession pipeLineSession = new PipeLineSessionBase();
@@ -231,7 +232,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 						inRerun.add(correlationId);
 					}
 					try {
-						adapter.processMessage(correlationId, message, pipeLineSession);
+						adapter.processMessage(correlationId, inputMessage, pipeLineSession);
 					} finally {
 						synchronized(inRerun) {
 							inRerun.remove(correlationId);
