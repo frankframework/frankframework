@@ -182,14 +182,6 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //		}
 	}
 
-//	public String sendMessage(String message) throws SenderException, TimeOutException {
-//		return sendMessage(null, message, (Map)null);
-//	}
-
-	@Override
-	public Message sendMessage(String dummyCorrelationId, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(dummyCorrelationId, message, null);
-	}
 
 	@Override
 	public Message sendMessage(String dummyCorrelationId, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {

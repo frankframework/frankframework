@@ -51,7 +51,7 @@ public class SenderThread extends Thread {
     public void run() {
         try {
         	if (senderWithParameters == null) {
-				response = sender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, new Message(request)).asString();
+				response = sender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, new Message(request), session).asString();
         	} else {
 				response = senderWithParameters.sendMessage(TestTool.TESTTOOL_CORRELATIONID,  new Message(request), session).asString();
         	}

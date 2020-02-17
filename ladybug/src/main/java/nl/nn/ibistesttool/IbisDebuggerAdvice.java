@@ -134,42 +134,25 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	/**
-	 * Provides advice for {@link ISender#sendMessage(String correlationId, Message message)}
+	 * Provides advice for {@link ISender#sendMessage(String correlationId, Message message, IPipeLineSession session)}
 	 */
-//	@Pointcut("execution( * nl.nn.adapterframework.core.ISender.sendMessage(String, Message)) "+
-//				"and args(correlationId, message)" )
-	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, Message message) throws Throwable {
+	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, Message message, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
-		if (log.isDebugEnabled()) log.debug("debugSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
 			// Ignore JmsSenders within JmsListeners (calling JmsSender without
 			// ParameterResolutionContext) within Receivers.
 			return proceedingJoinPoint.proceed();
-		} else {
-			Message result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
-			return ibisDebugger.senderOutput(sender, correlationId, result);
-		}
-	}
-
-	/**
-	 * Provides advice for {@link ISenderWithParameters#sendMessage(String correlationId, Message message, IPipeLineSession session)}
-	 */
-//	@Pointcut("execution( * nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext)) " +
-//				"and args(correlationId, message, parameterResolutionContext)" )
-	public Object debugSenderWithParametersInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, Message message, IPipeLineSession session) throws Throwable {
-		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
-		}
-		ISenderWithParameters sender = (ISenderWithParameters)proceedingJoinPoint.getTarget();
+		} 
 		Object preservedObject = message;
 		Message result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
-		if (ibisDebugger.stubSender(sender, correlationId)) {
+		if (sender instanceof ISenderWithParameters && ibisDebugger.stubSender(sender, correlationId)) {
+			ISenderWithParameters psender = (ISenderWithParameters)sender;
 			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
 			// resolve parameters itself
-			ParameterList parameterList = sender.getParameterList();
+			ParameterList parameterList = psender.getParameterList();
 			if (parameterList!=null) {
 				parameterList.getValues(message, session);
 			}

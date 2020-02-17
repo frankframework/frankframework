@@ -93,11 +93,7 @@ public class SenderSeries extends SenderWrapperBase {
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			if (sender instanceof ISenderWithParameters) {
-				message = ((ISenderWithParameters)sender).sendMessage(correlationID,message,session);
-			} else {
-				message = sender.sendMessage(correlationID,message);
-			}
+			message = sender.sendMessage(correlationID,message,session);
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
 			sk.addValue(t2-t1);

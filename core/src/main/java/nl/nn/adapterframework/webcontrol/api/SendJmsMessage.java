@@ -197,7 +197,7 @@ public final class SendJmsMessage extends Base {
 
 		try {
 			qms.open();
-			qms.sendMessage(technicalCorrelationId, new Message(message)).asString();
+			qms.sendMessage(technicalCorrelationId, new Message(message), null).asString();
 		} catch (Exception e) {
 			throw new ApiException("Error occured sending message", e);
 		} 

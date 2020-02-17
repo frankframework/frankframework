@@ -199,7 +199,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private IPipeLineSession session;
 		private String correlationID;
 		private ISender sender; 
-		private ISenderWithParameters psender=null;
 		private StringBuffer results = new StringBuffer();
 		int count=0;
 		private Vector<I> inputItems = new Vector<I>();
@@ -210,9 +209,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.session=session;
 			this.correlationID=correlationID;
 			this.sender=sender;
-			if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
-				psender = (ISenderWithParameters) sender;
-			}
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
 				executorList = new ArrayList<ParallelSenderExecutor>();
@@ -235,17 +231,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
 				session.put(getItemNoSessionKey(),""+count);
 			}
-			ParameterResolutionContext prc=null;
 			Message message=itemToMessage(item);
 			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
-			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
-				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-				prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			}
 			if (msgTransformerPool!=null) {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
-					String transformedMsg=msgTransformerPool.transform(message.asSource(),prc!=null?prc.getValueMap(getParameterList()):null);
+					
+					String transformedMsg=msgTransformerPool.transform(message.asSource(),getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
@@ -270,11 +262,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					getTaskExecutor().execute(pse);
 				} else {
 					long senderStartTime= System.currentTimeMillis();
-					if (psender!=null) {
-						itemResult = psender.sendMessage(correlationID, message, session).asString();
-					} else {
-						itemResult = sender.sendMessage(correlationID, message).asString();
-					}
+					itemResult = sender.sendMessage(correlationID, message, session).asString();
 					long senderEndTime = System.currentTimeMillis();
 					long senderDuration = senderEndTime - senderStartTime;
 					senderStatisticsKeeper.addValue(senderDuration);

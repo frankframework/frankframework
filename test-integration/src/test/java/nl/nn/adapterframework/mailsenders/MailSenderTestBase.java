@@ -333,7 +333,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		String xml2String = sb.toString();
 		Message sampleMailXML = new Message(xml2String);
 		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(correlationID, sampleMailXML).asString();
+		String result = sender.sendMessage(correlationID, sampleMailXML, session).asString();
 		assertEquals(correlationID, result);
 	}
 }

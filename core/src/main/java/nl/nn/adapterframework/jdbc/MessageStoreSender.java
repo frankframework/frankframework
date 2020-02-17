@@ -114,11 +114,6 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, null);
-	}
-
-	@Override
 	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (sessionKeys != null) {
 			List<String> list = new ArrayList<String>();

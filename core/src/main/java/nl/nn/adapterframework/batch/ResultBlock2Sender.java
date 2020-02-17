@@ -159,13 +159,7 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
 				writer.getBuffer().setLength(0);
-				ISender sender = getSender();
-				if (sender instanceof ISenderWithParameters) {
-					ISenderWithParameters psender = (ISenderWithParameters)sender;
-					psender.sendMessage(streamId+"-"+incCounter(streamId),message,session); 
-				} else {
-					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
-				}
+				getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session); 
 			}
 		}
 	}

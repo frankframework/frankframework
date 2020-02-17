@@ -48,7 +48,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 
 		sender.configure();
 		sender.open();
-		sender.sendMessage(null, new Message(mailInput));
+		sender.sendMessage(null, new Message(mailInput), session);
 	}
 
 	private void validateAuthentication(Session session) {

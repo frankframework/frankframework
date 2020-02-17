@@ -60,11 +60,6 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException {
-		throw new SenderException("FileSender cannot be used without a session");
-	}
-
-	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

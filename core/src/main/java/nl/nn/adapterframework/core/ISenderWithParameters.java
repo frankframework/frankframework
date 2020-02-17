@@ -15,11 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
-
-import nl.nn.adapterframework.stream.Message;
-
-
 /**
  * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
  * 
@@ -27,5 +22,4 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {
 	
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException;
 }

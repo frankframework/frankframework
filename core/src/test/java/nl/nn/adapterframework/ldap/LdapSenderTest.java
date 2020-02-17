@@ -82,7 +82,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender.sendMessage("dummy",new Message("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>")).asString();
+			result = ldapSender.sendMessage("dummy",new Message("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -115,7 +115,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter2);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender.sendMessage("dummy", new Message("<dummy/>")).asString();
+			result = ldapSender.sendMessage("dummy", new Message("<dummy/>"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -148,10 +148,8 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender
-					.sendMessage(
-							"dummy",
-							new Message("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>")).asString();
+			result = ldapSender.sendMessage("dummy",
+							new Message("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -188,7 +186,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			return ldapSender.sendMessage("dummy", new Message("dummy")).asString();
+			return ldapSender.sendMessage("dummy", new Message("dummy"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();

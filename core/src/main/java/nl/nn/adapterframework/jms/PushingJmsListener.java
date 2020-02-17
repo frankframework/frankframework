@@ -190,7 +190,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(cid, new Message(plr.getResult()));
+					getSender().sendMessage(cid, new Message(plr.getResult()), null);
 				}
 			}
 

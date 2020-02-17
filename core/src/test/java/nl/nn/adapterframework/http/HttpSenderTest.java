@@ -46,7 +46,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input).asString();
+			String result = sender.sendMessage(null, input, null).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

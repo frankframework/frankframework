@@ -92,11 +92,6 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, null);
-	}
-
-	@Override
 	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		return sendMessage(correlationID, message, session, null);
 	}

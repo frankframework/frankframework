@@ -891,13 +891,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
-			ISenderWithParameters psender = (ISenderWithParameters) sender;
-			ParameterResolutionContext prc = new ParameterResolutionContext (input, session, isNamespaceAware());
-			Message result = psender.sendMessage(correlationID, new Message(input), session);
-			return new PipeRunResult(null, result.asString());
-		} 
-		Message result = sender.sendMessage(correlationID, new Message(input));
+		Message result = sender.sendMessage(correlationID, new Message(input), session);
 		return new PipeRunResult(null,result.asString());
 	}
 

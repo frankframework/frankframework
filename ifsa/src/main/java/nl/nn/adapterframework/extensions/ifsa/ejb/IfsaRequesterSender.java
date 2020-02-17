@@ -101,11 +101,6 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
 	}
 
 	@Override
-	public Message sendMessage(String dummyCorrelationId, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(dummyCorrelationId, message, (Map<String, String>) null);
-	}
-
-	@Override
 	public Message sendMessage(String dummyCorrelationId, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Map<String, String> params = convertParametersToMap(message, session);
 		return sendMessage(dummyCorrelationId, message, params);

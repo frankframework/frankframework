@@ -23,6 +23,7 @@ import org.apache.soap.SOAPException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -73,7 +74,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
 			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
 			return new Message(proxy.dispatchRequest(getServiceName(),correlationID,message.asString()));

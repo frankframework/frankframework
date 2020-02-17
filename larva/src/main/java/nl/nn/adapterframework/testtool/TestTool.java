@@ -1419,7 +1419,7 @@ public class TestTool {
 						try {
 							deleteQuerySender.configure();				 		
 							deleteQuerySender.open(); 						
-							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
 							closeQueues(queues, properties, writers);
@@ -1429,7 +1429,7 @@ public class TestTool {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
-						} catch(IOException | SenderException e) {
+						} catch(SenderException e) {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
@@ -1467,7 +1467,7 @@ public class TestTool {
 						}
 						if (queues != null) {
 							try {
-								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE).asString();
+								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
@@ -2143,13 +2143,13 @@ public class TestTool {
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE).asString();
+						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null).asString();
 						if (!preResult.equals(postResult)) {
 							
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE).asString();
+								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null).asString();
 							} catch(TimeOutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
@@ -2480,7 +2480,7 @@ public class TestTool {
 			if (correlationId == null) {
 				correlationId = TESTTOOL_CORRELATIONID;
 			}
-			jmsSender.sendMessage(correlationId, new nl.nn.adapterframework.stream.Message(fileContent));
+			jmsSender.sendMessage(correlationId, new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(TimeOutException e) {
@@ -2556,7 +2556,7 @@ public class TestTool {
 		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
 		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
 		try {
-			delaySender.sendMessage(null, new nl.nn.adapterframework.stream.Message(fileContent));
+			delaySender.sendMessage(null, new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(Exception e) {
@@ -2724,7 +2724,7 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE).asString();
+				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -2743,7 +2743,7 @@ public class TestTool {
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
-				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE).asString();
+				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE, null).asString();
 			} catch(TimeOutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {

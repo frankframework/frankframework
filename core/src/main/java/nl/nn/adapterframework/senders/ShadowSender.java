@@ -185,14 +185,8 @@ public class ShadowSender extends ParallelSenders {
 
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
-			if(resultISender instanceof ISenderWithParameters) {
-				((ISenderWithParameters) resultISender).sendMessage(correlationID, new Message(resultsXml.toXML()), session);
-			}
-			else {
-				resultISender.sendMessage(correlationID, new Message(resultsXml.toXML()));
-			}
-		}
-		catch(SenderException se) {
+			resultISender.sendMessage(correlationID, new Message(resultsXml.toXML()), session);
+		} catch(SenderException se) {
 			log.warn("failed to send ShadowSender result to ["+resultISender.getName()+"]");
 		}
 

@@ -23,7 +23,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.configure();
 		sender.open();
 		Message input = new Message("<dummy/>");
-		String result = sender.sendMessage(null, input).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 		assertEquals(input, result);
 	}
 	
@@ -34,7 +34,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.configure();
 		sender.open();
 		Message input = new Message("dummy message");
-		String result = sender.sendMessage("fakeCorrelationId", input).asString();
+		String result = sender.sendMessage("fakeCorrelationId", input, session).asString();
 		assertEquals(text,result);
 	}
 
@@ -44,7 +44,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.setReturnString(text);
 		sender.configure();
 		sender.open();
-		String result = sender.sendMessage("fakeCorrelationId", null).asString();
+		String result = sender.sendMessage("fakeCorrelationId", null, session).asString();
 		assertEquals(text,result);
 	}
 
@@ -55,7 +55,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.configure();
 		sender.open();
 		
-		String result = sender.sendMessage("fakeCorrelationId", new Message("dummy message")).asString();
+		String result = sender.sendMessage("fakeCorrelationId", new Message("dummy message"), session).asString();
 		
 		String expected = TestFileUtils.getTestFile(filename);
 		assertEquals(expected,result);
@@ -69,7 +69,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.configure();
 		sender.open();
 		
-		String result = sender.sendMessage("fakeCorrelationId", new Message("dummy message")).asString();
+		String result = sender.sendMessage("fakeCorrelationId", new Message("dummy message"), session).asString();
 		
 		String expected = TestFileUtils.getTestFile("/FixedResult/result.xml");
 		assertEquals(expected,result);

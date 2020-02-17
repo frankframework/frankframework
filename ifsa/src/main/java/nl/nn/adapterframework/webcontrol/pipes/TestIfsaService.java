@@ -182,7 +182,7 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		sender.setMessageProtocol(messageProtocol);
 		sender.configure();
 		sender.open();
-		return sender.sendMessage("testmsg_" + Misc.createUUID(), new Message(message)).asString();
+		return sender.sendMessage("testmsg_" + Misc.createUUID(), new Message(message), null).asString();
 	}
 
 	private String retrieveFormInput(IPipeLineSession session) {

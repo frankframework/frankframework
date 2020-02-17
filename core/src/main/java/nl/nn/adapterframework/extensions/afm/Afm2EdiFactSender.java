@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
@@ -82,7 +83,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException {
 		try {
 			return new Message(execute(message.asString()));
 		} catch (Exception e) {

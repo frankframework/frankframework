@@ -69,13 +69,7 @@ public class SenderWrapper extends SenderWrapperBase {
 
 	@Override
 	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		Message result;
-		if (sender instanceof ISenderWithParameters) {
-			result = ((ISenderWithParameters)sender).sendMessage(correlationID,message, session);
-		} else {
-			result = sender.sendMessage(correlationID,message);
-		}
-		return result;
+		return sender.sendMessage(correlationID,message, session);
 	}
 
 	@Override

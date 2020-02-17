@@ -74,21 +74,6 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							String, nl.nn.adapterframework.stream.Message
-	 						)
-	 					)
-	 					and
-	 					args(correlationId, message)
-	 					"
-	 				method="debugSenderInputOutputAbort"
-	 				arg-names="correlationId, message"
-	 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
 	 							String, 
 	 							nl.nn.adapterframework.stream.Message, 
 	 							nl.nn.adapterframework.core.IPipeLineSession
@@ -97,7 +82,7 @@
 	 					and
 	 					args(correlationId, message, session)
 	 					"
-	 				method="debugSenderWithParametersInputOutputAbort"
+	 				method="debugSenderInputOutputAbort"
 	 				arg-names="correlationId, message, session"
 	 			/>
 	 			<aop:around

@@ -71,7 +71,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		if (sender != null) {
 			if (processResult.getState().equalsIgnoreCase("success")) {
 				try {
-					sender.sendMessage(tcid, new Message(processResult.getResult()));
+					sender.sendMessage(tcid, new Message(processResult.getResult()), null);
 				} catch (Exception e) {
 					throw new ListenerException(
 						"error sending message with technical correlationId [" + tcid

@@ -48,11 +48,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		try {
 			long t1 = System.currentTimeMillis();
 			try {
-				if (sender instanceof ISenderWithParameters) {
-					reply = ((ISenderWithParameters)sender).sendMessage(correlationID,request,session);
-				} else {
-					reply = sender.sendMessage(correlationID,request);
-				}
+				reply = sender.sendMessage(correlationID,request,session);
 			} catch (Throwable tr) {
 				throwable = tr;
 				log.warn("SenderExecutor caught exception",tr);

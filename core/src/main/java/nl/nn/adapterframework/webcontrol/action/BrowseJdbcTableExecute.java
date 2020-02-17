@@ -175,7 +175,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 							Transformer t = XmlUtils.createTransformer(url);
 							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 						}
-						result = qs.sendMessage("dummy", new Message(query)).asString();
+						result = qs.sendMessage("dummy", new Message(query), null).asString();
 					//} else {
 						//error("errors.generic","This function only supports oracle databases",null);
 					//}

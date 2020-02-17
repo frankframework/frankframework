@@ -121,7 +121,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
-			result = qs.sendMessage("dummy", new Message(query)).asString();
+			result = qs.sendMessage("dummy", new Message(query), null).asString();
 			if (resultType.equalsIgnoreCase("csv")) {
 				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
 				if (url!=null) {

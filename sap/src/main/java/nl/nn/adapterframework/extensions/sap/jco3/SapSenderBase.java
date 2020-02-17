@@ -102,7 +102,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		return sendMessage(correlationID,message,null);
 	}
 

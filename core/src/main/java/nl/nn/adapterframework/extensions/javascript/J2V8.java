@@ -98,10 +98,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
 					Message msg = new Message(parameters.get(0));
-					if(sender instanceof ISenderWithParameters)
-						return ((ISenderWithParameters) sender).sendMessage(null, msg, session).asString();
-					else
-						return sender.sendMessage(null, msg);
+					return sender.sendMessage(null, msg, session).asString();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

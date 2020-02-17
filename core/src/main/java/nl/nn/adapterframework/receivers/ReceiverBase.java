@@ -843,7 +843,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 		try {
 			if (errorSender!=null) {
-				errorSender.sendMessage(correlationId, new Message(message));
+				errorSender.sendMessage(correlationId, new Message(message), null);
 			}
 			Serializable sobj;
 			if (rawMessage instanceof Serializable) {
@@ -1975,7 +1975,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(correlationId, result);
+				getSender().sendMessage(correlationId, result, null);
 			}
 		} catch (Exception e) {
 			String msg = "receiver [" + getName() + "] caught exception in message post processing";

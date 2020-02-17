@@ -96,7 +96,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery())).asString();
+				result = qs.sendMessage("dummy", new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query", t);
 			} finally {
