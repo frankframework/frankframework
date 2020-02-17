@@ -270,7 +270,7 @@ public final class ShowConfiguration extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
 
-		String jmsRealm = null, name = null, version = null, fileName = null, fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+		String datasource = null, name = null, version = null, fileName = null, fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		InputStream file = null;
 		boolean multiple_configs = false, activate_config = true, automatic_reload = false;
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
@@ -279,10 +279,10 @@ public final class ShowConfiguration extends Base {
 		}
 
 		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
+			if(inputDataMap.get("datasource") != null)
+				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
 			else
-				throw new ApiException("JMS realm not defined", 400);
+				throw new ApiException("Datasource not defined", 400);
 			if(inputDataMap.get("name") != null)
 				name = inputDataMap.get("name").get(0).getBodyAsString();
 			else
@@ -342,7 +342,7 @@ public final class ShowConfiguration extends Base {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(getIbisContext(), jmsRealm, activate_config, automatic_reload, name, version, fileName, file, user);
+				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, name, version, fileName, file, user);
 			}
 
 			if(automatic_reload) {
