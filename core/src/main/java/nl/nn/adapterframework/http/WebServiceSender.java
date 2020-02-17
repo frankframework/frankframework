@@ -64,6 +64,7 @@ public class WebServiceSender extends HttpSender {
 	public WebServiceSender() {
 		super();
 		setMethodType("POST");
+		setContentType("text/xml");
 	}
 
 	@Override
@@ -96,12 +97,6 @@ public class WebServiceSender extends HttpSender {
 				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
 		}
-	}
-
-	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
-		setContentType("text/xml; charset="+getCharSet());
-		return super.getMethod(uri, message, parameters);
 	}
 
 	@Override

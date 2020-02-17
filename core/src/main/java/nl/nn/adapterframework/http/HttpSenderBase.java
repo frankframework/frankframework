@@ -56,6 +56,7 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -169,7 +170,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String urlParam = "url";
 	private String methodType = "GET";
 	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String contentType = null;
+	private ContentType contentType = null;
+	private String mimeType = "text/html";
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -297,6 +299,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 			while (st.hasMoreElements()) {
 				addParameterToSkip(st.nextToken());
+			}
+		}
+
+		if(StringUtils.isNotEmpty(mimeType)) {
+			contentType = ContentType.parse(mimeType);
+			if(contentType != null && contentType.getCharset() == null) {
+				contentType = contentType.withCharset(getCharSet());
 			}
 		}
 
@@ -608,9 +617,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
-			if (StringUtils.isNotEmpty(getContentType())) {
-				httpRequestBase.setHeader("Content-Type", getContentType());
-			}
 
 			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
 				AuthCache authCache = httpClientContext.getAuthCache();
@@ -769,9 +775,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	@IbisDoc({"4", "content-type of the request, only for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
-		contentType = string;
+		mimeType = string;
 	}
-	public String getContentType() {
+	public ContentType getContentType() {
 		return contentType;
 	}
 
