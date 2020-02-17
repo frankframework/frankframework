@@ -64,6 +64,7 @@ Upcoming
 - Detect character set of input streams by examining BOM
 - Accept XML 1.1 valid characters in XML 1.0 documents while STAX parsing, to solve illegal XML problems in ExchangeMailListener.
 - Rotate message.log by size instead of by day.
+- Add character set to each outbound HTTP request.
 
 ### Non backwards compatible changes
 
