@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -140,10 +139,10 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		String httpResult = null;
 		try {
-			httpResult = super.extractResult(responseHandler, prc);
+			httpResult = super.extractResult(responseHandler, session);
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
 			throw e;

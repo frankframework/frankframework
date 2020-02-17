@@ -18,12 +18,12 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileHandler;
 
@@ -51,9 +51,9 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
-			return new Message(handle(message, prc.getSession(),getParameterList()));
+			return new Message(handle(message, session, getParameterList()));
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}

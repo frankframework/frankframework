@@ -535,7 +535,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			ParameterList pl = getParameterList();
 			result=returnString;
 			if (pl != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+				ParameterResolutionContext prc = new ParameterResolutionContext (input, session);
 				Map params;
 				try {
 					params = prc.getValueMap(pl);
@@ -879,8 +879,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException, IOException {
 		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, next);
+			ParameterResolutionContext prc = new ParameterResolutionContext (message, session, isNamespaceAware());
+			return ((IStreamingSender)sender).sendMessage(correlationID, message, session, next);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {
@@ -893,8 +893,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		// sendResult has a messageID for async senders, the result for sync senders
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, session, isNamespaceAware());
-			Message result = psender.sendMessage(correlationID, new Message(input), prc);
+			ParameterResolutionContext prc = new ParameterResolutionContext (input, session, isNamespaceAware());
+			Message result = psender.sendMessage(correlationID, new Message(input), session);
 			return new PipeRunResult(null, result.asString());
 		} 
 		Message result = sender.sendMessage(correlationID, new Message(input));

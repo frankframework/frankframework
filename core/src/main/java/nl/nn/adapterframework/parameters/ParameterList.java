@@ -70,10 +70,9 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 	
 
-	public ParameterValueList getValues(String message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
-		return getValues(new Message(message), session, namespaceAware);
+	public ParameterValueList getValues(Message message, IPipeLineSession session) throws ParameterException {
+		return getValues(message, session, true);
 	}
-	
 	/**
 	 * Returns an array list of <link>ParameterValue<link> objects
 	 */

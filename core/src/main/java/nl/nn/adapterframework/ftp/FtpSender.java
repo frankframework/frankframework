@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -55,12 +54,8 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
-			IPipeLineSession session=null;
-			if (prc!=null) {
-				session=prc.getSession();
-			}
 			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {
 			throw e;

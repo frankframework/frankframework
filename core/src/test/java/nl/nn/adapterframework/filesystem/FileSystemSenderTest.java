@@ -16,10 +16,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.TestAssertions;
@@ -80,11 +80,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		waitForActionToFinish();
 		
 		String actual = readFile(null, filename);
@@ -115,11 +113,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		waitForActionToFinish();
 
 
@@ -152,11 +148,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		waitForActionToFinish();
 
 		String actual = readFile(null, filename);
@@ -219,11 +213,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		
 		// test
 		assertEquals("result should be base64 of file content", contents.trim(), result.asString().trim());
@@ -242,11 +235,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setBase64("encode");
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
@@ -275,11 +267,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		
 		// test
 		// result should be name of the moved file
@@ -317,11 +308,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		waitForActionToFinish();
 
 		// test
@@ -344,11 +334,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 
 		// test
 		assertEquals("result of sender should be name of deleted folder",folder,result.asString());
@@ -371,11 +360,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 
 		waitForActionToFinish();
 		
@@ -405,11 +393,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		deleteFile(null, dest);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 
 		// test
 		assertEquals("result of sender should be new name of file",dest,result.asString());
@@ -441,11 +428,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
 		Message message=new Message("");
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 
 		log.debug(result);
 		
@@ -554,11 +540,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 		assertTrue("File ["+filename2+"]expected to be present", _fileExists(inputFolder, filename2));
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message result = fileSystemSender.sendMessage(correlationId, message, session);
 		System.err.println(result);
 		waitForActionToFinish();
 		

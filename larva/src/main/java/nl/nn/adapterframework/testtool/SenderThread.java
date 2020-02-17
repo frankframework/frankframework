@@ -4,11 +4,11 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -21,7 +21,7 @@ public class SenderThread extends Thread {
     private String name;
     private ISender sender;
 	private ISenderWithParameters senderWithParameters;
-	private ParameterResolutionContext parameterResolutionContext;
+	private IPipeLineSession session;
     private String request;
     private String response;
     private SenderException senderException;
@@ -38,11 +38,11 @@ public class SenderThread extends Thread {
 		log.debug("Request: " + request);
     }
 
-	SenderThread(ISenderWithParameters senderWithParameters, String request, ParameterResolutionContext parameterResolutionContext, boolean convertExceptionToMessage) {
+	SenderThread(ISenderWithParameters senderWithParameters, String request, IPipeLineSession session, boolean convertExceptionToMessage) {
 		name = senderWithParameters.getName();
 		this.senderWithParameters = senderWithParameters;
-		this.parameterResolutionContext = parameterResolutionContext;
 		this.request = request;
+		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
 		log.debug("Creating SenderThread for ISenderWithParameters '" + name + "'");
 		log.debug("Request: " + request);
@@ -53,7 +53,7 @@ public class SenderThread extends Thread {
         	if (senderWithParameters == null) {
 				response = sender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, new Message(request)).asString();
         	} else {
-				response = senderWithParameters.sendMessage(TestTool.TESTTOOL_CORRELATIONID,  new Message(request), parameterResolutionContext).asString();
+				response = senderWithParameters.sendMessage(TestTool.TESTTOOL_CORRELATIONID,  new Message(request), session).asString();
         	}
         } catch(SenderException e) {
         	if (convertExceptionToMessage) {

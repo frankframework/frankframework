@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -88,13 +88,13 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		long t1 = System.currentTimeMillis();
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
 			if (sender instanceof ISenderWithParameters) {
-				message = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
+				message = ((ISenderWithParameters)sender).sendMessage(correlationID,message,session);
 			} else {
 				message = sender.sendMessage(correlationID,message);
 			}

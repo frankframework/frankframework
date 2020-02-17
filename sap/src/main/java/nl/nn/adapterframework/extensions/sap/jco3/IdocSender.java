@@ -21,9 +21,9 @@ import com.sap.conn.idoc.IDocFactory;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -68,11 +68,13 @@ public class IdocSender extends SapSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			pvl=prc.getValues(paramList);
+			if (paramList!=null) {
+				pvl = paramList.getValues(message, session);
+			}
 			SapSystem sapSystem = getSystem(pvl);
 			
 			IDocDocument idoc = parseIdoc(sapSystem,message.asString());
@@ -88,7 +90,7 @@ public class IdocSender extends SapSenderBase {
 			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)+"]"); }
 
 
-			JCoDestination destination = getDestination(prc.getSession(), sapSystem);
+			JCoDestination destination = getDestination(session, sapSystem);
 			tid=getTid(destination,sapSystem);
 			if (tid==null) {
 				throw new SenderException("could not obtain TID to send Idoc");

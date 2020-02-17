@@ -25,12 +25,12 @@ import java.util.Map;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -103,7 +103,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -122,8 +122,7 @@ public class ShadowSender extends ParallelSenders {
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
-			ParameterResolutionContext newPrc = new ParameterResolutionContext(prc.getMessage(), prc.getSession());
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, newPrc, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 			executor.execute(pse);
 		}
@@ -187,8 +186,7 @@ public class ShadowSender extends ParallelSenders {
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
 			if(resultISender instanceof ISenderWithParameters) {
-				ParameterResolutionContext newPrc2 = new ParameterResolutionContext(resultsXml.toXML(), prc.getSession());
-				((ISenderWithParameters) resultISender).sendMessage(correlationID, new Message(resultsXml.toXML()), newPrc2);
+				((ISenderWithParameters) resultISender).sendMessage(correlationID, new Message(resultsXml.toXML()), session);
 			}
 			else {
 				resultISender.sendMessage(correlationID, new Message(resultsXml.toXML()));

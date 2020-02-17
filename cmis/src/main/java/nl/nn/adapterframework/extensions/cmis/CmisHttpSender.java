@@ -46,7 +46,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 public class CmisHttpSender extends HttpSenderBase {
@@ -138,7 +137,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
@@ -154,7 +153,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				errorStream = responseHandler.getResponse();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
-			prc.getSession().put("response", response);
+			session.put("response", response);
 		}
 		catch(Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
@@ -174,9 +173,8 @@ public class CmisHttpSender extends HttpSenderBase {
 		pls.put("method", method);
 		pls.put("headers", headers);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {
-			sendMessage(null, null, prc);
+			sendMessage(null, null, pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

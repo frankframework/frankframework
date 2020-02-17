@@ -73,7 +73,7 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
-			return psender.sendMessage(session.getMessageId(), new Message(xml),prc).asString(); 
+			return psender.sendMessage(session.getMessageId(), new Message(xml),session).asString(); 
 		}
 		return sender.sendMessage(session.getMessageId(), new Message(xml)).asString(); 
 	}

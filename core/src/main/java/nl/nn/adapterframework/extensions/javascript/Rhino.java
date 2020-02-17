@@ -17,8 +17,8 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import org.mozilla.javascript.*;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 public class Rhino implements JavascriptEngine<Context> {
 
@@ -48,7 +48,7 @@ public class Rhino implements JavascriptEngine<Context> {
 	}
 
 	@Override
-	public void registerCallback(ISender sender, ParameterResolutionContext prc) {
+	public void registerCallback(ISender sender, IPipeLineSession session) {
 		throw new UnsupportedOperationException("Rhino callback functionality not implemented");
 	}
 }

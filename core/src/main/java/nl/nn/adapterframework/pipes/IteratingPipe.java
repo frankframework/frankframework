@@ -263,7 +263,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			try {
 				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, message, prc, guard, senderStatisticsKeeper);
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, message, session, guard, senderStatisticsKeeper);
 					if (isCollectResults()) {
 						executorList.add(pse);
 					}
@@ -271,7 +271,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} else {
 					long senderStartTime= System.currentTimeMillis();
 					if (psender!=null) {
-						itemResult = psender.sendMessage(correlationID, message, prc).asString();
+						itemResult = psender.sendMessage(correlationID, message, session).asString();
 					} else {
 						itemResult = sender.sendMessage(correlationID, message).asString();
 					}

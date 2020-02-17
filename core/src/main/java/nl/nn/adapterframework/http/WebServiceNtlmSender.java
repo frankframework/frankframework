@@ -51,10 +51,10 @@ import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -150,7 +150,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {

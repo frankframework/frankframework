@@ -27,11 +27,11 @@ import org.apache.commons.lang.SystemUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -95,12 +95,12 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
  
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String result=returnString;
-		if (prc!=null) {
+		if (paramList!=null) {
 			ParameterValueList pvl;
 			try {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException("exception extracting parameters",e);
 			}
@@ -113,7 +113,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		if (getSubstituteVars()){
-			result=StringResolver.substVars(returnString, prc.getSession());
+			result=StringResolver.substVars(returnString, session);
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {

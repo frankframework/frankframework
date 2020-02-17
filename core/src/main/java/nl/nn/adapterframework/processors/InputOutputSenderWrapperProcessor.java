@@ -19,9 +19,9 @@ import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -32,10 +32,10 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=new Message(prc.getSession().get(senderWrapperBase.getGetInputFromSessionKey()));
+			senderInput=new Message(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
@@ -43,10 +43,10 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			prc.getSession().put(senderWrapperBase.getStoreResultInSessionKey(),result);
+			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}

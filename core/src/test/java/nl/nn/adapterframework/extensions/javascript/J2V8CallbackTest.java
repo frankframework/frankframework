@@ -35,8 +35,6 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f2");
 		sender.setEngineName("J2V8");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-
 		Parameter param = new Parameter();
 		param.setName("x");
 		param.setType("integer");
@@ -52,7 +50,7 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("7", sender.sendMessage(null, dummyInput, prc).asString());
+		assertEquals("7", sender.sendMessage(null, dummyInput, session).asString());
 	}
 
 	//An EchoSender will be called in the javascript code.
@@ -62,8 +60,6 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f4");
 		sender.setEngineName("J2V8");
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -85,6 +81,6 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
-		assertEquals("true", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("true", sender.sendMessage(null,dummyInput,session).asString());
 	}
 }

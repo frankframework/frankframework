@@ -36,6 +36,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -43,7 +44,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -141,23 +141,23 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	@Override
 	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, null);
+		return sendMessage(correlationID, message, null, null);
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, prc, null);
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return sendMessage(correlationID, message, session, null);
 	}
 
-	public Message sendMessage(String correlationID, Message input, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message input, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException, IOException {
 		String message= input.asString();
 		Session s = null;
 		MessageProducer mp = null;
 
 		ParameterValueList pvl=null;
-		if (prc != null && paramList != null) {
+		if (paramList != null) {
 			try {
-				pvl=prc.getValues(paramList);
+				pvl=paramList.getValues(input, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
 			}
@@ -179,7 +179,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 		try {
 			s = createSession();
-			mp = getMessageProducer(s, getDestination(prc));
+			mp = getMessageProducer(s, getDestination(session));
 			Destination replyQueue = null;
 
 			// create message
@@ -253,11 +253,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 						while(propertyNames.hasMoreElements()) {
 							String jmsProperty = (String) propertyNames.nextElement();
 							if(getResponseHeadersList().contains(jmsProperty)) {
-								prc.getSession().put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
+								session.put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
 							}
 						}
 					}
-					return new Message(getStringFromRawMessage(rawReplyMsg, prc!=null?prc.getSession():null, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper));
+					return new Message(getStringFromRawMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper));
 				} finally {
 					if (mc != null) { 
 						try { 
@@ -293,7 +293,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(IPipeLineSession session) throws JmsException, NamingException, JMSException {
 		return getDestination();
 	}
 

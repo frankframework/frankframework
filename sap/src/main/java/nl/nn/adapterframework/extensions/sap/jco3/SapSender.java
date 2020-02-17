@@ -21,11 +21,11 @@ import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.sap.ISapSender;
 import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -116,11 +116,13 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			pvl=prc.getValues(paramList);
+			if (paramList!=null) {
+				pvl = paramList.getValues(message, session);
+			}
 			SapSystem sapSystem = getSystem(pvl);
 			
 			JCoFunction function=getFunction(sapSystem, pvl);
@@ -134,7 +136,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
 
-			JCoDestination destination = getDestination(prc.getSession(), sapSystem);
+			JCoDestination destination = getDestination(session, sapSystem);
 			tid = getTid(destination,sapSystem);
 			if (StringUtils.isEmpty(tid)) {
 				function.execute(destination);

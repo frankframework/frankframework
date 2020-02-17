@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -72,15 +71,14 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ParameterValueList pvl;
 		try {
-			pvl = prc.getValues(paramList);
+			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new SenderException("cannot determine filename and/or contents of zip entry",e);
 		}
 
-		IPipeLineSession session = prc.getSession();
 		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
 		if (sessionData==null) {
 			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		

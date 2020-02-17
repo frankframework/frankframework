@@ -37,11 +37,11 @@ import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -238,7 +238,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	protected String sendMessage(Connection connection, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector columns = null;
@@ -260,7 +260,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				result = selectQuery(connection, correlationID, tableName, columns, where, order);
 			} else {
 				if (root.equalsIgnoreCase("insert")) {
-					result = insertQuery(connection, correlationID, prc, tableName, columns);
+					result = insertQuery(connection, correlationID, tableName, columns);
 				} else {
 					if (root.equalsIgnoreCase("delete")) {
 						result = deleteQuery(connection, correlationID, tableName, where);
@@ -331,7 +331,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private String insertQuery(Connection connection, String correlationID, ParameterResolutionContext prc, String tableName, Vector columns) throws SenderException {
+	private String insertQuery(Connection connection, String correlationID, String tableName, Vector columns) throws SenderException {
 		try {
 			String query = "INSERT INTO " + tableName + " (";
 			Iterator iter = columns.iterator();
@@ -366,7 +366,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			QueryContext queryContext = new QueryContext(query, "delete", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(connection, correlationID, statement, query, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
@@ -415,12 +415,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, correlationID, statement, q, null, null));
+						result.append(executeOtherQuery(connection, correlationID, statement, q, null, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(connection, correlationID, statement, query, null, null);
+				return executeOtherQuery(connection, correlationID, statement, query, null, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
@@ -466,7 +466,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(connection, correlationID, statement, query, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}

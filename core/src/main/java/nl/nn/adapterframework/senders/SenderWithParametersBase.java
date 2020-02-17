@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -47,7 +46,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the abstract sendMessage() defined by ISenderWithParameters, that includes the parameterResolutionContext
 	public final Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException  {
-		return sendMessage(correlationID,message,null);
+		return sendMessage(correlationID,message, null);
 	}
 
 	@Override
@@ -61,6 +60,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	/**
 	 * return the Parameters
 	 */
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}

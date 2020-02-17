@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -32,7 +33,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -119,24 +119,23 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (sessionKeys != null) {
 			List<String> list = new ArrayList<String>();
 			list.add(StringEscapeUtils.escapeCsv(message.asString()));
 			StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 			while (tokenizer.hasMoreElements()) {
 				String sessionKey = (String)tokenizer.nextElement();
-				list.add(StringEscapeUtils.escapeCsv((String)prc.getSession().get(sessionKey)));
+				list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
 			}
 			StrBuilder sb = new StrBuilder();
 			sb.appendWithSeparators(list, ",");
 			message = new Message(sb.toString());
 		}
-		String messageId = prc.getSession().getMessageId();
-		if (prc != null && paramList != null
-				&& paramList.findParameter("messageId") != null) {
+		String messageId = session.getMessageId();
+		if (paramList != null && paramList.findParameter("messageId") != null) {
 			try {
-				messageId = (String)prc.getValueMap(paramList).get("messageId");
+				messageId = (String)paramList.getValues(message, session).getValue("messageId");
 			} catch (ParameterException e) {
 				throw new SenderException("Could not resolve parameter messageId", e);
 			}

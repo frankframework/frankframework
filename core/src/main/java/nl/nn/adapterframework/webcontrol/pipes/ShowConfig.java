@@ -97,9 +97,9 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setStreamResultToServlet(true);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
+				ParameterResolutionContext prc = new ParameterResolutionContext (
 						"dummy", session);
-				queryResult = qs.sendMessage("dummy", new Message("dummy"), prc).asString();
+				queryResult = qs.sendMessage("dummy", new Message("dummy"), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "Error occured on executing jdbc query", t);
@@ -144,8 +144,8 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext("dummy", session);
-				String queryResult = qs.sendMessage("dummy", new Message("dummy"), prc).asString();
+				ParameterResolutionContext prc = new ParameterResolutionContext ("dummy", session);
+				String queryResult = qs.sendMessage("dummy", new Message("dummy"), session).asString();
 				configXML.setValue(queryResult, false);
 			} catch (Throwable t) {
 				throw new PipeRunException(this, getLogPrefix(session)

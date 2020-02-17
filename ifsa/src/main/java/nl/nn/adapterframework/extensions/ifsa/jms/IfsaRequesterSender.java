@@ -34,6 +34,7 @@ import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -42,7 +43,6 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -188,11 +188,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 	@Override
 	public Message sendMessage(String dummyCorrelationId, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(dummyCorrelationId, message, (ParameterResolutionContext)null);
+		return sendMessage(dummyCorrelationId, message, null);
 	}
 
 	@Override
-	public Message sendMessage(String dummyCorrelationId, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String dummyCorrelationId, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		
 		try {
 			if (isSynchronous()) {
@@ -208,12 +208,16 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			throw new SenderException(e);
 		}
 
-		ParameterValueList paramValueList;
-		try {
-			paramValueList = prc.getValues(paramList);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		
+		ParameterValueList paramValueList=null;
+		if (paramList!=null) {
+			try {
+				paramValueList = paramList.getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage()", e);
+			}
 		}
+		
 		Map params = new HashMap();
 		if (paramValueList != null && paramList != null) {
 			for (int i = 0; i < paramList.size(); i++) {
@@ -223,9 +227,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 		}
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		String BIF = (String)prc.getSession().get(getBifNameSessionKey());
+		String BIF = (String)session.get(getBifNameSessionKey());
 		if (StringUtils.isEmpty(BIF)) {
-			BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
 		return new Message(sendMessage(dummyCorrelationId, message.asString(), params,BIF,null));
 	}

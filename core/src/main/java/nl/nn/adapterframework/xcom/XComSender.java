@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -123,7 +122,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		for (Iterator filenameIt = getFileList(message.asString()).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			log.debug("Start sending " + filename);
@@ -133,7 +132,7 @@ public class XComSender extends SenderWithParametersBase {
 
 			// execute command in a new operating process
 			try {
-				String cmd = getCommand(prc.getSession(), localFile, true);
+				String cmd = getCommand(session, localFile, true);
 
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 
@@ -162,7 +161,7 @@ public class XComSender extends SenderWithParametersBase {
 				}
 			}
 			catch(IOException e) {
-				throw new SenderException("Error while executing command " + getCommand(prc.getSession(), localFile, false), e);
+				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);
 			}
 		}
 		return message;

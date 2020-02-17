@@ -49,7 +49,6 @@ import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -154,13 +153,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message path, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message path, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		staticUri = buildUri(path.asString()); // TODO: this is not thread safe!
 
 		//We don't need to send any message to the HttpSenderBase
-		return super.sendMessage(correlationID, new Message(""), prc);
+		return super.sendMessage(correlationID, new Message(""), session);
 	}
 
 	@Override
@@ -241,12 +240,12 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+			session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 			ok = true;
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
@@ -267,7 +266,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 		XmlBuilder result = new XmlBuilder("result");
 
-		HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");

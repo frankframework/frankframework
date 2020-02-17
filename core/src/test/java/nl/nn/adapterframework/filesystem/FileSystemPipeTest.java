@@ -82,8 +82,6 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String message=filename;
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
 		String result=(String)prr.getResult();

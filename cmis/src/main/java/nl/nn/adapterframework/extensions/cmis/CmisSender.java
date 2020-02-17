@@ -67,7 +67,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -229,7 +228,7 @@ public class CmisSender extends SenderWithParametersBase {
 	private boolean runtimeSession = false;
 	private boolean keepSession = true;
 
-	private Session session;
+	private Session cmisSession;
 
 	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
@@ -266,33 +265,26 @@ public class CmisSender extends SenderWithParametersBase {
 
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
+	 * @param pvl TODO
 	 */
-	public Session createSession(ParameterResolutionContext prc) throws SenderException {
+	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
 		String userName_work = null;
 		String password_work = null;
 
-		ParameterValueList pvl = null;
-		try {
-			if (prc != null && getParameterList() != null) {
-				pvl = prc.getValues(getParameterList());
-				if (pvl != null) {
-					ParameterValue pv = pvl.getParameterValue("authAlias");
-					if (pv != null) {
-						authAlias_work = (String) pv.getValue();
-					}
-					pv = pvl.getParameterValue("userName");
-					if (pv != null) {
-						userName_work = (String) pv.getValue();
-					}
-					pv = pvl.getParameterValue("password");
-					if (pv != null) {
-						password_work = (String) pv.getValue();
-					}
-				}
+		if (pvl != null) {
+			ParameterValue pv = pvl.getParameterValue("authAlias");
+			if (pv != null) {
+				authAlias_work = (String) pv.getValue();
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			pv = pvl.getParameterValue("userName");
+			if (pv != null) {
+				userName_work = (String) pv.getValue();
+			}
+			pv = pvl.getParameterValue("password");
+			if (pv != null) {
+				password_work = (String) pv.getValue();
+			}
 		}
 
 		if (authAlias_work == null) {
@@ -323,7 +315,7 @@ public class CmisSender extends SenderWithParametersBase {
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
-				session = getSessionBuilder().build();
+				cmisSession = getSessionBuilder().build();
 			}
 			catch (CmisSessionException e) {
 				throw new SenderException("unable to create cmis session", e);
@@ -333,33 +325,41 @@ public class CmisSender extends SenderWithParametersBase {
 
 	@Override
 	public void close() throws SenderException {
-		if (session != null) {
-			session.clear();
-			session = null;
+		if (cmisSession != null) {
+			cmisSession.clear();
+			cmisSession = null;
 		}
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
+			ParameterValueList pvl=null;
+			if (getParameterList() != null) {
+				try {
+					pvl =getParameterList().getValues(message, session);
+				} catch (ParameterException e) {
+					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+				}
+			}
 			if(runtimeSession || !isKeepSession()) {
-				session = createSession(prc);
+				cmisSession = createCmisSession(pvl);
 			}
 			String result;
 			if (getAction().equalsIgnoreCase("get")) {
-				result = sendMessageForActionGet(correlationID, message.asString(), prc);
+				result = sendMessageForActionGet(correlationID, message.asString(), session, pvl);
 			} else if (getAction().equalsIgnoreCase("create")) {
-				result = sendMessageForActionCreate(correlationID, message.asString(), prc);
+				result = sendMessageForActionCreate(correlationID, message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("delete")) {
-				result = sendMessageForActionDelete(correlationID, message.asString(), prc);
+				result = sendMessageForActionDelete(correlationID, message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("find")) {
-				result = sendMessageForActionFind(correlationID, message.asString(), prc);
+				result = sendMessageForActionFind(correlationID, message.asString());
 			} else if (getAction().equalsIgnoreCase("update")) {
-				result = sendMessageForActionUpdate(correlationID, message.asString(), prc);
+				result = sendMessageForActionUpdate(correlationID, message.asString());
 			} else if (getAction().equalsIgnoreCase("fetch")) {
-				result = sendMessageForDynamicActions(correlationID, message.asString(), prc);
+				result = sendMessageForDynamicActions(correlationID, message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("dynamic")) {
-				result = sendMessageForDynamicActions(correlationID, message.asString(), prc);
+				result = sendMessageForDynamicActions(correlationID, message.asString(), session);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}
@@ -372,7 +372,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionGet(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	private String sendMessageForActionGet(String correlationID, String message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -394,18 +394,15 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			boolean getProperties = isGetProperties();
 			boolean getDocumentContent = isGetDocumentContent();
-			if (getParameterList() != null) {
-				ParameterValueList pvl = prc.getValues(getParameterList());
-				if (pvl != null) {
-					if(pvl.parameterExists("getProperties"))
-						getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
-					if(pvl.parameterExists("getDocumentContent"))
-						getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
-				}
+			if (pvl != null) {
+				if(pvl.parameterExists("getProperties"))
+					getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
+				if(pvl.parameterExists("getDocumentContent"))
+					getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
 			}
 
 			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
@@ -429,14 +426,14 @@ public class CmisSender extends SenderWithParametersBase {
 					ContentStream contentStream = document.getContentStream();
 					InputStream inputStream = contentStream.getStream();
 					if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-						prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
+						session.put(getFileInputStreamSessionKey(), inputStream);
 					} else {
 						byte[] bytes = Misc.streamToBytes(inputStream);
 
 						if(convert2Base64)
-							prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+							session.put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
 						else
-							prc.getSession().put(getFileContentSessionKey(), bytes);
+							session.put(getFileContentSessionKey(), bytes);
 					}
 				}
 
@@ -455,14 +452,14 @@ public class CmisSender extends SenderWithParametersBase {
 				InputStream inputStream = contentStream.getStream();
 
 				if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-					prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
+					session.put(getFileInputStreamSessionKey(), inputStream);
 					return "";
 				} else if (StringUtils.isNotEmpty(getFileContentSessionKey())) {
 					byte[] bytes = Misc.streamToBytes(inputStream);
 					if(convert2Base64)
-						prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+						session.put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
 					else
-						prc.getSession().put(getFileContentSessionKey(), bytes);
+						session.put(getFileContentSessionKey(), bytes);
 					return "";
 				}
 				else
@@ -470,20 +467,18 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
-		} catch (ParameterException e) {
-			throw new SenderException(e);
 		}
 	}
 
-	private String sendMessageForActionCreate(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String fileName = (String) prc.getSession().get(getFileNameSessionKey());
+	private String sendMessageForActionCreate(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
+		String fileName = (String) session.get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
 		if(StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-			inputFromSessionKey = prc.getSession().get(getFileInputStreamSessionKey());
+			inputFromSessionKey = session.get(getFileInputStreamSessionKey());
 		}
 		else {
-			inputFromSessionKey = prc.getSession().get(getFileContentSessionKey());
+			inputFromSessionKey = session.get(getFileContentSessionKey());
 		}
 		InputStream inputStream = null;
 		if (inputFromSessionKey instanceof InputStream) {
@@ -544,14 +539,14 @@ public class CmisSender extends SenderWithParametersBase {
 			mediaType = getDefaultMediaType();
 		}
 
-		ContentStream contentStream = session.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputStream);
+		ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputStream);
 		if (isUseRootFolder()) {
-			Folder folder = session.getRootFolder();
+			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
 			return document.getId();
 		} else {
-			ObjectId objectId = session.createDocument(props, null, contentStream, VersioningState.NONE);
+			ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
 			return objectId.getId();
 		}
@@ -616,7 +611,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionDelete(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	private String sendMessageForActionDelete(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -641,7 +636,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionFind(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	private String sendMessageForActionFind(String correlationID, String message) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -659,7 +654,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 		String includeAllowableActions = XmlUtils.getChildTagAsString(queryElement, "includeAllowableActions");
 
-		OperationContext operationContext = session.createOperationContext();
+		OperationContext operationContext = cmisSession.createOperationContext();
 		if (StringUtils.isNotEmpty(maxItems)) {
 			operationContext.setMaxItemsPerPage(Integer.parseInt(maxItems));
 		}
@@ -672,7 +667,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 
 		XmlBuilder cmisXml = new XmlBuilder("cmis");
-		ItemIterable<QueryResult> q = session.query(statement, sav, operationContext);
+		ItemIterable<QueryResult> q = cmisSession.query(statement, sav, operationContext);
 
 		if(q == null) {
 			cmisXml.addAttribute("totalNumItems", 0);
@@ -716,7 +711,7 @@ public class CmisSender extends SenderWithParametersBase {
 		boolean includePolicies = XmlUtils.getChildTagAsBoolean(queryElement, "includePolicies");
 		boolean includeAcl = XmlUtils.getChildTagAsBoolean(queryElement, "includeAcl");
 
-		OperationContext operationContext = session.createOperationContext();
+		OperationContext operationContext = cmisSession.createOperationContext();
 
 		if (StringUtils.isNotEmpty(filter))
 			operationContext.setFilterString(filter);
@@ -729,16 +724,15 @@ public class CmisSender extends SenderWithParametersBase {
 			objectIdstr = XmlUtils.getChildTagAsString(queryElement, "id");
 
 		if(objectIdstr != null) {
-			return session.getObject(session.createObjectId(objectIdstr), operationContext);
+			return cmisSession.getObject(cmisSession.createObjectId(objectIdstr), operationContext);
 		}
 		else { //Ok, id can still be null, perhaps its a path?
 			String path = XmlUtils.getChildTagAsString(queryElement, "path");
-			return session.getObjectByPath(path, operationContext);
+			return cmisSession.getObjectByPath(path, operationContext);
 		}
 	}
 
-	private String sendMessageForDynamicActions(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		IPipeLineSession messageContext = prc.getSession();
+	private String sendMessageForDynamicActions(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -752,7 +746,7 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new SenderException(e);
 		}
 
-		String cmisEvent = (String) prc.getSession().get("CmisEvent");
+		String cmisEvent = (String) session.get("CmisEvent");
 		CmisEvent event = CmisEvent.GET_OBJECT;
 		if(StringUtils.isNotEmpty(cmisEvent))
 			event = CmisEvent.valueOf(cmisEvent);
@@ -773,19 +767,19 @@ public class CmisSender extends SenderWithParametersBase {
 				ObjectId folderId = null;
 				String folderIdstr = XmlUtils.getChildTagAsString(requestElement, "folderId");
 				if(StringUtils.isNotEmpty(folderIdstr))
-					folderId = session.createObjectId(folderIdstr);
+					folderId = cmisSession.createObjectId(folderIdstr);
 
 				String versioningStatestr = XmlUtils.getChildTagAsString(requestElement, "versioningState");
 				VersioningState state = VersioningState.valueOf(versioningStatestr);
 
 				Element contentStreamXml = XmlUtils.getFirstChildTag(requestElement, "contentStream");
-				InputStream stream = (InputStream) messageContext.get("ContentStream");
+				InputStream stream = (InputStream) session.get("ContentStream");
 				String fileName = contentStreamXml.getAttribute("filename");
 				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length"));
 				String mediaType = contentStreamXml.getAttribute("mimeType");
-				ContentStream contentStream = session.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream);
+				ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream);
 
-				ObjectId createdDocumentId = session.createDocument(props, folderId, contentStream, state);
+				ObjectId createdDocumentId = cmisSession.createDocument(props, folderId, contentStream, state);
 				XmlBuilder cmisId = new XmlBuilder("id");
 				cmisId.setValue(createdDocumentId.getId());
 				resultXml.addSubElement(cmisId);
@@ -811,7 +805,7 @@ public class CmisSender extends SenderWithParametersBase {
 				BigInteger length = BigInteger.valueOf(lengthStr);
 
 				ObjectId objectIdforContentStream = getCmisObject(requestElement);
-				ContentStream getContentStream = session.getContentStream(objectIdforContentStream, streamId, offset, length);
+				ContentStream getContentStream = cmisSession.getContentStream(objectIdforContentStream, streamId, offset, length);
 
 				XmlBuilder objectIdStream = new XmlBuilder("id");
 				objectIdStream.setValue(objectIdforContentStream.getId());
@@ -822,12 +816,12 @@ public class CmisSender extends SenderWithParametersBase {
 				contentStreamBuilder.addAttribute("length", getContentStream.getLength());
 				contentStreamBuilder.addAttribute("mimeType", getContentStream.getMimeType());
 				resultXml.addSubElement(contentStreamBuilder);
-				prc.getSession().put("ContentStream", getContentStream.getStream());
+				session.put("ContentStream", getContentStream.getStream());
 				break;
 
 			case GET_TYPE_DEFINITION:
 				String typeId = XmlUtils.getChildTagAsString(requestElement, "typeId");
-				ObjectType objectType = session.getTypeDefinition(typeId);
+				ObjectType objectType = cmisSession.getTypeDefinition(typeId);
 				XmlBuilder typesXml = new XmlBuilder("typeDefinitions");
 				typesXml.addSubElement(CmisUtils.typeDefinition2Xml(objectType));
 				resultXml.addSubElement(typesXml);
@@ -837,12 +831,12 @@ public class CmisSender extends SenderWithParametersBase {
 				String typeDescId = XmlUtils.getChildTagAsString(requestElement, "typeId");
 				int depth = Integer.parseInt(XmlUtils.getChildTagAsString(requestElement, "depth"));
 				boolean includePropertyDefinitions = XmlUtils.getChildTagAsBoolean(requestElement, "includePropertyDefinitions");
-				List<Tree<ObjectType>> objectTypes = session.getTypeDescendants(typeDescId, depth, includePropertyDefinitions);
+				List<Tree<ObjectType>> objectTypes = cmisSession.getTypeDescendants(typeDescId, depth, includePropertyDefinitions);
 				resultXml.addSubElement(CmisUtils.typeDescendants2Xml(objectTypes));
 				break;
 
 			case GET_REPOSITORIES:
-				List<RepositoryInfo> repositories = session.getBinding().getRepositoryService().getRepositoryInfos(null);
+				List<RepositoryInfo> repositories = cmisSession.getBinding().getRepositoryService().getRepositoryInfos(null);
 				XmlBuilder repositoriesXml = new XmlBuilder("repositories");
 
 				for (RepositoryInfo repository : repositories) {
@@ -853,7 +847,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 			case GET_REPOSITORY_INFO:
 				String repositoryId = XmlUtils.getChildTagAsString(requestElement, "repositoryId");
-				RepositoryInfo repository = session.getBinding().getRepositoryService().getRepositoryInfo(repositoryId, null);
+				RepositoryInfo repository = cmisSession.getBinding().getRepositoryService().getRepositoryInfo(repositoryId, null);
 
 				XmlBuilder repositoryInfoXml = new XmlBuilder("repositories");
 				repositoryInfoXml.addSubElement(CmisUtils.repositoryInfo2xml(repository));
@@ -886,7 +880,7 @@ public class CmisSender extends SenderWithParametersBase {
 //				context.setIncludeRelationships(includeRelationships);
 //				context.setRenditionFilterString(renditionFilter);
 
-				ObjectList result = session.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
+				ObjectList result = cmisSession.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
 						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
 				resultXml.addSubElement(CmisUtils.objectList2xml(result));
 				break;
@@ -903,7 +897,7 @@ public class CmisSender extends SenderWithParametersBase {
 				BigInteger getChildren_maxItems = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "maxItems"));
 				BigInteger getChildren_skipCount = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "skipCount"));
 
-				ObjectInFolderList oifs = session.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
+				ObjectInFolderList oifs = cmisSession.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
 						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships, 
 						getChildren_renditionFilter, getChildren_includePathSegment, getChildren_maxItems, getChildren_skipCount, null);
 
@@ -915,7 +909,7 @@ public class CmisSender extends SenderWithParametersBase {
 			case GET_OBJECT_BY_PATH:
 			case GET_ALLOWABLE_ACTIONS:
 				CmisObject object = getCmisObject(requestElement);
-				messageContext.put(CmisUtils.ORIGINAL_OBJECT_KEY, object);
+				session.put(CmisUtils.ORIGINAL_OBJECT_KEY, object);
 				CmisUtils.cmisObject2Xml(resultXml, object);
 				break;
 			default:
@@ -925,9 +919,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return resultXml.toXML();
 	}
 
-	private String sendMessageForActionUpdate(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	private String sendMessageForActionUpdate(String correlationID, String message) throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;
@@ -951,7 +943,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 		CmisObject object = null;
 		try {
-			object = session.getObject(session.createObjectId(objectId));
+			object = cmisSession.getObject(cmisSession.createObjectId(objectId));
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message

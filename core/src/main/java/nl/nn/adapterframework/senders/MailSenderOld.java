@@ -47,11 +47,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -232,7 +232,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String from=null;
 		String subject=null;
 		String threadTopic=null;
@@ -241,15 +241,15 @@ public class MailSenderOld extends SenderWithParametersBase {
 		String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		Collection<Recipient> recipients=null;
 		Collection<Attachment> attachments=null;
-		ParameterValueList pvl;
+		ParameterValueList pvl = null;
 		ParameterValue pv;
 		
 		String messageInMailSafeForm;
 		if (paramList==null) {
-			messageInMailSafeForm = sendEmail(message.asString(), prc);
+			messageInMailSafeForm = sendEmail(message.asString(), session);
 		} else {
 			try {
-				pvl = prc.getValues(paramList);
+				pvl=paramList.getValues(message, session);
 				pv = pvl.getParameterValue("from");
 				if (pv != null) {
 					from = pv.asStringValue(null);  
@@ -292,7 +292,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 				}
 				pv = pvl.getParameterValue("attachments");
 				if (pv != null) {
-					attachments = retrieveAttachments(pv.asCollection(), prc);
+					attachments = retrieveAttachments(pv.asCollection(), session);
 					log.debug("MailSender ["+getName()+"] retrieved attachments-parameter ["+attachments+"]");
 				}
 			} catch (ParameterException e) {
@@ -300,7 +300,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 			}
 			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message.asString(), messageType, messageBase64, charset, recipients, attachments);
 		}
-		prc.getSession().put(SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM, messageInMailSafeForm);
+		session.put(SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM, messageInMailSafeForm);
 		return new Message(correlationID);
 	}
 	
@@ -324,7 +324,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc) throws SenderException {
+	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, IPipeLineSession session) throws SenderException {
 		Collection<Attachment> attachments=null;
 		Iterator iter = attachmentsNode.iterator();
 		if (iter.hasNext()) {
@@ -337,7 +337,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
 				Object value = null;
 				if (StringUtils.isNotEmpty(sessionKey)) {
-					Object object = prc.getSession().get(sessionKey);
+					Object object = session.get(sessionKey);
 					if (object instanceof InputStream) {
 						DataSource attachmentDataSource;
 						try {
@@ -384,7 +384,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 	/**
 	 * Send a mail conforming to the XML input
 	 */
-	protected String sendEmail(String input, ParameterResolutionContext prc) throws SenderException {
+	protected String sendEmail(String input, IPipeLineSession session) throws SenderException {
 		// initialize this request
 		String from;
 		String subject;
@@ -413,7 +413,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 
 			Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
 			if(attachmentsElement != null)
-				attachments = retrieveAttachments(XmlUtils.getChildTags(attachmentsElement, "attachment"), prc);
+				attachments = retrieveAttachments(XmlUtils.getChildTags(attachmentsElement, "attachment"), session);
 
 		} catch (DomBuilderException e) {
 			throw new SenderException("exception parsing [" + input + "]", e);

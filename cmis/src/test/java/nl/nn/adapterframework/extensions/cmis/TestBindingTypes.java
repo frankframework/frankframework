@@ -150,7 +150,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
 
 		try {
-			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createCmisSession(null);
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -175,9 +175,9 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+		ParameterResolutionContext  prc = new ParameterResolutionContext("input", session);
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRN(expectedResult, actualResult);
 	}
 
@@ -189,7 +189,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEquals("", actualResult);
 		String base64 = (String) prc.getSession().get("fileContent");
 		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);

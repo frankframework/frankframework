@@ -129,12 +129,12 @@ public class CmisSenderTest {
 			Message message=new Message(""); 
 
 			ParameterResolutionContext prc= new ParameterResolutionContext(message, session);
-			result=httpSenders[index].sendMessage(null, message,prc).asString();
+			result=httpSenders[index].sendMessage(null, message,session).asString();
 			
 		} else {
 			Message message=new Message("<cmis><id>"+id+"</id></cmis>");
 			ParameterResolutionContext prc= new ParameterResolutionContext(message, session);
-			result=cmisSenders[index].sendMessage(null, message,prc).asString();
+			result=cmisSenders[index].sendMessage(null, message,session).asString();
 		}
 		
 		assertNotNull(result);

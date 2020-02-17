@@ -52,12 +52,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setEngineName(engine);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-
 		sender.configure();
 		sender.open();
 
-		assertEquals("0", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("0", sender.sendMessage(null,dummyInput,session).asString());
 	}
 
 	//Test without parameters, returns the result of a subtraction
@@ -68,12 +66,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-
 		sender.configure();
 		sender.open();
 
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 
 	/*Test with two given parameters. The integer values of the given parameters will be added and the result
@@ -85,8 +81,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -103,7 +97,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("3", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("3", sender.sendMessage(null,dummyInput,session).asString());
 	}
 
 	/*Test with two parameters. The first parameter is the input of the pipe given using the originalMessage sessionKey. The input is expected to be
@@ -118,8 +112,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 
 		session.put("originalMessage", input);
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(message, session);
 
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -136,7 +128,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("12", sender.sendMessage(null,message,prc).asString());
+		assertEquals("12", sender.sendMessage(null,message,session).asString());
 	}
 
 	/* Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
@@ -151,8 +143,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		session.put("originalMessage", input);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-
 		Parameter param = new Parameter();
 		param.setName("x");
 		param.setSessionKey("originalMessage");
@@ -166,7 +156,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("Hello World!", sender.sendMessage(null,input,prc).asString());
+		assertEquals("Hello World!", sender.sendMessage(null,input,session).asString());
 	}
 
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
@@ -179,8 +169,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -203,7 +191,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("3", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("3", sender.sendMessage(null,dummyInput,session).asString());
 	}
 
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
@@ -216,8 +204,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -240,7 +226,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("0", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("0", sender.sendMessage(null,dummyInput,session).asString());
 	}
 
 	//A ConfigurationException is given when a non existing file is given as FileName
@@ -252,12 +238,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	//A ConfigurationException is given when an empty string is given as FileName
@@ -269,12 +253,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	//If the given FunctionName is not a function of the given javascript file a RuntimeException is given.
@@ -285,12 +267,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("nonexisting");
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	//A ConfigurationException is given when an empty string is given as FunctionName
@@ -302,12 +282,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("");
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	//If there is a syntax error in the given Javascript file a RuntimeException is given.
@@ -317,12 +295,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/IncorrectJavascript.js"); 
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	/*This test uses a Javascript file which contains a function call to a function which does not exist. A RuntimeException
@@ -333,12 +309,10 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/IncorrectJavascript2.js"); 
 		sender.setEngineName(engine);
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-		
 		sender.configure();
 		sender.open();
 		
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 	}
 	
 	//The input is expected to be of type integer but an input of type Sting is given.
@@ -351,8 +325,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setEngineName(engine);
 		
 		session.put("originalMessage", input);
-		
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -369,7 +341,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("12", sender.sendMessage(null,input,prc).asString());
+		assertEquals("12", sender.sendMessage(null,input,session).asString());
 	}
 	
 	//This test is used to compare the performance of J2V8 to that of Nashorn. J2V8 should finish about ten times faster than Nashorn.
@@ -381,8 +353,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("performance");
 		sender.setEngineName(engine);
-		
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 		
 		Parameter param = new Parameter();
 		param.setName("x");
@@ -396,7 +366,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		System.out.println("Start timer");
 		long startTime = System.nanoTime();
 
-		assertEquals("1", sender.sendMessage(null,dummyInput,prc).asString());
+		assertEquals("1", sender.sendMessage(null,dummyInput,session).asString());
 		long endTime = System.nanoTime();
 
 		double duration = (double)(endTime - startTime)/1000000000; 

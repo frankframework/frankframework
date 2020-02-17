@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -437,7 +436,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -463,25 +462,25 @@ public class HttpSender extends HttpSenderBase {
 
 		HttpServletResponse response = null;
 		if (isStreamResultToServlet())
-			response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+			response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 
 		if (response==null) {
 			if (StringUtils.isEmpty(getStreamResultToFileNameSessionKey())) {
 				if (isBase64()) {
 					return getResponseBodyAsBase64(responseHandler.getResponse());
 				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-					prc.getSession().put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
+					session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
 					return "";
 				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-					prc.getSession().put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
+					session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 					return "";
 				} else if (isMultipartResponse()) {
-					return handleMultipartResponse(responseHandler, prc);
+					return handleMultipartResponse(responseHandler, session);
 				} else {
 					return getResponseBodyAsString(responseHandler);
 				}
 			} else {
-				String fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
+				String fileName = (String) session.get(getStreamResultToFileNameSessionKey());
 				File file = new File(fileName);
 				Misc.streamToFile(responseHandler.getResponse(), file);
 				return fileName;
@@ -529,10 +528,10 @@ public class HttpSender extends HttpSenderBase {
 		return Base64.encodeBase64String(bytes);
 	}
 
-	public static String handleMultipartResponse(HttpResponseHandler httpHandler, ParameterResolutionContext prc) throws IOException, SenderException {
-		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), prc, httpHandler);
+	public static String handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException, SenderException {
+		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session, httpHandler);
 	}
-	public static String handleMultipartResponse(String mimeType, InputStream inputStream, ParameterResolutionContext prc, HttpResponseHandler httpHandler) throws IOException, SenderException {
+	public static String handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session, HttpResponseHandler httpHandler) throws IOException, SenderException {
 		String result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream);
@@ -555,7 +554,7 @@ public class HttpSender extends HttpSenderBase {
 					// When the last stream is read the
 					// httpMethod.releaseConnection() can be called, hence pass
 					// httpMethod to ReleaseConnectionAfterReadInputStream.
-					prc.getSession().put("multipart" + i, new ReleaseConnectionAfterReadInputStream( lastPart ? httpHandler : null, bodyPart.getInputStream()));
+					session.put("multipart" + i, new ReleaseConnectionAfterReadInputStream( lastPart ? httpHandler : null, bodyPart.getInputStream()));
 				}
 			}
 		} catch(MessagingException e) {

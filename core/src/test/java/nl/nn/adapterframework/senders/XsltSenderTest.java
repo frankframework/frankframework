@@ -39,8 +39,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected.replaceAll("\\s",""), result.replaceAll("\\s",""));
 	}
@@ -54,8 +53,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected.replaceAll("\\s",""), result.replaceAll("\\s",""));
 	}
@@ -68,8 +66,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.open();
 
 		Message input = new Message("<result>dummy</result>");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals("dummy", result);
 	}
@@ -81,8 +78,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.open();
 
 		Message input = new Message("<result>dummy</result>");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals("dummy", result);
 	}
@@ -97,8 +93,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.open();
 
 		Message input = new Message("<results><result name='test1'>dummy1</result><result name='test2'>dummy2</result></results>");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals("2", result);
 	}
@@ -113,8 +108,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/XPathWithNamespace/input.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt1.txt");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected.trim(), result.trim());
 	}
@@ -127,8 +121,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/XPathWithNamespace/input.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt2.txt");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected.trim(), result.trim());
 	}
@@ -147,8 +140,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Test
@@ -164,8 +156,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Test
@@ -181,8 +172,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Test
@@ -197,8 +187,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Test
@@ -215,8 +204,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Test
@@ -229,8 +217,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		session = new PipeLineSessionBase();
 
 		Message input = new Message("<result>dummy</result>");
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String result = sender.sendMessage(null, input, prc).asString();
+		String result = sender.sendMessage(null, input, session).asString();
 
 		assertEquals("dummy", result);
 	}
@@ -250,8 +237,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		assertEquals(expected, sender.sendMessage(null, input, prc).asString());
+		assertEquals(expected, sender.sendMessage(null, input, session).asString());
 	}
 	
 	@Ignore("First have to fix this")
@@ -265,8 +251,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String actual = sender.sendMessage(null, input, prc).asString();
+		String actual = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected, actual);
 	}
@@ -281,8 +266,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String actual = sender.sendMessage(null, input, prc).asString();
+		String actual = sender.sendMessage(null, input, session).asString();
 
 		assertEquals(expected, actual);
 //		Diff diff = XMLUnit.compareXML(expected, actual);

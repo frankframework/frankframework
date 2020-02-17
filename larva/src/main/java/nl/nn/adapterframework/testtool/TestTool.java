@@ -60,6 +60,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
@@ -1718,7 +1719,7 @@ public class TestTool {
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
 				HttpSender httpSender = null;
-				ParameterResolutionContext parameterResolutionContext = null;
+				IPipeLineSession session = null;
 				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					// Use directoryClassLoader to make it possible to specify
@@ -1753,9 +1754,8 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
-					parameterResolutionContext = new ParameterResolutionContext();
-					parameterResolutionContext.setSession(new PipeLineSessionBase());
-					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+					session = new PipeLineSessionBase();
+					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
 						String parameterName = (String)parameterNameIterator.next();
@@ -1783,7 +1783,7 @@ public class TestTool {
 					if (queues != null) {
 						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
 						httpSenderInfo.put("httpSender", httpSender);
-						httpSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						httpSenderInfo.put("session", session);
 						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, httpSenderInfo);
 						debugMessage("Opened http sender '" + name + "'", writers);
@@ -1806,9 +1806,8 @@ public class TestTool {
 				IbisJavaSender ibisJavaSender = new IbisJavaSender();
 				ibisJavaSender.setName("Test Tool IbisJavaSender");
 				ibisJavaSender.setServiceName(serviceName);
-				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
-				parameterResolutionContext.setSession(new PipeLineSessionBase());
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+				IPipeLineSession session = new PipeLineSessionBase();
+				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
 					String parameterName = (String)parameterNameIterator.next();
@@ -1833,7 +1832,7 @@ public class TestTool {
 					if (queues != null) {
 						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
 						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
-						ibisJavaSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						ibisJavaSenderInfo.put("session", session);
 						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, ibisJavaSenderInfo);
 						debugMessage("Opened ibis java sender '" + name + "'", writers);
@@ -2498,12 +2497,12 @@ public class TestTool {
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
-		ParameterResolutionContext parameterResolutionContext = (ParameterResolutionContext)senderInfo.get("parameterResolutionContext");
+		IPipeLineSession session = (IPipeLineSession)senderInfo.get("session");
 		SenderThread senderThread;
-		if (parameterResolutionContext == null) {
+		if (session == null) {
 			senderThread = new SenderThread(sender, fileContent, convertExceptionToMessage.booleanValue());
 		} else {
-			senderThread = new SenderThread((ISenderWithParameters)sender, fileContent, parameterResolutionContext, convertExceptionToMessage.booleanValue());
+			senderThread = new SenderThread((ISenderWithParameters)sender, fileContent, session, convertExceptionToMessage.booleanValue());
 		}
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
@@ -3670,15 +3669,16 @@ public class TestTool {
 	 * for a property with a .value suffix to specify the file to read the
 	 * value for the Map from. More than one param can be specified by using
 	 * param2, param3 etc.
-	 *  
-	 * @param propertiesDirectory suffix for filenames specified by properties
-	 *                            with a .valuefile suffix. Can be left empty.
 	 * @param properties
 	 * @param property
 	 * @param writers
+	 * @param session TODO
+	 * @param propertiesDirectory suffix for filenames specified by properties
+	 *                            with a .valuefile suffix. Can be left empty.
+	 *  
 	 * @return A map with parameters
 	 */
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
+	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, IPipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
 		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
@@ -3833,7 +3833,7 @@ public class TestTool {
 							parameter.setName(name);
 							if (value != null && !(value instanceof String)) {
 								parameter.setSessionKey(name);
-								parameterResolutionContext.getSession().put(name, value);
+								session.put(name, value);
 							} else {
 								parameter.setValue((String)value);
 								parameter.setPattern(pattern);

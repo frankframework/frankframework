@@ -23,11 +23,11 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
@@ -89,14 +89,14 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException; 
+	public abstract Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException; 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (senderWrapperProcessor!=null) {
-			return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(this, correlationID, message, session);
 		}
-		return doSendMessage(correlationID, message, prc);
+		return doSendMessage(correlationID, message, session);
 	}
 
 	@Override

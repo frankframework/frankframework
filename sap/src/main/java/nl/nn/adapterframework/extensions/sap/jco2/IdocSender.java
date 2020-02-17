@@ -18,9 +18,9 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import com.sap.mw.idoc.IDoc;
 import com.sap.mw.jco.JCO;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -66,11 +66,13 @@ public class IdocSender extends SapSenderBase {
 
 	
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			pvl=prc.getValues(paramList);
+			if (paramList!=null) {
+				pvl = paramList.getValues(message, session);
+			}
 			SapSystem sapSystem = getSystem(pvl);
 			
 			IDoc.Document idoc = parseIdoc(sapSystem,message.asString());
@@ -85,7 +87,7 @@ public class IdocSender extends SapSenderBase {
 
 			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+idoc.toXML()+"]"); } 
 
-			JCO.Client client = getClient(prc.getSession(), sapSystem);
+			JCO.Client client = getClient(session, sapSystem);
 			try {
 				tid=getTid(client,sapSystem);
 				if (tid==null) {

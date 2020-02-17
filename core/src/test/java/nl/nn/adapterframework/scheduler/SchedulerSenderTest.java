@@ -30,7 +30,6 @@ import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 public class SchedulerSenderTest extends SchedulerTestBase {
@@ -63,7 +62,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 
 		schedulerSender.configure();
-		schedulerSender.sendMessage("", new Message("message"), new ParameterResolutionContext());
+		schedulerSender.sendMessage("", new Message("message"), null);
 		assertNull(schedulerSender.getParameterList().findParameter("_jobname"));
 
 		assertTrue(schedulerHelper.contains(JOB_NAME));
@@ -79,7 +78,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage("", new Message("message"), new ParameterResolutionContext());
+		Message name = schedulerSender.sendMessage("", new Message("message"), null);
 		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));

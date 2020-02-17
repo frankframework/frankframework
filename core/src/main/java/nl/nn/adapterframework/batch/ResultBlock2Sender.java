@@ -162,7 +162,7 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 				ISender sender = getSender();
 				if (sender instanceof ISenderWithParameters) {
 					ISenderWithParameters psender = (ISenderWithParameters)sender;
-					psender.sendMessage(streamId+"-"+incCounter(streamId),message,prc); 
+					psender.sendMessage(streamId+"-"+incCounter(streamId),message,session); 
 				} else {
 					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
 				}

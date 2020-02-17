@@ -24,12 +24,12 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -151,12 +151,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Message result = null;
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
-				context = (HashMap) prc.getValueMap(paramList);
+				context = (HashMap) paramList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
@@ -189,14 +189,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
-				if (prc!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				if (session!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, session);
 				}
 			} 
 		} else {
 			String javaListener;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
-				javaListener = (String)prc.getSession().get(getJavaListenerSessionKey());
+				javaListener = (String)session.get(getJavaListenerSessionKey());
 			} else {
 				javaListener = getJavaListener();
 			}
@@ -232,8 +232,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
-				if (prc!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				if (session!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, session);
 				}
 			}
 		}

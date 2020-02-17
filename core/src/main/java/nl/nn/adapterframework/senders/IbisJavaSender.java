@@ -25,13 +25,13 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -91,12 +91,12 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String result = null;
 		HashMap context = null;
 		try {
 			if (paramList!=null) {
-				context = (HashMap) prc.getValueMap(paramList);
+				context = (HashMap) paramList.getValues(message, session).getValueMap();
 			} else {
 				context=new HashMap();
 			}
@@ -118,14 +118,14 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 			String serviceName;
 			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = (String)prc.getSession().get(getServiceNameSessionKey());
+				serviceName = (String)session.get(getServiceNameSessionKey());
 			} else {
 				serviceName = getServiceName();
 			}
 
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return new Message(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), prc, null));
+				return new Message(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session, null));
 			}
 		
 		} catch (ParameterException e) {
@@ -136,8 +136,8 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			if (prc!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+			if (session!=null) {
+				Misc.copyContext(getReturnedSessionKeys(),context, session);
 			}
 		}
 		return new Message(result);

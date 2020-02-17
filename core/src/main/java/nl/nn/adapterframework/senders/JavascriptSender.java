@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -30,7 +31,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.Rhino;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -101,16 +101,18 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
 		JavascriptEngine<?> jsInstance;
 
 		//Create a Parameter Value List
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		try {
-			pvl = prc.getValues(getParameterList());
+			if (getParameterList() !=null) {
+				pvl=getParameterList().getValues(message, session);
+			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+" exception extracting parameters", e);
 		}
@@ -136,7 +138,7 @@ public class JavascriptSender extends SenderSeries {
 
 			for (Iterator<ISender> iterator = getSenderIterator(); iterator.hasNext();) {
 				ISender sender = iterator.next();
-				jsInstance.registerCallback(sender, prc);
+				jsInstance.registerCallback(sender, session);
 			} 
 		}
 

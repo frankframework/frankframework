@@ -131,7 +131,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		doReturn(operationContext).when(cmisSession).createOperationContext();
 
 		try {
-			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createCmisSession(null);
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -170,7 +170,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertEquals("", actualResult);
 		} else {
@@ -192,7 +192,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertEquals("", actualResult);
 		} else {
@@ -214,7 +214,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setFileInputStreamSessionKey("fis");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertEquals("", actualResult);
 		} else {
@@ -236,7 +236,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setFileContentSessionKey("fileContent");
 		configureWithParameters();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		if(!getProperties && !resultToServlet) {
 			assertEquals("", actualResult);
 		} else {

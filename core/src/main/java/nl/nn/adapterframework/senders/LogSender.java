@@ -21,12 +21,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.IParameterHandler;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -56,11 +56,11 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		log.log(level,message);
-		if (prc != null) {
+		if (getParameterList() != null) {
 			try {
-				ParameterValueList pvl = prc.getValues(getParameterList());
+				ParameterValueList pvl = getParameterList().getValues(message, session);
 				if (pvl != null) {
 					pvl.forAllParameters(this);
 				}

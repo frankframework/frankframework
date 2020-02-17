@@ -98,7 +98,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		doReturn("dummy_id").when(objectId).getId();
 		
 		try {
-			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createCmisSession(null);
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -121,7 +121,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		sender.setFileContentSessionKey("fileContent");
 		sender.setUseRootFolder(false);
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -132,7 +132,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -143,7 +143,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -154,7 +154,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -165,7 +165,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fis", "some content here for test FileStream as byte array".getBytes());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -176,7 +176,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fis", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -189,7 +189,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		session.put("fis", 1);
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc).asString();
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 

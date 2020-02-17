@@ -18,11 +18,11 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -68,10 +68,10 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Message result;
 		if (sender instanceof ISenderWithParameters) {
-			result = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
+			result = ((ISenderWithParameters)sender).sendMessage(correlationID,message, session);
 		} else {
 			result = sender.sendMessage(correlationID,message);
 		}

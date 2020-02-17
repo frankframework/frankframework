@@ -383,12 +383,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	public void storeLdapException(Throwable t, ParameterResolutionContext prc) {
-		IPipeLineSession pls = null;
-		if (prc != null) {
-			pls = prc.getSession();
-		}
-		if (StringUtils.isNotEmpty(getErrorSessionKey()) && pls!=null && t!=null) {
+	public void storeLdapException(Throwable t, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getErrorSessionKey()) && session!=null && t!=null) {
 			XmlBuilder ldapError=new XmlBuilder("ldapError");
 			ldapError.addAttribute("class",ClassUtils.nameOf(t));
 			String message=t.getMessage();
@@ -417,7 +413,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			ldapError.setValue(message);
 			String reasonXml=ldapError.toXML();
 			if (log.isDebugEnabled()) { log.debug("sessionKey ["+getErrorSessionKey()+"] loaded with error message ["+reasonXml+"]"); }
-			pls.put(getErrorSessionKey(),reasonXml);
+			session.put(getErrorSessionKey(),reasonXml);
 		}
 		log.debug("exit storeLdapException");
 	}
@@ -473,7 +469,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 
-	private String performOperationRead(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationRead(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try{
 			dirContext = getDirContext(paramValueMap);
@@ -487,7 +483,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
 				return DEFAULT_RESULT_READ;	
 			} else {
-				storeLdapException(e, prc);
+				storeLdapException(e, session);
 				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
 			}
 		} finally {
@@ -495,7 +491,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationUpdate(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationUpdate(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
@@ -517,7 +513,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					} else {
 						msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
 					}
-					storeLdapException(e, prc);
+					storeLdapException(e, session);
 					throw new SenderException(msg,e);
 				} finally {
 					closeDirContext(dirContext);
@@ -538,7 +534,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				try {
 					values = a.getAll();
 				} catch (NamingException e1) {
-					storeLdapException(e1, prc);
+					storeLdapException(e1, session);
 					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
 				}
 				while(values.hasMoreElements()) {
@@ -575,7 +571,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryNameAfter+"]";									
 						}
 						//result = DEFAULT_RESULT_UPDATE_NOK;
-						storeLdapException(e, prc);
+						storeLdapException(e, session);
 						throw new SenderException(msg,e);
 					} finally {
 						closeDirContext(dirContext);
@@ -597,7 +593,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				// Sun:
 				//   [LDAP: error code 68 - Entry Already Exists]
 				if(!e.getMessage().startsWith("[LDAP: error code 68 - ")) {
-					storeLdapException(e, prc);
+					storeLdapException(e, session);
 					throw new SenderException(e);
 				}
 				return DEFAULT_RESULT_CREATE_NOK;
@@ -607,7 +603,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationCreate(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationCreate(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			String result=null;
 			NamingEnumeration na = attrs.getAll();
@@ -618,7 +614,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				try {
 					values = a.getAll();
 				} catch (NamingException e1) {
-					storeLdapException(e1, prc);
+					storeLdapException(e1, session);
 					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
 				}
 				while(values.hasMoreElements()) {
@@ -652,7 +648,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
 							result = DEFAULT_RESULT_CREATE_OK;
 						} else {
-							storeLdapException(e, prc);
+							storeLdapException(e, session);
 							throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e );
 						}
 					} finally {
@@ -692,7 +688,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				if(e.getMessage().startsWith("[LDAP: error code 68 - ")) {
 					return DEFAULT_RESULT_CREATE_OK;
 				} else {
-					storeLdapException(e, prc);
+					storeLdapException(e, session);
 					throw new SenderException(e);
 				}
 			} finally {
@@ -702,7 +698,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		
 	}
 	
-	private String performOperationDelete(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationDelete(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			String result=null;
 			NamingEnumeration na = attrs.getAll();
@@ -713,7 +709,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				try {
 					values = a.getAll();
 				} catch (NamingException e1) {
-					storeLdapException(e1, prc);
+					storeLdapException(e1, session);
 					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
 				}
 				while(values.hasMoreElements()) {
@@ -752,7 +748,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 							result = DEFAULT_RESULT_DELETE;
 						} else {
-							storeLdapException(e, prc);
+							storeLdapException(e, session);
 							throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
 						}
 					} finally {
@@ -779,7 +775,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 					return DEFAULT_RESULT_DELETE;
 				} else {
-					storeLdapException(e, prc);
+					storeLdapException(e, session);
 					throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
 				}
 			} finally {
@@ -798,7 +794,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //		retobj - If true, return the object bound to the name of the entry; if false, do not return object.
 //		attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
 
-	private String performOperationSearch(String entryName, ParameterResolutionContext prc, Map paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
+	private String performOperationSearch(String entryName, IPipeLineSession session, Map paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
 		int timeout=getSearchTimeout();
 		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout, 
 													 getAttributesReturnedParameter(), false, false);
@@ -812,7 +808,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[" + filterExpression + "]");
 				return DEFAULT_RESULT_SEARCH;
 			} else {
-			storeLdapException(e, prc);
+			storeLdapException(e, session);
 				throw new SenderException("Exception searching using filter ["+filterExpression+"]", e);
 			}
 		} finally {
@@ -820,31 +816,31 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetSubContexts(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetSubContexts(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
-			String[] subs = getSubContextList(dirContext, entryName, prc);
+			String[] subs = getSubContextList(dirContext, entryName, session);
 			return subContextsToXml(entryName, subs, dirContext).toXML();
 		} catch (NamingException e) {
-			storeLdapException(e, prc);
+			storeLdapException(e, session);
 			throw new SenderException(e);
 		} finally {
 			closeDirContext(dirContext);
 		}
 	}
 		
-	private String performOperationGetTree(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetTree(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
-			return getTree(dirContext, entryName, prc, paramValueMap).toXML();
+			return getTree(dirContext, entryName, session, paramValueMap).toXML();
 		} finally {
 			closeDirContext(dirContext);
 		}
 	}
 
-	private String performOperationChallenge(String principal, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChallenge(String principal, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try{
 			// Use loopkupDirContext instead of getDirContext to prevent
@@ -860,7 +856,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] invalid credentials for: " + principal);
 				return DEFAULT_RESULT_CHALLENGE_NOK;	
 			} else {
-				storeLdapException(e, prc);
+				storeLdapException(e, session);
 				throw new SenderException("Exception in operation [" + getOperation()+ "] principal=["+principal+"]", e);	
 			}
 		} finally {
@@ -868,7 +864,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChangeUnicodePwd(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChangeUnicodePwd(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		ModificationItem[] modificationItems = new ModificationItem[2];
 		modificationItems[0] = new ModificationItem(
 				DirContext.REMOVE_ATTRIBUTE,
@@ -890,7 +886,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] old password doesn't match or new password doesn't comply with policy for: " + entryName);
 				return DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK;
 			} else {
-				storeLdapException(e, prc);
+				storeLdapException(e, session);
 				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
 			}
 		} finally {
@@ -903,12 +899,11 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 *  
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
 	 */
-	public String performOperation(String message, ParameterResolutionContext prc)
-			throws SenderException, ParameterException {
-		Map paramValueMap = null;
+	public String performOperation(Message message, IPipeLineSession session) throws SenderException, ParameterException {
+		Map<String,Object> paramValueMap = null;
 		String entryName = null;
-		if (paramList != null && prc != null){
-			paramValueMap = prc.getValueMap(paramList);
+		if (paramList != null){
+			paramValueMap = paramList.getValues(message, session).getValueMap();
 			entryName = (String)paramValueMap.get("entryName");
 			if (log.isDebugEnabled()) log.debug("entryName=["+entryName+"]");
 		}
@@ -917,25 +912,25 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
 		}
 		if (getOperation().equals(OPERATION_READ)) {
-			return performOperationRead(entryName, prc, paramValueMap);
+			return performOperationRead(entryName, session, paramValueMap);
 		} else if (getOperation().equals(OPERATION_UPDATE)) {
-			return performOperationUpdate(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+			return performOperationUpdate(entryName, session, paramValueMap, parseAttributesFromMessage(message));
 		} else if (getOperation().equals(OPERATION_CREATE)) {
-			return performOperationCreate(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+			return performOperationCreate(entryName, session, paramValueMap, parseAttributesFromMessage(message));
 		} else if (getOperation().equals(OPERATION_DELETE)) {
-			return performOperationDelete(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+			return performOperationDelete(entryName, session, paramValueMap, parseAttributesFromMessage(message));
 		} else if (getOperation().equals(OPERATION_SEARCH)) {
-			return performOperationSearch(entryName, prc, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.ONELEVEL_SCOPE);
+			return performOperationSearch(entryName, session, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.ONELEVEL_SCOPE);
 		} else if (getOperation().equals(OPERATION_DEEP_SEARCH)) {
-			return performOperationSearch(entryName, prc, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.SUBTREE_SCOPE);
+			return performOperationSearch(entryName, session, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.SUBTREE_SCOPE);
 		} else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
-			return performOperationGetSubContexts(entryName, prc, paramValueMap);
+			return performOperationGetSubContexts(entryName, session, paramValueMap);
 		} else if (getOperation().equals(OPERATION_GET_TREE)) {
-			return performOperationGetTree(entryName, prc, paramValueMap);
+			return performOperationGetTree(entryName, session, paramValueMap);
 		} else if (getOperation().equals(OPERATION_CHALLENGE)) {
-			return performOperationChallenge((String)paramValueMap.get("principal"), prc, paramValueMap);
+			return performOperationChallenge((String)paramValueMap.get("principal"), session, paramValueMap);
 		} else if (getOperation().equals(OPERATION_CHANGE_UNICODE_PWD)) {
-			return performOperationChangeUnicodePwd(entryName, prc, paramValueMap);
+			return performOperationChangeUnicodePwd(entryName, session, paramValueMap);
 		} else {
 			throw new SenderException("unknown operation [" + getOperation() + "]");
 		}
@@ -945,12 +940,12 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
 	 * @return tree xml.
 	 */ 
-	private XmlBuilder getTree(DirContext parentContext, String context, ParameterResolutionContext prc, Map paramValueMap)
+	private XmlBuilder getTree(DirContext parentContext, String context, IPipeLineSession session, Map paramValueMap)
 	{
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
 		
-		String[] subCtxList = getSubContextList(parentContext, context, prc);
+		String[] subCtxList = getSubContextList(parentContext, context, session);
 		try	{
 			if (subCtxList.length == 0) {
 				XmlBuilder attrs = attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter()));
@@ -959,13 +954,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			else {
 				for (int i = 0; i < subCtxList.length; i++)
 				{
-					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i], prc, paramValueMap) );
+					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i], session, paramValueMap) );
 				}
 				contextElem.addSubElement( attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter())));
 			}
 
 		} catch (NamingException e) {
-			storeLdapException(e, prc);
+			storeLdapException(e, session);
 			log.error("Exception in operation [" + getOperation()+ "]: ", e);
 		}
 
@@ -996,7 +991,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
 	 */ 
-	public String[] getSubContextList (DirContext parentContext, String relativeContext, ParameterResolutionContext prc) {
+	public String[] getSubContextList (DirContext parentContext, String relativeContext, IPipeLineSession session) {
 		String[] retValue = null;
 
 		try {
@@ -1019,7 +1014,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			retValue = contextList;
 
 		} catch (NamingException e) {
-			storeLdapException(e, prc);
+			storeLdapException(e, session);
 			log.error("Exception in operation [" + getOperation()+ "] ", e);
 		}
 		
@@ -1041,7 +1036,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * @see Attribute
 	 * @see BasicAttribute
 	 */
-	private Attributes parseAttributesFromMessage(String message) throws SenderException {
+	private Attributes parseAttributesFromMessage(Message message) throws SenderException {
 
 		Digester digester = new Digester();
 		digester.addObjectCreate("*/attributes",BasicAttributes.class);
@@ -1050,7 +1045,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		digester.addCallMethod("*/attributes/attribute/value","add",0);
 		
 		try {
-			return (Attributes) digester.parse(new StringReader(message));
+			return (Attributes) digester.parse(message.asReader());
 		} catch (Exception e) {
 			throw new SenderException("[" + this.getClass().getName() + "] exception in digesting",	e);
 		}
@@ -1058,13 +1053,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	@Override
 	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, new ParameterResolutionContext(message,null));
+		return sendMessage(correlationID, message, null);
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
-			return new Message(performOperation(message.asString(), prc));
+			return new Message(performOperation(message, session));
 		} catch (Exception e) {
 			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
 		}

@@ -8,9 +8,9 @@ import javax.mail.Session;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
 import nl.nn.adapterframework.senders.mail.TransportMock;
 import nl.nn.adapterframework.stream.Message;
@@ -36,9 +36,9 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
-				super.sendMessage(correlationID, message, prc);
-				prc.getSession().put("mailSession", mailSession);
+			public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+				super.sendMessage(correlationID, message, session);
+				session.put("mailSession", mailSession);
 				return new Message(correlationID);
 			}
 		};

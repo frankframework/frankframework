@@ -134,7 +134,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.open();
 
 		String correlationId = "FakeCorrelationId";
-		String result = sender.sendMessage(correlationId, new Message("<dummy><a>s</a></dummy>"), prc).asString();
+		String result = sender.sendMessage(correlationId, new Message("<dummy><a>s</a></dummy>"), session).asString();
 		assertEquals(correlationId, result);
 	}
 
@@ -196,7 +196,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.open();
 
 		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(correlationID, null, prc).asString();
+		String result = sender.sendMessage(correlationID, null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
@@ -261,7 +261,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.open();
 
 		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(correlationID, null, prc).asString();
+		String result = sender.sendMessage(correlationID, null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
@@ -313,7 +313,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.open();
 
 		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(correlationID, null, prc).asString();
+		String result = sender.sendMessage(correlationID, null, session).asString();
 		assertEquals(correlationID, result);
 	}
 

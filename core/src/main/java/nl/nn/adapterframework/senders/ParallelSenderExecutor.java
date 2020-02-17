@@ -17,10 +17,10 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
@@ -29,16 +29,16 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
 	private ISender sender;
-	private ParameterResolutionContext prc;
+	private IPipeLineSession session;
 	private Guard guard;
 	private StatisticsKeeper sk;
 
-	public ParallelSenderExecutor(ISender sender, String correlationID, Message message, ParameterResolutionContext prc, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, String correlationID, Message message, IPipeLineSession session, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
 		this.correlationID=correlationID;
 		request=message;
-		this.prc=prc;
+		this.session=session;
 		this.guard=guard;
 		this.sk=sk;
 	}
@@ -49,7 +49,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			long t1 = System.currentTimeMillis();
 			try {
 				if (sender instanceof ISenderWithParameters) {
-					reply = ((ISenderWithParameters)sender).sendMessage(correlationID,request,prc);
+					reply = ((ISenderWithParameters)sender).sendMessage(correlationID,request,session);
 				} else {
 					reply = sender.sendMessage(correlationID,request);
 				}

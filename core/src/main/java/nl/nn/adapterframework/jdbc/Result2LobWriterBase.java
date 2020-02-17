@@ -89,7 +89,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message msg = new Message(streamId);
-		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc.getSession());
 		PreparedStatement statement=queryContext.getStatement();
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);

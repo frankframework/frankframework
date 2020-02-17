@@ -21,21 +21,20 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
+	public abstract PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
 
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
-	public final Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
-		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
+	public final Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		PipeRunResult result = sendMessage(correlationID, new Message(message), session, null);
 		return result==null?null:new Message(result.getResult());
 	}
 

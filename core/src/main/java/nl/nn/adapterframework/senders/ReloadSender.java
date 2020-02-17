@@ -19,11 +19,11 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,15 +48,15 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 	private boolean forceReload = false;
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		String configName = null;
 		String activeVersion = null;
 
 		ParameterValueList pvl = null;
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList != null) {
+				pvl = paramList.getValues(message, session);
 				if(pvl.getParameterValue("name") != null)
 					configName = (String) pvl.getParameterValue("name").getValue();
 				if(pvl.getParameterValue("forceReload") != null)

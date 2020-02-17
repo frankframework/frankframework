@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -49,7 +49,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
@@ -59,7 +59,7 @@ public class CommandSender extends SenderWithParametersBase {
 		if (paramList!=null) {
 			ParameterValueList pvl;
 			try {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException("Could not extract parametervalues",e);
 			}

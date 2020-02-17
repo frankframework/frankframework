@@ -110,8 +110,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		try {
 			connection = querySender.getConnection();
 			Message msg = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, correlationID, msg, prc);
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, correlationID, msg, session);
 			statement=queryContext.getStatement();
 			rs = statement.executeQuery();
 			if (rs==null) {

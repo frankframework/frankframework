@@ -18,9 +18,9 @@ package nl.nn.adapterframework.processors;
 import java.io.IOException;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -33,16 +33,16 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
 		}
 		
-		String key=cache.transformKey(message.asString(), prc.getSession());
+		String key=cache.transformKey(message.asString(), session);
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
 		Message result;
@@ -52,9 +52,9 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			result= new Message(cacheResult);
 		} else {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-			result=senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			result=senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-			String cacheValue=cache.transformValue(result.asString(), prc.getSession());
+			String cacheValue=cache.transformValue(result.asString(), session);
 			if (cacheValue==null) {
 				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
 				return result;

@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -56,7 +55,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 
 	@Override
 	public Message sendMessage(String correlationID, Message message) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID,message,null);
+		return sendMessage(correlationID,message, null);
 	}
 	@Override
 	public void addParameter(Parameter p) { 
@@ -70,8 +69,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
-		IPipeLineSession session=prc.getSession();
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String fullReasons="tja";
 		try {
 			String resultEvent = validate(message, session, getLogPrefix(),null,null,false);

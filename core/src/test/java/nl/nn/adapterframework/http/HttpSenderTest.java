@@ -64,14 +64,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("GET");
 
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -89,7 +88,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -106,7 +104,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -124,7 +122,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -142,7 +139,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -160,7 +157,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -179,7 +175,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPost.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -197,7 +193,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -214,7 +209,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -232,7 +227,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -250,7 +244,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -268,7 +262,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -296,7 +289,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc).asString();
+			String result = sender.sendMessage(null, input, pls).asString();
 			assertEquals(getFile("parametersToSkip.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

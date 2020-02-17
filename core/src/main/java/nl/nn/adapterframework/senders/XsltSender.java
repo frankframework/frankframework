@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
@@ -160,7 +160,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) {
+	protected ContentHandler filterInput(ContentHandler input, IPipeLineSession session) {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			XMLFilterImpl filter = new NamespaceRemovingFilter();
@@ -185,15 +185,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		ContentHandler handler = null;
 
 		try {
-			Map<String,Object> parametervalues = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+			ParameterValueList pvl=null;
 			if (paramList!=null) {
-				parametervalues = prc.getValueMap(paramList);
+				pvl = paramList.getValues(input, session);
 			}
 
 			TransformerPool poolToUse = transformerPool;
-			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
-				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && session.get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
 			
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
 					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getConfigurationClassLoader(), null, null, styleSheetNameToUse, null, true, getParameterList()));
@@ -265,11 +264,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			
 
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
-			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
+			if (pvl!=null) {
+				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
+			}
 			mainFilter.setContentHandler(handler);
 			handler=mainFilter;
 			
-			handler=filterInput(handler, prc);
+			handler=filterInput(handler, session);
 			
 			return handler;
 		} catch (Exception e) {
@@ -288,14 +289,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException {
+	public PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, prc.getSession(), null);
+			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, null);
 			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this, nextProvider)) {
-				ContentHandler handler = createHandler(correlationID, message, prc.getSession(), outputStream);
+				ContentHandler handler = createHandler(correlationID, message, session, outputStream);
 				InputSource source = message.asInputSource();
 				XMLReader reader = getXmlReader(handler);
 				reader.parse(source);

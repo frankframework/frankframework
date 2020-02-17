@@ -26,6 +26,7 @@ import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -97,7 +98,8 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void randomMessage() throws SenderException, TimeOutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
-		String result = sender.sendMessage(null, new Message(message), null).asString();
+		IPipeLineSession session = null;
+		String result = sender.sendMessage(null, new Message(message), session).asString();
 		//TODO compare
 	}
 
@@ -105,7 +107,8 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void normal() throws SenderException, TimeOutException, IOException {
 		String message = "<idin/>";
-		String result = sender.sendMessage(null, new Message(message), null).asString();
+		IPipeLineSession session = null;
+		String result = sender.sendMessage(null, new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 
@@ -113,7 +116,8 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void issuersByCountry() throws SenderException, TimeOutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
-		String result = sender.sendMessage(null, new Message(message), null).asString();
+		IPipeLineSession session = null;
+		String result = sender.sendMessage(null, new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 }

@@ -32,6 +32,7 @@ import com.ing.ifsa.exceptions.IFSAException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -39,7 +40,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
@@ -75,12 +75,14 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
 		// nothing special
 	}
 
-	protected Map<String, String> convertParametersToMap(ParameterResolutionContext prc) throws SenderException {
-		ParameterValueList paramValueList;
-		try {
-			paramValueList = prc.getValues(paramList);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage() determining serviceId", e);
+	protected Map<String, String> convertParametersToMap(Message message, IPipeLineSession session) throws SenderException {
+		ParameterValueList paramValueList=null;
+		if (paramList!=null) {
+			try {
+				paramValueList = paramList.getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage() determining serviceId", e);
+			}
 		}
 		Map<String, String> params = new HashMap<String, String>();
 		if (paramValueList != null && paramList != null) {
@@ -104,8 +106,8 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
 	}
 
 	@Override
-	public Message sendMessage(String dummyCorrelationId, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException, IOException {
-		Map<String, String> params = convertParametersToMap(prc);
+	public Message sendMessage(String dummyCorrelationId, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		Map<String, String> params = convertParametersToMap(message, session);
 		return sendMessage(dummyCorrelationId, message, params);
 	}
 

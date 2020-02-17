@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -102,12 +101,12 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(
@@ -115,7 +114,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			Object result=actor.doAction(message, pvl, prc.getSession());
+			Object result=actor.doAction(message, pvl, session);
 			if (result instanceof PipeRunResult) {
 				return (PipeRunResult)result;
 			}

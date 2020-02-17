@@ -97,27 +97,21 @@ public class LdapSenderTest {
 	}
 
 	@Test
-	public void updateNewEntry() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException, TimeOutException {
+	public void updateNewEntry() throws SAXException, IOException, ConfigurationException, SenderException, LDAPException, TimeOutException {
 		String result;
 		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 		LdapSender ldapSender = null;
 		try {
 			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://"
-					+ connection.getConnectedAddress() + ":"
-					+ connection.getConnectedPort());
+			ldapSender.setLdapProviderURL("ldap://" + connection.getConnectedAddress() + ":" + connection.getConnectedPort());
 			ldapSender.setOperation("update");
 			Parameter parameter = new Parameter();
 			parameter.setName("entryName");
-			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development,"
-					+ baseDNs);
+			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
 			ldapSender.addParameter(parameter);
 			Parameter parameter2 = new Parameter();
 			parameter2.setName("newEntryName");
-			parameter2
-					.setValue("cn=LEA Administrator,ou=people,ou=development,"
-							+ baseDNs);
+			parameter2.setValue("cn=LEA Administrator,ou=people,ou=development," + baseDNs);
 			ldapSender.addParameter(parameter2);
 			ldapSender.configure();
 			ldapSender.open();

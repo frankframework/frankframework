@@ -25,10 +25,10 @@ import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -86,9 +86,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, IOException {
+	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, IOException {
 		try {
-			ParameterValueList values = prc.getValues(paramList);
+			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
 			String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
