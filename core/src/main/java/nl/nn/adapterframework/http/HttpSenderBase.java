@@ -299,13 +299,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				addParameterToSkip(st.nextToken());
 			}
 		}
-		
-		if (StringUtils.isNotEmpty(getContentType()) && StringUtils.isNotEmpty(getCharSet())) {
-			String contentType = getContentType();
-			if (!contentType.toLowerCase().contains("charset")) {
-				setContentType(contentType+";charset="+getCharSet());
-			}
-		}
+
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}

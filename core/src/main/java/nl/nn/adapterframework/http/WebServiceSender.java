@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2019 Nationale-Nederlanden
+   Copyright 2013, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -67,6 +66,7 @@ public class WebServiceSender extends HttpSender {
 		setMethodType("POST");
 	}
 
+	@Override
 	public String getLogPrefix() {
 		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
 	}
@@ -100,7 +100,7 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
-		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		setContentType("text/xml; charset="+getCharSet());
 		return super.getMethod(uri, message, parameters);
 	}
 

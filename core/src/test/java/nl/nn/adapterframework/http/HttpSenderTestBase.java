@@ -49,6 +49,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 		//Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");
 		sender.setVerifyHostname(false);
+//		sender.setCharSet("ISO-8859-1");
 		sender.setAllowSelfSignedCertificates(true);
 
 		if(addCustomHeader) {

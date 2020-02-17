@@ -95,6 +95,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		for (Header header : headers) {
 			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
 		}
+
 		HttpEntity entity = request.getEntity();
 		if(entity instanceof MultipartEntity) {
 			MultipartEntity multipartEntity = (MultipartEntity) entity;
@@ -109,8 +110,12 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String content = new String(baos.toByteArray());
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
-		}
-		else {
+		} else {
+			Header contentTypeHeader = request.getEntity().getContentType();
+			if(contentTypeHeader != null) {
+				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+			}
+
 			response.append(lineSeparator);
 			response.append(EntityUtils.toString(entity));
 		}

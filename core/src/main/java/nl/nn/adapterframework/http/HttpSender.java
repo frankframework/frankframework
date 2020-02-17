@@ -297,7 +297,7 @@ public class HttpSender extends HttpSenderBase {
 					}
 				}
 				try {
-					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements));
+					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 				} catch (UnsupportedEncodingException e) {
 					throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 				}

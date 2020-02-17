@@ -116,6 +116,32 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpCharset() throws Throwable {
+		HttpSender sender = getSender();
+		String input = "hallo";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			sender.setCharSet("UTF-7");
+			sender.setMethodType("GET");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedHttpCharset.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
 		HttpSender sender = getSender();
 		String input = "hallo";
