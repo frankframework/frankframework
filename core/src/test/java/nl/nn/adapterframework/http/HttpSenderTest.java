@@ -58,6 +58,39 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void testContentType() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setContentType("text/xml");
+		sender.configure();
+		assertEquals("text/xml; charset=UTF-8", sender.getContentType().toString());
+	}
+
+	@Test()
+	public void testCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setCharSet("ISO-8859-1");
+		sender.configure();
+		assertEquals("text/html; charset=ISO-8859-1", sender.getContentType().toString());
+	}
+
+	@Test
+	public void testContentTypeAndCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.setCharSet("ISO-8859-1");
+		sender.setContentType("text/xml");
+		sender.configure();
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+	}
+
+	@Test
+	public void parseContentTypeWithCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.setContentType("text/xml; charset=ISO-8859-1");
+		sender.configure();
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+	}
+
+	@Test
 	public void simpleMockedHttpGet() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -116,6 +149,31 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpCharset() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setCharSet("ISO-8859-1");
+			sender.setMethodType("POST");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpCharset.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
@@ -151,7 +209,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpPost() throws Throwable {
+	public void simpleMockedHttpPostUrlEncoded() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -176,7 +234,57 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, pls).asString();
-			assertEquals(getFile("simpleMockedHttpPost.txt"), result);
+			assertEquals(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPostJSON() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("{\"key\": \"value\"}");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("POST");
+			sender.setContentType("application/json");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPostJSON.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPutJSON() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("{\"key\": \"value\"}");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("PUT");
+			sender.setContentType("application/json");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPutJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

@@ -177,9 +177,6 @@ public class HttpSender extends HttpSenderBase {
 				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
 			}
 		}
-
-		if(StringUtils.isEmpty(getContentType()) && !getMethodType().equalsIgnoreCase("POST"))
-			setContentType("text/html; charset="+getCharSet());
 	}
 
 	@Override
@@ -191,7 +188,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
-		try { 
+		try {
 			boolean queryParametersAppended = false;
 
 			StringBuffer path = new StringBuffer(uri.getPath());
@@ -226,7 +223,8 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()));
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
+
 				method.setEntity(entity);
 				return method;
 			}
@@ -241,7 +239,7 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()));
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
 				method.setEntity(entity);
 				return method;
 			}
@@ -257,8 +255,8 @@ public class HttpSender extends HttpSenderBase {
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
 				HttpReport method = new HttpReport(path.toString(), element);
-				if (StringUtils.isNotEmpty(getContentType())) {
-					method.setHeader("Content-Type", getContentType());
+				if (null != getContentType()) {
+					method.setHeader("Content-Type", getContentType().toString());
 				}
 				return method;
 			}
@@ -296,7 +294,7 @@ public class HttpSender extends HttpSenderBase {
 					}
 				}
 				try {
-					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements));
+					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 				} catch (UnsupportedEncodingException e) {
 					throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 				}

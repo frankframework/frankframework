@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2019 Nationale-Nederlanden
+   Copyright 2013, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -64,8 +63,10 @@ public class WebServiceSender extends HttpSender {
 	public WebServiceSender() {
 		super();
 		setMethodType("POST");
+		setContentType("text/xml");
 	}
 
+	@Override
 	public String getLogPrefix() {
 		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
 	}
@@ -95,12 +96,6 @@ public class WebServiceSender extends HttpSender {
 				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
 		}
-	}
-
-	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
-		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
-		return super.getMethod(uri, message, parameters);
 	}
 
 	@Override
