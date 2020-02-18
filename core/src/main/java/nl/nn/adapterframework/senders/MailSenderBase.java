@@ -309,10 +309,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
 		if (StringUtils.isEmpty(messageType)) {
 			messageType=getDefaultMessageType();
-		} else {
-			if (messageType.indexOf("/")<0) {
-				throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
-			}
+		}
+		if (messageType.indexOf("/")<0) {
+			throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
 		}
 		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
