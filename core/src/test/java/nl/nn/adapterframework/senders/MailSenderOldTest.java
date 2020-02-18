@@ -1,9 +1,10 @@
 package nl.nn.adapterframework.senders;
 
 import javax.mail.Provider;
-import javax.mail.Session;
 import javax.mail.Provider.Type;
+import javax.mail.Session;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -54,4 +55,22 @@ public class MailSenderOldTest extends MailSenderTestBase<MailSenderOld> {
 	public void noRecipient() throws Exception {
 		super.noRecipient();
 	}
+	
+	
+	@Override
+	@Ignore("proper error message not supported in this version")
+	public void mailWithIllegalContentType() throws Exception {
+	}
+
+	@Override
+	@Ignore("proper error message not supported in this version")
+	public void mailWithBase64MessageAndAttachmentWithIllegalContentType() throws Exception {
+	}
+	
+	@Override
+	@Ignore("content type of attachments cannot be specified in this version")
+	public void mailWithBase64MessageAndAttachmentWithContentType() throws Exception {
+	}
+	
 }
+

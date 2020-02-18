@@ -162,6 +162,35 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 	}
 
 	@Test
+	public void mailWithIllegalContentType() throws Exception {
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+					+ "<recipient type=\"cc\">cc@address.org</recipient>"
+					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
+					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>MessageTypeWithoutASlash</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+				+ "<headers>"
+					+ "<header name=\"x-custom\">TEST</header>"
+					+ "<header name=\"does-this-work\">yes</header>"
+				+ "</headers>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		exception.expectMessage("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')");
+		sender.sendMessage(null, mailInput, prc);
+	}
+
+	@Test
 	public void mailWithBase64Message() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
@@ -303,6 +332,63 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		compare("mailWithBase64MessageAndAttachment.txt", message);
 	}
 
+	@Test
+	public void mailWithBase64MessageAndAttachmentWithContentType() throws Exception {
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>TXkgTWVzc2FnZSBHb2VzIEhlcmU=</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+				+ "<messageBase64>true</messageBase64>"
+				+ "<attachments>"
+					+ "<attachment name=\"test.txt\" base64=\"true\" type=\"abc/def\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "</attachments>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		sender.sendMessage(null, mailInput, prc);
+		Session session = (Session) prc.getSession().get("mailSession");
+		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+
+		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
+		compare("mailWithBase64MessageAndAttachmentWithContentType.txt", message);
+	}
+	
+	@Test
+	public void mailWithBase64MessageAndAttachmentWithIllegalContentType() throws Exception {
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>TXkgTWVzc2FnZSBHb2VzIEhlcmU=</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+				+ "<messageBase64>true</messageBase64>"
+				+ "<attachments>"
+					+ "<attachment name=\"test.txt\" base64=\"true\" type=\"messageTypeWithoutASlash\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "</attachments>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		exception.expectMessage("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')");
+		sender.sendMessage(null, mailInput, prc);
+	}
+	
 	@Test
 	public void mailWithPRC() throws Exception {
 		String mailInput = "<email/>";
