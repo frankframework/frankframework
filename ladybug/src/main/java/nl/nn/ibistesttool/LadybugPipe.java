@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -115,15 +117,13 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
-		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
+		boolean reportGeneratorEnabledOldValue = testTool.isReportGeneratorEnabled();
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(true);
-			testTool.setReportGeneratorEnabled(true);
+			testTool.updateReportGeneratorStatus(true);
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(reportGeneratorEnabledOldValue);
-			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
+			testTool.updateReportGeneratorStatus(reportGeneratorEnabledOldValue);
 		}
 		long endTime = System.currentTimeMillis();
 		
