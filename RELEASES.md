@@ -9,8 +9,20 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.4...HEAD)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...7.5-release)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+
+
+
+
+
+
+7.5-RC1
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.4...v7.5-RC1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
@@ -57,7 +69,6 @@ Upcoming
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
-- HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 - Add option to use username and password from authAlias in Paramter values
 - Bugfix autoReload new configuration on other nodes
 - Support XML-Schema 1.1 for XML validation
@@ -74,6 +85,7 @@ Upcoming
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 - jdbc.convertFieldnamesToUppercase has been set to true by default
 - FileSystemSenders with read action no longer encode base64 by default.
+- HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 
 
 
@@ -794,7 +806,7 @@ Upcoming
 ### Non backwards compatible changes
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
-	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+    - ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
 - When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
 
 
@@ -978,12 +990,12 @@ Upcoming
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
-	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
-	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
-	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
-	- ``Circural dependencies between schemas.``  
-	Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
+    - ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+    When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
+    - ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
+    For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+    - ``Circural dependencies between schemas.``  
+    Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - The use of 'xsd:redefine' doesn't work for schemaLocation anymore (still works for schema). It's deprecated in the latest specification (http://www.w3.org/TR/xmlschema11-1/#modify-schema) and difficult to support in WSDL generation.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 
