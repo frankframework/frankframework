@@ -48,6 +48,7 @@ import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
@@ -58,7 +59,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
-	private static boolean enabled=true;
+	private boolean enabled = true;
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
 	
@@ -418,19 +419,19 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				}
 			}
 		}
-
+		
 	}
-
-	public static void setEnabled(boolean enable) {
+	
+	private void setEnabled(boolean enable) {
 		enabled = enable;
 	}
-	public boolean isEnabled() {
+	
+	private boolean isEnabled() {
 		return enabled;
 	}
-
+	
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
 		setEnabled(event.isEnabled());
 	}
-
 }
