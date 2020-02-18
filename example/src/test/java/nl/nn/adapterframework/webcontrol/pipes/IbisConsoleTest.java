@@ -57,6 +57,7 @@ public class IbisConsoleTest {
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
+		System.setProperty("generateIbisConfigXsd.active", "false");
 
 		ibisTester.initTest();
 		String testResult=ibisTester.testStartAdapters();
