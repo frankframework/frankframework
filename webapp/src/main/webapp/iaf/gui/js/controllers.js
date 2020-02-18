@@ -1734,6 +1734,7 @@ angular.module('iaf.beheerconsole')
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
+	$scope.processingMessage = false;
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
@@ -1741,6 +1742,7 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.submit = function(formData) {
+		$scope.processingMessage = true;
 		if(!formData || !formData.query) {
 			$scope.error = "Please specify a datasource, resulttype and query!";
 			return;
@@ -1751,10 +1753,12 @@ angular.module('iaf.beheerconsole')
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
 			$scope.result = returnData;
+			$scope.processingMessage = false;
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData.error) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.result = "";
+			$scope.processingMessage = false;
 		});
 	};
 

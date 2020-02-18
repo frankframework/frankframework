@@ -337,7 +337,7 @@ public final class ShowConfiguration extends Base {
 
 			if(multiple_configs) {
 				try {
-					result = processZipFile(file, fileEncoding, fileName, automatic_reload, automatic_reload, user);
+					result = processZipFile(file, fileEncoding, datasource, automatic_reload, automatic_reload, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
@@ -459,7 +459,7 @@ public final class ShowConfiguration extends Base {
 		return new String[] { name, version };
 	}
 
-	private String processZipFile(InputStream inputStream, String fileEncoding, String jmsRealm, boolean automatic_reload, boolean activate_config, String user) throws Exception {
+	private String processZipFile(InputStream inputStream, String fileEncoding, String datasource, boolean automatic_reload, boolean activate_config, String user) throws Exception {
 		String result = "";
 		if (inputStream.available() > 0) {
 			ZipInputStream archive = new ZipInputStream(inputStream);
@@ -493,7 +493,7 @@ public final class ShowConfiguration extends Base {
 						version = fnArray[1];
 					}
 					result += entryName + ":" + 
-					ConfigurationUtils.addConfigToDatabase(getIbisContext(), jmsRealm, activate_config, automatic_reload, name, version, fileName, bais, user);
+					ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, name, version, fileName, bais, user);
 				}
 				archive.closeEntry();
 				counter++;
