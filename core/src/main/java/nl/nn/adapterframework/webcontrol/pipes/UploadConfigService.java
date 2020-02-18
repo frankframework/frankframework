@@ -68,7 +68,7 @@ public class UploadConfigService extends FixedForwardPipe {
 
 		String name = null;
 		String version = null;
-		String formJmsRealm = null;
+		String datasource = null;
 		String remoteUser = (String) session.get("realPrincipal");
 		if (StringUtils.isEmpty(remoteUser)) {
 			remoteUser = (String) session.get("principal");
@@ -87,7 +87,7 @@ public class UploadConfigService extends FixedForwardPipe {
 			}
 
 			fileName = name + "-" + version + ".jar";
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, true, true, name, version, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, true, true, name, version, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
 				if (CONFIG_AUTO_DB_CLASSLOADER && ibisContext.getIbisManager().getConfiguration(name) == null) {
 					ibisContext.reload(name);
 				}

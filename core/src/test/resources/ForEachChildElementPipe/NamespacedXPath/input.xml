@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edudexDirectory xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://studieData.nl/schema/edudex/directory">
+<editor>editor@edudex.nl</editor>
+<generator>EDU-DEX system</generator>
+<version>v0.90429</version>
+<orgUnitId>edudex</orgUnitId>
+<subDirectory>
+<orgUnitId>tias</orgUnitId>
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/tias
+</directoryUrl>
+</subDirectory>
+<subDirectory>
+<orgUnitId>baak</orgUnitId>
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/baak
+</directoryUrl>
+</subDirectory>
+<subDirectory>
+<orgUnitId>zuidema</orgUnitId>
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/zuidema
+</directoryUrl>
+</subDirectory>
+<subDirectory>
+<orgUnitId>ncoi</orgUnitId>
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/ncoi
+</directoryUrl>
+</subDirectory>
+<subDirectory>
+<orgUnitId>nyenrode</orgUnitId>
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/nyenrode
+</directoryUrl>
+</subDirectory>
+</edudexDirectory>

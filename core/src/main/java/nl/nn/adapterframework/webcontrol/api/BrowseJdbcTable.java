@@ -44,13 +44,6 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Executes a query.
- * 
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
 @Path("/")
 public final class BrowseJdbcTable extends Base {
 
@@ -64,14 +57,14 @@ public final class BrowseJdbcTable extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
-		String realm = null, tableName = null, where = "", order = "";
+		String datasource = null, tableName = null, where = "", order = "";
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasource")) {
+				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("table")) {
 				tableName = entry.getValue().toString().toLowerCase();
@@ -99,8 +92,8 @@ public final class BrowseJdbcTable extends Base {
 			}
 		}
 
-		if(realm == null || tableName == null) {
-			throw new ApiException("realm and/or tableName not defined.", 400);
+		if(datasource == null || tableName == null) {
+			throw new ApiException("datasource and/or tableName not defined.", 400);
 		}
 
 		if(maxRow < minRow)
@@ -126,7 +119,7 @@ public final class BrowseJdbcTable extends Base {
 		
 		try {
 			qs.setName("QuerySender");
-			qs.setJmsRealm(realm);
+			qs.setDatasourceName(datasource);
 
 			//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
 				qs.setQueryType("select");

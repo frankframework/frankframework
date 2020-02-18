@@ -17,14 +17,14 @@ package nl.nn.adapterframework.jms;
 
 import java.util.Iterator;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.BeanMap;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
@@ -42,44 +42,41 @@ public class JmsRealm {
 
 	private String realmName;
 
-    private String providerURL = null;
-    private String initialContextFactoryName = null;
-    private String authentication = null;
-    private String credentials = null;
+	private String providerURL = null;
+	private String initialContextFactoryName = null;
+	private String authentication = null;
+	private String credentials = null;
 	private String principal = null;
 	private String authAlias = null;
 	private String jndiAuthAlias = null;
-    private String urlPkgPrefixes = null;
-    private String securityProtocol = null;
+	private String urlPkgPrefixes = null;
+	private String securityProtocol = null;
 	private String jndiContextPrefix = "";
 	private String jndiProperties = null;
 
 	private String queueConnectionFactoryName;
 	private String topicConnectionFactoryName;
-	private String queueConnectionFactoryNameXA;
-	private String topicConnectionFactoryNameXA;
 
 	private String datasourceName;
-	private String datasourceNameXA;
-    
+
 	private String userTransactionUrl;
 
 	public JmsRealm() {
 		super();
 	}
 
- 	/**
- 	 * Includes another realm into this one
- 	 */ 
-	public void setAliasForRealm(String jmsRealmName){
-		String myName=getRealmName(); // save name, as it will be overwritten by the copy
+	/**
+	 * Includes another realm into this one
+	 */
+	public void setAliasForRealm(String jmsRealmName) {
+		String myName = getRealmName(); // save name, as it will be overwritten by the copy
 		try {
-			copyRealm(this,jmsRealmName);
+			copyRealm(this, jmsRealmName);
 		} catch (ConfigurationException e) {
-			log.warn("cannot set aliasForRealm",e);
+			log.warn("cannot set aliasForRealm", e);
 		}
 		setRealmName(myName); // restore the original name
-    }
+	}
 
 	/**
 	 * copies matching properties to any other class
@@ -107,173 +104,143 @@ public class JmsRealm {
 		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");
 	}
 
- 	/**
- 	 * copies matching properties from a JmsRealm to any other class
- 	 * @see JmsRealm
-     * 
-     * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
- 	 */ 
+	/**
+	 * copies matching properties from a JmsRealm to any other class
+	 * 
+	 * @see JmsRealm
+	 * 
+	 * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
+	 */
 	public static void copyRealm(Object destination, String jmsRealmName) throws ConfigurationException {
 
-	    JmsRealm jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(jmsRealmName);
-	    if (jmsRealm==null) {
-	    	throw new ConfigurationException("Could not find jmsRealm ["+jmsRealmName+"]");
-	    }
-	    jmsRealm.copyRealm(destination);
-    }
+		JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(jmsRealmName);
+		if (jmsRealm == null) {
+			throw new ConfigurationException("Could not find jmsRealm [" + jmsRealmName + "]");
+		}
+		jmsRealm.copyRealm(destination);
+	}
 
-    public String getAuthentication() {
-        return authentication;
-    }
-    public String getCredentials() {
-        return credentials;
-    }
-    public String getInitialContextFactoryName() {
-        return initialContextFactoryName;
-    }
-    public String getProviderURL() {
-        return providerURL;
-    }
-    public String retrieveConnectionFactoryName() {
-    	if (queueConnectionFactoryName!=null) {
-    		return queueConnectionFactoryName;
-    	} else if (queueConnectionFactoryNameXA!=null) {
-    		return queueConnectionFactoryNameXA;
-    	} else if (topicConnectionFactoryName!=null) {
-    		return topicConnectionFactoryName;
-    	} else if (topicConnectionFactoryNameXA!=null) {
-    		return topicConnectionFactoryNameXA;
-    	}
-    	return null;
-    }
 	/**
-	 * The name of the QueueConnectionFactory <br/>
-	 */
-	public java.lang.String getQueueConnectionFactoryName() {
-		return queueConnectionFactoryName;
-	}
-	/**
-	 * The name of this realm<br/>
-	 */
-	public java.lang.String getRealmName() {
-		return realmName;
-	}
-    public String getSecurityProtocol() {
-        return securityProtocol;
-    }
-	/**
-	 * The name of the TopicConnectionFactory <br/>
-	 */
-	public java.lang.String getTopicConnectionFactoryName() {
-		return topicConnectionFactoryName;
-	}
-    public String getUrlPkgPrefixes() {
-        return urlPkgPrefixes;
-    }
-    public void setAuthentication(String authentication) {
-        this.authentication = authentication;
-    }
-    public void setCredentials(String credentials) {
-        this.credentials = credentials;
-    }
-    public void setInitialContextFactoryName(String initialContextFactoryName) {
-        this.initialContextFactoryName = initialContextFactoryName;
-    }
-    public void setProviderURL(String providerURL) {
-        this.providerURL = providerURL;
-    }
-	/**
-	 * Set the name of the QueueConnectionFactory<br/>
-	 * @param newQueueConnectionFactoryName java.lang.String
-	 */
-	public void setQueueConnectionFactoryName(java.lang.String newQueueConnectionFactoryName) {
-		queueConnectionFactoryName = newQueueConnectionFactoryName;
-	}
-	/**
-	 * Set the name of this realm<br/>.
-	 * @param newName java.lang.String
-	 */
-	public void setRealmName(java.lang.String newName) {
-		realmName = newName;
-	}
-	    public void setSecurityProtocol(String securityProtocol) {
-	        this.securityProtocol = securityProtocol;
-	    }
-	/**
-	 * Set the name of the TopicConnectionFactory<br/>
-	 * @param newTopicConnectionFactoryName java.lang.String
-	 */
-	public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFactoryName) {
-		topicConnectionFactoryName = newTopicConnectionFactoryName;
-	}
-    public void setUrlPkgPrefixes(String urlPkgPrefixes) {
-        this.urlPkgPrefixes = urlPkgPrefixes;
-    }
-  /**
-   * The <code>toString()</code> method retrieves its value
-   * by reflection.
-   * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
-   *
-   **/
-  public String toString() {
+	 * The <code>toString()</code> method retrieves its value by reflection.
+	 * 
+	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 *
+	 **/
+	public String toString() {
 		try {
 			return ToStringBuilder.reflectionToString(this);
 		} catch (Throwable t) {
-			log.warn("exception getting string representation of jmsRealm ["+getRealmName()+"]", t);
+			log.warn("exception getting string representation of jmsRealm [" + getRealmName() + "]", t);
 		}
 		return null;
 	}
 
-  /**
-	 * Returns the queueConnectionFactoryNameXA.
+	/**
+	 * Set the name of this realm<br/>
 	 */
-	public String getQueueConnectionFactoryNameXA() {
-		return queueConnectionFactoryNameXA;
+	public void setRealmName(String newName) {
+		realmName = newName;
+	}
+	public String getRealmName() {
+		return realmName;
+	}
+
+	public String getAuthentication() {
+		return authentication;
+	}
+
+	public String getCredentials() {
+		return credentials;
+	}
+
+	public String getInitialContextFactoryName() {
+		return initialContextFactoryName;
+	}
+
+	public String getProviderURL() {
+		return providerURL;
+	}
+
+	public String retrieveConnectionFactoryName() {
+		if (queueConnectionFactoryName != null) {
+			return queueConnectionFactoryName;
+		} else if (topicConnectionFactoryName != null) {
+			return topicConnectionFactoryName;
+		}
+		return null;
+	}
+
+
+	/**
+	 * Set the name of the QueueConnectionFactory<br/>
+	 */
+	public void setQueueConnectionFactoryName(String newQueueConnectionFactoryName) {
+		queueConnectionFactoryName = newQueueConnectionFactoryName;
+	}
+	public String getQueueConnectionFactoryName() {
+		return queueConnectionFactoryName;
 	}
 
 	/**
-	 * Returns the topicConnectionFactoryNameXA.
+	 * Set the name of the TopicConnectionFactory<br/>
 	 */
-	public String getTopicConnectionFactoryNameXA() {
-		return topicConnectionFactoryNameXA;
+	public void setTopicConnectionFactoryName(String newTopicConnectionFactoryName) {
+		topicConnectionFactoryName = newTopicConnectionFactoryName;
+	}
+	public String getTopicConnectionFactoryName() {
+		return topicConnectionFactoryName;
 	}
 
-
-	/**
-	 * Sets the queueConnectionFactoryNameXA.
-	 * @param queueConnectionFactoryNameXA The queueConnectionFactoryNameXA to set
-	 */
-	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
-		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
-	}
-
-	/**
-	 * Sets the topicConnectionFactoryNameXA.
-	 * @param topicConnectionFactoryNameXA The topicConnectionFactoryNameXA to set
-	 */
-	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
-		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
-	}
-
-
-	public String getDatasourceName() {
-		return datasourceName;
-	}
-	public String getDatasourceNameXA() {
-		return datasourceNameXA;
-	}
 	public void setDatasourceName(String string) {
 		datasourceName = string;
 	}
-	public void setDatasourceNameXA(String string) {
-		datasourceNameXA = string;
+	public String getDatasourceName() {
+		return datasourceName;
 	}
 
-	public String getUserTransactionUrl() {
-		return userTransactionUrl;
+
+	public void setSecurityProtocol(String securityProtocol) {
+		this.securityProtocol = securityProtocol;
 	}
+	public String getSecurityProtocol() {
+		return securityProtocol;
+	}
+
+
+	public void setUrlPkgPrefixes(String urlPkgPrefixes) {
+		this.urlPkgPrefixes = urlPkgPrefixes;
+	}
+	public String getUrlPkgPrefixes() {
+		return urlPkgPrefixes;
+	}
+
+	public void setAuthentication(String authentication) {
+		this.authentication = authentication;
+	}
+
+	public void setCredentials(String credentials) {
+		this.credentials = credentials;
+	}
+
+	public void setInitialContextFactoryName(String initialContextFactoryName) {
+		this.initialContextFactoryName = initialContextFactoryName;
+	}
+
+	public void setProviderURL(String providerURL) {
+		this.providerURL = providerURL;
+	}
+
+
+
+
+
+
+
 	public void setUserTransactionUrl(String string) {
 		userTransactionUrl = string;
+	}
+	public String getUserTransactionUrl() {
+		return userTransactionUrl;
 	}
 
 	public void setPrincipal(String string) {
@@ -304,11 +271,12 @@ public class JmsRealm {
 		return jndiContextPrefix;
 	}
 
-	public String getJndiProperties() {
-		return jndiProperties;
-	}
 	public void setJndiProperties(String jndiProperties) {
 		this.jndiProperties = jndiProperties;
 	}
+	public String getJndiProperties() {
+		return jndiProperties;
+	}
+
 
 }

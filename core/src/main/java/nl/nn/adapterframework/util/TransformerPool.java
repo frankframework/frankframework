@@ -503,6 +503,15 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
+	public Boolean getIndent() throws TransformerException, IOException, SAXException {
+		Map<String,String> configMap=getConfigMap();
+		String setting=configMap.get("output-indent");
+		if (setting==null) {
+			return null;
+		}
+		return "yes".equals(setting);
+	}
+
 	public String getOutputMethod() throws TransformerException, IOException, SAXException {
 		Map<String,String> configMap=getConfigMap();
 		return configMap.get("output-method");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -117,7 +116,7 @@ public class LogUtil {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can startup if no log.level property has been found, it has to be explicitly set
-			String stage = System.getProperty("otap.stage");
+			String stage = System.getProperty("dtap.stage");
 			String logLevel = "DEBUG";
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
@@ -139,26 +138,23 @@ public class LogUtil {
 			}
 		}
 		log4jProperties = getProperties(LOG4J_PROPS_FILE);
-		if (log4jProperties != null) {
+		if(log4jProperties == null) {
+			System.out.println(WARN_LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + WARN_LOG_SUFFIX);
+		} else {
 			Properties dsProperties = getProperties("DeploymentSpecifics.properties");
 			if (dsProperties != null) {
-				String instanceNameLowerCase = dsProperties.getProperty("instance.name");
-				if (instanceNameLowerCase != null) {
-					instanceNameLowerCase = instanceNameLowerCase.toLowerCase();
-				} else {
-					instanceNameLowerCase = "ibis4unknown";
-				}
-				log4jProperties.put("instance.name.lc", instanceNameLowerCase);
 				log4jProperties.putAll(dsProperties);
-				hierarchy = new Hierarchy(new RootLogger(Level.DEBUG));
-				if (l4jxml==null) {
-					new PropertyConfigurator().doConfigure(log4jProperties, hierarchy);
-				} else {
-					log4jProperties.putAll(System.getProperties());
-					l4jxml = StringResolver.substVars(l4jxml, log4jProperties);
-					Reader reader = new StringReader(l4jxml);
-					new DOMConfigurator().doConfigure(reader, hierarchy);
-				}
+			}
+			log4jProperties.putAll(System.getProperties()); //Set these after reading DeploymentSpecifics as we want to override the properties
+			setInstanceNameLc(); //Set instance.name.lc for log file names
+
+			hierarchy = new Hierarchy(new RootLogger(Level.DEBUG));
+			if (l4jxml==null) {
+				new PropertyConfigurator().doConfigure(log4jProperties, hierarchy);
+			} else {
+				l4jxml = StringResolver.substVars(l4jxml, log4jProperties);
+				Reader reader = new StringReader(l4jxml);
+				new DOMConfigurator().doConfigure(reader, hierarchy);
 			}
 			hideRegex = log4jProperties.getProperty("log.hideRegex");
 		}
@@ -173,6 +169,16 @@ public class LogUtil {
 		} else {
 			return hierarchy.getRootLogger();
 		}
+	}
+
+	private static void setInstanceNameLc() {
+		String instanceNameLowerCase = log4jProperties.getProperty("instance.name");
+		if (instanceNameLowerCase != null) {
+			instanceNameLowerCase = instanceNameLowerCase.toLowerCase();
+		} else {
+			instanceNameLowerCase = "ibis";
+		}
+		log4jProperties.put("instance.name.lc", instanceNameLowerCase);
 	}
 
 	public static Logger getLogger(String name) {
@@ -200,9 +206,7 @@ public class LogUtil {
 	private static Properties getProperties(String resourceName) {
 		Properties properties = null;
 		URL url = LogUtil.class.getClassLoader().getResource(resourceName);
-		if (url == null) {
-			System.out.println(WARN_LOG_PREFIX + "did not find " + resourceName + WARN_LOG_SUFFIX);
-		} else {
+		if (url != null) {
 			properties = getProperties(url);
 		}
 		return properties;
@@ -227,7 +231,7 @@ public class LogUtil {
 		Writer stringWriter = new StringWriter();
 		InputStream stream = url.openStream();
 		try {
-			Reader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			Reader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 			int n;
 			while ((n = reader.read(buff))!=-1) {
 				stringWriter.write(buff, 0, n);

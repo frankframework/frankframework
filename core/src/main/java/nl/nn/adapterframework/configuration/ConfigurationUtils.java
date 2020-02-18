@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -231,19 +232,20 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String jmsRealm, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		if (StringUtils.isEmpty(datasource)) {
+			String workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(workJmsRealm)) {
 				return false;
 			}
+			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(workJmsRealm);
+			datasource = jmsRealm.getDatasourceName();
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(datasource);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -469,6 +471,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -487,6 +493,9 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if (onlyAutoReload) {
+				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();

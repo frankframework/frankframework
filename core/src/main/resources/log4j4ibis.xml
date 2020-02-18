@@ -37,11 +37,11 @@
 			<param name="ConversionPattern" value="%m%n"/>
 		</layout>
 	</appender>
-	<appender name="msg" class="nl.nn.adapterframework.extensions.log4j.IbisDailyRollingFileAppender">
-		<param name="Append" value="true"/>
-		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+	<appender name="msg" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-messages.log"/>
-		<param name="RetentionDays" value="${log.msg.retentionDays}"/>
+		<param name="MaxBackupIndex" value="${log.msg.maxBackupIndex}"/>
+		<param name="MaxFileSize" value="${log.maxFileSize}"/>
+		<param name="Append" value="true"/>
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 		</layout>

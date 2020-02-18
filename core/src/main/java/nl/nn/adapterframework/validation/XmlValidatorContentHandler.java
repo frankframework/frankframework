@@ -58,10 +58,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	 *         entire xml) to root elements which should be checked upon
 	 * @param ignoreUnknownNamespaces
 	 */
-	public XmlValidatorContentHandler(Set<String> validNamespaces,
-				Set<List<String>> rootValidations,
-				Map<List<String>, List<String>> invalidRootNamespaces,
-				Boolean ignoreUnknownNamespaces) {
+	public XmlValidatorContentHandler(Set<String> validNamespaces, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
 		this.validNamespaces = validNamespaces;
 		this.rootValidations = rootValidations;
 		this.invalidRootNamespaces = invalidRootNamespaces;
@@ -79,8 +76,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	@Override
-	public void startElement(String namespaceURI, String lName, String qName,
-			Attributes attrs) throws SAXException {
+	public void startElement(String namespaceURI, String lName, String qName, Attributes attrs) throws SAXException {
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				int i = elements.size();
@@ -88,8 +84,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						&& elements.equals(path.subList(0, i))) {
 					String validElements = path.get(i);
 					if (StringUtils.isEmpty(validElements)) {
-						String message = "Illegal element '" + lName
-								+ "'. No element expected.";
+						String message = "Illegal element '" + lName + "'. No element expected.";
 						if (xmlValidatorErrorHandler != null) {
 							xmlValidatorErrorHandler.addReason(message, null, null);
 						} else {
@@ -99,8 +94,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						List<String> validElementsAsList = Arrays.asList(validElements.split(",", -1));
 						if (validElementsAsList.contains(lName)) {
 							if (rootElementsFound.contains(path)) {
-								String message = "Element(s) '" + lName
-										+ "' should occur only once.";
+								String message = "Element(s) '" + lName + "' should occur only once.";
 								if (xmlValidatorErrorHandler != null) {
 									xmlValidatorErrorHandler.addReason(message, null, null);
 								} else {
@@ -109,13 +103,9 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 							} else {
 								String message = null;
 								if (invalidRootNamespaces != null) {
-									List<String> invalidNamespaces =
-											invalidRootNamespaces.get(path);
-									if (invalidNamespaces != null
-											&& invalidNamespaces.contains(namespaceURI)) {
-										message = "Invalid namespace '"
-											+ namespaceURI + "' for element '"
-											+ lName + "'";
+									List<String> invalidNamespaces = invalidRootNamespaces.get(path);
+									if (invalidNamespaces != null && invalidNamespaces.contains(namespaceURI)) {
+										message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
 										if (xmlValidatorErrorHandler != null) {
 											xmlValidatorErrorHandler.addReason(message, null, null);
 										} else {
@@ -126,8 +116,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 								rootElementsFound.add(path);
 							}
 						} else {
-							String message = "Illegal element '" + lName
-									+ "'. Element(s) '" + validElements + "' expected.";
+							String message = "Illegal element '" + lName + "'. Element(s) '" + validElements + "' expected.";
 							if (xmlValidatorErrorHandler != null) {
 								xmlValidatorErrorHandler.addReason(message, null, null);
 							} else {
@@ -144,8 +133,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	@Override
-	public void endElement(String namespaceURI, String lName, String qName)
-			throws SAXException {
+	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
 		elements.remove(level);
 		level--;
 	}
@@ -156,8 +144,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 			for (List<String> path: rootValidations) {
 				String validElements = path.get(path.size() - 1);
 				List<String> validElementsAsList = Arrays.asList(validElements.split("\\,", -1));
-				if (!validElementsAsList.contains("")
-						&& !rootElementsFound.contains(path)) {
+				if (!validElementsAsList.contains("") && !rootElementsFound.contains(path)) {
 					String message = "Element(s) '" + validElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
 						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null);
@@ -169,17 +156,13 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 	}
 
-	protected void checkNamespaceExistance(String namespace)
-			throws UnknownNamespaceException {
-		if (!ignoreUnknownNamespaces && validNamespaces != null
-				&& namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
-			if (!validNamespaces.contains(namespace) && !("".equals(namespace)
-					&& validNamespaces.contains(null))) {
+	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
+		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
+			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
 				String message = "Unknown namespace '" + namespace + "'";
 				namespaceWarnings++;
 				if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
-					message = message
-							+ " (maximum number of namespace warnings reached)";
+					message = message + " (maximum number of namespace warnings reached)";
 				}
 				if (xmlValidatorErrorHandler != null) {
 					xmlValidatorErrorHandler.addReason(message, null, null);

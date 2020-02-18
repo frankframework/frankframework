@@ -59,12 +59,17 @@ Upcoming
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
 - HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 - Add option to use username and password from authAlias in Paramter values
-
+- Bugfix autoReload new configuration on other nodes
+- Support XML-Schema 1.1 for XML validation
+- Detect character set of input streams by examining BOM
+- Accept XML 1.1 valid characters in XML 1.0 documents while STAX parsing, to solve illegal XML problems in ExchangeMailListener.
+- Rotate message.log by size instead of by day.
+- Add character set to each outbound HTTP request.
 
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
-  fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
+  fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 - jdbc.convertFieldnamesToUppercase has been set to true by default

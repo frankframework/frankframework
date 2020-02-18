@@ -75,7 +75,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = (String)prr.getResult();
 		assertResultsAreCorrect(expected,result.trim(),session);
 		
 	}
@@ -86,13 +86,38 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
 		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		Boolean omitXmlDeclaration=null;
-		Boolean indent=null;
+		Boolean indent=null; // follows indent of stylesheet
 		Boolean skipEmptyTags=null;
 		Boolean removeNamespaces=null;
 		Boolean xslt2=true;
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
 	}
 
+	@Test
+	public void basicIndent() throws Exception {
+		String styleSheetName=  "/Xslt3/orgchart.xslt";
+		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		Boolean omitXmlDeclaration=null;
+		Boolean indent=true;
+		Boolean skipEmptyTags=null;
+		Boolean removeNamespaces=null;
+		Boolean xslt2=true;
+		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
+	}
+
+	@Test
+	public void basicNoIndent() throws Exception {
+		String styleSheetName=  "/Xslt3/orgchart.xslt";
+		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
+		Boolean omitXmlDeclaration=null;
+		Boolean indent=false;
+		Boolean skipEmptyTags=null;
+		Boolean removeNamespaces=null;
+		Boolean xslt2=true;
+		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
+	}
 
 	/*
 	 * Beware, this test could fail when run multi threaded
@@ -345,7 +370,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void anyXmlBasic() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped2.xml");
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setOmitXmlDeclaration(true);
@@ -436,6 +461,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(false);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 
@@ -451,6 +477,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setXslt2(true);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -461,4 +488,5 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
+
 }

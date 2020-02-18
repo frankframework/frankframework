@@ -1,5 +1,5 @@
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
-<%@ page import="nl.nn.adapterframework.webcontrol.ConfigurationServlet"%>
+<%@ page import="nl.nn.adapterframework.lifecycle.IbisApplicationServlet"%>
 <%@ page import="nl.nn.adapterframework.configuration.IbisContext" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
@@ -18,7 +18,7 @@
 
 	<%
 		ServletContext sc = request.getSession().getServletContext();
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
+		String attributeKey = AppConstants.getInstance().getProperty(IbisApplicationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext) sc.getAttribute(attributeKey);
 	%>
 	<upTime><![CDATA[<%=ibisContext.getUptime()%>]]></upTime>

@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.example.org/ns/personName/1"
+           elementFormDefault="qualified"
+           xmlns:namens="http://www.example.org/ns/personName/1">
+    <xs:complexType name="nameType">
+        <xs:sequence>
+            <xs:any namespace="##any" processContents="lax"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="given" type="xs:string"/>
+            <xs:any namespace="##any" processContents="lax"
+                    minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="family" type="xs:string"/>
+            <xs:any namespace="##any" processContents="lax"
+                    minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:anyAttribute/>
+    </xs:complexType>
+    <xs:element name="personName" type="namens:nameType"/>
+</xs:schema>

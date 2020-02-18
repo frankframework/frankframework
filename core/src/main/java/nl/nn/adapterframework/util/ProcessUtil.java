@@ -42,7 +42,7 @@ public class ProcessUtil {
 	private static String readStream(InputStream stream) throws IOException {
 		StringBuffer result = new StringBuffer();
 
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+		BufferedReader bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 		String line = null;
 		// read() instead of readLine() results in JVM core dumps (this
 		// also happens when using InputStream or BufferedInputStream)

@@ -153,12 +153,9 @@ public class RestServiceDispatcher  {
 				noImageAvailable(httpServletResponse);
 				return "";
 			}
-			if (uri != null && (uri.equals("/showConfigurationStatus")
-					|| uri.startsWith("/showConfigurationStatus/"))) {
-				log.info("no REST listener configured for uri [" + uri
-						+ "], if REST listener does exist then trying to restart");
-				if (RestListenerUtils
-						.restartShowConfigurationStatus(servletContext)) {
+			if (uri != null && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/"))) {
+				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
+				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
 					httpServletResponse.setHeader("REFRESH", "0");
 					return "";
 				} else {
