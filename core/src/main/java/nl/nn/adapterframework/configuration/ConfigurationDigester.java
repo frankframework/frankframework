@@ -90,6 +90,7 @@ public class ConfigurationDigester {
 	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
 
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
+	private static final String CONFIGURATION_VALIDATION_SCHEMA = "AdapterFramework.xsd";
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
@@ -101,22 +102,22 @@ public class ConfigurationDigester {
 	private class XmlErrorHandler implements ErrorHandler  {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			LOG.warn(exception.getMessage());
+			//throw(exception);
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			LOG.error(exception.getMessage());
+			//throw(exception);
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
-			throw(exception);
+			//throw(exception);
 		}
 	}
 
-	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
+	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException, ConfigurationException {
 		Digester digester = new Digester() {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
@@ -181,7 +182,11 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", "AdapterFramework.xsd");
+			URL xsdUrl = ClassUtils.getResourceURL(this, CONFIGURATION_VALIDATION_SCHEMA);
+			if (xsdUrl==null) {
+				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			}
+			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
 			XmlErrorHandler xeh = new XmlErrorHandler();
 			digester.setErrorHandler(xeh);
 		}
