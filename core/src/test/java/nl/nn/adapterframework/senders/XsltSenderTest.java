@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -99,6 +100,36 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		String result = sender.sendMessage(null, input, prc);
 
 		assertEquals("2", result);
+	}
+
+	@Test
+	public void testXpathWithNamespaceXslt1() throws SenderException, TimeOutException, ConfigurationException, IOException {
+		sender.setXpathExpression("//x:directoryUrl");
+		sender.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
+		sender.setXsltVersion(1);
+		sender.configure();
+		sender.open();
+
+		String input = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/input.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt1.txt");
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		String result = sender.sendMessage(null, input, prc);
+
+		assertEquals(expected.trim(), result.trim());
+	}
+
+	@Test
+	public void testXpathWithNamespaceXslt2() throws SenderException, TimeOutException, ConfigurationException, IOException {
+		sender.setXpathExpression("//directoryUrl");
+		sender.configure();
+		sender.open();
+
+		String input = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/input.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/XPathWithNamespace/expected-xslt2.txt");
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		String result = sender.sendMessage(null, input, prc);
+
+		assertEquals(expected.trim(), result.trim());
 	}
 
 	@Test
@@ -222,4 +253,39 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		assertEquals(expected, sender.sendMessage(null, input, prc));
 	}
 	
+	@Ignore("First have to fix this")
+	@Test
+	public void testNamespaceUnaware() throws SenderException, TimeOutException, ConfigurationException, IOException {
+		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceUnAware.xsl");
+		sender.setRemoveNamespaces(true);
+		sender.configure();
+		sender.open();
+		String input=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		String actual = sender.sendMessage(null, input, prc);
+
+		assertEquals(expected, actual);
+	}
+
+	@Ignore("First have to fix this")
+	@Test
+	public void testNamespaceAware() throws Exception {
+		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceAware.xsl");
+		sender.configure();
+		sender.open();
+		String input=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected=TestFileUtils.getTestFile("/Xslt/NamespaceUnaware/out.xml");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		String actual = sender.sendMessage(null, input, prc);
+
+		assertEquals(expected, actual);
+//		Diff diff = XMLUnit.compareXML(expected, actual);
+//		assertTrue(diff.toString(), diff.similar());
+	}
+
 }

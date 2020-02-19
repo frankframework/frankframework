@@ -172,7 +172,7 @@ public class ClassUtils {
 
 	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
 		try {
-			return new InputStreamReader(urlToStream(url,timeoutMs),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 		} catch (UnsupportedEncodingException e) {
 			throw new IOException(e);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,36 +16,39 @@
 package nl.nn.adapterframework.lifecycle;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
-import org.springframework.web.SpringServletContainerInitializer;
-import org.springframework.web.WebApplicationInitializer;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.util.AppConstants;
+
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.XmlWebApplicationContext;
 
 /**
- * Interface to be implemented in Servlet 3.0+ environments in order to configure the
- * {@link ServletContext} programmatically -- as opposed to (or possibly in conjunction
- * with) the traditional {@code web.xml}-based approach.
- *
- * <p>Implementations of this SPI will be detected automatically by {@link
- * SpringServletContainerInitializer}, which itself is bootstrapped automatically
- * by any Servlet 3.0 container. See {@linkplain SpringServletContainerInitializer its
- * Javadoc} for details on this bootstrapping mechanism.
- * 
- * 
- * @see "https://docs.oracle.com/javase/tutorial/ext/basics/spi.html"
+ * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating 
+ * Spring wired Servlets (using the {@link ServletManager}). These beans can be retrieved later on from within
+ * the IbisContext, and are unaffected by the {@link IbisContext#fullReload()}.
  * 
  * @author Niels Meijer
  *
  */
-public class IbisApplicationInitializer implements WebApplicationInitializer {
+public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
-		servletContext.log("Starting IBIS Application");
+	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
+		servletContext.log("Starting IBIS WebApplicationInitializer");
 
-		//TODO start the springContext from here!
-		//NM: found out that the WebApplicationInitializer has to be on the webapp's classpath
-		//putting it in core wont help, as it wont search in the webapp's dependencies
-		//for some reason it only works on eclipse+tomcat but not a standalone application server
+		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
+		applicationContext.setConfigLocation(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+
+		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+
+		return applicationContext;
 	}
 }

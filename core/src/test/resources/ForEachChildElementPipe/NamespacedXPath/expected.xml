@@ -1,0 +1,27 @@
+<results>
+<result item="1">
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/tias
+</directoryUrl>
+</result>
+<result item="2">
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/baak
+</directoryUrl>
+</result>
+<result item="3">
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/zuidema
+</directoryUrl>
+</result>
+<result item="4">
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/ncoi
+</directoryUrl>
+</result>
+<result item="5">
+<directoryUrl>
+http://localhost:8080/ibis4mock/api/getmock/nyenrode
+</directoryUrl>
+</result>
+</results>

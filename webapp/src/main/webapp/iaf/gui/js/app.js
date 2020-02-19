@@ -46,6 +46,13 @@
 		//These will automatically be updated.
 		"timeOffset": 0,
 		"init": 0,
+		getString: function(variable) {
+			return this[variable];
+		},
+		getBoolean: function(variable, dfault) {
+			if(this[variable] != undefined) return (this[variable] === "true");
+			return dfault;
+		}
 	});
 	console.timeEnd("startup");
 })();

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,11 +33,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -73,12 +73,7 @@ public abstract class Base {
 			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
 		}
 
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
-
-		if(ibisContext == null) {
-			throw new ApiException(new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+attributeKey+"]"));
-		}
+		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
 	}
 
 	public IbisContext getIbisContext() {
@@ -136,7 +131,7 @@ public abstract class Base {
 		try {
 			URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), xslt);
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+			String dotOutput = XmlUtils.transformXml(transformer, dotInput, true);
 
 			return dotOutput;
 		}

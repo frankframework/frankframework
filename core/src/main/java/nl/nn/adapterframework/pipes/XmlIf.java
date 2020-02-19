@@ -162,7 +162,7 @@ public class XmlIf extends AbstractPipe {
 		return expressionValue;
 	}
 
-	@IbisDoc({"forward returned when 'true'</code>", "then"})
+	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
@@ -195,7 +195,7 @@ public class XmlIf extends AbstractPipe {
 		return regex;
 	}
 
-	@IbisDoc({"specifies the version of xslt to use", "1"})
+	@IbisDoc({"specifies the version of xslt to use", "2"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion = xsltVersion;
 	}

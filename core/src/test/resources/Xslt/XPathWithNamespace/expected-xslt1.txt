@@ -1,0 +1,2 @@
+
+http://localhost:8080/ibis4mock/api/getmock/tias

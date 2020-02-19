@@ -74,6 +74,7 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	@Test
 	public void multiNamespace() throws Exception {
 		setStyleSheetName("/Xslt/MultiNamespace/toText.xsl");
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 		String input = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.5-SNAPSHOT</version>
+		<version>7.6-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-core</artifactId>
@@ -15,7 +15,6 @@
 		<resteasy.version>3.0.12.Final</resteasy.version>
 		<j2v8.version>4.6.0</j2v8.version>
 	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.javassist</groupId>
@@ -193,7 +192,12 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-xerces</artifactId>
-			<version>2.12.0.1</version>
+			<version>2.12.1-xml-schema-1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>woodstox-core-asl</artifactId>
+			<version>4.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>aopalliance</groupId>
@@ -241,15 +245,16 @@
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-web</artifactId>
-				<version>${spring.version}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-struts</artifactId>
 		</dependency>
-		<dependency><!-- Needed when running on Java 5 (without it tests fail with JDK 1.5 and succeed with JDK 1.7). Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
+		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, NullPointerExceptions in System.arraycopy appear,
+		probably due to a mal-initialized writer.  Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>

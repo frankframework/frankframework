@@ -31,11 +31,13 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -66,13 +68,17 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
+	public final String DEFAULT_OUTPUT_METHOD="xml";
+	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false 
+	public final boolean DEFAULT_OMIT_XML_DECLARATION=false; 
+	
 	private String styleSheetName;
 	private String styleSheetNameSessionKey=null;
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
 	private String outputType=null;
 	private Boolean omitXmlDeclaration;
-	private boolean indentXml=true;
+	private Boolean indentXml=null; 
 	private boolean removeNamespaces=false;
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
@@ -146,7 +152,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			transformerPool.close();
 		}
 		
-		if (!dynamicTransformerPoolMap.isEmpty()) {
+		if (dynamicTransformerPoolMap!=null && !dynamicTransformerPoolMap.isEmpty()) {
 			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
 				tp.close();
 			}
@@ -166,9 +172,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
 		if (target==null) {
-			target=new MessageOutputStreamCap(this);
+			target=new MessageOutputStreamCap(this, nextProvider);
 		}
 		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,correlationID);
@@ -203,11 +210,22 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+outputType+"]");
 			}
 			if (StringUtils.isEmpty(outputType)) {
-				outputType = "xml";
+				outputType = DEFAULT_OUTPUT_METHOD;
 				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
 			}
 
 			Object targetStream = target.asNative();
+			
+			Boolean indentXml = getIndentXml();
+			if (log.isTraceEnabled()) log.trace("Configured indentXml ["+indentXml+"]");
+			if (indentXml==null) {
+				indentXml = poolToUse.getIndent();
+				if (log.isTraceEnabled()) log.trace("Detected indentXml ["+indentXml+"]");
+			}
+			if (indentXml==null) {
+				indentXml = DEFAULT_INDENT;
+				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
+			}
 			
 			Boolean omitXmlDeclaration = getOmitXmlDeclaration();
 			if (targetStream instanceof ContentHandler) {
@@ -220,12 +238,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
 						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration ["+omitXmlDeclaration+"]");
 						if (omitXmlDeclaration==null) {
-							omitXmlDeclaration=false;
+							omitXmlDeclaration=DEFAULT_OMIT_XML_DECLARATION;
 							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration ["+omitXmlDeclaration+"]");
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
-					if (isIndentXml()) {
+					if (indentXml) {
 						xmlWriter.setNewlineAfterXmlDeclaration(true);
 					}
 				} else {
@@ -234,7 +252,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				handler = xmlWriter;
 			}
 
-			if (isIndentXml()) {
+			if (indentXml) {
 				PrettyPrintFilter indentingFilter = new PrettyPrintFilter();
 				indentingFilter.setContentHandler(handler);
 				handler=indentingFilter;
@@ -270,17 +288,18 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this)) {
+			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, prc.getSession(), null);
+			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this, nextProvider)) {
 				ContentHandler handler = createHandler(correlationID, message, prc.getSession(), outputStream);
 				InputSource source = message.asInputSource();
 				XMLReader reader = getXmlReader(handler);
 				reader.parse(source);
-				return outputStream.getResponse();
+				return outputStream.getPipeRunResult();
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
@@ -325,7 +344,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"5", "For xpathExpression only: force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
@@ -333,7 +352,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return omitXmlDeclaration;
 	}
 
-	@IbisDoc({"6", "For xpathExpression only: namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace", ""})
+	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -349,11 +368,11 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return outputType;
 	}
 
-	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
+	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setIndentXml(boolean b) {
 		indentXml = b;
 	}
-	public boolean isIndentXml() {
+	public Boolean getIndentXml() { // can return null too
 		return indentXml;
 	}
 

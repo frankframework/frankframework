@@ -11,6 +11,7 @@ import javax.json.JsonStructure;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
@@ -34,8 +35,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		Message message = new Message(input);
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String jsonOut=result.toString();
+		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String jsonOut=(String)result.getResult();
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
 
@@ -49,8 +50,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String xmlOut=result.toString();
+		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String xmlOut=result.getResult().toString();
 		assertEquals(expectedXml,xmlOut);
 	}
 
@@ -65,8 +66,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedText="James";
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String textOut=result.toString();
+		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String textOut=result.getResult().toString();
 		assertEquals(expectedText,textOut);
 	}
 	

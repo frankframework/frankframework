@@ -158,6 +158,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		setXslt2(xslt2);
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 

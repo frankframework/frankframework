@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URL;
 
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -39,8 +40,9 @@ public class MessageTest {
 	private boolean TEST_CDATA=true;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
 	private String CDATA_END=TEST_CDATA?"]]>":"";
-
+	
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub><data attr=\"één €\">één €</data></root>";
+	protected String testStringFile="/Message/testString.txt";
 	
 	
 	protected void testAsStream(Message adapter) throws IOException {
@@ -254,4 +256,48 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		testToString(adapter,byte[].class);
 	}
+	
+	
+	@Test
+	public void testURLArrayAsStream() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsStream(adapter);
+	}
+
+	@Test
+	public void testURLAsReader() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testURLAsInputSource() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testURLAsByteArray() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testURLAsString() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testURLToString() throws Exception {
+		URL source = this.getClass().getResource(testStringFile);
+		Message adapter = new Message(source);
+		testToString(adapter,URL.class);
+	}
+
 }

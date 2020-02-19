@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,10 +39,13 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.IsolatedServiceExecutor;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.IStreamingSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.LogUtil;
@@ -130,6 +133,11 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		return proceedingJoinPoint.proceed(args);
 	}
 
+	/**
+	 * Provides advice for {@link ISender#sendMessage(String correlationId, String message)}
+	 */
+//	@Pointcut("execution( * nl.nn.adapterframework.core.ISender.sendMessage(String, String)) "+
+//				"and args(correlationId, message)" )
 	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
@@ -146,12 +154,16 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 	}
 
-	 public Object debugSenderWithParametersInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext prc) throws Throwable {
-			if (!isEnabled()) {
-				return proceedingJoinPoint.proceed();
-			}
+	/**
+	 * Provides advice for {@link ISenderWithParameters#sendMessage(String correlationId, String message, ParameterResolutionContext prc)}
+	 */
+//	@Pointcut("execution( * nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext)) " +
+//				"and args(correlationId, message, parameterResolutionContext)" )
+	public Object debugSenderWithParametersInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext prc) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		ISenderWithParameters sender = (ISenderWithParameters)proceedingJoinPoint.getTarget();
-		if (log.isDebugEnabled()) log.debug("debugSenderWithParametersInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		Object preservedObject = message;
 		Object result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
 		if (ibisDebugger.stubSender(sender, correlationId)) {
@@ -168,12 +180,67 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		return ibisDebugger.senderOutput(sender, correlationId, result);
 	}
 
-	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext parameterResolutionContext, MessageOutputStream target) throws Throwable {
+	/**
+	 * Provides advice for {@link IStreamingSender#sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next)}
+	 */
+//	@Pointcut("execution( * nl.nn.adapterframework.stream.IStreamingSender.sendMessage(String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.IOutputStreamingSupport)) " +
+//				"and args(correlationId, message, prc, next)" )
+	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
-		if (log.isDebugEnabled()) log.debug("debugStreamingSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
-		return debugSenderWithParametersInputOutputAbort(proceedingJoinPoint, correlationId, message, parameterResolutionContext);
+		IStreamingSender sender = (IStreamingSender)proceedingJoinPoint.getTarget();
+		String moddedMessage = ibisDebugger.senderInput(sender, correlationId, message.toString()); // TODO: enable Message to be adjusted. Output is now ignored
+
+		PipeRunResult result = null;
+		if (!ibisDebugger.stubSender(sender, correlationId)) {
+			try {
+				result = (PipeRunResult)proceedingJoinPoint.proceed();
+			} catch(Throwable throwable) {
+				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
+			}
+		} else {
+			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
+			// resolve parameters itself
+			prc.getValues(sender.getParameterList());
+		}
+		ibisDebugger.senderOutput(sender, correlationId, result==null?null:result.getResult());
+		return result;
+	}
+	 
+	/**
+	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(String correlationId, IPipeLineSession session, IOutputStreamingSupport nextProvider)}
+	 */
+//	@Pointcut("execution( * nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport)) " +
+//				"and args(correlationId, session, nextProvider)")
+	public Object debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, String correlationId, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
+		if (log.isDebugEnabled()) log.debug("debugProvideOutputStream thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
+		// TODO: provide proper debug entry in Debugger interface.
+		if (proceedingJoinPoint.getTarget() instanceof ISender) {
+			ISender sender = (ISender)proceedingJoinPoint.getTarget();
+			ibisDebugger.senderInput(sender, correlationId, "--> provide outputstream");
+			//System.out.println("--> provide outputstream of sender ["+sender.getName()+"]");
+			Object result = proceedingJoinPoint.proceed();
+			//System.out.println("<-- provide outputstream of sender ["+sender.getName()+"]: ["+result+"]");
+			ibisDebugger.senderOutput(sender, correlationId, result==null?null:result.toString());
+			return result;
+		} else {
+			if (proceedingJoinPoint.getTarget() instanceof IPipe) {
+				IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
+				//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
+				PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
+				ibisDebugger.pipeInput(pipeLine, pipe, correlationId, "--> provide outputstream");
+				Object result = proceedingJoinPoint.proceed();
+				//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
+				ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, result);
+				return result;
+			}
+		}
+		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
+		return proceedingJoinPoint.proceed();
 	}
 	 
 	public Object debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, String correlationId, String message, ParameterResolutionContext parameterResolutionContext) throws Throwable {

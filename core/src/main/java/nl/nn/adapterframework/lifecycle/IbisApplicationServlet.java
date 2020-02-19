@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,65 +15,38 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.io.File;
-import java.net.URL;
-
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * Start IAF with a servlet and register it in the Spring {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Application Context}.
- * This is important as we want to integrate CXF and run it on the existing {@link org.apache.cxf.bus.spring.SpringBus SpringBus}.
+ * Start the Framework with a servlet so `application startup order` can be used.
  * 
  * @author Niels Meijer
- * 
  */
-public class IbisApplicationServlet extends CXFServlet {
-
+public class IbisApplicationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
 	private Logger log = LogUtil.getLogger(this);
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";
 	private IbisContext ibisContext;
-	private ServletContext servletContext = null;
-	private ServletConfig currentConfig = null;
 
 	@Override
-	public ServletContext getServletContext() {
-		return servletContext;
-	}
+	public void init() throws ServletException {
+		super.init();
 
-	@Override
-	public ServletConfig getServletConfig() {
-		return currentConfig;
-	}
-
-	/**
-	 * Initializes the {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Ibis Application Context} 
-	 * which will in turn call {@link #doInit()} to initialize the CXF servlet
-	 */
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		this.currentConfig = config;
-		servletContext = config.getServletContext();
-
-		checkAndCorrectLegacyServerTypes();
-		determineApplicationServerType();
-
+		ServletContext servletContext = getServletContext();
 		AppConstants appConstants = AppConstants.getInstance();
+
 		String realPath = servletContext.getRealPath("/");
 		if (realPath != null) {
 			appConstants.put("webapp.realpath", realPath);
@@ -86,144 +59,50 @@ public class IbisApplicationServlet extends CXFServlet {
 		} else {
 			log.info("Could not determine project.basedir");
 		}
-		setUploadPathInServletContext();
+
+		ApplicationContext parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+		if(parentContext == null) {
+			servletContext.log("No IBIS WebApplicationInitializer found. Aborting launch...");
+			return;
+		}
+
+		servletContext.log("Starting IbisContext");
 		ibisContext = new IbisContext();
+		ibisContext.setParentContext(parentContext);
 		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
-
-		//Create the Spring Application Context first before running the super init() method
-		ibisContext.setServletConfig(this);
-
-		//This is the point where we initialize the Spring Context and run super.init() on the CXFServlet, which is triggered by the refresh() method in this class
-		//It is important that the servlet loads all busses before the ibis starts up.
 		ibisContext.init();
 
-		if(ibisContext.getIbisManager() == null)
-			log.warn("Servlet init finished without successfully initializing the ibisContext");
-		else
+		if(ibisContext.getIbisManager() == null) {
+			Exception ex = ibisContext.getBootState().getException();
+			log.warn("Servlet finished without successfully initializing the ibisContext", ex);
+			servletContext.log("IbisContext failed to initialize", ex);
+		} else {
 			log.debug("Servlet init finished");
-
-		//Add console warning when security constraints have not been enabled
-		String stage = appConstants.getString("dtap.stage", "LOC");
-		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
-			try {
-				String web = "/WEB-INF"+File.separator+"web.xml";
-				URL webXml = servletContext.getResource(web);
-				if(webXml != null) {
-					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
-				}
-			} catch (Exception e) {
-				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
-			}
 		}
 	}
 
 	/**
-	 * Should only be called by {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
-	 * <br/>
-	 * Creates the CXF servlet context
-	 * @throws ServletException
+	 * Retrieves the IbisContext from the ServletContext
+	 * @param servletContext
+	 * @return IbisContext or IllegalStateException when not found
 	 */
-	public void doInit() throws ServletException {
-		log.info("initalizing CXF Servlet");
-		super.init(getServletConfig());
+	public static IbisContext getIbisContext(ServletContext servletContext) {
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(ibisContextKey);
+
+		if(ibisContext == null) {
+			throw new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+KEY_CONTEXT+"]");
+		}
+		return ibisContext;
 	}
 
-	/**
-	 * Destroy the {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Ibis Application Context}
-	 * which will in turn call {@link #doDestroy()} to destroy the CXF servlet
-	 */
 	@Override
 	public void destroy() {
-		log.info("shutting down, destroying ibisContext");
-		ibisContext.destroy(); //This will in turn call doDestroy()
-	}
-
-	/**
-	 * Should only be called by {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
-	 * <br/>
-	 * Destroys the CXF servlet context
-	 */
-	public void doDestroy() {
-		log.info("destroying CXF Servlet");
+		getServletContext().log("Shutting down IbisContext");
+		ibisContext.destroy();
 		super.destroy();
-		setBus(null);
-	}
-
-	private void setUploadPathInServletContext() {
-		try {
-			// set the directory for struts upload, that is used for instance in 'test a pipeline'
-			ServletContext context = getServletContext();
-			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
-			// if the path is not found
-			if (StringUtils.isEmpty(path)) {
-				path="/tmp";
-			}
-			log.debug("setting path for Struts file-upload to ["+path+"]");
-			File tempDirFile = new File(path);
-			context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
-		} catch (Exception e) {
-			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
-		}
-	}
-
-	/**
-	 * Log the message in System.out, the Ibis console and the Log4j logger
-	 * @param message to log
-	 */
-	private void log2ContextAndGui(String message) {
-		servletContext.log(message);
-		ConfigurationWarnings.getInstance().add(log, message);
-	}
-
-	private void checkAndCorrectLegacyServerTypes() {
-		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
-		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if (StringUtils.isNotEmpty(applicationServerType)) {
-			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
-				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
-				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
-			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
-				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
-			}
-		}
-	}
-
-	private void determineApplicationServerType() {
-		String serverInfo = servletContext.getServerInfo();
-		String defaultApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			defaultApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			defaultApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			defaultApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = System.getProperty("java.home");
-			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				defaultApplicationServerType = "TIBCOAMX";
-			} else {
-				defaultApplicationServerType = "JETTYMVN";
-			}
-		} else {
-			defaultApplicationServerType = "TOMCAT";
-			log2ContextAndGui("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
-		}
-
-		//has it explicitly been set? if not, set the property
-		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			log2ContextAndGui("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+defaultApplicationServerType+"]");
-		}
-		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
-		}
 	}
 }

@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
@@ -164,6 +165,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String remoteUser = (String) session.get("principal");
 		InputStream inputStream = (InputStream) session.get(fileSessionKey);
 
+		JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(formJmsRealm);
+		String datasource = jmsRealm.getDatasourceName();
+
 		try {
 			// convert inputStream to byteArray so it can be read twice
 			byte[] bytes = IOUtils.toByteArray(inputStream);
@@ -174,7 +178,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			if (StringUtils.isEmpty(buildInfoName) || StringUtils.isEmpty(buildInfoVersion)) {
 				throw new PipeRunException(this, getLogPrefix(session) + "Cannot retrieve BuildInfo name and version");
 			}
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
 				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext.getIbisManager().getConfiguration(buildInfoName) == null) {
 					ibisContext.reload(buildInfoName);
 				}

@@ -165,14 +165,15 @@ public class Json2XmlValidator extends XmlValidator {
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
-		XMLReader parser = validator.getValidatingParser(session,context);
-		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
-		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());	
-		parser.setContentHandler(aligner);
+		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
+		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
+		XmlAligner aligner = new XmlAligner((PSVIProvider) validatorHandler);
+		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
+		validatorHandler.setContentHandler(aligner);
 		aligner.setContentHandler(xml2json);
 		aligner.setErrorHandler(context.getErrorHandler());
 		
-		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), parser, xml2json, context);
+		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
 		String out=xml2json.toString();
 		PipeForward forward=determineForward(resultEvent, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
