@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.ConfigurationAware;
-import nl.nn.adapterframework.senders.MailSenderOld;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -674,22 +673,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform((String)input,null);
 						}
 					}
-					if (sender instanceof MailSenderOld) {
-						String messageInMailSafeForm = (String)session.get(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
-					} else {
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
-					}
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
+
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;
 					StatisticsKeeper sk = getPipeLine().getPipeStatistics(messageLog);
 					sk.addValue(messageLogDuration);
 				}
 
-				if (sender instanceof MailSenderOld) {
-					session.remove(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-				}
-				
 				if (getListener() != null) {
 					result = listenerProcessor.getMessage(getListener(), correlationID, session);
 					} else {
