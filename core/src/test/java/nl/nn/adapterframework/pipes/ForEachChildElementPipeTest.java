@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -108,14 +109,26 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         return new ForEachChildElementPipe();
     }
 
+	protected ISender getElementRenderer() {
+		return getElementRenderer(null, null);
+	}
+
+	protected ISender getElementRenderer(final Exception e) {
+		return getElementRenderer(null, e);
+	}
+
     protected ISender getElementRenderer(final SwitchCounter sc) {
+		return getElementRenderer(sc, null);
+	}
+
+	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
     	EchoSender sender = new EchoSender() {
 
 			@Override
 			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
 				if (message.contains("error")) {
-					throw new SenderException("Exception triggered");
+					throw new SenderException("Exception triggered",e);
 				}
 				return super.sendMessage(correlationID, message, prc);
 			}
@@ -126,7 +139,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBasic() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		configurePipe();
 		pipe.start();
 
@@ -138,7 +151,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBlockSize() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setBlockSize(2);
 		pipe.setBlockPrefix("<block>");
 		pipe.setBlockSuffix("</block>");
@@ -153,28 +166,48 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testError() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		Exception targetException = new NullPointerException("FakeException");
+		pipe.setSender(getElementRenderer(targetException));
 		configurePipe();
 		pipe.start();
 
-		exception.expectMessage("Exception triggered");
+		try {
 		PipeRunResult prr = pipe.doPipe(messageError, session);
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+	}
 	}
 
 	@Test
 	public void testErrorXpath() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		Exception targetException = new NullPointerException("FakeException");
+		pipe.setSender(getElementRenderer(targetException));
 		pipe.setElementXPathExpression("/root/sub");
 		configurePipe();
 		pipe.start();
 
-		exception.expectMessage("Exception triggered");
+		try {
 		PipeRunResult prr = pipe.doPipe(messageError, session);
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+	}
+	}
+
+	private void assertCauseChainEndsAtOriginalException(Exception expectedCause,Exception actual) {
+		//actual.printStackTrace();
+		Throwable cause=actual;
+		while (cause.getCause()!=null) {
+			cause=cause.getCause();
+		}
+		//cause.printStackTrace();
+		assertEquals("cause chain should continue up to original exception",expectedCause, cause);
 	}
 
 	@Test
 	public void testBasicRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(true);
 		configurePipe();
 		pipe.start();
@@ -187,7 +220,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBasicRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(true);
 		configurePipe();
 		pipe.start();
@@ -200,7 +233,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBasicNoRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(false);
 		pipe.setNamespaceDefs("ns=urn:test");
 		configurePipe();
@@ -214,7 +247,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBasicNoRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(false);
 		pipe.setNamespaceDefs("ns=urn:test");
 		configurePipe();
@@ -512,7 +545,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	@Test
 	public void testBasicWithStopExpression() throws PipeRunException, ConfigurationException, PipeStartException {
 		SwitchCounter sc = new SwitchCounter();
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setStopConditionXPathExpression("*[@name='p & Q']");
 		configurePipe();
 		pipe.start();
@@ -529,7 +562,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	@Test
 	public void testBasicMaxItems1() throws PipeRunException, ConfigurationException, PipeStartException {
 		SwitchCounter sc = new SwitchCounter();
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(1);
 		configurePipe();
 		pipe.start();
@@ -546,7 +579,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	@Test
 	public void testBasicMaxItems2() throws PipeRunException, ConfigurationException, PipeStartException {
 		SwitchCounter sc = new SwitchCounter();
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(2);
 		configurePipe();
 		pipe.start();
@@ -677,7 +710,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	
 	@Test
 	public void testNoDuplicateNamespaces() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setRemoveNamespaces(false);
 		configurePipe();
@@ -693,7 +726,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testBulk2() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setBlockSize(4);
 		pipe.setRemoveNamespaces(false);
@@ -710,7 +743,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testRemoveNamespacesInAttributes() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		configurePipe();
 		pipe.start();
@@ -725,7 +758,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	@Test
 	public void testNamespacedXPath() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
-		pipe.setSender(getElementRenderer(null));
+		pipe.setSender(getElementRenderer());
 		pipe.setElementXPathExpression("//x:directoryUrl");
 		pipe.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
 		configurePipe();
