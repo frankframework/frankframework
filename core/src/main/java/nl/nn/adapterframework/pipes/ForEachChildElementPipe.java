@@ -363,19 +363,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw itemHandler.getTimeOutException();
 			}
 			if (!itemHandler.isStopRequested()) {
-				if (transformerErrorListener!=null) {
-					TransformerException tex = transformerErrorListener.getFatalTransformerException();
-					if (tex!=null) {
-						throw new SenderException(errorMessage,tex);
-					}
-					IOException iox = transformerErrorListener.getFatalIOException();
-					if (iox!=null) {
-						throw new SenderException(errorMessage,iox);
-					}
-				}
+				// Xalan rethrows any caught exception with the message, but without the cause.
+				// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+				rethrowTransformerException(transformerErrorListener, errorMessage);
 				throw new SenderException(errorMessage,e);
 			}
 		}
+		rethrowTransformerException(transformerErrorListener, errorMessage);
+	}
+
+	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
 		if (transformerErrorListener!=null) {
 			TransformerException tex = transformerErrorListener.getFatalTransformerException();
 			if (tex!=null) {
@@ -386,10 +383,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException(errorMessage,iox);
 			}
 		}
-		
 	}
-
-	
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
