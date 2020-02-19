@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -135,7 +137,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		try {
 			result = actor.doAction(new Message(input), pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
-			if (getForwards().containsKey("exception")) {
+			Map<String, PipeForward> forwards = getForwards();
+			if (forwards!=null && forwards.containsKey("exception")) {
 				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
@@ -175,37 +178,39 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+
+	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 	public String getInputFolder() {
 		return actor.getInputFolder();
 	}
-	
-	@IbisDocRef({"3", FILESYSTEMACTOR})
-	public void setFilename(String filename) {
-		actor.setFilename(filename);
-	}
-	public String getFilename() {
-		return actor.getFilename();
+
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setForce(boolean force) {
+		actor.setForce(force);
 	}
 
-	@IbisDocRef({"3", FILESYSTEMACTOR})
+	@IbisDocRef({"5", FILESYSTEMACTOR})
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
 
-	@IbisDocRef({"4", FILESYSTEMACTOR})
+	@IbisDocRef({"6", FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({"5", FILESYSTEMACTOR})
+	@IbisDocRef({"7", FILESYSTEMACTOR})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({"6", FILESYSTEMACTOR})
+	@IbisDocRef({"8", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}

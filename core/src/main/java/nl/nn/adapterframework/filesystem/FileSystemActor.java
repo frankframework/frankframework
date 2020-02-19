@@ -113,6 +113,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String action;
 	private String filename;
 	private String inputFolder; // folder for action=list
+	private boolean force; // for action move and rename
 
 	private String base64;
 	private int rotateDays=0;
@@ -310,17 +311,23 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
 				if (destination == null) {
-					throw new SenderException("unknown destination [" + destination + "]");
+					throw new FileSystemException("unknown destination [" + destination + "]");
 				}
-				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
+				if (!isForce()) {
+					F dest = fileSystem.toFile(destination);
+					if (dest!=null && fileSystem.exists(dest)) {
+						throw new FileSystemException("destination [" + destination + "] already exists");
+					}
+				}
+				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, isForce());
 				return destination;
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
 				if (destinationFolder == null) {
-					throw new SenderException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
+					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
-				F moved=fileSystem.moveFile(file, destinationFolder, false);
+				F moved=fileSystem.moveFile(file, destinationFolder, isForce());
 				return fileSystem.getName(moved);
 			}
 		} catch (Exception e) {
@@ -519,7 +526,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
+	public void setForce(boolean force) {
+		this.force = force;
+	}
+	public boolean isForce() {
+		return force;
+	}
+
+	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
 	public void setBase64(String base64) {
 		this.base64 = base64;
 	}
@@ -527,7 +542,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return base64;
 	}
 
-	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	@IbisDoc({"5", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -536,7 +551,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDoc({"6", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
@@ -544,7 +559,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDoc({"7", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
@@ -552,7 +567,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateSize;
 	}
 
-	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDoc({"8", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}

@@ -21,8 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -45,6 +43,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -256,6 +255,10 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public Map<String, PipeForward> getForwards(){
 		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+		PipeLine pipeline= getPipeLine();
+		if (pipeline==null) {
+			return null;
+		}
 		List<IPipe> pipes = getPipeLine().getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
