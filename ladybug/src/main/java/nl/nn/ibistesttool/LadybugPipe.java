@@ -119,11 +119,13 @@ public class LadybugPipe extends FixedForwardPipe {
 		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.isReportGeneratorEnabled();
 		if(enableReportGenerator) {
-			testTool.updateReportGeneratorStatus(true);
+			testTool.setReportGeneratorEnabled(true);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
-			testTool.updateReportGeneratorStatus(reportGeneratorEnabledOldValue);
+			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		long endTime = System.currentTimeMillis();
 		
