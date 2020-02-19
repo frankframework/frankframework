@@ -15,6 +15,12 @@
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
+			<pipe name="fixedSelectScalar" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT NAME FROM IBISPROP WHERE VALUE = ?" queryType="select" jmsRealm="jdbc" scalar="true">
+					<param name="value" xpathExpression="request/value" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
 			<!-- directSelect -->
 			<pipe name="directSelect" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/QuerySender/MakeSelectQuery.xsl">
 				<forward name="success" path="doDirectSelect" />
