@@ -363,10 +363,19 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw itemHandler.getTimeOutException();
 			}
 			if (!itemHandler.isStopRequested()) {
+				if (transformerErrorListener!=null) {
+					TransformerException tex = transformerErrorListener.getFatalTransformerException();
+					if (tex!=null) {
+						throw new SenderException(errorMessage,tex);
+					}
+					IOException iox = transformerErrorListener.getFatalIOException();
+					if (iox!=null) {
+						throw new SenderException(errorMessage,iox);
+					}
+				}
 				throw new SenderException(errorMessage,e);
 			}
 		}
-		
 		if (transformerErrorListener!=null) {
 			TransformerException tex = transformerErrorListener.getFatalTransformerException();
 			if (tex!=null) {
@@ -377,6 +386,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException(errorMessage,iox);
 			}
 		}
+		
 	}
 
 	
