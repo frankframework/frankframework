@@ -72,7 +72,7 @@ public class IMSSender extends MQSender {
 	private static final int MQENC_NATIVE = 273;				// copied from com.ibm.mq.MQC in com.ibm.mq.jar
 	private static final int CCSID_ISO_8859_1 = 819;
 	
-	private static final Charset CHARSET= StandardCharsets.ISO_8859_1;
+	private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 	
 	private String transactionCode;
 	
@@ -128,7 +128,7 @@ public class IMSSender extends MQSender {
 			bos.write(IIH_HEADER_RESERVED.getBytes(CHARSET));
 			
 			byte[] data = message.getBytes(CHARSET);
-			
+
 			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
