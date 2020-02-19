@@ -18,14 +18,10 @@ package nl.nn.ibistesttool.tibet2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.ApplicationListener;
-
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -34,7 +30,7 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger extends nl.nn.ibistesttool.Debugger implements ApplicationListener<DebuggerStatusChangedEvent> {
+public class Debugger extends nl.nn.ibistesttool.Debugger {
 	private static final String RESEND_ADAPTER = "ResendFromExceptionLog";
 
 	public List getStubStrategies() {
@@ -81,15 +77,5 @@ public class Debugger extends nl.nn.ibistesttool.Debugger implements Application
 			errorMessage = super.rerun(correlationId, originalReport, securityContext, reportRunner);
 		}
 		return errorMessage;
-	}
-	
-	@Override
-	public void updateReportGeneratorStatus(boolean enabled) {
-		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
-	}
-
-	@Override
-	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		// TODO: Connect to ibis-ladybug to call TestTool.setReportGenerator(event.isEnabled());
 	}
 }
