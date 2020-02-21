@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 
+import org.apache.cxf.bus.spring.SpringBus;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -50,5 +51,16 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
 
 		return applicationContext;
+	}
+
+	/*
+	 * Purely here to print the CXF SpringBus ID
+	 */
+	@Override
+	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
+		WebApplicationContext wac = super.initWebApplicationContext(servletContext);
+		SpringBus bus = (SpringBus) wac.getBean("cxf");
+		servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+		return wac;
 	}
 }
