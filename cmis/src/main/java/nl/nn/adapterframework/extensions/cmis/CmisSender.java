@@ -365,9 +365,9 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 			return new Message(result);
 		} finally {
-			if (session != null && !isKeepSession()) {
-				session.clear();
-				session = null;
+			if (cmisSession != null && !isKeepSession()) {
+				cmisSession.clear();
+				cmisSession = null;
 			}
 		}
 	}

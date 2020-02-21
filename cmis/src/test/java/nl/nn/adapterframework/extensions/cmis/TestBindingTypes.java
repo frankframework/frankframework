@@ -33,7 +33,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
@@ -150,7 +150,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
 
 		try {
-			doReturn(cmisSession).when(sender).createCmisSession(null);
+			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -175,8 +175,6 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		ParameterResolutionContext  prc = new ParameterResolutionContext("input", session);
-
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEqualsIgnoreRN(expectedResult, actualResult);
 	}
@@ -187,11 +185,9 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
 		assertEquals("", actualResult);
-		String base64 = (String) prc.getSession().get("fileContent");
+		String base64 = (String) session.get("fileContent");
 		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}
 }

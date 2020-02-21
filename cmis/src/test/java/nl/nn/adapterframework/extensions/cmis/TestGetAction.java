@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -131,7 +132,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		doReturn(operationContext).when(cmisSession).createOperationContext();
 
 		try {
-			doReturn(cmisSession).when(sender).createCmisSession(null);
+			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -165,8 +166,6 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 	@Test
 	public void sendMessageFileStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
@@ -177,7 +176,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) prc.getSession().get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
@@ -187,8 +186,6 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 	@Test
 	public void sendMessageFileContent() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
@@ -199,7 +196,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) prc.getSession().get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileContentSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {
@@ -209,8 +206,6 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 	@Test
 	public void sendMessageFileStreamWithParameters() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
 		sender.setFileInputStreamSessionKey("fis");
 		configureWithParameters();
 
@@ -221,7 +216,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) prc.getSession().get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
@@ -231,8 +226,6 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 	@Test
 	public void sendMessageFileContentWithParameters() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
 		sender.setFileContentSessionKey("fileContent");
 		configureWithParameters();
 
@@ -243,7 +236,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) prc.getSession().get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileContentSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {

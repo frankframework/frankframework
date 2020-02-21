@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
@@ -98,7 +99,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		doReturn("dummy_id").when(objectId).getId();
 		
 		try {
-			doReturn(cmisSession).when(sender).createCmisSession(null);
+			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -115,7 +116,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 
 	@Test
 	public void fileContentFromSessionKeyAsString() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileContentSessionKey("fileContent");
@@ -127,7 +127,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	@Test
 	public void fileContentFromSessionKeyAsByteArray() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
 		sender.setFileContentSessionKey("fileContent");
@@ -138,7 +137,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	@Test
 	public void fileContentFromSessionKeyAsInputStream() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileContentSessionKey("fileContent");
@@ -149,7 +147,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	@Test
 	public void fileStreamFromSessionKeyAsString() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
 		sender.setFileInputStreamSessionKey("fis");
@@ -160,7 +157,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	@Test
 	public void fileStreamFromSessionKeyAsByteArray() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", "some content here for test FileStream as byte array".getBytes());
 		sender.setFileInputStreamSessionKey("fis");
@@ -171,7 +167,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	@Test
 	public void fileStreamFromSessionKeyAsInputStream() throws Exception {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileInputStreamSessionKey("fis");
@@ -184,7 +179,6 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		exception.expect(SenderException.class);
 		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", 1);
 		sender.setFileInputStreamSessionKey("fis");
