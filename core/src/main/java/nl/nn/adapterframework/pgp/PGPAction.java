@@ -15,19 +15,20 @@
 */
 package nl.nn.adapterframework.pgp;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+
+import org.apache.commons.io.IOUtils;
+import org.bouncycastle.openpgp.PGPException;
+
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallback;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallbacks;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.commons.io.IOUtils;
-import org.bouncycastle.openpgp.PGPException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
 
 /**
  * This is an abstraction of general pgp actions
@@ -94,10 +95,10 @@ public abstract class PGPAction {
 	 * Runs the given action (which may be any extensions of this abstract class).
 	 *
 	 * @param inputStream Input for the action.
-	 * @return OutputStream that contains the encrypted/plaintext based on the action.
+	 * @param outputStream to which the encrypted/plaintext based on the action is written to.
 	 * @throws Exception Any exception that can be thrown during the action.
 	 */
-	public abstract OutputStream run(InputStream inputStream) throws Exception;
+	public abstract void run(InputStream inputStream, OutputStream outputStream) throws Exception;
 
 	/**
 	 * Verifies that given parameters are not null.

@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.pgp;
 
-import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import org.bouncycastle.util.io.Streams;
-
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.bouncycastle.util.io.Streams;
+
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class Decrypt extends PGPAction{
 
@@ -32,17 +32,15 @@ public class Decrypt extends PGPAction{
 	}
 
 	@Override
-	public OutputStream run(InputStream inputStream) throws Exception {
-		OutputStream output = new ByteArrayOutputStream();
+	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
 		InputStream decryptionStream = BouncyGPG
 				.decryptAndVerifyStream()
 				.withConfig(keyringConfig)
 				.andIgnoreSignatures()
 				.fromEncryptedInputStream(inputStream);
 
-		Streams.pipeAll(decryptionStream, output);
+		Streams.pipeAll(decryptionStream, outputStream);
 		inputStream.close();
-		return output;
 	}
 
 }

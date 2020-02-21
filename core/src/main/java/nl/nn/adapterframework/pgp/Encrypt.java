@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.pgp;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.bouncycastle.util.io.Streams;
+
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import org.bouncycastle.util.io.Streams;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class Encrypt extends PGPAction {
 	private String[] recipients;
@@ -37,8 +37,7 @@ public class Encrypt extends PGPAction {
 	}
 
 	@Override
-	public OutputStream run(InputStream inputStream) throws Exception {
-		OutputStream output = new ByteArrayOutputStream();
+	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
 		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite =  BouncyGPG
 				.encryptToStream()
 				.withConfig(keyringConfig)
@@ -50,11 +49,10 @@ public class Encrypt extends PGPAction {
 		else
 			signWith = algorithmSuite.toRecipients(recipients);
 
-		OutputStream outputStream = signWith.andDoNotSign().armorAsciiOutput().andWriteTo(output);
-		Streams.pipeAll(inputStream, outputStream);
-		outputStream.close();
-
-		return output;
+		try (OutputStream output = signWith.andDoNotSign().armorAsciiOutput().andWriteTo(outputStream)) {
+			Streams.pipeAll(inputStream, output);
+		}
+		inputStream.close();
 	}
 
 }

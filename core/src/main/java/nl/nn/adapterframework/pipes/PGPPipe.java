@@ -15,17 +15,22 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.ByteArrayOutputStream;
+import java.security.Security;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.pgp.*;
+import nl.nn.adapterframework.pgp.Decrypt;
+import nl.nn.adapterframework.pgp.Encrypt;
+import nl.nn.adapterframework.pgp.PGPAction;
+import nl.nn.adapterframework.pgp.Sign;
+import nl.nn.adapterframework.pgp.Verify;
 import nl.nn.adapterframework.stream.Message;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import java.io.OutputStream;
-import java.security.Security;
 
 /**
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
@@ -148,9 +153,10 @@ public class PGPPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		Message message = new Message(input);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			OutputStream outputStream = pgpAction.run(message.asInputStream());
-			return new PipeRunResult(findForward("success"), outputStream);
+			pgpAction.run(message.asInputStream(), baos);
+			return new PipeRunResult(findForward("success"), baos.toByteArray());
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 		}

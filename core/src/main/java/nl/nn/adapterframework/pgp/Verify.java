@@ -35,8 +35,7 @@ public class Verify extends PGPAction {
 	}
 
 	@Override
-	public OutputStream run(InputStream inputStream) throws Exception {
-		OutputStream output = new ByteArrayOutputStream();
+	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
 		BuildDecryptionInputStreamAPI.ValidationWithKeySelectionStrategy validation = BouncyGPG
 				.decryptAndVerifyStream()
 				.withConfig(keyringConfig);
@@ -52,9 +51,8 @@ public class Verify extends PGPAction {
 					.fromEncryptedInputStream(inputStream);
 		}
 
-		Streams.pipeAll(decryptionStream, output);
+		Streams.pipeAll(decryptionStream, outputStream);
 		inputStream.close();
-		return output;
 	}
 
 }

@@ -35,8 +35,7 @@ public class Sign extends PGPAction {
 	}
 
 	@Override
-	public OutputStream run(InputStream inputStream) throws Exception {
-		OutputStream output = new ByteArrayOutputStream();
+	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
 		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite =  BouncyGPG
 				.encryptToStream()
 				.withConfig(keyringConfig)
@@ -48,11 +47,10 @@ public class Sign extends PGPAction {
 		else
 			signWith = algorithmSuite.toRecipients(recipients);
 
-		OutputStream outputStream = signWith.andSignWith(sender).armorAsciiOutput().andWriteTo(output);
-		Streams.pipeAll(inputStream, outputStream);
-		outputStream.close();
-
-		return output;
+		try (OutputStream output = signWith.andSignWith(sender).armorAsciiOutput().andWriteTo(outputStream)) {
+			Streams.pipeAll(inputStream, output);
+		}
+		inputStream.close();
 	}
 
 }
