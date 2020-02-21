@@ -245,14 +245,14 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.asString().trim());
 	}
 
-	public void fileSystemSenderMoveActionTest(String folder1, String folder2) throws Exception {
+	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folder2!=null) {
+		if (folderExists && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -264,6 +264,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setName("destination");
 		p.setValue(folder2);
 		fileSystemSender.addParameter(p);
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -285,7 +288,16 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolder() throws Exception {
-		fileSystemSenderMoveActionTest(null,"folder");
+		fileSystemSenderMoveActionTest(null,"folder",true,false);
+	}
+	@Test
+	public void fileSystemSenderMoveActionTestRootToFolderCreateFolder() throws Exception {
+		fileSystemSenderMoveActionTest(null,"folder",false,true);
+	}
+	@Test
+	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		fileSystemSenderMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
 //	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {

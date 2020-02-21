@@ -14,15 +14,15 @@
                 <div class="ibox-content">
                     <form role="form">
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Select a JMS realm</label>
+                            <label class="col-sm-3 control-label">Datasource</label>
                             <div class="col-sm-9">
-                                <select class="form-control m-b" name="realm" ng-model="form.realm">
-                                    <option ng-repeat="realm in jmsRealms">{{realm}}</option>
+                                <select class="form-control m-b" name="datasource" ng-model="form.datasource">
+                                    <option ng-repeat="datasource in datasources">{{datasource}}</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Select a result type</label>
+                            <label class="col-sm-3 control-label">Result format</label>
                             <div class="col-sm-9">
                                 <select class="form-control m-b" name="resultType" ng-model="form.resultType">
                                     <option ng-repeat="resultType in resultTypes" selected="{{$first ? 'selected' : ''}}">{{resultType}}</option>
@@ -39,7 +39,7 @@
                             <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
                         </div>
                         <div class="col-sm-9 m-t-md">
-                            <button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+                            <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
                         </div>
                     </form>
                 </div>

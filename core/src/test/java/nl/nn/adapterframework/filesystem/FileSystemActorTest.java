@@ -119,6 +119,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExistButAllowCreate() throws Exception {
+		actor.setAction("list");
+		actor.setCreateFolder(true);
+		actor.setInputFolder("xxx");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+	}
+
+
+	@Test
 	public void fileSystemActorListActionTestForFolderExistenceWithExistingFolder() throws Exception {
 		_createFolder("folder");
 		actor.setAction("list");
@@ -607,14 +617,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 	}
 	
-	public void fileSystemActorMoveActionTest(String folder1, String folder2) throws Exception {
+	public void fileSystemActorMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folder2!=null) {
+		if (folderExists && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -627,6 +637,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setName("destination");
 		p.setValue(folder2);
 		params.add(p);
+		if (setCreateFolderAttribute) {
+			actor.setCreateFolder(true);
+		}
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -649,7 +662,20 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolder() throws Exception {
-		fileSystemActorMoveActionTest(null,"folder");
+		fileSystemActorMoveActionTest(null,"folder",true,false);
+	}
+	@Test
+	public void fileSystemActorMoveActionTestRootToFolderCreateFolder() throws Exception {
+		fileSystemActorMoveActionTest(null,"folder",false,true);
+	}
+	@Test
+	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		fileSystemActorMoveActionTest(null,"folder",false,false);
+	}
+	@Test
+	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreate() throws Exception {
+		fileSystemActorMoveActionTest(null,"folder",true,true);
 	}
 	
 //	@Test
@@ -735,8 +761,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
-	@Test
-	public void fileSystemActorRenameActionTest() throws Exception {
+	public void fileSystemActorRenameActionTest(boolean destinationExists) throws Exception {
 		String filename = "toberenamed" + FILE1;
 		String dest = "renamed" + FILE1;
 		
@@ -744,6 +769,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(null, filename, "is not empty");
 		}
 
+		if (destinationExists && !_fileExists(dest)) {
+			createFile(null, dest, "original of destination");
+		}
+		
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
@@ -773,4 +802,28 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertTrue("Expected file [" + dest + "] " + "to be present", actual);
 	}
 
+<<<<<<< HEAD
+=======
+	@Test
+	public void fileSystemActorRenameActionTest() throws Exception {
+		fileSystemActorRenameActionTest(false);
+	}
+
+//	@Test
+////	@Ignore("MockFileSystem.exists appears not to work properly")
+//	public void fileSystemActorRenameActionTestDestinationExists() throws Exception {
+//		thrown.expectMessage("destination exists");
+//		fileSystemActorRenameActionTest(true);
+//	}
+	
+	
+	
+	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		ParameterValueList pvl = prc.getValues(paramList);
+		return pvl;
+	}
+	
+	
+>>>>>>> refs/heads/master
 }

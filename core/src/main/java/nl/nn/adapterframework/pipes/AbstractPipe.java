@@ -256,7 +256,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public Map<String, PipeForward> getForwards(){
 		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
-		List<IPipe> pipes = getPipeLine().getPipes();
+		PipeLine pipeline = getPipeLine();
+		if (pipeline==null) {
+			return null;
+		}
+		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
 			if(forwards.containsKey(pipeName))

@@ -156,50 +156,38 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})
-	public void setInputFolder(String inputFolder) {
-		actor.setInputFolder(inputFolder);
-	}
-	
-	public String getInputFolder() {
-		return actor.getInputFolder();
-	}
-
-	@IbisDocRef({"3", FILESYSTEMACTOR})
-	public void setBase64(String base64) {
-		actor.setBase64(base64);
-	}
-	public String getBase64() {
-		return actor.getBase64();
-	}
-
-	@IbisDocRef({"4", FILESYSTEMACTOR})
-	public void setRotateDays(int rotateDays) {
-		actor.setRotateDays(rotateDays);
-	}
-	public int getRotateDays() {
-		return actor.getRotateDays();
-	}
-
-	@IbisDocRef({"5", FILESYSTEMACTOR})
-	public void setRotateSize(int rotateSize) {
-		actor.setRotateSize(rotateSize);
-	}
-	public int getRotateSize() {
-		return actor.getRotateSize();
-	}
-
-	@IbisDocRef({"6", FILESYSTEMACTOR})
-	public void setNumberOfBackups(int numberOfBackups) {
-		actor.setNumberOfBackups(numberOfBackups);
-	}
-
-	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	public String getFilename() {
-		return actor.getFilename();
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setInputFolder(String inputFolder) {
+		actor.setInputFolder(inputFolder);
+	}
+	
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setCreateFolder(boolean createFolder) {
+		actor.setCreateFolder(createFolder);
+	}
+
+	@IbisDocRef({"5", FILESYSTEMACTOR})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+
+	@IbisDocRef({"6", FILESYSTEMACTOR})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+
+	@IbisDocRef({"7", FILESYSTEMACTOR})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+
+	@IbisDocRef({"8", FILESYSTEMACTOR})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
 	}
 
 }

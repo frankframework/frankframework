@@ -1,7 +1,7 @@
 dist: trusty
 language: java
 jdk:
-  - openjdk7
+  - openjdk8
 
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile

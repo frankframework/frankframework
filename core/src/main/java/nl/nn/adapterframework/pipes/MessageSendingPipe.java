@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.ConfigurationAware;
-import nl.nn.adapterframework.senders.MailSenderOld;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -515,7 +514,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, correlationID, input, session);
-			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (wrapResult==null) {
+				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
+			}
+			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
 			} else {
 				input = wrapResult.getResult();
@@ -610,6 +612,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new PipeRunException(this, getLogPrefix(session)+"invalid reply message is received");
 				}
 
+				if (sendResult==null){
+					throw new PipeRunException(this, getLogPrefix(session)+"retrieved null result from sender");
+				}
+
 				if (sendResult.getPipeForward()!=null) {
 					forward = sendResult.getPipeForward();
 				}
@@ -618,7 +624,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
 					}
-					result = sendResult.getResult().toString();
+					result = sendResult.getResult()==null?null:sendResult.getResult().toString();
 				} else {
 					messageID = new Message(sendResult.getResult()).asString();
 					if (log.isInfoEnabled()) {
@@ -674,22 +680,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform((String)input,null);
 						}
 					}
-					if (sender instanceof MailSenderOld) {
-						String messageInMailSafeForm = (String)session.get(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
-					} else {
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
-					}
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
+
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;
 					StatisticsKeeper sk = getPipeLine().getPipeStatistics(messageLog);
 					sk.addValue(messageLogDuration);
 				}
 
-				if (sender instanceof MailSenderOld) {
-					session.remove(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-				}
-				
 				if (getListener() != null) {
 					result = listenerProcessor.getMessage(getListener(), correlationID, session);
 					} else {
@@ -775,7 +773,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, result, session);
-			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (wrapResult==null) {
+				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
+			}
+			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
 			} 
 			result = wrapResult.getResult().toString();
