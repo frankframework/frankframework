@@ -80,7 +80,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return new PipeRunResult(pipeForward, input);
 	}
 
-	@IbisDoc({"forward returned when 'true'</code>", "then"})
+	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
 	}

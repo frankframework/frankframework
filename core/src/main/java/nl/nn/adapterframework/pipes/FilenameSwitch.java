@@ -85,7 +85,7 @@ public class FilenameSwitch extends AbstractPipe {
 	}
 	
 	
-	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.</i>", ""})
+	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.", ""})
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}

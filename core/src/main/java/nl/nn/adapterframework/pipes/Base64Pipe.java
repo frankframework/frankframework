@@ -180,7 +180,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return lineSeparator;
 	}
 
-	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength <= 0, then the output will not be divided into lines", "auto"})
+	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength &lt;= 0, then the output will not be divided into lines", "auto"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}

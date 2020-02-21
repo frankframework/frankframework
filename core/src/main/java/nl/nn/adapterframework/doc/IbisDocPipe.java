@@ -32,6 +32,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import nl.nn.adapterframework.doc.objects.*;
+import nl.nn.adapterframework.util.*;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -54,10 +56,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Generate documentation and XSD for code completion of beautiful Ibis configurations in Eclipse
@@ -65,6 +63,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class IbisDocPipe extends FixedForwardPipe {
+	private static Logger log = LogUtil.getLogger(IbisDocPipe.class);
 	private static Set<String> excludeFilters = new TreeSet<String>();
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
@@ -73,8 +72,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CommandSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.EchoSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.FixedResultSender");
@@ -193,8 +194,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (clazz != null && clazz.isInterface()) {
 			Set<SpringBean> springBeans = getSpringBeans(clazz);
 			for (SpringBean springBean : springBeans) {
-				addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
-						springBean.getClazz(), ibisBeans);
+				if (clazz.isAssignableFrom(springBean.getClazz())) {
+					addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
+							springBean.getClazz(), ibisBeans);
+				}
 			}
 		}
 		groups.put(group, ibisBeans);
@@ -502,6 +505,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				classMethods = ibisBean.getClazz().getMethods();
 			} catch (NoClassDefFoundError e) {
 				//TODO Why is it trying to resolve (sub) interfaces?
+				log.warn("Cannot retrieve methods of [" + ibisBean.getName() + "] due to a NoClassDefFoundError");
 				return;
 			}
 			Arrays.sort(classMethods, new Comparator<Method>() {
@@ -631,6 +635,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 						beanHtml.append("<td>" + property + "</td>");
 					}
 					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+					if (ibisDocRef != null) {
+						AMethod aMethod = new AMethod(property);
+						if (ibisDoc ==  null) {
+							ibisDoc = aMethod.getIbisDocRef(ibisDocRef.value()[1], method);
+						}
+					}
 					if (ibisDoc != null) {
 						String[] ibisDocValues = ibisDoc.value();
 						if (beanComplexType != null) {

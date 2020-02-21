@@ -163,7 +163,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		this.timeZone = TimeZone.getTimeZone(timeZone);
 	}
 
-	@IbisDoc({"set to a time in millisecond to create a value that is different to the previous returned value by a putsystemdateinsession pipe in this virtual machine. the thread will sleep for the specified time before recalculating a new value. set the timezone to a value without daylight saving time (like gmt+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> when you're looking for a guid parameter for you xslt it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.parameter}</a>", "-1 (disabled)"})
+	@IbisDoc({"set to a time in millisecond to create a value that is different to the previous returned value by a putsystemdateinsession pipe in this virtual machine. the thread will sleep for the specified time before recalculating a new value. set the timezone to a value without daylight saving time (like gmt+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> when you're looking for a guid parameter for you xslt it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.parameter}", "-1 (disabled)"})
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}

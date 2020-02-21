@@ -1,6 +1,6 @@
 Date: DATE
-From: myself@address.org
-To: me@address.org
+From: "Me, Myself and I" <myself@address.org>
+To: dummy <me@address.org>
 Message-ID: MESSAGE-ID
 Subject: My Subject
 MIME-Version: 1.0
@@ -13,7 +13,7 @@ Content-Transfer-Encoding: 7bit
 
 My Message Goes Here
 --BOUNDARY
-Content-Type: text/plain; charset=us-ascii; name=test.txt
+Content-Type: abc/def; name=test.txt
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename=test.txt
 

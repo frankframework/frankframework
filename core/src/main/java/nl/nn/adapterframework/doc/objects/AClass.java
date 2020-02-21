@@ -48,8 +48,6 @@ public class AClass {
      * Get the superclasses of a certain class.
      *
      * @param referredClassName - The class we have to derive the superclasses from
-     * @return An ArrayList containing all the superclasses with priority given to
-     *         them
      */
     public void setSuperclasses(String referredClassName) {
         if (!referredClassName.isEmpty()) {
@@ -69,7 +67,6 @@ public class AClass {
      *
      * @param beanProperties - The properties of a class
      * @param newClass       - The class object we have to add the methods to
-     * @return the AClass with the added AMethods
      */
     public void setMethods(Map<String, Method> beanProperties, AClass newClass) {
         Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
