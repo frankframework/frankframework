@@ -237,7 +237,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
 					
-					String transformedMsg=msgTransformerPool.transform(message.asSource(),getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null);
+					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
+					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}

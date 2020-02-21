@@ -880,7 +880,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException, IOException {
 		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext (message, session, isNamespaceAware());
 			return ((IStreamingSender)sender).sendMessage(correlationID, message, session, next);
 		}
 		if (input!=null) {
