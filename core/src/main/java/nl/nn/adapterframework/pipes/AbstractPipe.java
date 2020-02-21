@@ -260,7 +260,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (pipeline==null) {
 			return null;
 		}
-		List<IPipe> pipes = getPipeLine().getPipes();
+		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
 			if(forwards.containsKey(pipeName))
