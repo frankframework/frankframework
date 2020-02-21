@@ -88,15 +88,15 @@ public class PgpPipeTest {
 			PipeRunResult encryptionResult = encryptPipe.doPipe(MESSAGE, session);
 
 			// Make sure it's PGP message
-			OutputStream mid = (OutputStream) encryptionResult.getResult();
-			assertMessage(mid.toString(), MESSAGE);
+			String mid = new String((byte[]) encryptionResult.getResult());
+			assertMessage(mid, MESSAGE);
 
 			// Decryption phase
 			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
-			OutputStream result = (OutputStream) decryptionResult.getResult();
+			byte[] result = (byte[]) decryptionResult.getResult();
 
 			// Assert decrypted message equals to the original message
-			Assert.assertEquals(MESSAGE, result.toString());
+			Assert.assertEquals(MESSAGE, new String(result));
 			Assert.assertEquals("success", expectation);
 		} catch (Exception e) {
 			if (checkExceptionClass(e, expectation)) {
