@@ -128,7 +128,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 				if (sc!=null) sc.mark("out");
 				if (message.asString().contains("error")) {
-					throw new SenderException("Exception triggered");
+					throw new SenderException("Exception triggered", e);
 				}
 				return super.sendMessage(correlationID, message, session);
 			}
