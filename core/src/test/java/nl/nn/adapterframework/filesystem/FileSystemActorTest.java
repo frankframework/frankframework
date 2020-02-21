@@ -802,8 +802,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertTrue("Expected file [" + dest + "] " + "to be present", actual);
 	}
 
-<<<<<<< HEAD
-=======
 	@Test
 	public void fileSystemActorRenameActionTest() throws Exception {
 		fileSystemActorRenameActionTest(false);
@@ -825,5 +823,4 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	
 	
->>>>>>> refs/heads/master
 }
