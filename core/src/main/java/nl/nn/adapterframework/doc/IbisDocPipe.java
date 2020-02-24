@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import nl.nn.adapterframework.doc.doclet.getTheJson;
 import nl.nn.adapterframework.doc.objects.*;
 import nl.nn.adapterframework.util.*;
 import org.apache.log4j.Logger;
@@ -334,7 +335,9 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = new IbisDocExtractor().getJson();
+            getTheJson jsoon = new getTheJson();
+            result = jsoon.getJsoon();
+//			result = new IbisDocExtractor().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
