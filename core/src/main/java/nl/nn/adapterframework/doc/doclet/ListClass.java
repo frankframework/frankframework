@@ -75,10 +75,18 @@ public class ListClass {
                 // Get the value of the description and default value
                 Tag descriptionTag = methods[j].tags("description")[0];
                 Tag defaultTag = methods[j].tags("default")[0];
-
-                // Create a new method object and add that to the method array
-                Method method = new Method(methods[j].name(), descriptionTag.text(), defaultTag.text());
-                methoden.add(method);
+                
+                // Some javadoc doesnt have an order tag
+                if (methods[j].tags("order").length != 0) {
+                    Tag order = methods[j].tags("order")[0];
+                    Method method = new Method(methods[j].name(), Integer.parseInt(order.text()), descriptionTag.text(), defaultTag.text());
+                    methoden.add(method);
+                } else {
+                	
+                    // Create a new method object and add that to the method array
+                    Method method = new Method(methods[j].name(), -1, descriptionTag.text(), defaultTag.text());
+                    methoden.add(method);
+                }
             }
         }
         return methoden;

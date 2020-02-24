@@ -6,11 +6,13 @@ import org.json.JSONWriter;
 public class Method implements JsonFormat {
 
     private String name;
+    private int order;
     private String description;
     private String defaultValue;
 
-    public Method(String name, String description, String defaultValue) {
+    public Method(String name, int order, String description, String defaultValue) {
         this.name = name;
+        this.order = order;
         this.description = description;
         this.defaultValue = defaultValue;
     }
@@ -19,6 +21,7 @@ public class Method implements JsonFormat {
         writer.object();
 
         writer.key("name").value(name);
+        writer.key("order").value(order);
         writer.key("description").value(description);
         writer.key("defaultValue").value(defaultValue);
 
