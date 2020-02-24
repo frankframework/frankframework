@@ -592,6 +592,13 @@
 			<version>2.3.5</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>tools</artifactId>
+			<version>1.4.2</version>
+			<scope>system</scope>
+			<systemPath>${java.home}/../lib/tools.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -613,6 +620,34 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<doclet>ListClass</doclet>
+					<subpackages>nl.nn.adapterframework</subpackages>
+					<sourcepath>./src/main/java</sourcepath>
+					<show>private</show>
+					<tags>
+						<tag>
+							<name>order</name>
+						</tag>
+						<tag>
+							<name>description</name>
+						</tag>
+						<tag>
+							<name>default</name>
+						</tag>
+						<tag>
+							<name>reference</name>
+						</tag>
+						<tag>
+							<name>domain</name>
+						</tag>
+					</tags>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

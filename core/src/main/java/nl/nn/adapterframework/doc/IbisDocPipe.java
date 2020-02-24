@@ -739,6 +739,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
+	/**
+	 * @description true or false
+	 * @default false
+	 * @return okay
+	 */
 	private static String getUglifyLookup() {
 		StringBuffer result = new StringBuffer();
 		result.append("<Elements>\n");
