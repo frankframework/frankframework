@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+<Configuration>
 	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{1} %m%n"/>
-		</layout>
+		<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{1} %m%n"/>
 	</appender>
 	<appender name="file" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}.log"/>
 		<param name="MaxBackupIndex" value="${log.maxBackupIndex}"/>
 		<param name="MaxFileSize" value="${log.maxFileSize}"/>
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n"/>
-		</layout>
+		<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n %replace{%msg}{${log.hideRegex}}{***} $.-${log.lengthLogRecords}c"/>
 		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
 			<param name="AcceptOnMatch" value="false"/>
 			<param name="Regex" value="${log.thread.rejectRegex}"/>
@@ -33,34 +28,26 @@
 		<param name="File" value="${log.dir}/${instance.name.lc}-galm.log"/>
 		<param name="MaxBackupIndex" value="5"/>
 		<param name="MaxFileSize" value="100KB"/>
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%m%n"/>
-		</layout>
+		<PatternLayout pattern="%m%n"/>
 	</appender>
 	<appender name="msg" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-messages.log"/>
 		<param name="MaxBackupIndex" value="${log.msg.maxBackupIndex}"/>
 		<param name="MaxFileSize" value="${log.maxFileSize}"/>
 		<param name="Append" value="true"/>
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
-		</layout>
+		<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 	</appender>
 	<appender name="security" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-security.log"/>
 		<param name="MaxBackupIndex" value="${log.maxBackupIndex}"/>
 		<param name="MaxFileSize" value="${log.maxFileSize}"/>
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
-		</layout>
+		<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 	</appender>
 	<appender name="heartbeat" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-heartbeat.log"/>
 		<param name="MaxBackupIndex" value="${log.maxBackupIndex}"/>
 		<param name="MaxFileSize" value="${log.maxFileSize}"/>
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n"/>
-		</layout>
+		<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n"/>
 	</appender>
 	<appender name="appwrap" class="nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper">
 		<param name="maxMessageLength" value="${log.lengthLogRecords}"/>
@@ -114,4 +101,4 @@
 		<level value="${log.level}"/>
 		<appender-ref ref="appwrap"/>
 	</root>
-</log4j:configuration>
+</Configuration>
