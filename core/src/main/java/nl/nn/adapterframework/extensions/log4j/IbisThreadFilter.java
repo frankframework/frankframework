@@ -15,39 +15,46 @@
  */
 package nl.nn.adapterframework.extensions.log4j;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.varia.StringMatchFilter;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
 
 /**
  * Extension of StringMatchFilter with the facility of executing a regular
  * expression on the name of the current thread.
  * 
  * @author Peter Leeuwenburgh
+ * @author Murat Kaan Meral
  */
-
-public class IbisThreadFilter extends StringMatchFilter {
+@Plugin(name = "IbisThreadFilter", category = "Core", elementType = "filter", printObject = true)
+public class IbisThreadFilter extends AbstractFilter {
 	protected String regex;
-	protected Level levelMin=Level.WARN;
+	protected Level level;
+
+	private IbisThreadFilter(Level level, String regex, Result onMatch, Result onMismatch) {
+		super(onMatch, onMismatch);
+		this.level = level;
+		this.regex = regex;
+	}
 	
-	public int decide(LoggingEvent event) {
-		if (levelMin == null || event.getLevel().isGreaterOrEqual(levelMin))
-			return Filter.NEUTRAL;
+	@Override
+	public Filter.Result filter(LogEvent event) {
+		if (level == null || event.getLevel().isLessSpecificThan(level))
+			return getOnMismatch();
 
 		String tn = event.getThreadName();
 
 		if (tn == null || regex == null)
-			return Filter.NEUTRAL;
+			return getOnMismatch();
 
 		if (tn.matches(regex)) {
-			if (getAcceptOnMatch()) {
-				return Filter.ACCEPT;
-			} else {
-				return Filter.DENY;
-			}
+			return getOnMatch();
 		} else {
-			return Filter.NEUTRAL;
+			return getOnMismatch();
 		}
 	}
 
@@ -55,7 +62,15 @@ public class IbisThreadFilter extends StringMatchFilter {
 		this.regex = regex;
 	}
 
-	public void setLevelMin(Level levelMin) {
-		this.levelMin = levelMin;
+	public void setlevel(Level level) {
+		this.level = level;
+	}
+
+	@PluginFactory
+	public static IbisThreadFilter createFilter(@PluginAttribute(value = "regex") String regex,
+												@PluginAttribute(value = "level", defaultString = "WARN") Level level,
+												@PluginAttribute(value = "onMatch", defaultString = "NEUTRAL") Result onMatch,
+												@PluginAttribute(value = "onMismatch", defaultString = "DENY") Result onMismatch) {
+		return new IbisThreadFilter(level, regex, onMatch, onMismatch);
 	}
 }
