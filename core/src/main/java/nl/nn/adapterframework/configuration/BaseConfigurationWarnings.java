@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import org.apache.logging.log4j.Logger;
+
 import java.util.LinkedList;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 
 /**
  * Base class for the configuration warnings.

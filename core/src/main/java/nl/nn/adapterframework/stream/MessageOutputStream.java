@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.INamedObject;

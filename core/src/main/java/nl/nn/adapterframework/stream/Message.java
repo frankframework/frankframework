@@ -27,7 +27,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.util.LogUtil;

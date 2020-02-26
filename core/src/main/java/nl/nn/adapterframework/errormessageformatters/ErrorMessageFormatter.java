@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *

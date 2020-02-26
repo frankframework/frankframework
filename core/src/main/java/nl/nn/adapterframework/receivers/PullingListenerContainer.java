@@ -27,8 +27,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.SchedulingAwareRunnable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -146,7 +146,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
 			receiver.stopRunning();
 			receiver.closeAllResources();
-			NDC.remove();
+			ThreadContext.removeStack();
 		}
 	}
     
@@ -245,7 +245,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 						receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
 					}
 				}
-				NDC.remove();
+				ThreadContext.removeStack();
 			}
 		}
     }

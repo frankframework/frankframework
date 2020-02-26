@@ -23,16 +23,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
@@ -70,7 +68,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 			String ctName = Thread.currentThread().getName();
 			try {
 				Thread.currentThread().setName(threadName+"["+ctName+"]");
-				NDC.push(threadNDC);
+				ThreadContext.push(threadNDC);
 				return doPipeWithTimeoutGuarded(input, session);
 			} finally {
 				Thread.currentThread().setName(ctName);
@@ -99,7 +97,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		DoPipe doPipe = new DoPipe(input, session, Thread.currentThread().getName(), NDC.peek());
+		DoPipe doPipe = new DoPipe(input, session, Thread.currentThread().getName(), ThreadContext.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future future = service.submit(doPipe);
 		String result = null;

@@ -26,7 +26,6 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -80,6 +79,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or

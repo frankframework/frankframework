@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import javax.xml.transform.Source;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;

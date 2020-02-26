@@ -17,6 +17,9 @@ package nl.nn.adapterframework.cmdline;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Starts up a configuration in a plain JVM.
  * 
@@ -27,7 +30,14 @@ import nl.nn.adapterframework.configuration.IbisContext;
 public class StartIbis {
 
 	public static void main(String[] args) {
-		IbisContext ibisContext = new IbisContext();
-		ibisContext.init();
+//		IbisContext ibisContext = new IbisContext();
+//		ibisContext.init();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("This works with StringBuffers");
+		Pattern p = Pattern.compile("\\Buffer\\B");
+		Matcher m = p.matcher(sb);
+		System.out.println(m.replaceAll("uilder"));
+		System.out.println(sb.toString());
 	}
 }

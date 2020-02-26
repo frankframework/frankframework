@@ -28,7 +28,7 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}

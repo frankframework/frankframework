@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 /**
  * Singleton class that knows about the ServiceListeners that are active.
  * <br/>

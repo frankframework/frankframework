@@ -29,7 +29,7 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 
 /**

@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 import nl.nn.adapterframework.doc.objects.*;
 import nl.nn.adapterframework.util.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;

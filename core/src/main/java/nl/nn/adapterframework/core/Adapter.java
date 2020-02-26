@@ -49,8 +49,8 @@ import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
 /**
@@ -606,13 +606,13 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		incNumOfMessagesInProcess(startTime);
-		String lastNDC=NDC.peek();
+		String lastNDC= ThreadContext.peek();
 		String newNDC="cid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
 			if (ndcChanged) {
-				NDC.push(newNDC);
+				ThreadContext.push(newNDC);
 			}
 
 			if (StringUtils.isNotEmpty(composedHideRegex)) {
@@ -698,10 +698,10 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			LogUtil.removeThreadHideRegex();
 			if (ndcChanged) {
-				NDC.pop();
+				ThreadContext.pop();
 			}
-			if (NDC.getDepth() == 0) {
-				NDC.remove();
+			if (ThreadContext.getDepth() == 0) {
+				ThreadContext.removeStack();
 			}
 		}
 	}

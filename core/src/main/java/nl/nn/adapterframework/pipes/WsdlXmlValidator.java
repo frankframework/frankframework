@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;

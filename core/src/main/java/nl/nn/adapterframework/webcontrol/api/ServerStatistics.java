@@ -39,9 +39,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -52,7 +55,6 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -266,6 +268,7 @@ public class ServerStatistics extends Base {
 		else {
 			logSettings.put("maxMessageLength", -1);
 		}
+		LoggerContext context = (LoggerContext) LogManager.getContext();
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
@@ -294,10 +297,10 @@ public class ServerStatistics extends Base {
 		Logger rootLogger = LogUtil.getRootLogger();
 
 		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-		}
+//		IbisAppenderWrapper iaw = null;
+//		if (appender!=null && appender instanceof IbisAppenderWrapper) {
+//			iaw = (IbisAppenderWrapper) appender;
+//		}
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -317,7 +320,7 @@ public class ServerStatistics extends Base {
 		}
 
 		if(loglevel != null && rootLogger.getLevel() != loglevel) {
-			rootLogger.setLevel(loglevel);
+			Configurator.setLevel(rootLogger.getName(), loglevel);
 			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
 		}
 

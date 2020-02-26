@@ -23,7 +23,7 @@ import java.sql.Types;
 
 import nl.nn.adapterframework.core.SenderException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.

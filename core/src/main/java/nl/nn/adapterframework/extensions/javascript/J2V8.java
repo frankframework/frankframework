@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.javascript;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.eclipsesource.v8.JavaCallback;
 import com.eclipsesource.v8.V8;

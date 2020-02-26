@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to support run-state management.

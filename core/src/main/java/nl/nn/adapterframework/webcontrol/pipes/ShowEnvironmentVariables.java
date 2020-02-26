@@ -23,15 +23,13 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -39,6 +37,8 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.config.Configurator;
 
 /**
  * Shows the environment variables.
@@ -92,7 +92,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		}
 		AppConstants.getInstance().setProperty("log.logIntermediaryResults",
 				Boolean.toString(formLogIntermediaryResults));
-		LogUtil.getRootLogger().setLevel(Level.toLevel(formLogLevel));
+		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.toLevel(formLogLevel));
 
 		return retrieveFormInput(session, true);
 	}

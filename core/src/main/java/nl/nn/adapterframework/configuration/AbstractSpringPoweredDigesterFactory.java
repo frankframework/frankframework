@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;

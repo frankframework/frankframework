@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is

@@ -52,7 +52,7 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;

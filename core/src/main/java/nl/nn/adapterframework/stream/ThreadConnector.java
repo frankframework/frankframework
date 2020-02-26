@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
 

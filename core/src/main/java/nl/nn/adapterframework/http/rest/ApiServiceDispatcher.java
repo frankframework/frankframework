@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.

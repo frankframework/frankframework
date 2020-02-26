@@ -17,7 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.

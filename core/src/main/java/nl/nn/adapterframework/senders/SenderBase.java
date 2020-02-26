@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.ClassUtils;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * Singleton class that has the configuration warnings for this application.
