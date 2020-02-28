@@ -151,6 +151,7 @@
 								</xsl:element>
 							</xsl:element>
 							<xsl:choose>
+								<!-- from a security point of view, error details are not returned in the ACC and PRD environment -->
 								<xsl:when test="string-length($errorRootTag)&gt;0 and $rootTag='errorMessage' and not($environment='ACC' or $environment='PRD')">
 									<xsl:element name="DetailList" namespace="{$ns}">
 										<xsl:element name="Detail" namespace="{$ns}">
