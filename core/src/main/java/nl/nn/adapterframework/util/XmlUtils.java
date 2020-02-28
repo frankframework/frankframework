@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -100,10 +99,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
-import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
 
@@ -115,7 +114,6 @@ import nl.nn.adapterframework.xml.SaxException;
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
-	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XSLT=true;
 	public static final int DEFAULT_XSLT_VERSION = 2;
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -513,7 +511,7 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
-		parseXml(handler,new Variant(source).asXmlInputSource());
+		parseXml(handler,new Message(source).asInputSource());
 	}
 
 	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
@@ -546,10 +544,6 @@ public class XmlUtils {
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 		if (!resolveExternalEntities) {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
-		}
-
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-			return new NamespaceRemovingFilter(xmlReader);
 		}
 		return xmlReader;
 	}
@@ -664,7 +658,7 @@ public class XmlUtils {
 		Document output;
 
 		try {
-			in = new InputStreamReader(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
+			in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}

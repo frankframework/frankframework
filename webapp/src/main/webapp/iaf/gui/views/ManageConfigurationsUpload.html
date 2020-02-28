@@ -15,15 +15,15 @@
 					<div class="pull-right">
 						<button ui-sref="pages.manage_configurations" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
 					</div>
-					<h4>Uploads Configuration</h4>
+					<h4>Upload Configuration</h4>
 				</div>
 				<div class="ibox-content">
 					<form role="form">
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Select a JMS realm</label>
+							<label class="col-sm-3 control-label">Datasource</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="realm" ng-model="form.realm">
-									<option ng-repeat="realm in jmsRealms" selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
+								<select class="form-control m-b" name="datasource" ng-model="form.datasource">
+									<option ng-repeat="datasource in datasources">{{datasource}}</option>
 								</select>
 							</div>
 						</div>

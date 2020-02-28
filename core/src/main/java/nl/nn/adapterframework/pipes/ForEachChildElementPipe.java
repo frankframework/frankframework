@@ -306,7 +306,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
-			src = new Message(input).asInputSource();
+			try {
+				src = new Message(input).asInputSource();
+			} catch (IOException e) {
+				throw new SenderException("could not get InputSource",e);
+			}
 		}
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;
@@ -359,10 +363,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw itemHandler.getTimeOutException();
 			}
 			if (!itemHandler.isStopRequested()) {
+				// Xalan rethrows any caught exception with the message, but without the cause.
+				// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+				rethrowTransformerException(transformerErrorListener, errorMessage);
 				throw new SenderException(errorMessage,e);
 			}
 		}
+		rethrowTransformerException(transformerErrorListener, errorMessage);
+	}
 		
+	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
 		if (transformerErrorListener!=null) {
 			TransformerException tex = transformerErrorListener.getFatalTransformerException();
 			if (tex!=null) {

@@ -32,6 +32,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -65,8 +66,10 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			response = doGet(host, (HttpGet) request, context);
 		else if(request instanceof HttpPost)
 			response = doPost(host, (HttpPost) request, context);
+		else if(request instanceof HttpPut)
+			response = doPut(host, (HttpPut) request, context);
 		else
-			throw new Exception("method not yet implemented");
+			throw new Exception("mock method not implemented");
 
 		return buildResponse(response);
 	}
@@ -95,6 +98,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		for (Header header : headers) {
 			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
 		}
+
 		HttpEntity entity = request.getEntity();
 		if(entity instanceof MultipartEntity) {
 			MultipartEntity multipartEntity = (MultipartEntity) entity;
@@ -109,12 +113,37 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String content = new String(baos.toByteArray());
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
-		}
-		else {
+		} else {
+			Header contentTypeHeader = request.getEntity().getContentType();
+			if(contentTypeHeader != null) {
+				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+			}
+
 			response.append(lineSeparator);
 			response.append(EntityUtils.toString(entity));
 		}
 
+		return new ByteArrayInputStream(response.toString().getBytes());
+	}
+
+	public InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
+		assertEquals("PUT", request.getMethod());
+		StringBuilder response = new StringBuilder();
+		String lineSeparator = System.getProperty("line.separator");
+		response.append(request.toString() + lineSeparator);
+
+		Header[] headers = request.getAllHeaders();
+		for (Header header : headers) {
+			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
+		}
+
+		Header contentTypeHeader = request.getEntity().getContentType();
+		if(contentTypeHeader != null) {
+			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+		}
+
+		response.append(lineSeparator);
+		response.append(EntityUtils.toString(request.getEntity()));
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 

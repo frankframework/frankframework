@@ -125,27 +125,31 @@ public class RestListenerUtils {
 		return Integer.toOctalString(restPath.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
 
-	public static boolean restartShowConfigurationStatus(
-			ServletContext servletContext) {
+	public static boolean restartShowConfigurationStatus(ServletContext servletContext) {
 		// it's possible the adapter and/or receiver wasn't stopped completely
 		// yet, so it couldn't be restarted
-		int maxTries = 3;
-		while (maxTries-- > 0) {
-			try {
-				boolean restarted = doRestartShowConfigurationStatus(
-						servletContext);
-				if (restarted) {
-					return true;
+		try {
+			IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
+
+			int maxTries = 3;
+			while (maxTries-- > 0) {
+				try {
+					boolean restarted = doRestartShowConfigurationStatus(ibisContext);
+					if (restarted) {
+						return true;
+					}
+					Thread.sleep(1000);
+				} catch (InterruptedException ignore) {
 				}
-				Thread.sleep(1000);
-			} catch (InterruptedException ignore) {
 			}
+			return false;
+		} catch (IllegalStateException ignore) {
+			//The ibis failed to start up, abort straight away!
+			return false;
 		}
-		return false;
 	}
 
-	private static boolean doRestartShowConfigurationStatus(ServletContext servletContext) {
-		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
+	private static boolean doRestartShowConfigurationStatus(IbisContext ibisContext) {
 
 		IAdapter adapter = null;
 		IReceiver receiver = null;

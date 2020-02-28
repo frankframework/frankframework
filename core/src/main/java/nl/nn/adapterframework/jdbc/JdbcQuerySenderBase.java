@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -113,7 +113,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String columnsReturned=null;
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING; // TODO this should be set to null! Clobs are for character data, blobs for binary
+	// TODO blobCharset should set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
+	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
+	// In a later version of the framework it will be possible to return binary data from a sender.
+	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING; 
 	private boolean closeInputstreamOnExit=true;
 	private boolean closeOutputstreamOnExit=true;
 	private String blobBase64Direction=null;
@@ -474,7 +477,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
 				} else if (message instanceof InputStream) {
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						inputStream = new ReaderInputStream(new InputStreamReader((InputStream)message, getBlobCharset()));
+						inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
 					} else {
 						inputStream = (InputStream)message;
 					}
@@ -521,9 +524,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				} else if (message instanceof InputStream) {
 					InputStream inStream = (InputStream)message;
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						reader = new InputStreamReader(inStream,getStreamCharset());
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
 					} else {
-						reader = new InputStreamReader(inStream);
+						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
 					}
 				}
 				if (reader!=null) {
@@ -1093,7 +1096,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return blobBase64Direction;
 	}
 	
-	@IbisDoc({"24", "Charset used to read and write BLOBs", "utf-8"})
+	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
+				"If blobCharset and blobSessionKey are not set, blobs are base64 encoded after being read to accommodate for the fact that senders need to return a String", "UTF-8"})
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}

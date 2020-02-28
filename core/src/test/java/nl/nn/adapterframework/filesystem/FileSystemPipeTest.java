@@ -49,13 +49,13 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
-	public void fileSenderTestConfigure() throws Exception {
+	public void fileSystemPipeTestConfigure() throws Exception {
 		fileSystemPipe.setAction("list");
 		fileSystemPipe.configure();
 	}
 
 	@Test
-	public void fileSenderTestOpen() throws Exception {
+	public void fileSystemPipeTestOpen() throws Exception {
 		fileSystemPipe.setAction("list");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -233,14 +233,14 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
 	}
 
-	public void fileSystemPipeMoveActionTest(String folder1, String folder2) throws Exception {
+	public void fileSystemPipeMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folder2!=null) {
+		if (folderExists && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -252,6 +252,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		p.setName("destination");
 		p.setValue(folder2);
 		fileSystemPipe.addParameter(p);
+		if (setCreateFolderAttribute) {
+			fileSystemPipe.setCreateFolder(true);
+		}
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
@@ -272,7 +275,16 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolder() throws Exception {
-		fileSystemPipeMoveActionTest(null,"folder");
+		fileSystemPipeMoveActionTest(null,"folder",true,false);
+	}
+	@Test
+	public void fileSystemPipeMoveActionTestRootToFolderCreateFolder() throws Exception {
+		fileSystemPipeMoveActionTest(null,"folder",false,true);
+	}
+	@Test
+	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		fileSystemPipeMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
 //	public void fileSystemPipeMoveActionTestFolderToRoot() throws Exception {

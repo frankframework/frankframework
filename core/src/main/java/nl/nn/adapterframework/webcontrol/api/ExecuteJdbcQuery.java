@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,7 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 @Path("/")
 public final class ExecuteJdbcQuery extends Base {
 
-	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
+	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -57,11 +58,20 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response getJdbcInfo() throws ApiException {
 
 		Map<String, Object> result = new HashMap<String, Object>();
-
-		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size() == 0)
-			jmsRealms.add("no realms defined");
-		result.put("jmsRealms", jmsRealms);
+		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
+		
+		List<String> jmsRealms = realmFactory.getRegisteredDatasourceRealmNamesAsList();
+		List<String> datasources = new ArrayList<>();
+		if (jmsRealms.size() == 0) {
+			datasources.add("no datasources found in jmsRealms");
+		} else {
+			for (String jmsRealm:jmsRealms) {
+				JmsRealm realm =  realmFactory.getJmsRealm(jmsRealm);
+				datasources.add(realm.getDatasourceName());
+			}
+		}
+		
+		result.put("datasources", datasources);
 
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
@@ -78,12 +88,12 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
-		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
+		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
 		Object returnEntity = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasource")) {
+				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("resultType")) {
 				resultType = entry.getValue().toString().toLowerCase();
@@ -100,8 +110,8 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 		}
 
-		if(realm == null || resultType == null || query == null) {
-			throw new ApiException("Missing data, realm, resultType and query are expected.", 400);
+		if(datasource == null || resultType == null || query == null) {
+			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 
 		//We have all info we need, lets execute the query!
@@ -115,14 +125,14 @@ public final class ExecuteJdbcQuery extends Base {
 
 		try {
 			qs.setName("QuerySender");
-			qs.setJmsRealm(realm);
+			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
 			result = qs.sendMessage("dummy", query);
 			if (resultType.equalsIgnoreCase("csv")) {
-				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
+				URL url = ClassUtils.getResourceURL(getClassLoader(), DBXML2CSV_XSLT);
 				if (url!=null) {
 					Transformer t = XmlUtils.createTransformer(url);
 					result = XmlUtils.transformXml(t,result);
