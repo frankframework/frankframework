@@ -12,8 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-
-
+- Add possibility to put error details in ESB SOAP body response
 
 
 
