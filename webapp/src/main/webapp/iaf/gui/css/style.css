@@ -323,6 +323,7 @@ body.mini-navbar .navbar-default .nav > li > .nav-second-level li a {
   display: none;
   height: 60px;
   padding: 15px;
+  text-align: center;
 }
 .logo-element object {
   max-height: 100%;
