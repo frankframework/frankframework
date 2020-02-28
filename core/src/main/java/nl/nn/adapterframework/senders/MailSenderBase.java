@@ -233,6 +233,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				Element attachmentElement = (Element) iter.next();
 				String name = attachmentElement.getAttribute("name");
 				String mimeType = attachmentElement.getAttribute("type");
+				if (StringUtils.isNotEmpty(mimeType) && mimeType.indexOf("/")<0) {
+					throw new SenderException("mimeType ["+mimeType+"] of attachment ["+name+"] must contain a forward slash ('/')");
+				}
 				String sessionKey = attachmentElement.getAttribute("sessionKey");
 				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
 
@@ -306,6 +309,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
 		if (StringUtils.isEmpty(messageType)) {
 			messageType=getDefaultMessageType();
+		}
+		if (messageType.indexOf("/")<0) {
+			throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
 		}
 		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");

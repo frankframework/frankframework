@@ -48,13 +48,6 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Executes a query.
- * 
- * @since	7.0-B1
- * @author	Niels Meijer
- */
-
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
 
@@ -68,19 +61,19 @@ public final class ShowIbisstoreSummary extends Base {
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
 		String query = null;
-		String realm = null;
+		String datasource = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasource")) {
+				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
 			}
 		}
 
-		if(realm == null)
+		if(datasource == null)
 			return response.status(Response.Status.BAD_REQUEST).build();
 
 		String result = "";
@@ -90,7 +83,7 @@ public final class ShowIbisstoreSummary extends Base {
 			qs.setSlotmap(getSlotmap());
 			try {
 				qs.setName("QuerySender");
-				qs.setJmsRealm(realm);
+				qs.setDatasourceName(datasource);
 				qs.setQueryType("select");
 				qs.setBlobSmartGet(true);
 				qs.configure(true);

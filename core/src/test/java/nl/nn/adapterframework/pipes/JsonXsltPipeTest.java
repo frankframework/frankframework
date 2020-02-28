@@ -49,7 +49,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.start();
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
-		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
+		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		PipeRunResult prr = pipe.doPipe(input,session);
 		String xmlOut=(String)prr.getResult();
 		assertEquals(expectedXml,xmlOut);

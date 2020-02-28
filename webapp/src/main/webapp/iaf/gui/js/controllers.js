@@ -80,6 +80,7 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
+					$rootScope.$broadcast('appConstants');
 				}
 			});
 		}
@@ -395,7 +396,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.openOldGui = function() {
-		location.href = Misc.getServerPath();
+		location.href = Misc.getServerPath() + "rest/showConfigurationStatus";
 	};
 }])
 
@@ -848,15 +849,15 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('UploadConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0]};
 	});
 
 	$scope.form = {
-			realm:"",
+			datasource:"",
 			name:"",
 			version:"",
 			encoding:"",
@@ -890,10 +891,10 @@ angular.module('iaf.beheerconsole')
 		if($scope.file == null) return;
 
 		var fd = new FormData();
-		if($scope.form.realm && $scope.form.realm != "")
-			fd.append("realm", $scope.form.realm);
+		if($scope.form.datasource && $scope.form.datasource != "")
+			fd.append("datasource", $scope.form.datasource);
 		else 
-			fd.append("realm", $scope.jmsRealms[0]);
+			fd.append("datasource", $scope.datasources[0]);
 
 		fd.append("name", $scope.form.name);
 		fd.append("version", $scope.form.version);
@@ -907,7 +908,7 @@ angular.module('iaf.beheerconsole')
 			$scope.error = "";
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
-					realm: $scope.jmsRealms[0],
+					datasource: $scope.datasources[0],
 					name:"",
 					version:"",
 					encoding:"",
@@ -926,7 +927,7 @@ angular.module('iaf.beheerconsole')
 		$scope.result = "";
 		$scope.error = "";
 		$scope.form = {
-				realm: $scope.jmsRealms[0],
+				datasource: $scope.datasources[0],
 				name:"",
 				version:"",
 				encoding:"",
@@ -1605,17 +1606,17 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0]};
 	});
 
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};
 
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 
 		Api.Post("jdbc/summary", JSON.stringify(formData), function(data) {
 			$scope.error = "";
@@ -1730,30 +1731,34 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
+	$scope.processingMessage = false;
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.form = {datasource: data.datasources[0], resultType: data.resultTypes[0] };
 	});
 
 	$scope.submit = function(formData) {
+		$scope.processingMessage = true;
 		if(!formData || !formData.query) {
-			$scope.error = "Please specify a jms realm, resulttype and query!";
+			$scope.error = "Please specify a datasource, resulttype and query!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
 			$scope.result = returnData;
+			$scope.processingMessage = false;
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData.error) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.result = "";
+			$scope.processingMessage = false;
 		});
 	};
 
@@ -1764,20 +1769,20 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('BrowseJdbcTablesCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
-	$scope.jmsRealms = {};
+	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 
 	Api.Get("jdbc", function(data) {
-		$scope.jmsRealms = data.jmsRealms;
-		$scope.form = {realm: data.jmsRealms[0]};
+		$scope.datasources = data.datasources;
+		$scope.form = {datasource: data.datasources[0]};
 	});
 	$scope.submit = function(formData) {
 		if(!formData || !formData.table) {
-			$scope.error = "Please specify a jms realm and table name!";
+			$scope.error = "Please specify a datasource and table name!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		$scope.columnNames = [{

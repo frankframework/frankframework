@@ -146,7 +146,6 @@
 			</pipe>
 
 
-			<!-- blobsCompressed="false" is currently required for H2 database -->
 			<!-- 05 InsertBlobViaInputMessageNotCompressed -->
 			<pipe name="InsertBlobViaInputMessageNotCompressed" storeResultInSessionKey="blobKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" jmsRealm="jdbc"
@@ -200,6 +199,25 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<!-- 07 InsertBlobViaInputMessageReadAsIfcompressed -->
+			<pipe name="InsertBlobViaInputMessageReadAsIfcompressed" storeResultInSessionKey="blobKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" jmsRealm="jdbc"
+					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				</sender>
+			</pipe>
+			<pipe name="updateBlobViaInputMessageReadAsIfcompressed" getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc" blobsCompressed="false"> 
+					<param name="key" sessionKey="blobKey" />
+				</sender>
+			</pipe>
+			<pipe name="readBlobReadAsIfcompressed" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
+				scalar="true">
+					<param name="key" sessionKey="blobKey" />
+				</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 </ibis>

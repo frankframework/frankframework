@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.jaxws.EndpointImpl;
 
@@ -67,6 +68,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -101,16 +103,21 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		super.open();
 
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher");
-			endpoint = new EndpointImpl(BusFactory.getDefaultBus(), new MessageProvider(this, getMultipartXmlSessionKey()));
+			Bus cxfBus = BusFactory.getDefaultBus(false);
+			if(cxfBus == null) {
+				throw new ListenerException("unable to find SpringBus");
+			}
+			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
+			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
-			if(endpoint.isPublished())
-				log.debug("published listener ["+getName()+"] on CXF endpoint["+getAddress()+"] with SpringBus["+endpoint.getBus().getId()+"]");
-			else
-				log.error("unable to publish listener ["+getName()+"] on CXF endpoint["+getAddress()+"]");
+			if(endpoint.isPublished()) {
+				log.debug("published listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+			} else {
+				log.error("unable to publish listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+			}
 		}
 
 		//Can bind on multiple endpoints
@@ -176,6 +183,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		return "WebServiceListener ["+getName()+"] listening on ["+getPhysicalDestinationName()+"] ";
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if(StringUtils.isNotEmpty(getAddress())) {
 			return "address ["+getAddress()+"]";
@@ -210,7 +218,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		setApplicationFaultsAsExceptions(b);
 	}
 
-	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/<address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
+	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/</address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
 			if(address.startsWith("/"))
@@ -244,6 +252,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		return multipartXmlSessionKey;
 	}
 
+	@Override
 	public Object getSpecialDefaultValue(String attributeName,
 			Object defaultValue, Map<String, String> attributes) {
 		if ("address".equals(attributeName)) {

@@ -62,8 +62,8 @@ Upcoming
 - Bugfix autoReload new configuration on other nodes
 - Support XML-Schema 1.1 for XML validation
 - Detect character set of input streams by examining BOM
-- Accept XML 1.1 valid characters in XML 1.0 documents while STAX parsing, to solve illegal XML problems in ExchangeMailListener.
-- Improve MessageStoreListener by adding preSelect attribute without rowlock and XA
+- Accept XML 1.1 valid characters in XML 1.0 documents while STAX parsing, to solve illegal XML problems in 
+  ExchangeMailListener.
 
 
 ### Non backwards compatible changes
