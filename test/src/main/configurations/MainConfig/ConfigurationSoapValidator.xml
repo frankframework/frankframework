@@ -15,7 +15,7 @@
 		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true">
 			<forward name="failure" path="OutputValidatorFailure" />
 		</outputValidator>
-		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromSessionKey="xmlFailureReason" storeReplacedInputInSessionKey="replacedInput">
+		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" addEnvironmentParameter="true" getInputFromSessionKey="xmlFailureReason" storeReplacedInputInSessionKey="replacedInput">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6003" />
 			<param name="errorReason" value="Invalid Request" />
@@ -25,7 +25,7 @@
 			<param name="paradigm" value="Response" />
 			<forward name="success" path="EXIT" />
 		</pipe>
-		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response/&gt;">
+		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" addEnvironmentParameter="true" getInputFromFixedValue="&lt;HelloWorld_Response/&gt;">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6993" />
 			<param name="errorReason" value="Invalid Response" />

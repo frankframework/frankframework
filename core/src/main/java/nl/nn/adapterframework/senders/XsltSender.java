@@ -84,6 +84,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private boolean addEnvironmentParameter=false;
 	
 	private TransformerPool transformerPool;
 	
@@ -101,7 +102,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public void configure() throws ConfigurationException {
 		ParameterList parameterList = getParameterList();
-		if (parameterList == null || parameterList.findParameter(ENVIRONMENT) == null) {
+		if (isAddEnvironmentParameter() && (parameterList == null || parameterList.findParameter(ENVIRONMENT) == null)) {
 			Parameter p = new Parameter();
 			p.setName(ENVIRONMENT);
 			p.setValue(AppConstants.getInstance().getResolvedProperty("otap.stage"));
@@ -425,6 +426,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
+	}
+
+	@IbisDoc({"14", "when set <code>true</code> the parameter 'environment' is added", "false"})
+	public void setAddEnvironmentParameter(boolean b) {
+		addEnvironmentParameter = b;
+	}
+	public boolean isAddEnvironmentParameter() {
+		return addEnvironmentParameter;
 	}
 
 	@Override

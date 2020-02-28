@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -247,6 +248,11 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
+	}
+
+	@IbisDocRef({"16", XSLTSENDER})
+	public void setAddEnvironmentParameter(boolean b) {
+		sender.setAddEnvironmentParameter(b);
 	}
 
 	@Override
