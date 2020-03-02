@@ -164,7 +164,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 */
 	protected abstract String getQuery(Message message) throws SenderException;
 
-	protected final PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
+	protected final PreparedStatement getStatement(Connection con, QueryContext queryContext) throws JdbcException, SQLException {
 		return prepareQuery(con, queryContext);
 	}
 
@@ -198,7 +198,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
-	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String query) throws SQLException {
+	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+callQuery+"]");
@@ -210,7 +210,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryContext getQueryExecutionContext(Connection connection, String correlationID, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryContext getQueryExecutionContext(Connection connection, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(message);
 		if (isUseNamedParams()) {
@@ -218,7 +218,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-		PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+		PreparedStatement statement = getStatement(connection, queryContext);
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
 		queryContext.setStatement(statement);
 		statement.setQueryTimeout(getTimeout());
@@ -231,10 +231,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		QueryContext queryContext;
 		try {
-			queryContext = getQueryExecutionContext(connection, correlationID, message, session);
+			queryContext = getQueryExecutionContext(connection, message, session);
 		} catch (JdbcException|ParameterException|SQLException e) {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
@@ -273,7 +273,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("package".equalsIgnoreCase(queryContext.getQueryType())) {
 				return executePackageQuery(connection, statement, queryContext.getQuery());
 			}
-			return executeOtherQuery(connection, correlationID, statement, queryContext.getQuery(), message, session, queryContext.getParameterList());
+			return executeOtherQuery(connection, statement, queryContext.getQuery(), message, session, queryContext.getParameterList());
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -560,7 +560,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
@@ -569,7 +569,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		QueryContext queryContext;
 		try {
 			connection = getConnectionWithTimeout(getTimeout());
-			queryContext = getQueryExecutionContext(connection, correlationID, null, session);
+			queryContext = getQueryExecutionContext(connection, null, session);
 		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
 			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
@@ -723,12 +723,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String query, Message message, IPipeLineSession session, ParameterList parameterList) throws SenderException{
+	protected String executeOtherQuery(Connection connection, PreparedStatement statement, String query, Message message, IPipeLineSession session, ParameterList parameterList) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
-				CallableStatement cstmt = getCallWithRowIdReturned(connection, correlationID, query);
+				CallableStatement cstmt = getCallWithRowIdReturned(connection, query);
 				int ri = 1;
 				if (parameterList != null) {
 					ParameterValueList parameters = parameterList.getValues(message, session);

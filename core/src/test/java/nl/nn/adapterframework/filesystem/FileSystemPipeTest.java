@@ -188,8 +188,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		assertTrue(fileSystemPipe.canProvideOutputStream());
 
-		String correlationId="fakecorrelationid";
-		MessageOutputStream target = fileSystemPipe.provideOutputStream(correlationId, session, null);
+		MessageOutputStream target = fileSystemPipe.provideOutputStream(session, null);
 
 		// stream the contents
 		try (Writer writer = target.asWriter()) {

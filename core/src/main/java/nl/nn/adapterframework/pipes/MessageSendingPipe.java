@@ -481,7 +481,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 
 		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
 			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
@@ -495,7 +495,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (nextProvider == null) {
 				nextProvider = getStreamTarget();
 			}
-			MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, nextProvider);
+			MessageOutputStream result = streamingSender.provideOutputStream(session, nextProvider);
 			return result;
 			// TODO insert input wrapper
 			// TODO insert input validator
@@ -880,7 +880,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException, IOException {
 		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
-			return ((IStreamingSender)sender).sendMessage(correlationID, message, session, next);
+			return ((IStreamingSender)sender).sendMessage(message, session, next);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {

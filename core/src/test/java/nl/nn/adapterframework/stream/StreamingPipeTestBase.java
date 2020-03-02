@@ -45,7 +45,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		if (provideStreamForInput) {
 			CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
 			//Object result;
-			try (MessageOutputStream target = pipe.provideOutputStream(null, session, capProvider)) {
+			try (MessageOutputStream target = pipe.provideOutputStream(session, capProvider)) {
 		
 				try (Writer writer = target.asWriter()) {
 					writer.write((String)input); // TODO: proper conversion of non-string classes..
@@ -87,7 +87,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		}
 
 		@Override
-		public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 			return cap;
 		}
 		

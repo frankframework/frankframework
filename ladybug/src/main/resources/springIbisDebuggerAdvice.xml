@@ -91,17 +91,16 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-	 							String, 
 	 							nl.nn.adapterframework.stream.Message, 
 	 							nl.nn.adapterframework.core.IPipeLineSession, 
 	 							nl.nn.adapterframework.stream.IOutputStreamingSupport
 	 						)
 	 					)
 	 					and
-	 					args(correlationId, message, session, next)
+	 					args(message, session, next)
 	 					"
 	 				method="debugStreamingSenderInputOutputAbort"
-	 				arg-names="correlationId, message, session, next"
+	 				arg-names="message, session, next"
 	 			/>
 			<aop:around
 				pointcut=
@@ -109,14 +108,14 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 							String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport
+	 							nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport
 	 						)
 	 					)
 	 					and
-	 					args(correlationId, session, nextProvider)
+	 					args(session, nextProvider)
 	 					"
 				method="debugProvideOutputStream"
-				arg-names="correlationId, session, nextProvider"
+				arg-names="session, nextProvider"
 			/>
 			<aop:around
 				pointcut=

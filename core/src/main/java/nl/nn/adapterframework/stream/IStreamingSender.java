@@ -23,6 +23,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 
 public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
 
-	public PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
 
 }

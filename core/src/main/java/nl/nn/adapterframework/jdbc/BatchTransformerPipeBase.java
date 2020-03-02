@@ -99,7 +99,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		try {
 			connection = querySender.getConnection();
 			Message msg = new Message(input);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, session);
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, msg, session);
 			PreparedStatement statement=queryContext.getStatement();
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {

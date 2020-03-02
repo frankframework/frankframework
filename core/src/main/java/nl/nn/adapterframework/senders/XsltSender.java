@@ -172,16 +172,16 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, nextProvider);
 		if (target==null) {
 			target=new MessageOutputStreamCap(this, nextProvider);
 		}
-		ContentHandler handler = createHandler(correlationID, null, session, target);
-		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,correlationID);
+		ContentHandler handler = createHandler(null, session, target);
+		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,session);
 	}
 
-	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -263,7 +263,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -289,14 +289,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, null);
+			MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
 			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this, nextProvider)) {
-				ContentHandler handler = createHandler(correlationID, message, session, outputStream);
+				ContentHandler handler = createHandler(message, session, outputStream);
 				InputSource source = message.asInputSource();
 				XMLReader reader = getXmlReader(handler);
 				reader.parse(source);

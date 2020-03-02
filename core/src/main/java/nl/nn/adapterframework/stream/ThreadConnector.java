@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ThreadConnector {
@@ -27,14 +28,16 @@ public class ThreadConnector {
 	private Object threadInfo;
 	private String hideRegex;
 	
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex=LogUtil.getThreadHideRegex();
 	}
-
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+	}
 	
 	public Object startThread(Object input) {
 		Thread currentThread = Thread.currentThread();

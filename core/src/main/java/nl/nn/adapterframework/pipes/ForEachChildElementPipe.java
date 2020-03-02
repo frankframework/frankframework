@@ -328,7 +328,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			
 			if (getExtractElementsTp()!=null) {
 				if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
 				transformerFilter.setContentHandler(inputHandler);
 				inputHandler=transformerFilter;
 				ErrorListener errorListener = transformerFilter.getTransformer().getErrorListener();

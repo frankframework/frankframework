@@ -65,7 +65,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)session.get(getFileNameSessionKey());
@@ -77,7 +77,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = getQueryExecutionContext(connection, correlationID, message, session);
+			QueryContext queryContext = getQueryExecutionContext(connection, message, session);
 			PreparedStatement statement=queryContext.getStatement();
 			resultset = statement.executeQuery();
 			boolean eor = false;

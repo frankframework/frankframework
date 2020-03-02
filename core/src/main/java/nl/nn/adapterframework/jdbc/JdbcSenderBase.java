@@ -108,17 +108,17 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(correlationID, message, session, null);
+		PipeRunResult result = sendMessage(message, session, null);
 		return result==null?null:new Message(result.getResult());
 	}
 
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
 				c = getConnectionWithTimeout(getTimeout());
-				return new PipeRunResult(null,sendMessage(c, correlationID, message, session));
+				return new PipeRunResult(null,sendMessage(c, message, session));
 			} catch (JdbcException e) {
 				throw new SenderException(e);
 			} finally {
@@ -126,18 +126,18 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 					try {
 						c.close();
 					} catch (SQLException e) {
-						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
+						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 					}
 				}
 			}
 			
 		} 
 		synchronized (connection) {
-			return new PipeRunResult(null,sendMessage(connection, correlationID, message, session));
+			return new PipeRunResult(null,sendMessage(connection, message, session));
 		}
 	}
 
-	protected abstract String sendMessage(Connection connection, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
+	protected abstract String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
 
 	@Override
 	public String toString() {

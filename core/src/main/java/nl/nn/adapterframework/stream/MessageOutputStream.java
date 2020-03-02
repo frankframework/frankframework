@@ -29,6 +29,7 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.LogUtil;
@@ -64,10 +65,10 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
 		this(owner, nextStream, nextProvider);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
 	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response) {
@@ -80,8 +81,8 @@ public class MessageOutputStream implements AutoCloseable {
 		this.response=response;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
-		this(owner, handler, nextStream, nextProvider, threadLifeCycleEventListener, correlationID);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, handler, nextStream, nextProvider, threadLifeCycleEventListener, session);
 		this.response=response;
 	}
 

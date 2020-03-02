@@ -502,7 +502,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		assertTrue(actor.canProvideOutputStream());
 		
-		MessageOutputStream target = actor.provideOutputStream(null, session, null);
+		MessageOutputStream target = actor.provideOutputStream(session, null);
 
 		// stream the contents
 		try (Writer writer = target.asWriter()) {
