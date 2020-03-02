@@ -182,8 +182,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		//assertTrue(fileSystemSender.canProvideOutputStream());
 
-		String correlationId="fakecorrelationid";
-		MessageOutputStream target = fileSystemSender.provideOutputStream(correlationId, session, null);
+		MessageOutputStream target = fileSystemSender.provideOutputStream(session, null);
 		assertNotNull(target);
 
 		// stream the contents
