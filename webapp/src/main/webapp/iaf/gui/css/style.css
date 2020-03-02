@@ -36,8 +36,10 @@ h5 {
   margin-top: 5px;
   font-weight: 600;
 }
-.nav > li > a {
+.nav, .nav a {
   color: #a7b1c2;
+}
+.nav > li > a {
   font-weight: 600;
   padding: 14px 20px 14px 25px;
 }
@@ -48,7 +50,8 @@ h5 {
   color: #ffffff;
 }
 .navbar-default .nav > li > a:hover,
-.navbar-default .nav > li > a:focus {
+.navbar-default .nav > li > a:focus,
+.minimalize a {
   background-color: #293846;
   color: white;
 }
@@ -61,8 +64,10 @@ h5 {
 .nav.navbar-top-links > li > a:focus {
   background-color: transparent;
 }
-.nav > li > a i {
+.nav > li > a i, .scroll-to-top a i {
   margin-right: 6px;
+  width: 16px;
+  text-align: center;
 }
 .navbar {
   border: 0;
@@ -186,11 +191,33 @@ h5 {
 .nav-header .text-muted {
   color: #8095a8;
 }
-.minimalize-styl-2 {
-  padding: 4px 12px;
-  margin: 15px 5px 5px 20px;
+.minimalize {
+  padding: 2px 10px;
+  background-color: #293846;
+  border: 1px solid #293846;
   font-size: 14px;
   float: left;
+  left: 150px;
+  bottom: 20px;
+  margin: 0px 20px;
+  position: fixed;
+  border-radius: 3px;
+}
+.minimalize:active, .minimalize:focus, .minimalize:hover {
+  border: 1px solid #19aa8d;
+  color: white;
+}
+body.mini-navbar .minimalize {
+  left: 0;
+}
+.minimalize .right {
+  display: none;
+}
+body.mini-navbar .minimalize i.left {
+  display: none;
+}
+body.mini-navbar .minimalize i.right {
+  display: inline-block;
 }
 .nav.navbar-top-links a {
   font-size: 14px;
@@ -349,7 +376,7 @@ body.fixed-nav.fixed-nav-basic.body-small .navbar-fixed-top {
 body.fixed-nav.fixed-nav-basic.fixed-sidebar.mini-navbar.body-small .navbar-fixed-top {
   left: 220px;
 }
-.fixed-nav .minimalize-styl-2 {
+.fixed-nav .minimalize {
   margin: 14px 5px 5px 15px;
 }
 .body-small .navbar-fixed-top {
@@ -1205,17 +1232,15 @@ button.dim:active:before {
   z-index: 10000;
   bottom: 24px;
   cursor: pointer;
-  line-height: 26px;
+  font-size: 13px;
+}
+body.mini-navbar .scroll-to-top {
   font-size: 22px;
+  bottom: 56px;
 }
 .scroll-to-top a {
-  color: #a7b1c2;
   font-weight: 600;
-  padding: 14px 23px;
-}
-.scroll-to-top a i {
-  text-align: center;
-  width: 24px;
+  padding: 14px 0px 14px 25px;
 }
 
 /* CHOSEN PLUGIN */
