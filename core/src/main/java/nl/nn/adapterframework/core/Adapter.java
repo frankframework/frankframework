@@ -136,6 +136,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
 	private boolean recover = false;
 	private boolean replaceNullMessage = false;
+	private boolean msgLogHumanReadable = AppConstants.getInstance(configurationClassLoader).getBoolean("msg.log.humanReadable", false);
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -619,11 +620,10 @@ public class Adapter implements IAdapter, NamedBean {
 				LogUtil.setThreadHideRegex(composedHideRegex);
 			}
 
-			//if (isRequestReplyLogging()) {
 			StringBuilder additionalLogging = new StringBuilder();
 
 			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-			if(xPathLogKeys != null && xPathLogKeys != "") {
+			if(StringUtils.isNotEmpty(xPathLogKeys)) {
 				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
 				while (tokenizer.hasMoreTokens()) {
 					String logName = tokenizer.nextToken();
@@ -633,7 +633,8 @@ public class Adapter implements IAdapter, NamedBean {
 					additionalLogging.append(" [" + xPathResult + "]");
 				}
 			}
-			
+
+			//TODO refactor this madness
 			String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
@@ -645,21 +646,28 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			if (log.isDebugEnabled()) { 
 				log.debug(logMsg);
-			} else {
-				logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
-				log.info(logMsg);
+			} else if(log.isInfoEnabled()) {
+				log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging);
 			}
 
 			if (message == null && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = "";
 			}
-			result = pipeline.process(messageId, message,pipeLineSession);
-			String durationString = Misc.getAge(startTime);
-			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			result = pipeline.process(messageId, message, pipeLineSession);
+
+			String duration;
+			if(msgLogHumanReadable) {
+				duration = Misc.getAge(startTime);
+			} else {
+				duration = Misc.getDurationInMs(startTime);
+			}
+
+			//TODO refactor this madness
+			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.toString()) + "] from PipeLine");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.toString()) + "] from PipeLine");
 				} else {
 					msgLog.info(logMsg);
 				}
@@ -667,8 +675,9 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) {
 				log.debug(logMsg);
 			}
+
 			return result;
-	
+
 		} catch (Throwable t) {
 			ListenerException e;
 			if (t instanceof ListenerException) {
