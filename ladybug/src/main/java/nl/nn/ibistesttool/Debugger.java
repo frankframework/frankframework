@@ -32,6 +32,8 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -41,7 +43,7 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
 	private static final String STUB_STRATEY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEY_NEVER = "Never";
 	private static final String STUB_STRATEY_ALWAYS = "Always";
@@ -353,4 +355,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return name;
 	}
 
+	@Override
+	public void updateReportGeneratorStatus(boolean enabled) {
+		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
+	}
+
+	@Override
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+		testTool.setReportGeneratorEnabled(event.isEnabled());
+	}
 }
