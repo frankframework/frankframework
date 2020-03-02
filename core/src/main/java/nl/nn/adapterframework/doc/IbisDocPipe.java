@@ -335,8 +335,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-            getTheJson jsoon = new getTheJson();
-            result = jsoon.getJsoon();
+            result = new getTheJson().getJsoon();
 //			result = new IbisDocExtractor().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
@@ -743,7 +742,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @description true or false
+	 * true or false
 	 * @default false
 	 * @return okay
 	 */
