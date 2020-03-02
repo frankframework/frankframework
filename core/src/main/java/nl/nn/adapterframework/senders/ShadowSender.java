@@ -103,7 +103,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -122,7 +122,7 @@ public class ShadowSender extends ParallelSenders {
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, session, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 			executor.execute(pse);
 		}
@@ -134,6 +134,7 @@ public class ShadowSender extends ParallelSenders {
 
 		ParallelSenderExecutor originalSender = null;
 		XmlBuilder resultsXml = new XmlBuilder("results");
+		String correlationID = session==null ? null : session.getMessageId();
 		resultsXml.addAttribute("correlationID", correlationID);
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
@@ -185,7 +186,7 @@ public class ShadowSender extends ParallelSenders {
 
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
-			resultISender.sendMessage(correlationID, new Message(resultsXml.toXML()), session);
+			resultISender.sendMessage(new Message(resultsXml.toXML()), session);
 		} catch(SenderException se) {
 			log.warn("failed to send ShadowSender result to ["+resultISender.getName()+"]");
 		}

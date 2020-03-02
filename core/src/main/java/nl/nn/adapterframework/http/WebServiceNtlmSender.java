@@ -150,7 +150,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {

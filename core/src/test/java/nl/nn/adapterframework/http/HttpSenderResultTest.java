@@ -136,7 +136,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message(""), session).asString();
+		String result = sender.sendMessage(new Message(""), session).asString();
 		assertEquals("<dummy result/>", result);
 	}
 
@@ -153,7 +153,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message(""), session).asString();
+		String result = sender.sendMessage(new Message(""), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -180,7 +180,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message("tralala"), session).asString();
+		String result = sender.sendMessage(new Message("tralala"), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -198,7 +198,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
@@ -219,7 +219,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
@@ -240,7 +240,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
@@ -261,7 +261,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
@@ -280,7 +280,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
 
 		int multipartAttachmentCount = 0;
@@ -309,7 +309,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, new Message("tralala"), pls).asString();
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());
 
 		int multipartAttachmentCount = 0;

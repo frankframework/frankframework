@@ -91,7 +91,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -123,6 +123,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				serviceName = getServiceName();
 			}
 
+			String correlationID = session==null ? null : session.getMessageId();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
 				return new Message(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session, null));

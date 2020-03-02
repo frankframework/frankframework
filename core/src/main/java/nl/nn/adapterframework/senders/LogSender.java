@@ -56,7 +56,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		log.log(level,message);
 		if (getParameterList() != null) {
 			try {

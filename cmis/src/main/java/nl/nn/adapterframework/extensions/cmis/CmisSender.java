@@ -332,7 +332,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
@@ -347,19 +347,19 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 			String result;
 			if (getAction().equalsIgnoreCase("get")) {
-				result = sendMessageForActionGet(correlationID, message.asString(), session, pvl);
+				result = sendMessageForActionGet(message.asString(), session, pvl);
 			} else if (getAction().equalsIgnoreCase("create")) {
-				result = sendMessageForActionCreate(correlationID, message.asString(), session);
+				result = sendMessageForActionCreate(message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("delete")) {
-				result = sendMessageForActionDelete(correlationID, message.asString(), session);
+				result = sendMessageForActionDelete(message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("find")) {
-				result = sendMessageForActionFind(correlationID, message.asString());
+				result = sendMessageForActionFind(message.asString());
 			} else if (getAction().equalsIgnoreCase("update")) {
-				result = sendMessageForActionUpdate(correlationID, message.asString());
+				result = sendMessageForActionUpdate(message.asString());
 			} else if (getAction().equalsIgnoreCase("fetch")) {
-				result = sendMessageForDynamicActions(correlationID, message.asString(), session);
+				result = sendMessageForDynamicActions(message.asString(), session);
 			} else if (getAction().equalsIgnoreCase("dynamic")) {
-				result = sendMessageForDynamicActions(correlationID, message.asString(), session);
+				result = sendMessageForDynamicActions(message.asString(), session);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}
@@ -372,7 +372,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionGet(String correlationID, String message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
+	private String sendMessageForActionGet(String message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -470,7 +470,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionCreate(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private String sendMessageForActionCreate(String message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String fileName = (String) session.get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
@@ -611,7 +611,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionDelete(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private String sendMessageForActionDelete(String message, IPipeLineSession session) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -629,6 +629,7 @@ public class CmisSender extends SenderWithParametersBase {
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
+			String correlationID = session==null ? null : session.getMessageId();
 			return correlationID;
 
 		} else {  //// You can't delete
@@ -636,7 +637,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionFind(String correlationID, String message) throws SenderException, TimeOutException {
+	private String sendMessageForActionFind(String message) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -732,7 +733,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForDynamicActions(String correlationID, String message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private String sendMessageForDynamicActions(String message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -919,7 +920,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return resultXml.toXML();
 	}
 
-	private String sendMessageForActionUpdate(String correlationID, String message) throws SenderException, TimeOutException {
+	private String sendMessageForActionUpdate(String message) throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;

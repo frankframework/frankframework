@@ -48,7 +48,7 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 	private boolean forceReload = false;
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		String configName = null;
 		String activeVersion = null;

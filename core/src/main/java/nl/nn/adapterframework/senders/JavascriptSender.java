@@ -101,7 +101,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;

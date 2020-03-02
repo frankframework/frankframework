@@ -286,7 +286,7 @@ public class DefaultIbisManager implements IbisManager {
 				localSender.configure();
 				localSender.open();
 				try {
-					localSender.sendMessage(null, new Message(""), null);
+					localSender.sendMessage(new Message(""), null);
 				} finally {
 					localSender.close();
 				}

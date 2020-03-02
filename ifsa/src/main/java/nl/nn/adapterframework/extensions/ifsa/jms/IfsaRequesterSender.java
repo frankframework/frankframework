@@ -184,7 +184,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(String dummyCorrelationId, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		
 		try {
 			if (isSynchronous()) {
@@ -223,18 +223,18 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		if (StringUtils.isEmpty(BIF)) {
 			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
-		return new Message(sendMessage(dummyCorrelationId, message.asString(), params,BIF,null));
+		return new Message(sendMessage(message.asString(), params, BIF,null));
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
-		return sendMessage(dummyCorrelationId, message,params, null, null);
+		return sendMessage(message, params, null, null);
 	}
 
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String dummyCorrelationId, String message, Map params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
+	public String sendMessage(String message, Map params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
 	    String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;

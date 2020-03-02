@@ -62,7 +62,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 
 		schedulerSender.configure();
-		schedulerSender.sendMessage("", new Message("message"), null);
+		schedulerSender.sendMessage(new Message("message"), null);
 		assertNull(schedulerSender.getParameterList().findParameter("_jobname"));
 
 		assertTrue(schedulerHelper.contains(JOB_NAME));
@@ -78,7 +78,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage("", new Message("message"), null);
+		Message name = schedulerSender.sendMessage(new Message("message"), null);
 		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));

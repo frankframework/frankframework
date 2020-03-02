@@ -88,12 +88,13 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			message = sender.sendMessage(correlationID,message,session);
+			message = sender.sendMessage(message,session);
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
 			sk.addValue(t2-t1);

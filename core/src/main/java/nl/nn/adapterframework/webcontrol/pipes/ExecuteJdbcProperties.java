@@ -112,7 +112,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				qs.open();
 				ParameterResolutionContext prc = new ParameterResolutionContext (
 						"", session);
-				result = qs.sendMessage("", new Message(""), session).asString();
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)
@@ -146,7 +146,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				qs.open();
 				ParameterResolutionContext prc = new ParameterResolutionContext (
 						"", session);
-				result = qs.sendMessage("", new Message(""), session).asString();
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)
@@ -169,7 +169,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				qs.open();
 				ParameterResolutionContext prc = new ParameterResolutionContext (
 						"", session);
-				result = qs.sendMessage("", new Message(""), session).asString();
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)

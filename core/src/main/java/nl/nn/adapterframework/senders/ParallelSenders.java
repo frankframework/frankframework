@@ -66,7 +66,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -86,7 +86,7 @@ public class ParallelSenders extends SenderSeries {
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
 			
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, session, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 
 			executor.execute(pse);

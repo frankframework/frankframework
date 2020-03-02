@@ -74,7 +74,8 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String correlationID = session==null ? null : session.getMessageId();
 		try {
 			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
 			return new Message(proxy.dispatchRequest(getServiceName(),correlationID,message.asString()));

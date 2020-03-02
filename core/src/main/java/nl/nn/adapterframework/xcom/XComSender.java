@@ -122,7 +122,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		for (Iterator filenameIt = getFileList(message.asString()).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			log.debug("Start sending " + filename);

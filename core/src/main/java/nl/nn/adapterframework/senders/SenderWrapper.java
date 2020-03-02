@@ -68,8 +68,8 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		return sender.sendMessage(correlationID,message, session);
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return sender.sendMessage(message,session);
 	}
 
 	@Override

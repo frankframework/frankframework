@@ -74,16 +74,15 @@
 	 					execution(
 	 						*
 	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							String, 
 	 							nl.nn.adapterframework.stream.Message, 
 	 							nl.nn.adapterframework.core.IPipeLineSession
 	 						)
 	 					)
 	 					and
-	 					args(correlationId, message, session)
+	 					args(message, session)
 	 					"
 	 				method="debugSenderInputOutputAbort"
-	 				arg-names="correlationId, message, session"
+	 				arg-names="message, session"
 	 			/>
 	 			<aop:around
 	 				pointcut=
@@ -124,15 +123,15 @@
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
 							nl.nn.adapterframework.senders.SenderWrapperBase, 
-							String, nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.stream.Message, 
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(senderWrapperBase, correlationId, message, session)
+					args(senderWrapperBase, message, session)
 					"
 				method="debugSenderGetInputFrom"
-				arg-names="senderWrapperBase, correlationId, message, session"
+				arg-names="senderWrapperBase, message, session"
 			/>
 			<aop:around
 				pointcut=

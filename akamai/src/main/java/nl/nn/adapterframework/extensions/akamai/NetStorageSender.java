@@ -153,13 +153,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message path, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message path, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		staticUri = buildUri(path.asString()); // TODO: this is not thread safe!
 
 		//We don't need to send any message to the HttpSenderBase
-		return super.sendMessage(correlationID, new Message(""), session);
+		return super.sendMessage(new Message(""), session);
 	}
 
 	@Override

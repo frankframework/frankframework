@@ -67,7 +67,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		MailSession mailSession;
 		try {
 			mailSession = extract(message, session);
@@ -76,6 +76,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		sendEmail(mailSession);
 
+		String correlationID = session==null ? null : session.getMessageId();
 		return new Message(correlationID);
 	}
 

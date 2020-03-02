@@ -256,14 +256,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			try {
 				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, message, session, guard, senderStatisticsKeeper);
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, guard, senderStatisticsKeeper);
 					if (isCollectResults()) {
 						executorList.add(pse);
 					}
 					getTaskExecutor().execute(pse);
 				} else {
 					long senderStartTime= System.currentTimeMillis();
-					itemResult = sender.sendMessage(correlationID, message, session).asString();
+					itemResult = sender.sendMessage(message, session).asString();
 					long senderEndTime = System.currentTimeMillis();
 					long senderDuration = senderEndTime - senderStartTime;
 					senderStatisticsKeeper.addValue(senderDuration);

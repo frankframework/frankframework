@@ -33,7 +33,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
-	public final Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		PipeRunResult result = sendMessage(new Message(message), session, null);
 		return result==null?null:new Message(result.getResult());
 	}

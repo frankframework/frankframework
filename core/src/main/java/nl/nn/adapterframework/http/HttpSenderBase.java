@@ -568,7 +568,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(String correlationID, Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String message=input.asString();
 		ParameterValueList pvl = null;
 		try {

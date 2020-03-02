@@ -153,7 +153,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.setBlobSmartGet(true);
 					qs.configure(true);
 					qs.open();
-					result = qs.sendMessage("dummy", new Message(qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
+					result = qs.sendMessage(new Message(qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 				} catch (Throwable t) {
 					error("error occured on executing jdbc query",t);
 				} finally {

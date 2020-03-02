@@ -83,7 +83,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException {
 		try {
 			return new Message(execute(message.asString()));
 		} catch (Exception e) {

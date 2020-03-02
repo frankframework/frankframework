@@ -33,16 +33,16 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		
 		String key=cache.transformKey(message.asString(), session);
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
 		Message result;
@@ -52,7 +52,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			result= new Message(cacheResult);
 		} else {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-			result=senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
+			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 			String cacheValue=cache.transformValue(result.asString(), session);
 			if (cacheValue==null) {

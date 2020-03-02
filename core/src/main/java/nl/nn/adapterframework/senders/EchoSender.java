@@ -34,7 +34,7 @@ public class EchoSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		return message;
 	}
 

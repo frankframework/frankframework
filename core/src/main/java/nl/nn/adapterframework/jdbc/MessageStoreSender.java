@@ -114,7 +114,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (sessionKeys != null) {
 			List<String> list = new ArrayList<String>();
 			list.add(StringEscapeUtils.escapeCsv(message.asString()));
@@ -128,6 +128,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 			message = new Message(sb.toString());
 		}
 		String messageId = session.getMessageId();
+		String correlationID = messageId;
 		if (paramList != null && paramList.findParameter("messageId") != null) {
 			try {
 				messageId = (String)paramList.getValues(message, session).getValue("messageId");

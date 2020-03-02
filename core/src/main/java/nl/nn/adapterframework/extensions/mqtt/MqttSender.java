@@ -92,11 +92,11 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		return sendMessage(correlationID, message, session, null);
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		try {
 			if(!client.isConnected()) {
 				super.open();

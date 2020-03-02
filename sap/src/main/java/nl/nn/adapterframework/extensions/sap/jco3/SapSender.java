@@ -116,7 +116,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
@@ -133,6 +133,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			if (StringUtils.isEmpty(getFunctionName())) {
 				pvl.removeParameterValue(getFunctionNameParam());
 			}
+			String correlationID = session==null ? null : session.getMessageId();
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
 

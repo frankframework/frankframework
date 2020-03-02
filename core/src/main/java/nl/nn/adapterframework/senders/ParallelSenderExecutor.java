@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -33,10 +32,9 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Guard guard;
 	private StatisticsKeeper sk;
 
-	public ParallelSenderExecutor(ISender sender, String correlationID, Message message, IPipeLineSession session, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, IPipeLineSession session, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
-		this.correlationID=correlationID;
 		request=message;
 		this.session=session;
 		this.guard=guard;
@@ -48,7 +46,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		try {
 			long t1 = System.currentTimeMillis();
 			try {
-				reply = sender.sendMessage(correlationID,request,session);
+				reply = sender.sendMessage(request,session);
 			} catch (Throwable tr) {
 				throwable = tr;
 				log.warn("SenderExecutor caught exception",tr);

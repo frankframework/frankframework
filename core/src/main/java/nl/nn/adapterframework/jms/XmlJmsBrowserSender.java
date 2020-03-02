@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;

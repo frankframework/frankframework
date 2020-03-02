@@ -58,7 +58,7 @@ public class ServiceJob extends BaseJob {
 
 			localSender.open();
 			try {
-				localSender.sendMessage(correlationId, message, null);
+				localSender.sendMessage(message, null);
 			}
 			finally {
 				localSender.close();

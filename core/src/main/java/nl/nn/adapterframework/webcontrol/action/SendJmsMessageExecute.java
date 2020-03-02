@@ -209,7 +209,12 @@ public final class SendJmsMessageExecute extends ActionBase {
 
 		try {
 			qms.open();
-			qms.sendMessage(technicalCorrelationId,new Message(message), null);
+			/*
+			 * this used to be:
+			 *   qms.sendMessage(technicalCorrelationId,new Message(message), null);
+			 * Be aware that 'technicalCorrelationId' will not be used by default
+			 */
+			qms.sendMessage(new Message(message),null);
 		} catch (SenderException e) {
 			error("error occured sending message",e);
 		} catch (TimeOutException e) {

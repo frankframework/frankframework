@@ -899,7 +899,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
-		Message result = sender.sendMessage(correlationID, new Message(input), session);
+		Message result = sender.sendMessage(new Message(input), session);
 		return new PipeRunResult(null,result.asString());
 	}
 

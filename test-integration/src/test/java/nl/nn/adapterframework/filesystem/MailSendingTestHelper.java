@@ -138,7 +138,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 
 		Message msg=new Message(email.toXML());
 		System.out.println("email: ["+msg+"]");
-		mailSender.sendMessage("fakeCorrelationId", msg, null);
+		mailSender.sendMessage(msg, null);
 		Thread.sleep(5000);
 	}
 }

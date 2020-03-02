@@ -46,7 +46,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -66,7 +66,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();;
+			String result = sender.sendMessage(input, pls).asString();;
 			assertEquals(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -96,7 +96,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();;
+			String result = sender.sendMessage(input, pls).asString();;
 			assertEquals(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -128,7 +128,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();;
+			String result = sender.sendMessage(input, pls).asString();;
 			assertEquals(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -159,7 +159,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();;
+			String result = sender.sendMessage(input, pls).asString();;
 			assertEquals(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

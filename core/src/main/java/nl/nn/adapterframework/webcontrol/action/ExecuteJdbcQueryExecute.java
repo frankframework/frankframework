@@ -78,7 +78,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.setSqlDialect("");
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", new Message(form_query), null).asString();
+				result = qs.sendMessage(new Message(form_query), null).asString();
 				if ("csv".equalsIgnoreCase(form_resultType)) {
 					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
 					if (url!=null) {

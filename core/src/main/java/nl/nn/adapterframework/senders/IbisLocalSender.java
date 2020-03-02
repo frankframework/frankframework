@@ -151,7 +151,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {

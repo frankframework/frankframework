@@ -33,7 +33,7 @@ public class DelaySender extends SenderBase {
 	private long delayTime=5000;
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());

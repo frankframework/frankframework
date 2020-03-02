@@ -46,7 +46,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, null).asString();
+			String result = sender.sendMessage(input, null).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -103,7 +103,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -137,7 +137,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -162,7 +162,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpCharset.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -197,7 +197,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -233,7 +233,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -258,7 +258,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPostJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -283,7 +283,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPutJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -317,7 +317,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -352,7 +352,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -397,7 +397,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, pls).asString();
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("parametersToSkip.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

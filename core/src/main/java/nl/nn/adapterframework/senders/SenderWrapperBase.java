@@ -89,14 +89,14 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException; 
+	public abstract Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException; 
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (senderWrapperProcessor!=null) {
-			return senderWrapperProcessor.sendMessage(this, correlationID, message, session);
+			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
-		return doSendMessage(correlationID, message, session);
+		return doSendMessage(message, session);
 	}
 
 	@Override

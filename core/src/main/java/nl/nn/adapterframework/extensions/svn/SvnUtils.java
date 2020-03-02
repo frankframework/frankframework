@@ -67,7 +67,7 @@ public class SvnUtils {
 			httpSender.setMethodType("HEAD");
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, new Message(""), null).asString();
+			String result = httpSender.sendMessage(new Message(""), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {
@@ -98,7 +98,7 @@ public class SvnUtils {
 			httpSender.setMethodType("REPORT");
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, new Message(logReportRequest), null).asString();
+			String result = httpSender.sendMessage(new Message(logReportRequest), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {

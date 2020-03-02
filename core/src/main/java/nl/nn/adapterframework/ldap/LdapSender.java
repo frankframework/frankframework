@@ -1052,7 +1052,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		try {
 			return new Message(performOperation(message, session));
 		} catch (Exception e) {

@@ -174,7 +174,7 @@ public class CmisHttpSender extends HttpSenderBase {
 		pls.put("headers", headers);
 
 		try {
-			sendMessage(null, null, pls);
+			sendMessage(null, pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

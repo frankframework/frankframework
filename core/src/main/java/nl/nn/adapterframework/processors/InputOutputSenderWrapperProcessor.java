@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
 			senderInput=new Message(session.get(senderWrapperBase.getGetInputFromSessionKey()));
@@ -43,7 +43,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, session);
+		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
 			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);

@@ -179,7 +179,7 @@ public final class BrowseJdbcTable extends Base {
 					Transformer t = XmlUtils.createTransformer(url);
 					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 				}
-				result = qs.sendMessage("dummy", new Message(query), null).asString();
+				result = qs.sendMessage(new Message(query), null).asString();
 			//} else {
 				//error("errors.generic","This function only supports oracle databases",null);
 			//}

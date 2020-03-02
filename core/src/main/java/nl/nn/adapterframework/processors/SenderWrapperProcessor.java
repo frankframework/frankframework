@@ -31,6 +31,6 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface SenderWrapperProcessor {
 
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException;
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException;
 
 }

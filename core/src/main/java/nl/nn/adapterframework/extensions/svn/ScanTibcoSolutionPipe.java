@@ -419,7 +419,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setXhtml(true);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, new Message(""), null).asString();
+			String result = httpSender.sendMessage(new Message(""), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {

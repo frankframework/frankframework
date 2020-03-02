@@ -967,7 +967,7 @@ public class JobDef {
 			qs.setTimeout(getQueryTimeout());
 			qs.configure(true);
 			qs.open();
-			Message result = qs.sendMessage("dummy", new Message(getQuery()), null);
+			Message result = qs.sendMessage(new Message(getQuery()), null);
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
@@ -1002,7 +1002,7 @@ public class JobDef {
 			try {
 				//sendMessage message cannot be NULL
 				Message message = new Message((getMessage()==null) ? "" : getMessage());
-				localSender.sendMessage(null, message, null);
+				localSender.sendMessage(message, null);
 			}
 			finally {
 				localSender.close();

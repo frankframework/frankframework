@@ -36,9 +36,10 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public Message sendMessage(String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-				super.sendMessage(correlationID, message, session);
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
+				String correlationID = session.getMessageId();
 				return new Message(correlationID);
 			}
 		};

@@ -30,8 +30,8 @@ import nl.nn.adapterframework.stream.Message;
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		return senderWrapperBase.doSendMessage(correlationID, message, session);
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return senderWrapperBase.doSendMessage(message, session);
 	}
 
 }

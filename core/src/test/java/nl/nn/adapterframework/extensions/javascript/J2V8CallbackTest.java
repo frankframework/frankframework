@@ -50,7 +50,7 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("7", sender.sendMessage(null, dummyInput, session).asString());
+		assertEquals("7", sender.sendMessage(dummyInput, session).asString());
 	}
 
 	//An EchoSender will be called in the javascript code.
@@ -81,6 +81,6 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
-		assertEquals("true", sender.sendMessage(null,dummyInput,session).asString());
+		assertEquals("true", sender.sendMessage(dummyInput,session).asString());
 	}
 }

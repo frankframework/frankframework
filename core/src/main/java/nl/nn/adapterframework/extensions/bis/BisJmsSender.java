@@ -110,7 +110,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Message sendMessage(String correlationID, Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		String message = input.asString();
 		String messageHeader;
 		try {
@@ -127,7 +127,7 @@ public class BisJmsSender extends JmsSender {
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String replyMessage = super.sendMessage(correlationID, new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
+		String replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		if (isSynchronous()) {
 			String bisError;
 			String bisErrorList;
