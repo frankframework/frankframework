@@ -412,7 +412,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('ErrorPageCtrl', ['$scope', 'Api', '$state', '$interval', '$rootScope', function($scope, Api, $state, $interval, $rootScope) {
+.controller('ErrorPageCtrl', ['$scope', 'Api', '$state', '$interval', '$rootScope', '$timeout', function($scope, Api, $state, $interval, $rootScope, $timeout) {
 	$scope.cooldownCounter = 0;
 	$scope.viewStackTrace = false;
 
@@ -437,7 +437,7 @@ angular.module('iaf.beheerconsole')
 	$scope.checkState = function() {
 		Api.Get("server/health", function() {
 			$state.go("pages.status");
-			window.location.reload();
+			$timeout(function() { window.location.reload(); }, 50);
 		}, cooldown);
 	};
 
