@@ -223,7 +223,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
-	private boolean msgLogHumanReadable = AppConstants.getInstance(configurationClassLoader).getBoolean("msg.log.humanReadable", false);
+	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 
 	private PipeProcessor pipeProcessor;
