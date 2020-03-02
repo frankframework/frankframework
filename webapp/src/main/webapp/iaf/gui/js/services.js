@@ -671,7 +671,6 @@ angular.module('iaf.beheerconsole')
 		};
 		this.Confirm = function() { //(JsonObject, Callback)-> returns boolean
 			var options = {
-				type: "info",
 				title: "Are you sure?",
 				showCancelButton: true,
 			};

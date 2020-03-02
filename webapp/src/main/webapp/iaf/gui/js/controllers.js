@@ -1354,7 +1354,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', function($scope, Api, Poller, $state) {
+.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', 'SweetAlert', function($scope, Api, Poller, $state, SweetAlert) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
 
@@ -1379,7 +1379,11 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
-		Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+		SweetAlert.Confirm({title:"Please confirm the deletion of '"+jobName+"'"}, function(imSure) {
+			if(imSure) {
+				Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+			}
+		});
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
