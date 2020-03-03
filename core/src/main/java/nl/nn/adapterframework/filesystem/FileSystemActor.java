@@ -455,12 +455,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {
 			if (parameterList != null) {
-				pvl = prc.getValues(parameterList);
+				pvl = parameterList.getValues(null, session);
 			}
 		} catch (ParameterException e) {
 			throw new StreamingException("caught exception evaluating parameters", e);

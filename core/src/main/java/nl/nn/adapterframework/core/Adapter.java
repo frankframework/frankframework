@@ -115,7 +115,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 	private int numOfMessagesInProcess = 0;
-   
+
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 	
@@ -417,7 +417,7 @@ public class Adapter implements IAdapter, NamedBean {
 			hski.closeGroup(pipelineData);
 		}
 	}
-	
+
 	@Override
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
@@ -505,12 +505,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Iterator<IReceiver> getReceiverIterator() {
 		return receivers.iterator();
 	}
-	
+
 	public PipeLine getPipeLine() {
 		return pipeline;
 	}
@@ -588,7 +588,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return result;
 		}
 	}
-	
+
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException {
 
@@ -601,14 +601,13 @@ public class Adapter implements IAdapter, NamedBean {
 		RunStateEnum currentRunState = getRunState();
 		if (!currentRunState.equals(RunStateEnum.STARTED) && !currentRunState.equals(RunStateEnum.STOPPING)) {
 
-			String msgAdapterNotOpen =
-				"Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
+			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
 		incNumOfMessagesInProcess(startTime);
 		String lastNDC=NDC.peek();
-		String newNDC="cid [" + messageId + "]";
+		String newNDC="mid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
@@ -743,7 +742,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("Adapter ["	+ name 	+ "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
 	}
-	
+
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
@@ -956,7 +955,7 @@ public class Adapter implements IAdapter, NamedBean {
 		configuration.addStopAdapterThread(runnable);
 		taskExecutor.execute(runnable);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -978,7 +977,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String getFileSizeAsBytes(String string) {
 		return Misc.toFileSize(string.getBytes().length, false, true);
 	}
-	
+
 	@Override
 	public String getAdapterConfigurationAsString() throws ConfigurationException {
 		String loadedConfig = getConfiguration().getLoadedConfiguration();
@@ -990,7 +989,7 @@ public class Adapter implements IAdapter, NamedBean {
 			throw new ConfigurationException(e);
 		}
 	}
-	
+
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
@@ -1012,7 +1011,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public boolean isAutoStart() {
 		return autoStart;
 	}
-	
+
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {

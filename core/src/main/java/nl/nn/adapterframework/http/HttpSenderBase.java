@@ -729,9 +729,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true);
+					Message resultMsg = new Message(result);
 					try {
-						result = transformerPool.transform(prc_xslt.getInputSource(true));
+						result = transformerPool.transform(resultMsg.asSource());
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}

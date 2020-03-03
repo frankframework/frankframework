@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -50,6 +51,10 @@ public class SenderThread extends Thread {
 
     public void run() {
         try {
+        	if (session==null) {
+        		session = new PipeLineSessionBase();
+        	}
+        	session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
         	if (senderWithParameters == null) {
 				response = sender.sendMessage(new Message(request), session).asString();
         	} else {

@@ -76,7 +76,6 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
@@ -1467,7 +1466,9 @@ public class TestTool {
 						}
 						if (queues != null) {
 							try {
-								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null).asString();
+								PipeLineSessionBase session = new PipeLineSessionBase();
+								session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
@@ -2143,13 +2144,15 @@ public class TestTool {
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null).asString();
+						PipeLineSessionBase session = new PipeLineSessionBase();
+						session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 							
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null).asString();
+								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 							} catch(TimeOutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
@@ -2724,7 +2727,9 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null).asString();
+				PipeLineSessionBase session = new PipeLineSessionBase();
+				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -2743,7 +2748,9 @@ public class TestTool {
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
-				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null).asString();
+				PipeLineSessionBase session = new PipeLineSessionBase();
+				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeOutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {

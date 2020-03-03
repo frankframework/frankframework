@@ -122,12 +122,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
 		
 		try {
 			if (paramList != null) {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(null, session);
 			}
 		} catch (ParameterException e) {
 			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);

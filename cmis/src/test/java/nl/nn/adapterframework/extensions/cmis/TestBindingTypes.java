@@ -175,7 +175,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRN(expectedResult, actualResult);
 	}
 
@@ -185,7 +185,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, session).asString();
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEquals("", actualResult);
 		String base64 = (String) session.get("fileContent");
 		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
