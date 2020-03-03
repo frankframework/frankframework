@@ -1776,12 +1776,14 @@ angular.module('iaf.beheerconsole')
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
+	$scope.processingMessage = false;
 
 	Api.Get("jdbc", function(data) {
 		$scope.datasources = data.datasources;
 		$scope.form = {datasource: data.datasources[0]};
 	});
 	$scope.submit = function(formData) {
+		$scope.processingMessage = true;
 		if(!formData || !formData.table) {
 			$scope.error = "Please specify a datasource and table name!";
 			return;
@@ -1826,10 +1828,12 @@ angular.module('iaf.beheerconsole')
 				}
 				$scope.result.push(orderedRow);
 			}
+			$scope.processingMessage = false;
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData.error) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.query = "";
+			$scope.processingMessage = false;
 		});
 	};
 	$scope.reset = function() {
