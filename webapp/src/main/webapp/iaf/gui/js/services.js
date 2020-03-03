@@ -770,6 +770,16 @@ angular.module('iaf.beheerconsole')
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
 		};
+	}).filter('dash', function() {
+		return function(input) {
+			if(input || input === 0) return input;
+			else return "-";
+		};
+	}).filter('perc', function() {
+		return function(input) {
+			if(input || input === 0) return input+"%";
+			else return "-";
+		};
 	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
 		function($rootScope, $http, Base64, $location, appConstants) {
 		var authToken;
