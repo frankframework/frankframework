@@ -2,7 +2,7 @@
 	<adapter name="Zip - Main" >
 		<receiver 
 			name="Zip - Main" 
-            maxRetries="0">
+			maxRetries="0">
 			<listener 
 				className="nl.nn.adapterframework.receivers.JavaListener" 
 				serviceName="ibis4test-unzip"
@@ -31,7 +31,6 @@
 				name="NestedZipRead"
 				getInputFromSessionKey="stream"
 				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
-				
 				>
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-unzipNested" >
 					<param name="zipdata" sessionKey="zipdata" />
@@ -146,6 +145,7 @@
 						  root="${testdata.dir}">
 				  </sender>
 				  <forward name="success" path="READY"/>
+				  <forward name="exception" path="READY"/>  <!-- don't fail when folder already exists -->
 			</pipe>
 			
 			<pipe name="RemoveRecreatedZipFile"

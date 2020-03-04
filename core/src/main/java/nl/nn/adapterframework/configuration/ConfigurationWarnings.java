@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.logging.log4j.Logger;
@@ -39,8 +40,24 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	
 	public static void add(INamedObject object, Logger log, String message) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(object) +"["+object.getName()+"]: "+message;
+		String msg = (object==null?"":ClassUtils.nameOf(object) +"["+object.getName()+"]")+": "+message;
 		configWarnings.add(log, msg);		
+	}
+	
+	public static void add(Adapter adapter, Logger log, String message) {
+		add(adapter,null,log,message);
+	}
+	public static void add(Adapter adapter, INamedObject object, Logger log, String message) {
+		if (adapter==null) {
+			add(object, log, message);
+		} else {
+			Configuration configuration = adapter.getConfiguration();
+			if (configuration==null) {
+				add(object, log, message);
+			} else {
+				configuration.getConfigurationWarnings().add(log, message, null, false);
+			}
+		}
 	}
 
 	public boolean add(Logger log, String msg) {

@@ -15,18 +15,6 @@
 */
 package nl.nn.ibistesttool;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -45,6 +33,17 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.file.TestStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import nl.nn.testtool.util.LogUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
@@ -115,15 +114,15 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
-		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
+		boolean reportGeneratorEnabledOldValue = testTool.isReportGeneratorEnabled();
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(true);
 			testTool.setReportGeneratorEnabled(true);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(reportGeneratorEnabledOldValue);
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		long endTime = System.currentTimeMillis();
 		

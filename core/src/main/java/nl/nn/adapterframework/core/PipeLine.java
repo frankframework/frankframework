@@ -137,7 +137,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
     private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
     private List<IPipe> pipes              = new ArrayList<IPipe>();
     // set of exits paths with their state
-    private Map<String, PipeLineExit> pipeLineExits = new Hashtable<String, PipeLineExit>();
+    private Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
 
 	private String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces = false;
@@ -547,9 +547,12 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
       log.debug("registered global PipeForward "+forward.toString());
     }
 
-    public void registerPipeLineExit(PipeLineExit exit) {
-	    pipeLineExits.put(exit.getPath(), exit);
-    }
+	public void registerPipeLineExit(PipeLineExit exit) {
+		if (pipeLineExits.containsKey(exit.getPath())) {
+			ConfigurationWarnings.add(getAdapter(), log, "Exit named ["+exit.getPath()+"] already exists");
+		}
+		pipeLineExits.put(exit.getPath(), exit);
+	}
 
 	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
 		this.pipeLineProcessor = pipeLineProcessor;
@@ -573,27 +576,18 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	public INamedObject getOwner() {
 		return owner;
 	}
-   /**
-    * The indicator for the end of the processing, with default state "undefined".
-    * @deprecated since v 3.2 this functionality is superseded by the use of {@link PipeLineExit PipeLineExits}.
-    * @see PipeLineExit
-    */
-    public void setEndPath(String endPath){
-	    PipeLineExit te=new PipeLineExit();
-	    te.setPath(endPath);
-	    te.setState("undefined");
-		registerPipeLineExit(te);
-    }
-    /**
-     * set the name of the first pipe to execute when a message is to be
-     * processed
-     * @param pipeName the name of the pipe
-     * @see AbstractPipe
-     */
-	@IbisDoc({"name of the first pipe to execute when a message is to be processed", ""})
-    public void setFirstPipe(String pipeName){
-        firstPipe=pipeName;
-    }
+	
+	/**
+	 * set the name of the first pipe to execute when a message is to be processed
+	 * 
+	 * @param pipeName the name of the pipe
+	 * @see AbstractPipe
+	 */
+	@IbisDoc({ "name of the first pipe to execute when a message is to be processed", "" })
+	public void setFirstPipe(String pipeName) {
+		firstPipe = pipeName;
+	}
+
 	public void start() throws PipeStartException {
 	    log.info("Pipeline of [" + owner.getName() + "] is starting pipeline");
 
@@ -642,7 +636,6 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
      *
      * @return an enumeration of all pipenames in the pipeline and the
      * startpipe and endpath
-     * @see #setEndPath
      * @see #setFirstPipe
      */
     @Override
