@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * ReplacerPipe Tester.
  *
- * @author <Authors name>
+ * @author <Sina Sen>
  * @version 1.0
  * @since <pre>Mar 5, 2020</pre>
  */
