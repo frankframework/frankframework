@@ -42,6 +42,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * XMLFilter with option to get schema information about child elements to be parsed.
@@ -86,14 +87,9 @@ public class XmlAligner extends XMLFilterImpl {
 		super();
 	}
 
-	public XmlAligner(PSVIProvider psviProvider) {
+	private XmlAligner(PSVIProvider psviProvider) {
 		this();
 		setPsviProvider(psviProvider);
-	}
-
-	public XmlAligner(XMLReader psviProvidingXmlReader) {
-		this((PSVIProvider)psviProvidingXmlReader);
-		psviProvidingXmlReader.setContentHandler(this);
 	}
 
 	public XmlAligner(ValidatorHandler psviProvidingValidatorHandler) {
@@ -122,6 +118,9 @@ public class XmlAligner extends XMLFilterImpl {
 		if (DEBUG) log.debug("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
 		typeDefinition=getTypeDefinition(psviProvider);
+		if (typeDefinition==null) {
+			throw new SaxException("No typeDefinition found for element ["+localName+"] in namespace ["+namespaceUri+"] qName ["+qName+"]");
+		}
 		multipleOccurringElements.push(multipleOccurringChildElements);
 		parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
 		// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
