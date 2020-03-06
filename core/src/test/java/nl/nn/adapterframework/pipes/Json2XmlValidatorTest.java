@@ -21,7 +21,7 @@ public class Json2XmlValidatorTest {
 		
 		validator.setName("Response_To_Json");
 		validator.setOutputFormat("json");
-		validator.setSchema("/Align/NoNamespace/bp.xsd");
+		validator.setSchema("/Validation/NoNamespace/bp.xsd");
 //		validator.setRoot("GetPartiesOnAgreement_Response");
 //		validator.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
 		validator.setThrowException(true);
@@ -29,8 +29,8 @@ public class Json2XmlValidatorTest {
 		validator.configure();
 		validator.start();
 		
-		String input = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response.xml");
-		String expected = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response-compact.json");
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
@@ -46,7 +46,7 @@ public class Json2XmlValidatorTest {
 		XmlValidator validator = new XmlValidator();
 		
 		validator.setName("Response_Validator");
-		validator.setSchema("/Align/NoNamespace/bp.xsd");
+		validator.setSchema("/Validation/NoNamespace/bp.xsd");
 //		validator.setRoot("GetPartiesOnAgreement_Response");
 //		validator.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
 		validator.setThrowException(true);
@@ -54,8 +54,8 @@ public class Json2XmlValidatorTest {
 		validator.configure();
 		validator.start();
 		
-		String input = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response.xml");
-		String expected = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response-compact.json");
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
@@ -73,7 +73,7 @@ public class Json2XmlValidatorTest {
 		
 		validator.setName("Response_To_Json");
 		validator.setOutputFormat("json");
-		validator.setSchema("/Align/NoNamespace/bp.xsd");
+		validator.setSchema("/Validation/NoNamespace/bp.xsd");
 //		validator.setRoot("GetPartiesOnAgreement_Response");
 //		validator.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
 		validator.setThrowException(true);
@@ -81,8 +81,8 @@ public class Json2XmlValidatorTest {
 		validator.configure();
 		validator.start();
 		
-		String input = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response-withNamespace.xml");
-		String expected = TestFileUtils.getTestFile("/Align/NoNamespace/bp-response-compact.json");
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		PipeRunResult prr = validator.doPipe(input,session);
