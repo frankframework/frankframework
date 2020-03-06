@@ -161,15 +161,13 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 	
-	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode)
-			throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
-		XmlAligner aligner = new XmlAligner((PSVIProvider) validatorHandler);
+		XmlAligner aligner = new XmlAligner(validatorHandler);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
-		validatorHandler.setContentHandler(aligner);
 		aligner.setContentHandler(xml2json);
 		aligner.setErrorHandler(context.getErrorHandler());
 		
