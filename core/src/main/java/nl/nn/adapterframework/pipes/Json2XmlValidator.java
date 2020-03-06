@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
@@ -26,11 +27,13 @@ import javax.xml.validation.ValidatorHandler;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
+import org.apache.xerces.xs.XSModel;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
+import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -245,6 +248,23 @@ public class Json2XmlValidator extends XmlValidator {
 			elementEnd--;
 		}
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
+	}
+	
+	public JsonStructure createRequestJsonSchema() {
+		return createJsonSchema(getRoot());
+ 	}
+	public JsonStructure createResponseJsonSchema() {
+		return createJsonSchema(getResponseRoot());
+ 	}
+	
+	public JsonStructure createJsonSchema(String elementName) {
+		return createJsonSchema(elementName, getTargetNamespace());
+	}
+	public JsonStructure createJsonSchema(String elementName, String namespace) {
+		List<XSModel> models = validator.getXSModels();
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements());
+		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
+		return jsonschema;
 	}
 	
 	
