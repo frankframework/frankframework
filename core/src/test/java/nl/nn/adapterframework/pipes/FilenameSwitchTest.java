@@ -100,13 +100,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         assertEquals(res.getPipeForward().getName(), "success");
     }
 
-    /**
-     * Method: doPipe(Object input, IPipeLineSession session)
-     */
-    @Test
-    public void testDoPipe() throws Exception {
-//TODO: Test goes here...
-    }
+
 
 
 } 

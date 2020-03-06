@@ -187,53 +187,5 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     }
     */
 
-    /**
-     * Method: setDirectory(String string)
-     */
-    @Test
-    public void testSetDirectory() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: getDirectory()
-     */
-    @Test
-    public void testGetDirectory() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: setDirectorySessionKey(String string)
-     */
-    @Test
-    public void testSetDirectorySessionKey() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: getDirectorySessionKey()
-     */
-    @Test
-    public void testGetDirectorySessionKey() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: getSessionKey()
-     */
-    @Test
-    public void testGetSessionKey() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: setSessionKey(String string)
-     */
-    @Test
-    public void testSetSessionKey() throws Exception {
-//TODO: Test goes here... 
-    }
-
 
 }

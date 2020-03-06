@@ -89,32 +89,5 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
     }
 
 
-    /**
-     * Method: setThenForwardName(String thenForwardName)
-     */
-    @Test
-    public void testSetGetThenForwardName() throws Exception {
-        pipe.setThenForwardName("");
-    }
-
-
-    /**
-     * Method: setElseForwardName(String elseForwardName)
-     */
-    @Test
-    public void testSetGetElseForwardName() throws Exception {
-//TODO: Test goes here... 
-    }
-
-
-    /**
-     * Method: doPipe(Object input, IPipeLineSession session)
-     */
-    @Test
-    public void testDoPipe() throws Exception {
-
-    }
-
-
 
 } 

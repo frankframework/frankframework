@@ -76,51 +76,6 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> impleme
 
     }
 
-    @Test
-    public void testUserInRoleViaInput() throws Exception {
-
-    }
-
-    /**
-     * Method: doPipe(Object input, IPipeLineSession session)
-     */
-    @Test
-    public void testDoPipe() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: getRole()
-     */
-    @Test
-    public void testGetRole() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: setRole(String string)
-     */
-    @Test
-    public void testSetRole() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: getNotInRoleForwardName()
-     */
-    @Test
-    public void testGetNotInRoleForwardName() throws Exception {
-//TODO: Test goes here... 
-    }
-
-    /**
-     * Method: setNotInRoleForwardName(String string)
-     */
-    @Test
-    public void testSetNotInRoleForwardName() throws Exception {
-//TODO: Test goes here... 
-    }
-
 
     @Override
     public boolean isUserInRole(String role, IPipeLineSession session) throws NotImplementedException {
