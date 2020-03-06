@@ -68,7 +68,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected String replace(String target, String from, String to) {
+	protected static String replace(String target, String from, String to) {
 		// target is the original string
 		// from   is the string to be replaced
 		// to     is the string which will used to replace

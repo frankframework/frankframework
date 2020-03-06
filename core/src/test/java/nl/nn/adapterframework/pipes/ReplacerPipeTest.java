@@ -93,7 +93,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
-    
+
 
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
