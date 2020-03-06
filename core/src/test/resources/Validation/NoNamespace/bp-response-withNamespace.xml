@@ -1,0 +1,8 @@
+<BusinessPartner xmlns="http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7">
+<IdentificationNumbers>
+<IdentificationType>FS0001</IdentificationType>
+</IdentificationNumbers>
+<IdentificationNumbers>
+<IdentificationType>IBS001</IdentificationType>
+</IdentificationNumbers>
+</BusinessPartner>

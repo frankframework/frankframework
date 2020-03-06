@@ -210,6 +210,13 @@ public class JsonElementContainer implements ElementContainer {
 		return "{}";
 	}
 
+	
+	@Override
+	public String toString() {
+		Object content = getContent();
+		return content == null ? "<null>" : content.toString();
+	}
+
 
 	public String getName() {
 		return name;
