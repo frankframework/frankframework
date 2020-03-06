@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -45,7 +46,7 @@ import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
  *
  */
 public class ClassUtils {
-	private static Logger log = LogUtil.getLogger(ClassUtils.class);
+	private static Logger log = LogManager.getLogger(ClassUtils.class);
 	
 	private static final boolean trace=false;
 	private final static String defaultAllowedProtocols = AppConstants.getInstance().getString("classloader.allowed.protocols", null);

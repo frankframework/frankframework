@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
  */
 abstract public class IfsaEjbBase {
 
-    protected Logger log = LogUtil.getLogger(this);
+    protected Logger log = LogManager.getLogger(this);
 
     protected String name;
 

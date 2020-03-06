@@ -19,7 +19,7 @@ import java.sql.Connection;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.8
  */
 public class StatGroupTable {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	
 	private String selectRootByNameQuery;
 	private String selectByNameQuery;

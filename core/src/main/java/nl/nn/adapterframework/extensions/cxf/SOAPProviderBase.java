@@ -53,7 +53,7 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -69,7 +69,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 @ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String attachmentXmlSessionKey = null;
 	private Map<String, MessageFactory> factory = new HashMap<String, MessageFactory>();

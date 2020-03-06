@@ -15,21 +15,14 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -53,19 +46,12 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import javax.xml.transform.TransformerException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
 
 /**
  * Miscellaneous conversion functions.
  */
 public class Misc {
-	static Logger log = LogUtil.getLogger(Misc.class);
+	static Logger log = LogManager.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
@@ -962,7 +948,22 @@ public class Misc {
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}
-	
+
+	public static String hideAll(String inputString, Collection<String> collection) {
+		return hideAll(inputString, collection, 0);
+	}
+
+	public static String hideAll(String string, Collection<String> collection, int mode) {
+		if(collection == null || StringUtils.isEmpty(string))
+			return string;
+
+		for (String regex : collection) {
+			if (StringUtils.isNotEmpty(regex))
+				string = hideAll(string, regex, mode);
+		}
+		return string;
+	}
+
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
 	}

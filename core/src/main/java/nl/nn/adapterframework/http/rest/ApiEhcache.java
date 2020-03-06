@@ -25,10 +25,10 @@ import net.sf.ehcache.Status;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 public class ApiEhcache implements IApiCache {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private final String KEY_CACHE_NAME="etagCacheReceiver";
 	private final String KEY_PREFIX="etag.ehcache.";

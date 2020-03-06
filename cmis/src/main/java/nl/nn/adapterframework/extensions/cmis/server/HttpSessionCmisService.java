@@ -23,7 +23,7 @@ import javax.servlet.http.HttpSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisNavigationService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
@@ -45,7 +45,7 @@ import org.apache.logging.log4j.Logger;
 public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	private static final long serialVersionUID = 1L;
-	private final Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 	public static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>();
 
 	/** Key in the HTTP session. **/

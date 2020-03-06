@@ -15,16 +15,28 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import edu.emory.mathcs.backport.java.util.Collections;
+import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
+import nl.nn.adapterframework.extensions.log4j.IbisPatternLayout;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ProcessMetrics;
+import nl.nn.adapterframework.util.RunStateEnum;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.context.ApplicationEventPublisher;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -38,31 +50,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.context.ApplicationEventPublisher;
-
-import edu.emory.mathcs.backport.java.util.Collections;
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Collection of server and application statistics and information.
@@ -257,18 +254,9 @@ public class ServerStatistics extends Base {
 	public Response getLogConfiguration() throws ApiException {
 
 		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		Logger rootLogger = LogUtil.getRootLogger();
+		Logger rootLogger = LogManager.getRootLogger();
 
-		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-			logSettings.put("maxMessageLength", iaw.getMaxMessageLength());
-		}
-		else {
-			logSettings.put("maxMessageLength", -1);
-		}
-		LoggerContext context = (LoggerContext) LogManager.getContext();
+		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
@@ -294,13 +282,7 @@ public class ServerStatistics extends Base {
 		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
 
-		Logger rootLogger = LogUtil.getRootLogger();
-
-		Appender appender = rootLogger.getAppender("appwrap");
-//		IbisAppenderWrapper iaw = null;
-//		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-//			iaw = (IbisAppenderWrapper) appender;
-//		}
+		Logger rootLogger = LogManager.getRootLogger();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -334,16 +316,15 @@ public class ServerStatistics extends Base {
 				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
 		}
 
-		if (iaw != null) {
-			if(iaw.getMaxMessageLength() != maxMessageLength) {
-				if(msg.length() > 0)
-					msg.append(", logMaxMessageLength from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				else
-					msg.append("logMaxMessageLength changed from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				iaw.setMaxMessageLength(maxMessageLength);
-			}
-		}
+		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
+			msg.append(", logMaxMessageLength changed from [")
+					.append(IbisMaskingLayout.getMaxLength())
+					.append("] to [")
+					.append(maxMessageLength)
+					.append("]");
 
+			IbisMaskingLayout.setMaxLength(maxMessageLength);
+		}
 		if (enableDebugger!=null) {
 			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {
@@ -362,7 +343,7 @@ public class ServerStatistics extends Base {
 		
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
-			LogUtil.getLogger("SEC").info(msg.toString());
+			LogManager.getLogger("SEC").info(msg.toString());
 		}
 
 		return Response.status(Response.Status.NO_CONTENT).build();

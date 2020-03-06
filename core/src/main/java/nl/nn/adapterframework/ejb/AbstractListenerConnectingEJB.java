@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.jndi.JndiLookupFailureException;
@@ -29,7 +29,7 @@ import org.springframework.jndi.JndiLookupFailureException;
  * @author Tim van der Leeuw
  */
 abstract public class AbstractListenerConnectingEJB extends AbstractEJBBase {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	/**
 	 * This value is set in the EJB Create method

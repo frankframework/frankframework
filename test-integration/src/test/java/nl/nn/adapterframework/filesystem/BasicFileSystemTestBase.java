@@ -27,11 +27,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IBasicFileSystem;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();

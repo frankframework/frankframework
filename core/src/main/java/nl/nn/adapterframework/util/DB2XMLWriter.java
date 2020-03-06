@@ -23,6 +23,7 @@ import java.sql.Types;
 
 import nl.nn.adapterframework.core.SenderException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -57,7 +58,7 @@ import org.apache.logging.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
+	protected static Logger log = LogManager.getLogger(DB2XMLWriter.class);
 
 	private String docname = "result";
 	private String recordname = "rowset";

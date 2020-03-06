@@ -26,7 +26,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9
  */
 public class Trigger {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;

@@ -22,7 +22,7 @@ import javax.servlet.ServletContext;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,7 +33,7 @@ import org.springframework.web.context.ServletContextAware;
 public class DetermineApplicationServerBean implements ServletContextAware {
 
 	private ServletContext servletContext;
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {

@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
  * @author John Dekker
  */
 public class ParameterValue {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private Object value;
 	private Parameter definition;

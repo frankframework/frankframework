@@ -46,7 +46,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxException;
@@ -84,7 +84,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	private static final Logger LOG = LogUtil.getLogger(ConfigurationDigester.class);
+	private static final Logger LOG = LogManager.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";

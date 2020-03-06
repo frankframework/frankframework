@@ -27,7 +27,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 /**
@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
  */
 public class ClassLoaderManager {
 
-	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
+	private static final Logger LOG = LogManager.getLogger(ClassLoaderManager.class);
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();

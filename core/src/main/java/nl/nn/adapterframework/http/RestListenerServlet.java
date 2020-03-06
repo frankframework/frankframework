@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -44,7 +44,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class RestListenerServlet extends HttpServlet {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log=LogManager.getLogger(this);
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	

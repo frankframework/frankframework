@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.logging.log4j.Logger;
@@ -44,7 +44,7 @@ import com.sap.mw.jco.JCO;
  * @since   4.11  
  */
 public class TableDigester {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private class TableHandler extends DefaultHandler {
 		

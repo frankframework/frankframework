@@ -29,7 +29,7 @@ import com.aspose.cells.Workbook;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 class CellsConvertor extends AbstractConvertor {
 
@@ -41,7 +41,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	private static final Map<MediaType, String> FILE_TYPE_MAP = new HashMap<>();
 
-	private static final Logger LOGGER = LogUtil.getLogger(CellsConvertor.class);
+	private static final Logger LOGGER = LogManager.getLogger(CellsConvertor.class);
 
 	static {
 		FILE_TYPE_MAP.put(XLS_MEDIA_TYPE, "xls");

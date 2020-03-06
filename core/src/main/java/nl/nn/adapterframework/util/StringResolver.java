@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -26,7 +27,7 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	protected static Logger log = LogUtil.getLogger(StringResolver.class);
+	protected static Logger log = LogManager.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';

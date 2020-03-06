@@ -5,7 +5,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
  * @author Jaco de Groot
  */
 public class SenderThread extends Thread {
-    private static Logger log = LogUtil.getLogger(SenderThread.class);
+    private static Logger log = LogManager.getLogger(SenderThread.class);
     
     private String name;
     private ISender sender;

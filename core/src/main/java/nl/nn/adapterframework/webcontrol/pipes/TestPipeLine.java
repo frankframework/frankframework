@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -49,7 +49,7 @@ import org.apache.logging.log4j.Logger;
 
 public class TestPipeLine extends TimeoutGuardPipe {
 
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger secLog = LogManager.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	public String doPipeWithTimeoutGuarded(Object input,

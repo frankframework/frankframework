@@ -10,11 +10,11 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
 	
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private boolean configured=false;
 	private boolean opened=false;

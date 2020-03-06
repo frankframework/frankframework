@@ -45,6 +45,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
@@ -84,7 +85,7 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class FileHandler {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};

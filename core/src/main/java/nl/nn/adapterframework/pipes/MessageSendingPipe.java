@@ -73,7 +73,7 @@ import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -141,7 +141,7 @@ import org.apache.logging.log4j.Logger;
  */
 
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
-	protected Logger msgLog = LogUtil.getLogger("MSG");
+	protected Logger msgLog = LogManager.getLogger("MSG");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";

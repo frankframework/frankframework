@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ParamWrapperFilter implements Filter {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private static final String DEFAULT_BLACKLIST_PATTERN = "(.*\\.|^|.*|\\[('|\"))(c|C)lass(\\.|('|\")]|\\[).*";
 	private static final String INIT_PARAM_NAME = "excludeParams";

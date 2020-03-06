@@ -22,10 +22,9 @@ import java.util.Map.Entry;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
-
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -33,7 +32,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  */
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 	
 	private String name;
 	private boolean skipArrayElementContainers;

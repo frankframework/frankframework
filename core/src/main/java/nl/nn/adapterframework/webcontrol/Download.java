@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.8
  */
 public class Download extends HttpServlet {
-	protected static Logger log = LogUtil.getLogger(Download.class);
+	protected static Logger log = LogManager.getLogger(Download.class);
 
 	
 	public static final String MY_OWN_URL="/Download";

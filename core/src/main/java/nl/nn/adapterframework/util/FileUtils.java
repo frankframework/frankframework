@@ -43,6 +43,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
@@ -52,7 +53,7 @@ import org.apache.logging.log4j.Logger;
  * @author John Dekker
  */
 public class FileUtils {
-	static Logger log = LogUtil.getLogger(FileUtils.class);
+	static Logger log = LogManager.getLogger(FileUtils.class);
 
 	/**
 	 * Construct a filename from a pattern and session variables. 

@@ -40,7 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.codec.binary.Base64;
@@ -72,7 +72,7 @@ import org.apache.logging.log4j.Logger;
  */
 
 public class LoginFilter implements Filter {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	protected static final String LDAP_AUTH_MODE_NONE_STR = "None";
 	protected static final String LDAP_AUTH_MODE_SIMPLE_STR = "Simple";

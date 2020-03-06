@@ -44,7 +44,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public abstract class AbstractXmlValidator {
-	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
+	protected static Logger log = LogManager.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";

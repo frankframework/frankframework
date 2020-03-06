@@ -41,7 +41,7 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * 
@@ -53,7 +53,7 @@ public class AsposeLicenseLoader {
 	private static final String FONTS_RESOURCE_NAME = "/font.zip";
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 
-	private static final Logger LOGGER = LogUtil.getLogger(AsposeLicenseLoader.class);
+	private static final Logger LOGGER = LogManager.getLogger(AsposeLicenseLoader.class);
 
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 

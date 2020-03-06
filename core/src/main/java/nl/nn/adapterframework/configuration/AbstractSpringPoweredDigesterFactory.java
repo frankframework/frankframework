@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -57,7 +57,7 @@ import org.xml.sax.Locator;
  *
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

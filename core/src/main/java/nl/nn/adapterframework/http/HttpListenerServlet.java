@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.logging.log4j.Logger;
@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.4.x (still experimental)
  */
 public class HttpListenerServlet extends HttpServlet {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log=LogManager.getLogger(this);
 	
 	public final String SERVICE_ID_PARAM = "service";
 	public final String MESSAGE_PARAM = "message";

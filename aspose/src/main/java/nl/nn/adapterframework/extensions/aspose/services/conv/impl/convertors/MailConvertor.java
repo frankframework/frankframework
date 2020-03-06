@@ -47,11 +47,11 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 class MailConvertor extends AbstractConvertor {
 
-	private static final Logger LOGGER = LogUtil.getLogger(MailConvertor.class);
+	private static final Logger LOGGER = LogManager.getLogger(MailConvertor.class);
 
 	private static final float MaxImageWidthInPoints = PageConvertUtil
 			.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);

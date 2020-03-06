@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -32,7 +33,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.8
  */
 public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
-	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
+	private static final Logger log = LogManager.getLogger(SpringTxManagerProxy.class);
 	
 	private BeanFactory beanFactory;
 	private String realTxManagerBeanName;

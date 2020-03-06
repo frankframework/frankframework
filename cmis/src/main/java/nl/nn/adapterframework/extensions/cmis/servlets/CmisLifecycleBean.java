@@ -19,7 +19,7 @@ import java.util.HashMap;
 import javax.servlet.ServletContext;
 
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.chemistry.opencmis.commons.impl.ClassLoaderUtil;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
@@ -38,7 +38,7 @@ import org.springframework.web.context.ServletContextAware;
 @IbisInitializer
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	private ServletContext servletContext;
 	private CmisServiceFactory factory;
 

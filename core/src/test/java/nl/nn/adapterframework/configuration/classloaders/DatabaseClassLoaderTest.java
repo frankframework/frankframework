@@ -15,8 +15,30 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.Misc;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Property;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
+import org.junit.Test;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,24 +46,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
-import org.junit.Test;
-
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import static org.junit.Assert.*;
 
 public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
 	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
@@ -135,8 +140,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = LogUtil.getRootLogger();
+		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
 		boolean makeSureNoExceptionIsThrown = false;
@@ -155,11 +160,11 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LoggingEvent> log = appender.getLog();
-		LoggingEvent firstLogEntry = log.get(log.size()-1);
+		List<LogEvent> log = appender.getLog();
+		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
-		String msg = (String) firstLogEntry.getMessage();
+		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
@@ -170,8 +175,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = LogUtil.getRootLogger();
+		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
 		boolean makeSureNoExceptionIsThrown = false;
@@ -190,11 +195,11 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LoggingEvent> log = appender.getLog();
-		LoggingEvent firstLogEntry = log.get(log.size()-1);
+		List<LogEvent> log = appender.getLog();
+		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
-		String msg = (String) firstLogEntry.getMessage();
+		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
@@ -205,8 +210,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingWARN() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = LogUtil.getRootLogger();
+		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
 		boolean makeSureNoExceptionIsThrown = false;
@@ -225,34 +230,34 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 			assertTrue(makeSureNoExceptionIsThrown);
 		}
 
-		List<LoggingEvent> log = appender.getLog();
-		LoggingEvent firstLogEntry = log.get(log.size()-1);
+		List<LogEvent> log = appender.getLog();
+		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.WARN, firstLogEntry.getLevel());
-		String msg = (String) firstLogEntry.getMessage();
+		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
 
-	class TestAppender extends AppenderSkeleton {
-		private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();
+	private static Logger getLoggerImplementation() {
+		 return (Logger) LogManager.getRootLogger();
+	}
 
-		@Override
-		public boolean requiresLayout() {
-			return false;
+	class TestAppender extends AbstractAppender {
+		private final List<LogEvent> log = new ArrayList<LogEvent>();
+
+		protected TestAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions, Property[] properties) {
+			super(name, filter, layout, ignoreExceptions, properties);
 		}
 
 		@Override
-		protected void append(final LoggingEvent loggingEvent) {
-			log.add(loggingEvent);
+		public void append(LogEvent LogEvent) {
+			log.add(LogEvent);
 		}
 
-		@Override
-		public void close() {
-		}
 
-		public List<LoggingEvent> getLog() {
-			return new ArrayList<LoggingEvent>(log);
+		public List<LogEvent> getLog() {
+			return new ArrayList<LogEvent>(log);
 		}
 	}
 }

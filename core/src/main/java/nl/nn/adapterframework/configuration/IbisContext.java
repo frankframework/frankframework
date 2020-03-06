@@ -15,19 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.BeanCreationException;
-
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -39,9 +26,21 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.BeanCreationException;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -57,9 +56,9 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
  * @since 4.8
  */
 public class IbisContext extends IbisApplicationContext {
-	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private final static Logger LOG = LogManager.getLogger(IbisContext.class);
 
-	private final static Logger secLog = LogUtil.getLogger("SEC");
+	private final static Logger secLog = LogManager.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";

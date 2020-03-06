@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -23,7 +24,7 @@ import org.apache.logging.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private RunStateEnum runState = RunStateEnum.STOPPED;
 

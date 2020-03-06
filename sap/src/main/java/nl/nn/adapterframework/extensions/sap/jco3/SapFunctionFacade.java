@@ -32,7 +32,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
@@ -56,7 +56,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   5.0
  */
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
-	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
+	protected static Logger log = LogManager.getLogger(SapFunctionFacade.class);
 
 	private String name;
 	private String sapSystemName;

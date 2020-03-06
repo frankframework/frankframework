@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log=LogManager.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
 

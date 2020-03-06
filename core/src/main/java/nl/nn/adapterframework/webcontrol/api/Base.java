@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +58,7 @@ import org.xml.sax.InputSource;
 public abstract class Base {
 	@Context ServletConfig servletConfig;
 
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	private IbisContext ibisContext = null;
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 

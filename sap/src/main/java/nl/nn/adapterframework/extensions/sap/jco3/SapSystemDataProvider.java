@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +34,7 @@ import com.sap.conn.jco.ext.Environment;
  * @since   5.0
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
-	private static Logger log = LogUtil.getLogger(SapSystemDataProvider.class);
+	private static Logger log = LogManager.getLogger(SapSystemDataProvider.class);
 	private static SapSystemDataProvider self = null;
 	private DestinationDataEventListener destinationDataEventListener;
 

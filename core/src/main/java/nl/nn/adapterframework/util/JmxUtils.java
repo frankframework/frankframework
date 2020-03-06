@@ -26,6 +26,7 @@ import javax.management.modelmbean.ModelMBeanAttributeInfo;
 import javax.management.modelmbean.ModelMBeanOperationInfo;
 import javax.management.modelmbean.RequiredModelMBean;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 /**
  * Utility classes for JMX.
@@ -33,7 +34,7 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips
  */
 public class JmxUtils {
-	protected static Logger log = LogUtil.getLogger(JmxUtils.class);
+	protected static Logger log = LogManager.getLogger(JmxUtils.class);
 
 	static MBeanServer mbeanServer=null;
 	

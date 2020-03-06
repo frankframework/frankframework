@@ -38,6 +38,7 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -53,7 +54,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.4.2
  */
 public class CredentialFactory implements CallbackHandler {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	
 	private String alias;
 	private String username;

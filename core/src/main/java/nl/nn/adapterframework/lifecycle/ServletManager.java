@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.net.Priority;
 
 /**
@@ -50,7 +50,7 @@ public class ServletManager {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<String>();
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private ServletContext getServletContext() {
 		return servletContext;

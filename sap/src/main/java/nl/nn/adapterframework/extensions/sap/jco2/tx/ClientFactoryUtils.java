@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco2.tx;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco2.SapSystem;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -36,7 +36,7 @@ import com.sap.mw.jco.JCO;
  * @since   4.8
  */
 public abstract class ClientFactoryUtils {
-	private static final Logger logger = LogUtil.getLogger(ClientFactoryUtils.class);
+	private static final Logger logger = LogManager.getLogger(ClientFactoryUtils.class);
 
 
 	/**

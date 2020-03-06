@@ -39,7 +39,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
 import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -139,7 +139,7 @@ public class CmisUtils {
 	public final static String CMIS_VERSION_KEY = "cmisVersion";
 	public final static String CMIS_BINDING_KEY = "cmisBinding";
 
-	private static Logger log = LogUtil.getLogger(CmisUtils.class);
+	private static Logger log = LogManager.getLogger(CmisUtils.class);
 
 	public static IPipeLineSession createPipeLineSession() {
 		PipeLineSessionBase session = new PipeLineSessionBase();

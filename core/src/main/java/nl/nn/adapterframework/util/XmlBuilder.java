@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
@@ -44,7 +45,7 @@ import org.jdom2.output.XMLOutputter;
  * @author Peter Leeuwenburgh
  **/
 public class XmlBuilder {
-	static Logger log = LogUtil.getLogger(XmlBuilder.class);
+	static Logger log = LogManager.getLogger(XmlBuilder.class);
 
 	private Element element;
 

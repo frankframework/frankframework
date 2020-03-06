@@ -31,7 +31,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String name;
 	private String prefix;

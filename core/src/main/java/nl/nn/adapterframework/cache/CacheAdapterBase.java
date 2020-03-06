@@ -20,7 +20,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.11
  */
 public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;

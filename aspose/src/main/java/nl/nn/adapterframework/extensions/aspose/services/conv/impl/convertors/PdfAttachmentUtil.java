@@ -36,7 +36,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
 import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class PdfAttachmentUtil {
 
-	private static final Logger LOGGER = LogUtil.getLogger(PdfAttachmentUtil.class);
+	private static final Logger LOGGER = LogManager.getLogger(PdfAttachmentUtil.class);
 
 	private List<CisConversionResult> cisConversionResultList;
 

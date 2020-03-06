@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco3.handlers;
 
 import java.util.List;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -35,7 +35,7 @@ import com.sap.conn.jco.JCoRecord;
  * @since   5.0
  */
 public abstract class Handler extends DefaultHandler {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	protected Handler childHandler;
 	protected boolean parsedStringField = false;

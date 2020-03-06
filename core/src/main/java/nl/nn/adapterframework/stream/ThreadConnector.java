@@ -15,24 +15,26 @@
 */
 package nl.nn.adapterframework.stream;
 
+import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.LogUtil;
+import java.util.Set;
 
 public class ThreadConnector {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private Thread parentThread;
 	private Object threadInfo;
-	private String hideRegex;
+	private Set<String> hideRegex;
 	
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
 		parentThread=Thread.currentThread();
-		hideRegex=LogUtil.getThreadHideRegex();
+		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 	}
 
 	
@@ -40,7 +42,7 @@ public class ThreadConnector {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread!=parentThread) {
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
-			LogUtil.setThreadHideRegex(hideRegex);
+			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
 			// Commented out code below. Do not set contextClassLoader, contextClassLoader is not reliable outside configure().
 			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
@@ -61,7 +63,7 @@ public class ThreadConnector {
 			}
 			return response;
 		} finally {
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.cleanThreadLocalReplace();
 		}
 	}
 
@@ -77,7 +79,7 @@ public class ThreadConnector {
 			}
 			return t;
 		} finally {
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.cleanThreadLocalReplace();
 		}
 	}
 	

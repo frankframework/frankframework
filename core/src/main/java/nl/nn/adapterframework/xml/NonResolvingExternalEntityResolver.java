@@ -23,7 +23,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /*
  * Entity resolver which resolves external entities to an empty string. This
@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class NonResolvingExternalEntityResolver implements EntityResolver2 {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {

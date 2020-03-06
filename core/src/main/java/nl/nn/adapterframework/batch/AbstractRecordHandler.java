@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a 
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String name;
 	private String inputSeparator;

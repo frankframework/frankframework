@@ -19,13 +19,13 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 public class AuthSSLConnectionSocket {
-	private static Logger log = LogUtil.getLogger(AuthSSLConnectionSocket.class);
+	private static Logger log = LogManager.getLogger(AuthSSLConnectionSocket.class);
 	private String protocol = "SSL";
 
 	private boolean allowSelfSignedCertificates = false;

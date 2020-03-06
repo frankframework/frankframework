@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.doc.objects;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -36,7 +36,7 @@ public class AMethod {
     private int order;
     private boolean deprecated;
     private String referredClassName = "";
-    private static final Logger LOGGER = LogUtil.getLogger(AMethod.class);
+    private static final Logger LOGGER = LogManager.getLogger(AMethod.class);
 
 
     public AMethod(String name) {

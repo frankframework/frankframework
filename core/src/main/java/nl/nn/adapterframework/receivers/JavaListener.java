@@ -35,7 +35,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String name;
 	private String serviceName;

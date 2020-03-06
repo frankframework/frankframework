@@ -15,6 +15,27 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,36 +44,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CounterStatistic;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.MsgLogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -84,8 +75,8 @@ import org.springframework.core.task.TaskExecutor;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
-	private Logger log = LogUtil.getLogger(this);
-	protected Logger msgLog = LogUtil.getLogger("MSG");
+	private Logger log = LogManager.getLogger(this);
+	protected Logger msgLog = LogManager.getLogger("MSG");
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
@@ -617,7 +608,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 
 			if (StringUtils.isNotEmpty(composedHideRegex)) {
-				LogUtil.setThreadHideRegex(composedHideRegex);
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 			}
 
 			StringBuilder additionalLogging = new StringBuilder();
@@ -705,7 +696,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.cleanThreadLocalReplace();
 			if (ndcChanged) {
 				ThreadContext.pop();
 			}

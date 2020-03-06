@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceClient;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.12
  */
 public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceClient {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private IMessageHandler<M> handler;
 	private String name;

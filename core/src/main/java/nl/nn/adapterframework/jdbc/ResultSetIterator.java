@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.logging.log4j.Logger;
@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.7
  */
 class ResultSetIterator implements IDataIterator<String> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private Connection conn;
 	private ResultSet rs;

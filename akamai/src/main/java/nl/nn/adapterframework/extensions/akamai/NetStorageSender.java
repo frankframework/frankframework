@@ -52,7 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -77,7 +77,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since	7.0-B4
  */
 public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
-	private Logger log = LogUtil.getLogger(NetStorageSender.class);
+	private Logger log = LogManager.getLogger(NetStorageSender.class);
 
 	private String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");

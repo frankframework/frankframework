@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.8
  */
 abstract public class AbstractJmsConfigurator {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log=LogManager.getLogger(this);
    
     private IPortConnectedListener listener;
     private ConnectionFactory connectionFactory;

@@ -20,7 +20,7 @@ import java.util.Date;
 import nl.nn.adapterframework.core.IErrorMessageFormatter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -48,7 +48,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-    protected Logger log = LogUtil.getLogger(this);
+    protected Logger log = LogManager.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	/**

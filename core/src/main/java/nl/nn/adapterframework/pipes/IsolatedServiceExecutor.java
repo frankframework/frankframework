@@ -23,10 +23,10 @@ import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Guard;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	String serviceName; 
 	HashMap context;
 	boolean targetIsJavaListener;

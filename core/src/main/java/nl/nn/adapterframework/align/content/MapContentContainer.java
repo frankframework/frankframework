@@ -16,10 +16,10 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 import nl.nn.adapterframework.align.ScalarType;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 public class MapContentContainer<V> implements DocumentContainer {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 
 	private String attributeSeparator=".";
 	private String indexSeparator=".";

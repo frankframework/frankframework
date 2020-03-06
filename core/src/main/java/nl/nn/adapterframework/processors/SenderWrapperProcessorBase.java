@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.11
  */
 public abstract class SenderWrapperProcessorBase implements SenderWrapperProcessor {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	protected SenderWrapperProcessor senderWrapperProcessor;
 

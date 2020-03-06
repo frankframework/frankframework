@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -50,7 +50,7 @@ public class RestListenerUtils {
 	private static final String SHOW_CONFIG_STATUS_ADAPTER = "WebControlShowConfigurationStatus";
 	private static final String SHOW_CONFIG_STATUS_RECEIVER = "WebControlShowConfigurationStatus";
 
-	protected static Logger log = LogUtil.getLogger(RestListenerUtils.class);
+	protected static Logger log = LogManager.getLogger(RestListenerUtils.class);
 
 	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
 		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);

@@ -23,7 +23,7 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 /**
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  * @see ServiceClient
  */
 public class ServiceDispatcher  {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private Map<String, ServiceClient> registeredListeners = new HashMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;

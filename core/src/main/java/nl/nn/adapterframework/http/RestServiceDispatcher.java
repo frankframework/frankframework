@@ -53,7 +53,7 @@ import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
@@ -64,8 +64,8 @@ import nl.nn.adapterframework.util.Misc;
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */
 public class RestServiceDispatcher  {
-	protected Logger log = LogUtil.getLogger(this);
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger log = LogManager.getLogger(this);
+	protected Logger secLog = LogManager.getLogger("SEC");
 	
 	private final String WILDCARD="*";
 	private final String KEY_LISTENER="listener";

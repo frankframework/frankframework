@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9
  */
 public class Monitor {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String name;
 	private EventTypeEnum type=EventTypeEnum.TECHNICAL;

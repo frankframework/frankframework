@@ -53,7 +53,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Jaco de Groot
  */
 public class ConfigurationUtils {
-	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
+	private static Logger log = LogManager.getLogger(ConfigurationUtils.class);
 
 	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";

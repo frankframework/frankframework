@@ -9,12 +9,16 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTestBase<P> {
 
@@ -63,12 +67,16 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 	}
 
-	protected class TestAppender extends AppenderSkeleton {
+	protected class TestAppender extends AbstractAppender {
 		public List<String> alerts = new ArrayList<String>();
 
+		protected TestAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions, Property[] properties) {
+			super(name, filter, layout, ignoreExceptions, properties);
+		}
+
 		@Override
-		public void doAppend(LoggingEvent event) {
-			if (event.getLevel().toInt() >= Level.WARN_INT) {
+		public void append(LogEvent event) {
+			if (event.getLevel().isMoreSpecificThan(Level.WARN)) {
 				String msg=event.getLevel() + " " + event.getMessage().toString();
 				alerts.add(msg);
 //				System.out.println("recording alert: "+msg);
@@ -76,19 +84,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 //				e.fillInStackTrace();
 //				e.printStackTrace(System.out);
 			}
-		}
-
-		@Override
-		public void close() {
-		}
-
-		@Override
-		public boolean requiresLayout() {
-			return false;
-		}
-
-		@Override
-		protected void append(LoggingEvent event) {
 		}
 
 		public int getNumberOfAlerts() {
@@ -108,8 +103,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@Before
 	public void init() {
-		testAppender = new TestAppender();
-		LogUtil.getRootLogger().addAppender(testAppender);
+		testAppender = new TestAppender("Test", null, null, false, null);
+		((org.apache.logging.log4j.core.Logger)LogManager.getRootLogger()).addAppender(testAppender);
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr=System.err;

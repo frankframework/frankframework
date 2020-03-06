@@ -60,7 +60,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
@@ -450,7 +450,7 @@ class PreparseResult {
 
 }
 class MyErrorHandler implements XMLErrorHandler {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	protected boolean warn = true;
 
 	@Override

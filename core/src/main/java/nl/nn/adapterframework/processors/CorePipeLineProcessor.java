@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class CorePipeLineProcessor implements PipeLineProcessor {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	private PipeProcessor pipeProcessor;
 
 	@Override

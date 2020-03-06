@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +46,7 @@ import com.sap.conn.jco.JCoException;
  * @since   5.0
  */
 public class IdocXmlHandler extends DefaultHandler {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 	
 	private SapSystem sapSystem;
 	private IDocDocument doc=null;

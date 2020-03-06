@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Baseclass for senders.
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   4.9
  */
 public abstract class SenderBase implements ISender {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	private String name;
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 

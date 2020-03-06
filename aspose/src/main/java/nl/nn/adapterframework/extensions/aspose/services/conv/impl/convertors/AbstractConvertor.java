@@ -35,11 +35,11 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 abstract class AbstractConvertor implements Convertor {
 
-	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
+	private static final Logger LOGGER = LogManager.getLogger(AbstractConvertor.class);
 
 	private List<MediaType> supportedMediaTypes;
 

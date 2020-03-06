@@ -23,7 +23,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @see org.xml.sax.EntityResolver
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 
 public class ClassLoaderEntityResolver implements EntityResolver {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 	private ClassLoader classLoader;
 
 	public ClassLoaderEntityResolver(ClassLoader classLoader) {

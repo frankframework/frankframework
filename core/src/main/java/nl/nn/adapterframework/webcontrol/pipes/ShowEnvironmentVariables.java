@@ -15,30 +15,28 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
+import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.http.HttpUtils;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.config.Configurator;
 
 /**
  * Shows the environment variables.
@@ -47,7 +45,7 @@ import org.apache.logging.log4j.core.config.Configurator;
  */
 
 public class ShowEnvironmentVariables extends ConfigurationBase {
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger secLog = LogManager.getLogger("SEC");
 
 	@Override
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
@@ -85,14 +83,11 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		log.warn(msg);
 		secLog.info(msg);
 
-		Appender appender = LogUtil.getRootLogger().getAppender("appwrap");
-		if (appender != null && appender instanceof IbisAppenderWrapper) {
-			IbisAppenderWrapper ibisAppenderWrapper = (IbisAppenderWrapper) appender;
-			ibisAppenderWrapper.setMaxMessageLength(formLengthLogRecords);
-		}
+		IbisMaskingLayout.setMaxLength(formLengthLogRecords);
+
 		AppConstants.getInstance().setProperty("log.logIntermediaryResults",
 				Boolean.toString(formLogIntermediaryResults));
-		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.toLevel(formLogLevel));
+		Configurator.setLevel(LogManager.getRootLogger().getName(), Level.toLevel(formLogLevel));
 
 		return retrieveFormInput(session, true);
 	}
@@ -162,7 +157,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	}
 
 	private String retrieveLogLevel() {
-		return LogUtil.getRootLogger().getLevel().toString();
+		return LogManager.getRootLogger().getLevel().toString();
 	}
 
 	private boolean retrieveLogIntermediaryResults() {
@@ -175,13 +170,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	}
 
 	private int retrieveLengthLogRecords() {
-		Appender appender = LogUtil.getRootLogger().getAppender("appwrap");
-		if (appender != null && appender instanceof IbisAppenderWrapper) {
-			IbisAppenderWrapper ibisAppenderWrapper = (IbisAppenderWrapper) appender;
-			return ibisAppenderWrapper.getMaxMessageLength();
-		} else {
-			return -1;
-		}
+		return IbisMaskingLayout.getMaxLength();
 	}
 
 	private void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName,

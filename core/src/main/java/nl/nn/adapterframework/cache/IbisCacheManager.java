@@ -25,7 +25,7 @@ import net.sf.ehcache.config.DiskStoreConfiguration;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.11
  */
 public class IbisCacheManager {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private final String CACHE_DIR_KEY="cache.dir";
 	

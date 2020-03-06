@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.digester.AbstractObjectCreationFactory;
@@ -52,7 +52,7 @@ import org.xml.sax.Attributes;
  * @since   4.9
  */
 public class MonitorManager implements EventHandler {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private Configuration configuration;
 	private List<Monitor> monitors = new ArrayList<Monitor>();				// all monitors managed by this monitormanager

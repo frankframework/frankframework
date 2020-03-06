@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JmxUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -33,15 +35,10 @@ import javax.management.modelmbean.ModelMBeanInfo;
 import javax.management.modelmbean.ModelMBeanInfoSupport;
 import javax.management.modelmbean.ModelMBeanOperationInfo;
 import javax.management.modelmbean.RequiredModelMBean;
-
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JmxUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-
-import org.apache.logging.log4j.Logger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Jmx helper class, to make JMX MBeans from {@link nl.nn.adapterframework.core.Adapter Adapters}.
@@ -50,7 +47,7 @@ import org.apache.logging.log4j.Logger;
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-    private static final Logger LOG = LogUtil.getLogger(JmxMbeanHelper.class);
+    private static final Logger LOG = LogManager.getLogger(JmxMbeanHelper.class);
 
 	private static MBeanServer mbServer = null;
 	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<IAdapter, ObjectName>();

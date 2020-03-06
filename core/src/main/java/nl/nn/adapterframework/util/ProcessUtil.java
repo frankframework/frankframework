@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -37,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.8
  */
 public class ProcessUtil {
-	private static Logger log = LogUtil.getLogger(ProcessUtil.class);
+	private static Logger log = LogManager.getLogger(ProcessUtil.class);
 
 	private static String readStream(InputStream stream) throws IOException {
 		StringBuffer result = new StringBuffer();

@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
  * @since  
  */
 public class DbmsSupportFactory implements IDbmsSupportFactory {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 
 	private final static String PRODUCT_NAME_ORACLE_="Oracle";
 	private final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";

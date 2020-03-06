@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import javax.transaction.TransactionManager;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
@@ -35,7 +35,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 
 public class IbisTransaction {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private PlatformTransactionManager txManager;
 	private TransactionStatus txStatus;

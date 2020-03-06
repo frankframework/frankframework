@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -47,7 +48,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
  *
  */
 public final class AppConstants extends Properties implements Serializable {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
@@ -249,7 +250,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Load the contents of a properties file.
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
-	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
+	 * <code><pre>log4j2.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */

@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.GenericReceiver;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -44,7 +44,7 @@ import java.util.List;
  * @author Tim van der Leeuw
  */
 public class ListenerPortPoller implements DisposableBean {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private List portConnectorList = new ArrayList();
 

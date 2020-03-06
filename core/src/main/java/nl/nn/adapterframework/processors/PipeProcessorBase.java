@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,8 +26,8 @@ import org.apache.logging.log4j.Logger;
  * @since   4.11
  */
 public abstract class PipeProcessorBase implements PipeProcessor {
-	protected Logger log = LogUtil.getLogger(this);
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger log = LogManager.getLogger(this);
+	protected Logger secLog = LogManager.getLogger("SEC");
 
 	protected PipeProcessor pipeProcessor;
 

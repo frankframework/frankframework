@@ -26,7 +26,7 @@ import javax.xml.ws.ServiceMode;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ import org.w3c.dom.Node;
 @ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends SOAPProviderBase {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private ServiceDispatcher sd = ServiceDispatcher.getInstance();
 

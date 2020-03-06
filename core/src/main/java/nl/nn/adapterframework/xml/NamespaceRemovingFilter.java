@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 public class NamespaceRemovingFilter extends FullXmlFilter {
-//	Logger log = LogUtil.getLogger(this.getClass());
+//	Logger log = LogManager.getLogger(this.getClass());
 	
 	public NamespaceRemovingFilter() {
 		super();

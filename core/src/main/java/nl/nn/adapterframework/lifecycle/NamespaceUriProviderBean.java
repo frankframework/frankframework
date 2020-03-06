@@ -18,7 +18,7 @@ package nl.nn.adapterframework.lifecycle;
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProvider;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -49,7 +49,7 @@ import org.springframework.context.ApplicationContextAware;
 @IbisInitializer
 public class NamespaceUriProviderBean implements ApplicationContextAware, InitializingBean, DisposableBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	private ApplicationContext applicationContext;
 	private EndpointImpl namespaceRouter = null;
 

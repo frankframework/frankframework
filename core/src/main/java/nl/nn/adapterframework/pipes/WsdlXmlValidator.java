@@ -41,7 +41,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 import javax.wsdl.Definition;
@@ -61,7 +61,7 @@ import javax.xml.namespace.QName;
  * @author Jaco de Groot
  */
 public class WsdlXmlValidator extends SoapValidator {
-	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
+	private static final Logger LOG = LogManager.getLogger(WsdlXmlValidator.class);
 
     private String soapBodyNamespace  = "";
 

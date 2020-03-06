@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -83,7 +83,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.11
  */
 public class XfbSender extends SenderWithParametersBase {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	private String script;
 	private String ft = "SEND_FF";

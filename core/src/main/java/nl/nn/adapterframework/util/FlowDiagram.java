@@ -23,6 +23,7 @@ import java.util.List;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -43,7 +44,7 @@ import nl.nn.adapterframework.extensions.graphviz.Options;
  */
 
 public class FlowDiagram {
-	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
+	private static Logger log = LogManager.getLogger(FlowDiagram.class);
 
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));

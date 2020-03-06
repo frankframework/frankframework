@@ -66,7 +66,7 @@ import com.hierynomus.smbj.share.File;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * 
@@ -75,7 +75,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class Samba2FileSystem implements IWritableFileSystem<String> {
 
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private final String SPNEGO_OID="1.3.6.1.5.5.2";
 	private final String KERBEROS5_OID="1.2.840.113554.1.2.2";

@@ -21,7 +21,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,7 +35,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
-    private final static Logger log = LogUtil.getLogger(EjbDelegatingIbisManager.class);
+    private final static Logger log = LogManager.getLogger(EjbDelegatingIbisManager.class);
     
     private static final String FACTORY_BEAN_ID = "&ibisManagerEjb";
     

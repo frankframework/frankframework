@@ -25,6 +25,7 @@ import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.transaction.NoTransactionException;
@@ -39,7 +40,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	private static Logger log = LogUtil.getLogger(JtaUtil.class);
+	private static Logger log = LogManager.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
 	private static final String USERTRANSACTION_URL2_KEY="jta.userTransactionUrl2";

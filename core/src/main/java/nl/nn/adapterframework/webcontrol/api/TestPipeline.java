@@ -52,7 +52,7 @@ import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -67,7 +67,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public final class TestPipeline extends TimeoutGuardPipe {
 	@Context ServletConfig servletConfig;
 
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger secLog = LogManager.getLogger("SEC");
 
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 

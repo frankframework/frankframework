@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -42,7 +42,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		log=LogUtil.getLogger(getLogCategory());
+		log=LogManager.getLogger(getLogCategory());
 		level=Level.toLevel(getLogLevel());
 	}
 

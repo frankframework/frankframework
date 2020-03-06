@@ -87,7 +87,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -164,7 +164,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 //TODO: Fix javadoc!
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String url;
 	private String urlParam = "url";

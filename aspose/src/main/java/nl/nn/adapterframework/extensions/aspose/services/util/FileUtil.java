@@ -26,7 +26,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public final class FileUtil {
 
-	private static final Logger LOGGER = LogUtil.getLogger(FileUtil.class);
+	private static final Logger LOGGER = LogManager.getLogger(FileUtil.class);
 
 	private FileUtil() {
 	}

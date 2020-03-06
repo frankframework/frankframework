@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -82,7 +82,7 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
+	protected static Logger log = LogManager.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
 	private static final String fvConfigKey="FileViewerServlet.signal";

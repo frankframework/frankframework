@@ -39,7 +39,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.logging.log4j.Logger;
@@ -55,8 +55,8 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public class DefaultIbisManager implements IbisManager {
-	protected Logger log = LogUtil.getLogger(this);
-	protected Logger secLog = LogUtil.getLogger("SEC");
+	protected Logger log = LogManager.getLogger(this);
+	protected Logger secLog = LogManager.getLogger("SEC");
 
 	private IbisContext ibisContext;
 	private List<Configuration> configurations = new ArrayList<Configuration>();

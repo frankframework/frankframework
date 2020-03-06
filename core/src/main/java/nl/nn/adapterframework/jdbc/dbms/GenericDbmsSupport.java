@@ -30,7 +30,7 @@ import java.util.List;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryContext;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
  * @since  
  */
 public class GenericDbmsSupport implements IDbmsSupport {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 
 	protected final static String KEYWORD_SELECT="select";
 

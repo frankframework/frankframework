@@ -70,7 +70,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -91,7 +91,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
 public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;

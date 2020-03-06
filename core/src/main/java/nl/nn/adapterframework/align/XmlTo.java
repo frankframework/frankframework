@@ -41,7 +41,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.content.DocumentContainer;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * XML Schema guided XML converter;
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  */
 public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
-	protected Logger log = LogUtil.getLogger(this.getClass());
+	protected Logger log = LogManager.getLogger(this.getClass());
 
 	private boolean writeAttributes=true;
 	private boolean DEBUG=false; 

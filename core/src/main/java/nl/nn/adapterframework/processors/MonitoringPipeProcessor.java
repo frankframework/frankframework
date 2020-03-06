@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
  * @author Jaco de Groot
  */
 public class MonitoringPipeProcessor extends PipeProcessorBase {
-	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
+	private Logger durationLog = LogManager.getLogger("LongDurationMessages");
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult = null;

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.validation;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	private boolean errorOccured = false;
 	private String reasons;
 	private final XmlValidatorContentHandler xmlValidatorContentHandler;

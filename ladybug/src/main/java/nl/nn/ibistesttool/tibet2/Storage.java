@@ -15,20 +15,6 @@
 */
 package nl.nn.ibistesttool.tibet2;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-
-import javax.jms.JMSException;
-
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -44,20 +30,32 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import javax.jms.JMSException;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Jaco de Groot
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
-	private static final Logger log = LogUtil.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
+	private static final Logger log = LogManager.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
 	private String name;
