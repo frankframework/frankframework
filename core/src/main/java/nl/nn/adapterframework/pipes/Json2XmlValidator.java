@@ -35,6 +35,8 @@ import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -59,7 +61,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <br>
 * @author Gerrit van Brakel
 */
-public class Json2XmlValidator extends XmlValidator {
+public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
 	
@@ -91,6 +93,7 @@ public class Json2XmlValidator extends XmlValidator {
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			throw new ConfigurationException("soapNamespace attribute not supported");
 		}
+		ConfigurationWarnings.add(this, log, getPhysicalDestinationName());
 	}
 	
 	public String getOutputFormat(IPipeLineSession session, boolean responseMode) {
@@ -363,6 +366,25 @@ public class Json2XmlValidator extends XmlValidator {
 	@IbisDoc({"when true, all xml that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		String result=null;
+		if (StringUtils.isNotEmpty(getRoot())) {
+			JsonStructure schema = createJsonSchema(getRoot());
+			result="request message ["+getRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+		}
+		if (StringUtils.isNotEmpty(getResponseRoot())) {
+			if (result==null) {
+				result = "";
+			} else {
+				result += "; ";
+			}
+			JsonStructure schema = createJsonSchema(getResponseRoot());
+			result+="response message ["+getResponseRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+		}
+		return result;
 	}
 
 }
