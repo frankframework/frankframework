@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
@@ -26,12 +27,16 @@ import javax.xml.validation.ValidatorHandler;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
+import org.apache.xerces.xs.XSModel;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
+import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -56,7 +61,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <br>
 * @author Gerrit van Brakel
 */
-public class Json2XmlValidator extends XmlValidator {
+public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
 	
@@ -88,6 +93,7 @@ public class Json2XmlValidator extends XmlValidator {
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			throw new ConfigurationException("soapNamespace attribute not supported");
 		}
+		ConfigurationWarnings.add(this, log, getPhysicalDestinationName());
 	}
 	
 	public String getOutputFormat(IPipeLineSession session, boolean responseMode) {
@@ -245,6 +251,23 @@ public class Json2XmlValidator extends XmlValidator {
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 	
+	public JsonStructure createRequestJsonSchema() {
+		return createJsonSchema(getRoot());
+ 	}
+	public JsonStructure createResponseJsonSchema() {
+		return createJsonSchema(getResponseRoot());
+ 	}
+	
+	public JsonStructure createJsonSchema(String elementName) {
+		return createJsonSchema(elementName, getTargetNamespace());
+	}
+	public JsonStructure createJsonSchema(String elementName, String namespace) {
+		List<XSModel> models = validator.getXSModels();
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements());
+		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
+		return jsonschema;
+	}
+	
 	
 	public String getTargetNamespace() {
 		return targetNamespace;
@@ -341,6 +364,25 @@ public class Json2XmlValidator extends XmlValidator {
 	@IbisDoc({"when true, all xml that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		String result=null;
+		if (StringUtils.isNotEmpty(getRoot())) {
+			JsonStructure schema = createJsonSchema(getRoot());
+			result="request message ["+getRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+		}
+		if (StringUtils.isNotEmpty(getResponseRoot())) {
+			if (result==null) {
+				result = "";
+			} else {
+				result += "; ";
+			}
+			JsonStructure schema = createJsonSchema(getResponseRoot());
+			result+="response message ["+getResponseRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+		}
+		return result;
 	}
 
 }

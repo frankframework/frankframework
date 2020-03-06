@@ -19,7 +19,6 @@ package nl.nn.adapterframework.validation;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.xerces.xs.XSModel;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -153,6 +153,7 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract List<XSModel> getXSModels();
 
 	/**
 	 * @param input   the XML string to validate

@@ -358,6 +358,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
+	@Override
+	public List<XSModel> getXSModels() {
+		return preparseResult.getXsModels();
+	}
+
 }
 
 

@@ -548,6 +548,19 @@
 			<artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
 			<version>2.3.0</version>
 		</dependency> 
+		<dependency>
+			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
+			<artifactId>bouncy-gpg</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
+			and causes problems during loading from classpath.
+			So, it requires to add explicit dependency.-->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.64</version>
+		</dependency>
 
 		<!-- Test scoped dependencies -->
 	    <dependency>
@@ -593,17 +606,10 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
-			<artifactId>bouncy-gpg</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
-			and causes problems during loading from classpath.
-			So, it requires to add explicit dependency.-->
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.64</version>
+			<groupId>com.networknt</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>1.0.31</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
