@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="trace" monitorInterval="30">
+    <Appenders>
+        <Console name="stdout">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{1} %m%n"/>
+        </Console>
+        <RollingFile name="file" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-%i.log">
+<!--            <PatternLayout-->
+<!--                    pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n %replace{%msg}{${ctx:log.hideRegex}}{***} $.-${ctx:log.lengthLogRecords}c"/>-->
+            <IbisPatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n"/>
+            <IbisThreadFilter onMatch="NEUTRAL" onMismatch="DENY" regex="${ctx:log.thread.rejectRegex}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${ctx:log.maxBackupIndex}"/>
+        </RollingFile>
+        <RollingFile name="XML" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml-%i.log">
+            <IbisXmlLayout />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${ctx:log.xml.maxFileSize}" />
+            </Policies>
+            <DefaultRolloverStrategy max="${ctx:log.xml.maxBackupIndex}" />
+        </RollingFile>
+        <RollingFile name="galm" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm-%i.log">
+            <PatternLayout pattern="%m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100KB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+        <RollingFile name="msg" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages-%i.log" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${ctx:log.msg.maxBackupIndex}"/>
+        </RollingFile>
+        <RollingFile name="security" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${ctx:log.maxBackupIndex}"/>
+        </RollingFile>
+        <RollingFile name="heartbeat" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${ctx:log.maxBackupIndex}"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="nl.nn.adapterframework.testtool" level="WARN">
+        </Logger>
+        <Logger name="org.apache" level="INFO">
+        </Logger>
+        <Logger name="org.apache.commons" level="WARN">
+        </Logger>
+        <Logger name="GALM" additivity="false" level="INFO">
+            <AppenderRef  ref="galm"/>
+        </Logger>
+        <Logger name="MSG" additivity="false" level="INFO">
+            <AppenderRef  ref="msg"/>
+        </Logger>
+        <Logger name="SEC" additivity="false" level="INFO">
+            <AppenderRef  ref="security"/>
+        </Logger>
+        <Logger name="HEARTBEAT" additivity="false" level="INFO">
+            <AppenderRef  ref="heartbeat"/>
+        </Logger>
+
+        <!-- Debug JMS polling on local development machine -->
+        <!-- appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">
+            <layout class="org.apache.log4j.EnhancedPatternLayout">
+                <param name="ConversionPattern" value="%m%n"/>
+            </layout>
+        </appender>
+        <logger name="nl.nn.adapterframework.unmanaged">
+            <level value="TRACE"/>
+            <appender-ref ref="stdout-local-development"/>
+        </logger>
+        <logger name="nl.nn.adapterframework.jms.IbisMessageListenerContainer">
+            <level value="TRACE"/>
+            <appender-ref ref="stdout-local-development"/>
+        </logger -->
+
+        <!-- Add root below loggers because: The content of element type "log4j:configuration" must match "(renderer*,throwableRenderer?,appender*,plugin*,(category|logger)*,root?,(categoryFactory|loggerFactory)?)". -->
+        <Root>
+            <AppenderRef  ref="file"/>
+            <AppenderRef ref="XML" />
+            <AppenderRef  ref="stdout"/>
+        </Root>
+    </Loggers>
+</Configuration>
