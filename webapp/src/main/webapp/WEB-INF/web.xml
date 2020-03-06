@@ -71,6 +71,24 @@
 		<servlet-name>action</servlet-name>
 	</filter-mapping>
 
+	<listener>
+		<listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+	</listener>
+
+	<filter>
+		<filter-name>log4jServletFilter</filter-name>
+		<filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>log4jServletFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+		<dispatcher>ERROR</dispatcher>
+		<dispatcher>ASYNC</dispatcher><!-- Servlet 3.0 w/ disabled auto-initialization only; not supported in 2.5 -->
+	</filter-mapping>
+
 	<!--
 		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
 		After loading the ROOT context with all HTTP/CXF servlets (endpoints), the all servlets will be initialized.
