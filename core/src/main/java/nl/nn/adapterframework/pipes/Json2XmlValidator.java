@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,11 +25,8 @@ import javax.json.JsonStructure;
 import javax.xml.transform.Source;
 import javax.xml.validation.ValidatorHandler;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
-import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
@@ -41,6 +39,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -209,6 +208,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware());
 				Map<String,Object> parametervalues = null;
 				parametervalues = prc.getValueMap(parameterList);
+				// remove parameters with null values, to support optional request parameters
+				for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
+					String key=it.next();
+					if (parametervalues.get(key)==null) {
+						it.remove();
+					}
+				}
 				aligner.setOverrideValues(parametervalues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
