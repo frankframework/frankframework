@@ -636,29 +636,12 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<artifactId>frankdoc-plugin</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
 				<configuration>
-					<doclet>nl.nn.adapterframework.doc.doclet.ListClass</doclet>
-					<subpackages>nl.nn.adapterframework</subpackages>
-					<sourcepath>../iaf/core/src/main/java</sourcepath>
-					<show>private</show>
 					<tags>
-						<tag>
-							<name>order</name>
-						</tag>
-						<tag>
-							<name>description</name>
-						</tag>
-						<tag>
-							<name>default</name>
-						</tag>
-						<tag>
-							<name>reference</name>
-						</tag>
-						<tag>
-							<name>domain</name>
-						</tag>
+						<tag>description</tag>
+						<tag>default</tag>
 					</tags>
 				</configuration>
 			</plugin>
