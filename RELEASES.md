@@ -11,6 +11,7 @@ Upcoming
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...7.5-release)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+- reset Adapter Statistics by the hour when entering a new hour time slot
 
 
 

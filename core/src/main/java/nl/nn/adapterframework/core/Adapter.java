@@ -119,6 +119,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 	
+	private int hourOfLastMessageProcessed=-1;
 	private long[] numOfMessagesStartProcessingByHour = new long[24];
 	
 	private StatisticsKeeper statsMessageProcessingDuration = null;
@@ -250,6 +251,23 @@ public class Adapter implements IAdapter, NamedBean {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(startTime);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			if (hourOfLastMessageProcessed!=hour) {
+				if (hourOfLastMessageProcessed>=0) {
+					if (hourOfLastMessageProcessed<hour) {
+						for(int i=hourOfLastMessageProcessed+1; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					} else {
+						for(int i=hourOfLastMessageProcessed+1; i<24; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+						for(int i=0; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					}
+				}
+				hourOfLastMessageProcessed=hour;
+			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
 	}
