@@ -552,6 +552,13 @@
 			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
 			<artifactId>bouncy-gpg</artifactId>
 			<version>2.2.0</version>
+			<exclusions>
+				<exclusion>
+					<!-- #475 exclude to avoid excessive logging of other slf4j enabled components like quartz -->
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 <!--		Bouncy GPG uses this version. However another dependency uses 1.60,
 			and causes problems during loading from classpath.
