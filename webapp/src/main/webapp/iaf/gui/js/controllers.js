@@ -1128,6 +1128,9 @@ angular.module('iaf.beheerconsole')
 	$scope.closeNote = function(index) {
 		$scope.notes.splice(index, 1);
 	};
+	$scope.closeNotes = function() {
+		$scope.notes = [];
+	};
 
 	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
@@ -1136,79 +1139,135 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.receiverName)
 		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
 
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete(base_url+"/"+message.id, function() {
+		Api.Delete($scope.base_url+"/"+message.id, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
+			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
+			$scope.updateTable();
 		}, function() {
 			message.deleting = false;
 			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
+			$scope.updateTable();
 		});
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+messageId+"/download");
 	};
 
-	$scope.resendMessage = function(message) {
+	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put(base_url+"/"+message.id, false, function() {
-			for(x in $scope.messages) {
-				if($scope.messages[x].id == message.id) {
-					$scope.messages.splice(x, 1);
-				}
-			}
-		}, function() {
+		Api.Put($scope.base_url+"/"+message.id, false, function() {
+			if(callback != undefined && typeof callback == 'function')
+				callback(message.id);
+			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
+			$scope.updateTable();
+		}, function(data) {
 			message.resending = false;
-			$scope.addNote("danger", "Unable to resend messages with ID: "+message.id);
+			$scope.addNote("danger", "Unable to resend message ["+message.id+"]. "+data.error);
+			$scope.updateTable();
 		});
 	};
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', 'DTColumnDefBuilder', function($scope, Api, DTColumnDefBuilder) {
-	$scope.columnDefs = [
-		DTColumnDefBuilder.newColumnDef(0).notSortable(),
-		DTColumnDefBuilder.newColumnDef(1),
-		DTColumnDefBuilder.newColumnDef(2),
-		DTColumnDefBuilder.newColumnDef(3),
-		DTColumnDefBuilder.newColumnDef(4),
-		DTColumnDefBuilder.newColumnDef(5),
-		DTColumnDefBuilder.newColumnDef(6),
-		DTColumnDefBuilder.newColumnDef(7),
-		DTColumnDefBuilder.newColumnDef(8),
-		DTColumnDefBuilder.newColumnDef(9),
-		DTColumnDefBuilder.newColumnDef(10),
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
+	$scope.closeNotes();
+
+	var a =  '<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
+		a += '<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
+		{ "data": "id", bSortable: false },
+		{ "data": "insertDate", className: "date" },
+		{ "data": "host", bSortable: false },
+		{ "data": "originalId", bSortable: false },
+		{ "data": "correlationId", bSortable: false },
+		{ "data": "comment", bSortable: false },
+		{ "data": "expiryDate", className: "date", bSortable: false },
+		{ "data": "label", bSortable: false },
 	];
 
-	$scope.messages = [];
-	Api.Get("adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage", function(data) {
-		$.extend($scope, data);
-	});
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'asc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
 
-	$scope.deleteMessage = function(message) {
-		$scope.doDeleteMessage(message, function(messageId) {
-			for(x in $scope.messages) {
-				if($scope.messages[x].id == messageId) {
-					$scope.messages.splice(x, 1);
+			var url = $scope.base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
 				}
 			}
-		});
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
 	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
+
+	$scope.resendMessage = $scope.doResendMessage;
+	$scope.deleteMessage = $scope.doDeleteMessage;
 }])
 
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
 	$scope.message = {};
+	$scope.closeNotes();
 
 	$scope.message.id = $state.params.messageId;
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
-	Api.Get(base_url+"/"+$scope.message.id, function(data) {
+	Api.Get($scope.base_url+"/"+$scope.message.id, function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
@@ -1221,10 +1280,17 @@ angular.module('iaf.beheerconsole')
 		return data;
 	}});
 
+	$scope.resendMessage = function(message) {
+		$scope.doResendMessage(message, function(messageId) {
+			//Go back to the error storage list if successful
+			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+		});
+	};
+
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
+			//Go back to the error storage list if successful
 			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
-			$scope.addNote("success", "Successfully removed message with ID: "+messageId);
 		});
 	};
 }])
@@ -1241,15 +1307,87 @@ angular.module('iaf.beheerconsole')
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
 	};
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 }])
 
-.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.messages = [];
+.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
 
-	Api.Get(base_url, function(data) {
-		$.extend($scope, data);
-	});
+	var a =  '<a ui-sref="pages.messagelog.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
+		{ "data": "id", bSortable: false },
+		{ "data": "insertDate", className: "date" },
+		{ "data": "type", bSortable: false },
+		{ "data": "host", bSortable: false },
+		{ "data": "originalId", bSortable: false },
+		{ "data": "correlationId", bSortable: false },
+		{ "data": "comment", bSortable: false },
+		{ "data": "expiryDate", className: "date", bSortable: false },
+		{ "data": "label", bSortable: false },
+	];
+
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'desc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
+
+			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
+				}
+			}
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
+	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		type: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
 }])
 
 .controller('AdapterMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
@@ -1286,15 +1424,87 @@ angular.module('iaf.beheerconsole')
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
 	};
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 }])
 
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.messages = [];
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
 
-	Api.Get(base_url, function(data) {
-		$.extend($scope, data);
-	});
+	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
+		{ "data": "id", bSortable: false },
+		{ "data": "insertDate", className: "date" },
+		{ "data": "type", bSortable: false },
+		{ "data": "host", bSortable: false },
+		{ "data": "originalId", bSortable: false },
+		{ "data": "correlationId", bSortable: false },
+		{ "data": "comment", bSortable: false },
+		{ "data": "expiryDate", className: "date", bSortable: false },
+		{ "data": "label", bSortable: false },
+	];
+
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'desc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
+
+			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
+				}
+			}
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
+	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		type: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
 }])
 
 .controller('PipeMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {

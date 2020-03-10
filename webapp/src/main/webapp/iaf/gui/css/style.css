@@ -3652,6 +3652,10 @@ body.body-small .footer.fixed {
   vertical-align: top;
   min-width: 75px;
 }
+.table > thead > tr > th > input {
+  font-weight: 400;
+  font-size: 14px;
+}
 .table-nohead > tbody > tr:first-child > td {
   border-top: none;
 }
