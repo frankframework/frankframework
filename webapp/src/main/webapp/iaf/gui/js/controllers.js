@@ -394,10 +394,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.openOldGui = function() {
-		location.href = Misc.getServerPath() + "rest/showConfigurationStatus";
-	};
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
