@@ -246,6 +246,7 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
+			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
 			var poller = new this.createPollerObject(uri, callback);
 			data[uri] = poller;
 			if(!!autoStart)

@@ -187,7 +187,7 @@ angular.module('iaf.beheerconsole')
 			}
 
 			$scope.messageLog = configurations;
-		});
+		}, true, 60000);
 
 		var raw_adapter_data = {};
 		var pollerCallback = function(allAdapters) {
