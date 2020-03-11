@@ -184,7 +184,7 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		sender.configure();
 		sender.open();
 		PipeLineSessionBase session = new PipeLineSessionBase();
-		session.put("id", "testmsg_" + Misc.createUUID());
+		session.put(IPipeLineSession.messageIdKey, "testmsg_" + Misc.createUUID());
 		return sender.sendMessage(new Message(message), session).asString();
 	}
 

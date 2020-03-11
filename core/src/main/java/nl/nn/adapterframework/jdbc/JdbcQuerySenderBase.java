@@ -262,13 +262,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if (StringUtils.isEmpty(getBlobSessionKey())) {
 					return executeUpdateBlobQuery(statement,message.asInputStream());
 				} 
-				return executeUpdateBlobQuery(statement,session.get(getBlobSessionKey()));
+				return executeUpdateBlobQuery(statement,session==null?null:session.get(getBlobSessionKey()));
 			} 
 			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
 				if (StringUtils.isEmpty(getClobSessionKey())) {
 					return executeUpdateClobQuery(statement,message.asReader());
 				} 
-				return executeUpdateClobQuery(statement,session.get(getClobSessionKey()));
+				return executeUpdateClobQuery(statement,session==null?null:session.get(getClobSessionKey()));
 			} 
 			if ("package".equalsIgnoreCase(queryContext.getQueryType())) {
 				return executePackageQuery(connection, statement, queryContext.getQuery());

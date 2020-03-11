@@ -15,12 +15,11 @@
 */
 package nl.nn.adapterframework.cache;
 
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -81,9 +80,9 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	protected abstract V stringToValue(String value);
 
 	@Override
-	public String transformKey(String input, Map<String,Object> sessionContext) {
-		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && sessionContext!=null) {
-			input=(String)sessionContext.get(getKeyInputSessionKey());
+	public String transformKey(String input, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
+			input=(String)session.get(getKeyInputSessionKey());
 		}
 		if (keyTp!=null) {
 			try {
@@ -103,16 +102,16 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	}
 
 	@Override
-	public V transformValue(String value, Map<String,Object> sessionContext) {
-		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && sessionContext!=null) {
-			value=(String)sessionContext.get(getValueInputSessionKey());
+	public V transformValue(String value, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
+			value=(String)session.get(getValueInputSessionKey());
 		}
 		if (valueTp!=null) {
 			try{
 				value=valueTp.transform(value, null);
 			} catch (Exception e) {
-			   log.error(getLogPrefix()+"transformValue() cannot transform cache value ["+value+"], will not cache",e);
-			   return null; 
+				log.error(getLogPrefix() + "transformValue() cannot transform cache value [" + value + "], will not cache", e);
+				return null;
 			}
 		}
 		if (StringUtils.isEmpty(value)) {

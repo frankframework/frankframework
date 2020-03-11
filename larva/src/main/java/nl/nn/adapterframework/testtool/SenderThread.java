@@ -17,31 +17,21 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class SenderThread extends Thread {
-    private static Logger log = LogUtil.getLogger(SenderThread.class);
-    
-    private String name;
-    private ISender sender;
-	private ISenderWithParameters senderWithParameters;
-	private IPipeLineSession session;
-    private String request;
-    private String response;
-    private SenderException senderException;
-    private IOException ioException;
-    private TimeOutException timeOutException;
-    private boolean convertExceptionToMessage = false;
+	private static Logger log = LogUtil.getLogger(SenderThread.class);
 
-    SenderThread(ISender sender, String request, boolean convertExceptionToMessage) {
+	private String name;
+	private ISender sender;
+	private IPipeLineSession session;
+	private String request;
+	private String response;
+	private SenderException senderException;
+	private IOException ioException;
+	private TimeOutException timeOutException;
+	private boolean convertExceptionToMessage = false;
+
+	SenderThread(ISender sender, String request, IPipeLineSession session, boolean convertExceptionToMessage) {
 		name = sender.getName();
 		this.sender = sender;
-        this.request = request;
-        this.convertExceptionToMessage = convertExceptionToMessage;
-		log.debug("Creating SenderThread for ISender '" + name + "'");
-		log.debug("Request: " + request);
-    }
-
-	SenderThread(ISenderWithParameters senderWithParameters, String request, IPipeLineSession session, boolean convertExceptionToMessage) {
-		name = senderWithParameters.getName();
-		this.senderWithParameters = senderWithParameters;
 		this.request = request;
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
@@ -55,11 +45,7 @@ public class SenderThread extends Thread {
         		session = new PipeLineSessionBase();
         	}
         	session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
-        	if (senderWithParameters == null) {
-				response = sender.sendMessage(new Message(request), session).asString();
-        	} else {
-				response = senderWithParameters.sendMessage(new Message(request),  session).asString();
-        	}
+			response = sender.sendMessage(new Message(request), session).asString();
         } catch(SenderException e) {
         	if (convertExceptionToMessage) {
         		response = Util.throwableToXml(e);

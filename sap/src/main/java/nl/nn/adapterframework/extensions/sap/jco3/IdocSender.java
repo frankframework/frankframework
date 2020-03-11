@@ -53,13 +53,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class IdocSender extends SapSenderBase {
 
-	protected IDocDocument parseIdoc(SapSystem sapSystem, String message) throws SenderException {
+	protected IDocDocument parseIdoc(SapSystem sapSystem, Message message) throws SenderException {
 		
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 	
 		try {
 			log.debug(getLogPrefix()+"start parsing Idoc");
-			XmlUtils.parseXml(handler, message);	
+			XmlUtils.parseXml(handler, message.asInputSource());	
 			log.debug(getLogPrefix()+"finished parsing Idoc");
 			return handler.getIdoc();
 		} catch (Exception e) {
@@ -77,7 +77,7 @@ public class IdocSender extends SapSenderBase {
 			}
 			SapSystem sapSystem = getSystem(pvl);
 			
-			IDocDocument idoc = parseIdoc(sapSystem,message.asString());
+			IDocDocument idoc = parseIdoc(sapSystem,message);
 			
 			try {
 				log.trace(getLogPrefix()+"checking syntax");

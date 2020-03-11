@@ -2501,12 +2501,7 @@ public class TestTool {
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
 		IPipeLineSession session = (IPipeLineSession)senderInfo.get("session");
-		SenderThread senderThread;
-		if (session == null) {
-			senderThread = new SenderThread(sender, fileContent, convertExceptionToMessage.booleanValue());
-		} else {
-			senderThread = new SenderThread((ISenderWithParameters)sender, fileContent, session, convertExceptionToMessage.booleanValue());
-		}
+		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue());
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
 		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
