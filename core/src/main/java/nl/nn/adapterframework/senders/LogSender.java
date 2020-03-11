@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 
@@ -56,7 +54,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		log.log(level,message);
 		if (getParameterList() != null) {
 			try {

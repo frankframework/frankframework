@@ -568,8 +568,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		String message=input.asString();
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
+		String message;
+		try {
+			message = input.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {

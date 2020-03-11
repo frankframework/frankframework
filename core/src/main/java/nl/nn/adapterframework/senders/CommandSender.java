@@ -49,12 +49,16 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
 		} else {
-			commandline = commandToList(message.asString());
+			try {
+				commandline = commandToList(message.asString());
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
+			}
 		}
 		if (paramList!=null) {
 			ParameterValueList pvl;

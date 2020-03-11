@@ -71,7 +71,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);
@@ -83,8 +83,8 @@ public class ZipWriterSender extends SenderWithParametersBase {
 		if (sessionData==null) {
 			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
 		} 
-		String filename=filenameParameter==null?message.asString():(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
 		try {
+			String filename=filenameParameter==null?message.asString():(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
 			if (contentsParameter==null) {
 				if (message!=null) {
 					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());

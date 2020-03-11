@@ -17,8 +17,6 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.quartz.JobBuilder.newJob;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -86,7 +84,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException {
 		try {
 			String correlationID = session==null ? "" : session.getMessageId();
 			ParameterValueList values = paramList.getValues(message, session);

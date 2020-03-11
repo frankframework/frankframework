@@ -125,10 +125,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
-				if (message.asString().contains("error")) {
-					throw new SenderException("Exception triggered", e);
+				try {
+					if (message.asString().contains("error")) {
+						throw new SenderException("Exception triggered", e);
+					}
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(),e);
 				}
 				return super.sendMessage(message, session);
 			}

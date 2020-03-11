@@ -332,7 +332,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
@@ -345,21 +345,27 @@ public class CmisSender extends SenderWithParametersBase {
 			if(runtimeSession || !isKeepSession()) {
 				cmisSession = createCmisSession(pvl);
 			}
+			String messageString;
+			try {
+				messageString = message.asString();
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
+			}
 			String result;
 			if (getAction().equalsIgnoreCase("get")) {
-				result = sendMessageForActionGet(message.asString(), session, pvl);
+				result = sendMessageForActionGet(messageString, session, pvl);
 			} else if (getAction().equalsIgnoreCase("create")) {
-				result = sendMessageForActionCreate(message.asString(), session);
+				result = sendMessageForActionCreate(messageString, session);
 			} else if (getAction().equalsIgnoreCase("delete")) {
-				result = sendMessageForActionDelete(message.asString(), session);
+				result = sendMessageForActionDelete(messageString, session);
 			} else if (getAction().equalsIgnoreCase("find")) {
-				result = sendMessageForActionFind(message.asString());
+				result = sendMessageForActionFind(messageString);
 			} else if (getAction().equalsIgnoreCase("update")) {
-				result = sendMessageForActionUpdate(message.asString());
+				result = sendMessageForActionUpdate(messageString);
 			} else if (getAction().equalsIgnoreCase("fetch")) {
-				result = sendMessageForDynamicActions(message.asString(), session);
+				result = sendMessageForDynamicActions(messageString, session);
 			} else if (getAction().equalsIgnoreCase("dynamic")) {
-				result = sendMessageForDynamicActions(message.asString(), session);
+				result = sendMessageForDynamicActions(messageString, session);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}

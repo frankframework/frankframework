@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +66,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		MailSession mailSession;
 		try {
 			mailSession = extract(message, session);
@@ -83,7 +82,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Reads fields from either paramList or Xml file
 	 */
-	public MailSession extract(Message input, IPipeLineSession session) throws SenderException, DomBuilderException, IOException {
+	public MailSession extract(Message input, IPipeLineSession session) throws SenderException, DomBuilderException {
 		MailSession mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, session);
@@ -283,7 +282,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return attachment;
 	}
 
-	private MailSession parseXML(Message input, IPipeLineSession session) throws SenderException, DomBuilderException, IOException {
+	private MailSession parseXML(Message input, IPipeLineSession session) throws SenderException, DomBuilderException {
 		Element from;
 		String subject;
 		String threadTopic;
@@ -297,7 +296,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		MailSession mailSession = new MailSession();
 
-		Element emailElement = XmlUtils.buildElement(input.asString());
+		Element emailElement = XmlUtils.buildElement(input);
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
 		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
 		if (StringUtils.isEmpty(subject)) {
