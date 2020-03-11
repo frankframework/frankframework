@@ -939,9 +939,17 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (threadContext==null) {
 			threadContext = new HashMap();
 		}
-		
-		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+
+		String message = null;
+		String technicalCorrelationId = null;
+		if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+			MessageWrapper wrapper = (MessageWrapper) rawMessage;
+			message = wrapper.getText();
+			technicalCorrelationId = wrapper.getId();
+		} else {
+			message = origin.getStringFromRawMessage(rawMessage, threadContext);
+			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		}
 		String messageId = (String)threadContext.get("id");
 		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
@@ -1220,7 +1228,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				} else {
 					afterMessageProcessedMap=pipelineSession;
 				}
-				origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+				if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+					log.warn("Unable to post process messageId ["+messageId+"] cid ["+technicalCorrelationId+"]");
+				} else {
+					origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+				}
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
