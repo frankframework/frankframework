@@ -19,7 +19,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
@@ -50,7 +49,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	private ThreadConnector threadConnector;
 	
-	private MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
+	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, IOutputStreamingSupport nextProvider) {
 		this.owner=owner;
 		connect(nextStream, nextProvider);
 	}
@@ -96,6 +95,10 @@ public class MessageOutputStream implements AutoCloseable {
 		if (nextProvider!=null && nextProvider instanceof IPipe) {
 			setForward(new PipeForward("success", ((IPipe)nextProvider).getName()));
 		}
+	}
+
+	protected void setRequestStream(Object requestStream) {
+		this.requestStream = requestStream;
 	}
 
 	public void closeRequestStream() throws IOException {
@@ -206,6 +209,9 @@ public class MessageOutputStream implements AutoCloseable {
 	public void setResponse(Object response) {
 		this.response = response;
 	}
+	public Object getResponse() {
+		return response;
+	}
 
 	public void setForward(PipeForward forward) {
 		this.forward = forward;
@@ -213,10 +219,7 @@ public class MessageOutputStream implements AutoCloseable {
 
 
 	public PipeRunResult getPipeRunResult() {
-		Object response = tail.response;
-		if (response instanceof StringWriter) {
-			response = response.toString();
-		}
+		Object response = tail.getResponse();
 		return new PipeRunResult(getForward(), response);
 	}
 
@@ -230,4 +233,15 @@ public class MessageOutputStream implements AutoCloseable {
 		return forward;
 	}
 
+	/**
+	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
+	 */
+	public static MessageOutputStream getTargetStream(INamedObject owner, String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(correlationID, session, nextProvider);
+		if (target==null) {
+			target=new MessageOutputStreamCap(owner, nextProvider);
+		}
+		return target;
+	}
+	
 }
