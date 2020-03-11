@@ -119,8 +119,7 @@ public final class ExecuteJdbcQuery extends Base {
 		try {
 			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			log.error(e);
-			throw new ApiException("An error occured on creating or closing the connection!", 500);
+			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
 		try {

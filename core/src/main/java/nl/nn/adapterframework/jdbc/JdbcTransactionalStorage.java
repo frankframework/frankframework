@@ -39,6 +39,7 @@ import java.util.zip.ZipException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -507,7 +508,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		","+getCommentField()+ " FROM "+getPrefix()+getTableName();
 	}
 	
-	private String getSelectListQuery(IDbmsSupport dbmsSupport, Date startTime, Date endTime, boolean forceDescending) {
+	private String getSelectListQuery(IDbmsSupport dbmsSupport, Date startTime, Date endTime, IMessageBrowser.SortOrder order) {
 		String whereClause=null;
 		if (startTime!=null) {
 			whereClause=getDateField()+">=?";
@@ -515,11 +516,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (endTime!=null) {
 			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
+		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
+			order = SortOrder.valueOf(getOrder());
+		}
+
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
-		  " ORDER BY "+getDateField()+(forceDescending?" DESC ":" "+getOrder()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
+		  " ORDER BY "+getDateField()+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
-	
-	
+
 	private String documentQuery(String name, String query, String purpose) {
 		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
 	}
@@ -1022,11 +1026,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
-		return getIterator(null,null,false);
+		return getIterator(null,null, SortOrder.NONE);
 	}
 
 	@Override
-	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
+	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1034,12 +1038,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			throw new ListenerException(e);
 		}
 		try {
-			String query;
-			if (startTime==null && endTime==null) {
-				query=selectListQuery;
-			} else {
-				query=getSelectListQuery(getDbmsSupport(), startTime, endTime, forceDescending);
-			}
+			String query = getSelectListQuery(getDbmsSupport(), startTime, endTime, order);
 			if (log.isDebugEnabled()) {
 				log.debug("preparing selectListQuery ["+query+"]");
 			}
@@ -1633,10 +1632,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return order;
 		} else {
 			if (type.equalsIgnoreCase(TYPE_MESSAGELOG_PIPE) || type.equalsIgnoreCase(TYPE_MESSAGELOG_RECEIVER)) {
-				return messagesOrder;
+				return messagesOrder; //Defaults to DESC
 			} else {
 				if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
-					return errorsOrder;
+					return errorsOrder; //Defaults to ASC
 				} else {
 					return order;
 				}

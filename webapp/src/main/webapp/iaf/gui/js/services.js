@@ -246,6 +246,7 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
+			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
 			var poller = new this.createPollerObject(uri, callback);
 			data[uri] = poller;
 			if(!!autoStart)
@@ -671,7 +672,6 @@ angular.module('iaf.beheerconsole')
 		};
 		this.Confirm = function() { //(JsonObject, Callback)-> returns boolean
 			var options = {
-				type: "info",
 				title: "Are you sure?",
 				showCancelButton: true,
 			};
@@ -770,6 +770,16 @@ angular.module('iaf.beheerconsole')
 			input = input.replace(/(?:\r\n|\r|\n)/g, '<br />');
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
+		};
+	}).filter('dash', function() {
+		return function(input) {
+			if(input || input === 0) return input;
+			else return "-";
+		};
+	}).filter('perc', function() {
+		return function(input) {
+			if(input || input === 0) return input+"%";
+			else return "-";
 		};
 	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
 		function($rootScope, $http, Base64, $location, appConstants) {
