@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,14 +30,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -66,40 +67,36 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		MailSession mailSession;
 		try {
-			mailSession = extract(message, prc);
+			mailSession = extract(message, session);
 		} catch (DomBuilderException e) {
 			throw new SenderException(e);
 		}
 		sendEmail(mailSession);
 
-		return correlationID;
+		String correlationID = session==null ? null : session.getMessageId();
+		return new Message(correlationID);
 	}
 
 	/**
 	 * Reads fields from either paramList or Xml file
-	 * @param input
-	 * @param prc
-	 * @return MailSession 
-	 * @throws SenderException
-	 * @throws DomBuilderException
 	 */
-	public MailSession extract(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
+	public MailSession extract(Message input, IPipeLineSession session) throws SenderException, DomBuilderException, IOException {
 		MailSession mailSession;
 		if (paramList == null) {
-			mailSession = parseXML(input, prc);
+			mailSession = parseXML(input, session);
 		} else {
-			mailSession = readParameters(prc);
+			mailSession = readParameters(input, session);
 		}
 		return mailSession;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, ParameterResolutionContext prc) throws SenderException, ParameterException {
+	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, IPipeLineSession session) throws SenderException, ParameterException {
 		Collection<MailAttachmentStream> attachments = null;
 		if (pv != null) {
-			attachments = retrieveAttachments(pv.asCollection(), prc);
+			attachments = retrieveAttachments(pv.asCollection(), session);
 			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter [" + attachments + "]");
 		}
 		return attachments;
@@ -115,7 +112,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private MailSession readParameters(ParameterResolutionContext prc) throws SenderException {
+	private MailSession readParameters(Message input, IPipeLineSession session) throws SenderException {
 		EMail from = null;
 		String subject = null;
 		String threadTopic = null;
@@ -124,12 +121,14 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String charset = null;
 		List<EMail> recipients;
 		List<MailAttachmentStream> attachments = null;
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		ParameterValue pv;
 
 		MailSession mail = new MailSession();
 		try {
-			pvl = prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(input, session);
+			}
 			pv = pvl.getParameterValue("from");
 			if (pv != null) {
 				from = new EMail();
@@ -183,7 +182,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			}
 
 			pv = pvl.getParameterValue("attachments");
-			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, prc);
+			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
 				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);
 				mail.setAttachmentList(attachments);
@@ -224,7 +223,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc) throws SenderException {
+	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, IPipeLineSession session) throws SenderException {
 		Collection<MailAttachmentStream> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
 		if (iter != null && iter.hasNext()) {
@@ -241,7 +240,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 				MailAttachmentStream attachment = null;
 				if (StringUtils.isNotEmpty(sessionKey)) {
-					Object object = prc.getSession().get(sessionKey);
+					Object object = session.get(sessionKey);
 					if (object instanceof InputStream) {
 						attachment = streamToMailAttachment((InputStream) object, base64, mimeType);
 					} else if (object instanceof String) {
@@ -284,7 +283,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return attachment;
 	}
 
-	private MailSession parseXML(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
+	private MailSession parseXML(Message input, IPipeLineSession session) throws SenderException, DomBuilderException, IOException {
 		Element from;
 		String subject;
 		String threadTopic;
@@ -298,7 +297,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		MailSession mailSession = new MailSession();
 
-		Element emailElement = XmlUtils.buildElement(input);
+		Element emailElement = XmlUtils.buildElement(input.asString());
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
 		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
 		if (StringUtils.isEmpty(subject)) {
@@ -346,7 +345,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
 		if (attachments != null) {
-			List<MailAttachmentStream> attachmentList = (List<MailAttachmentStream>) retrieveAttachments(attachments, prc);
+			List<MailAttachmentStream> attachmentList = (List<MailAttachmentStream>) retrieveAttachments(attachments, session);
 			mailSession.setAttachmentList(attachmentList);
 		}
 

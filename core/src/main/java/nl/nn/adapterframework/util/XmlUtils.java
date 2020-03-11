@@ -252,7 +252,7 @@ public class XmlUtils {
 	}
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transform(source, null);
+		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
 		Map<String,String> result = new LinkedHashMap<String,String>();
 		while (st1.hasMoreTokens()) {
@@ -1027,7 +1027,7 @@ public class XmlUtils {
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(ClassUtils.getCleanedFilePath(xsltUrl.toExternalForm()));
 			
-			return interpretXsltVersion(tpVersion.transform(stylesource, null));
+			return interpretXsltVersion(tpVersion.transform(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1775,7 +1775,7 @@ public class XmlUtils {
 		if (removeNamespaces) {
 			try {
 				TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
-				return tp.transform(source,null);
+				return tp.transform(source);
 			} catch (Exception e) {
 				throw new TransformerException(e);
 			}

@@ -15,24 +15,26 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Collection of Senders, that are executed all at the same time.
@@ -64,7 +66,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -84,8 +86,7 @@ public class ParallelSenders extends SenderSeries {
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
 			
-			ParameterResolutionContext newPrc = new ParameterResolutionContext(prc.getMessage(), prc.getSession());
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, newPrc, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 
 			executor.execute(pse);
@@ -105,12 +106,12 @@ public class ParallelSenders extends SenderSeries {
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Object result = pse.getReply();
+				Message result = pse.getReply();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
-					resultXml.addAttribute("type", ClassUtils.nameOf(result));
-					resultXml.setValue(XmlUtils.skipXmlDeclaration(result.toString()),false);
+					resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
+					resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 				}
 			} else {
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
@@ -118,7 +119,7 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml); 
 		}
-		return resultsXml.toXML();
+		return new Message(resultsXml.toXML());
 	}
 
 	@Override

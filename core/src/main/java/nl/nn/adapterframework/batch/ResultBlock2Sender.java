@@ -17,7 +17,6 @@ package nl.nn.adapterframework.batch;
 
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +29,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ConfigurationAware;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -156,16 +156,15 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 		if (level==0) {
 			StringWriter writer=(StringWriter)getWriter(session,streamId,false, prc);
 			if (writer!=null) {
-				String message=writer.getBuffer().toString();
+				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
 				writer.getBuffer().setLength(0);
-				ISender sender = getSender();
-				if (sender instanceof ISenderWithParameters) {
-					ISenderWithParameters psender = (ISenderWithParameters)sender;
-					psender.sendMessage(streamId+"-"+incCounter(streamId),message,prc); 
-				} else {
-					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
-				}
+				/*
+				 * This used to be:
+				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session); 
+				 * Be aware that 'correlationId' no longer reflects streamId and counter
+				 */
+				getSender().sendMessage(message,session); 
 			}
 		}
 	}

@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -37,7 +35,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
 
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
@@ -177,7 +178,7 @@ public final class BrowseJdbcTable extends Base {
 					Transformer t = XmlUtils.createTransformer(url);
 					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 				}
-				result = qs.sendMessage("dummy", query);
+				result = qs.sendMessage(new Message(query), null).asString();
 			//} else {
 				//error("errors.generic","This function only supports oracle databases",null);
 			//}

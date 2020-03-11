@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -90,7 +91,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 
 	@Override
-	protected String itemToMessage(A item) throws SenderException {
+	protected Message itemToMessage(A item) throws SenderException {
 		FS ifs = getFileSystem();
 		XmlBuilder result=new XmlBuilder("attachment");
 		try {
@@ -130,7 +131,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		} catch (Exception e) {
 			throw new SenderException("unable to read attachment attributes", e);
 		}
-		return result.toXML();
+		return new Message(result.toXML());
 	}
 
 	

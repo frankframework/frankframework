@@ -15,10 +15,13 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.IOException;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * @author  Gerrit van Brakel
@@ -26,8 +29,9 @@ import nl.nn.adapterframework.senders.SenderWrapperBase;
  */
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 	
-	public String sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return senderWrapperBase.doSendMessage(correlationID, message, prc);
+	@Override
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return senderWrapperBase.doSendMessage(message, session);
 	}
 
 }

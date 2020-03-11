@@ -15,6 +15,14 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
+import java.io.IOException;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -25,12 +33,7 @@ import nl.nn.adapterframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base class for functions that call SAP.
@@ -99,8 +102,8 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID,message,null);
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		return sendMessage(message,null);
 	}
 
 	public SapSystem getSystem(ParameterValueList pvl) throws SapException {

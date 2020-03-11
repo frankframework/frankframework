@@ -138,7 +138,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			log.debug("Succesfully looked up context for principal ["+principal+"]");
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
-				ldapSender.storeLdapException(e, prc);
+				ldapSender.storeLdapException(e, prc.getSession());
 			} else {
 				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
 			}
@@ -150,7 +150,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	
 	protected void handleError(LdapSender ldapSender, ParameterResolutionContext prc, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
-		ldapSender.storeLdapException(t, prc);
+		ldapSender.storeLdapException(t, prc.getSession());
 	}
 
 	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})

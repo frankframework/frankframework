@@ -82,8 +82,6 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String message=filename;
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
 		String result=(String)prr.getResult();
@@ -190,8 +188,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		assertTrue(fileSystemPipe.canProvideOutputStream());
 
-		String correlationId="fakecorrelationid";
-		MessageOutputStream target = fileSystemPipe.provideOutputStream(correlationId, session, null);
+		MessageOutputStream target = fileSystemPipe.provideOutputStream(session, null);
 
 		// stream the contents
 		try (Writer writer = target.asWriter()) {

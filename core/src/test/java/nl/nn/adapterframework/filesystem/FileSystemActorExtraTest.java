@@ -58,7 +58,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 			setFileDate(null, filename, new Date(firstDate.getTime() + (millisPerDay * i)));
 			
 			session.put("appendActionwString", contents+i);
-			ParameterValueList pvl = createParameterValueList(params, message, session);
+			ParameterValueList pvl = params.getValues(message, session);
 			String result = (String)actor.doAction(message, pvl, null);
 			
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");

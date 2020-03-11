@@ -5,10 +5,15 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestFileUtils {
 	
+	public static Message getTestFileMessage(String file) throws IOException {
+		return new Message(getTestFile(file));
+	}
+
 	public static String getTestFile(String file) throws IOException {
 		return getTestFile(file, "UTF-8");
 	}

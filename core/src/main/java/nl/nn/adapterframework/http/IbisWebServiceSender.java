@@ -15,18 +15,21 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.soap.SOAPException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher_ServiceProxy;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -44,6 +47,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	private String serviceName = "serviceListener";
 	private ServiceDispatcher_ServiceProxy proxy;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (ibisInstance==null) {
 			ibisInstance=AppConstants.getInstance().getResolvedProperty("instance.name");
@@ -56,21 +60,25 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 	}
 
+	@Override
 	public void close() throws SenderException {
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	public String sendMessage(String correlationID, String message)
-		throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String correlationID = session==null ? null : session.getMessageId();
 		try {
 			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
-			return proxy.dispatchRequest(getServiceName(),correlationID,message);
+			return new Message(proxy.dispatchRequest(getServiceName(),correlationID,message.asString()));
 		} catch (SOAPException e) {
 			throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
 		}
@@ -80,15 +88,18 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 		return "http://"+getIbisHost()+"/"+getIbisInstance()+"/services";
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return getEndPoint()+" - "+getServiceName();
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
 	@IbisDoc({"name of the sender", ""})
+	@Override
 	public void setName(String name) {
 		this.name=name;
 	}

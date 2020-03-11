@@ -23,13 +23,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
@@ -104,30 +104,21 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 		}
 	}
 	
-	@Override
-	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
-	public final String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null);
-	}
 
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
-	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
-		try {
-			return result==null?null:new Message(result.getResult()).asString();
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
+	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		PipeRunResult result = sendMessage(message, session, null);
+		return result==null?null:new Message(result.getResult());
 	}
 
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
 				c = getConnectionWithTimeout(getTimeout());
-				return new PipeRunResult(null,sendMessage(c, correlationID, message, prc));
+				return new PipeRunResult(null,sendMessage(c, message, session));
 			} catch (JdbcException e) {
 				throw new SenderException(e);
 			} finally {
@@ -135,18 +126,18 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 					try {
 						c.close();
 					} catch (SQLException e) {
-						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
+						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 					}
 				}
 			}
 			
 		} 
 		synchronized (connection) {
-			return new PipeRunResult(null,sendMessage(connection, correlationID, message, prc));
+			return new PipeRunResult(null,sendMessage(connection, message, session));
 		}
 	}
 
-	protected abstract String sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
+	protected abstract String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
 
 	@Override
 	public String toString() {

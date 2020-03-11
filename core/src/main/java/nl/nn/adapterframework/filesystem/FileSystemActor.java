@@ -451,16 +451,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {
 			if (parameterList != null) {
-				pvl = prc.getValues(parameterList);
+				pvl = parameterList.getValues(null, session);
 			}
 		} catch (ParameterException e) {
 			throw new StreamingException("caught exception evaluating parameters", e);

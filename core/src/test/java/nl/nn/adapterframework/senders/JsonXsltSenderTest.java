@@ -13,7 +13,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -35,7 +34,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		Message message = new Message(input);
-		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		PipeRunResult result = sender.sendMessage(message, session, null);
 		String jsonOut=(String)result.getResult();
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
@@ -50,7 +49,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		PipeRunResult result = sender.sendMessage(message, session, null);
 		String xmlOut=result.getResult().toString();
 		assertEquals(expectedXml,xmlOut);
 	}
@@ -66,7 +65,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedText="James";
-		PipeRunResult result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		PipeRunResult result = sender.sendMessage(message, session, null);
 		String textOut=result.getResult().toString();
 		assertEquals(expectedText,textOut);
 	}

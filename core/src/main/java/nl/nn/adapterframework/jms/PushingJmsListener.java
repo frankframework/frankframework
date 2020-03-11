@@ -19,10 +19,9 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.Message;
+//import javax.jms.Message;
 import javax.jms.Session;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,7 +37,9 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -84,12 +85,12 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount {
+public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
 
 	private String listenerPort;
 	private String cacheMode;
 	private IListenerConnector jmsConnector;
-	private IMessageHandler<Message> handler;
+	private IMessageHandler<javax.jms.Message> handler;
 	private IReceiver receiver;
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
@@ -150,7 +151,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
@@ -165,7 +166,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					Message messageReceived=rawMessage;
+					javax.jms.Message messageReceived=rawMessage;
 					long expiration=messageReceived.getJMSExpiration();
 					if (expiration!=0) {
 						timeToLive=expiration-new Date().getTime();
@@ -189,7 +190,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(cid, plr.getResult());
+					getSender().sendMessage(new Message(plr.getResult()), null);
 				}
 			}
 
@@ -236,14 +237,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
     }
 
 	@Override
-	public void setHandler(IMessageHandler<Message> handler) {
+	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
 		this.handler = handler;
 	}
 	@Override
-    public IMessageHandler<Message> getHandler() {
-        return handler;
-    }
-
+	public IMessageHandler<javax.jms.Message> getHandler() {
+		return handler;
+	}
 
 
 
@@ -354,9 +354,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
     @Override
-	public int getDeliveryCount(Object rawMessage) {
+	public int getDeliveryCount(javax.jms.Message rawMessage) {
 		try {
-			Message message=(Message)rawMessage;
+			javax.jms.Message message=rawMessage;
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not

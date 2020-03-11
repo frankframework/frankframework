@@ -23,11 +23,12 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -109,10 +110,11 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String message = input.asString();
 		String messageHeader;
 		try {
-			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey()));
+			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -125,7 +127,7 @@ public class BisJmsSender extends JmsSender {
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String replyMessage = super.sendMessage(correlationID, payload, prc, isMessageHeaderInSoapBody() ? null : messageHeader);
+		String replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		if (isSynchronous()) {
 			String bisError;
 			String bisErrorList;
@@ -137,7 +139,7 @@ public class BisJmsSender extends JmsSender {
 			}
 			if (Boolean.valueOf(bisError).booleanValue()) {
 				log.debug("put in session [" + getErrorListSessionKey() + "] [" + bisErrorList + "]");
-				prc.getSession().put(getErrorListSessionKey(), bisErrorList);
+				session.put(getErrorListSessionKey(), bisErrorList);
 				throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()) + "] returns true");
 			}
 			try {
@@ -153,14 +155,14 @@ public class BisJmsSender extends JmsSender {
 					}
 					replyMessage = XmlUtils.nodeToString(soapBodyElement);
 				}
-				return replyMessage;
+				return new Message(replyMessage);
 
 			} catch (Exception e) {
 				throw new SenderException(e);
 			}
 
 		} else {
-			return replyMessage;
+			return new Message(replyMessage);
 		}
 	}
 

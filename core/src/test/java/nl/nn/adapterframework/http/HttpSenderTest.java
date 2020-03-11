@@ -15,16 +15,18 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+
+import org.junit.Test;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-import org.junit.Test;
+import nl.nn.adapterframework.stream.Message;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
@@ -36,7 +38,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
-		String input = "hallo";
+		Message input = new Message("hallo");
 
 		try {
 			sender.setMethodType("GET");
@@ -44,7 +46,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input);
+			String result = sender.sendMessage(input, null).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -91,18 +93,17 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpGet() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
-		String input = "hallo";
+		Message input = new Message("hallo");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("GET");
 
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -116,11 +117,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpGetWithParams() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "hallo";
+		Message input = new Message("hallo");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -137,7 +137,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -151,11 +151,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpCharset() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "hallo";
+		Message input = new Message("hallo");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setCharSet("ISO-8859-1");
 			sender.setMethodType("POST");
@@ -163,7 +162,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpCharset.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -177,11 +176,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "hallo";
+		Message input = new Message("hallo");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -199,7 +197,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -213,11 +211,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpPostUrlEncoded() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
 			param1.setName("key");
@@ -236,7 +233,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -250,11 +247,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpPostJSON() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "{\"key\": \"value\"}";
+		Message input = new Message("{\"key\": \"value\"}");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setContentType("application/json");
@@ -262,7 +258,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPostJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -276,11 +272,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpPutJSON() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "{\"key\": \"value\"}";
+		Message input = new Message("{\"key\": \"value\"}");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("PUT");
 			sender.setContentType("application/json");
@@ -288,7 +283,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPutJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -302,11 +297,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpMultipart() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -323,7 +317,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -337,11 +331,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpMtom() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -359,7 +352,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -373,11 +366,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void parametersToSkip() throws Throwable {
 		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
+		Message input = new Message("<xml>input</xml>");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
@@ -405,7 +397,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(null, input, prc);
+			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("parametersToSkip.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

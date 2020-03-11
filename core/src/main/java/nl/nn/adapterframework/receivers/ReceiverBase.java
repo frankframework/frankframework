@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -72,6 +71,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.JMSFacade;
@@ -82,6 +82,7 @@ import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
@@ -814,7 +815,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		plr.setState("ERROR");
 		if (getSender()!=null) {
 			// TODO correlationId should be technical correlationID!
-			String sendMsg = sendResultToSender(correlationId, result);
+			String sendMsg = sendResultToSender(correlationId, new Message(result));
 			if (sendMsg != null) {
 				log.warn("problem sending result:"+sendMsg);
 			}
@@ -842,7 +843,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 		try {
 			if (errorSender!=null) {
-				errorSender.sendMessage(correlationId, message);
+				errorSender.sendMessage(new Message(message), null);
 			}
 			Serializable sobj;
 			if (rawMessage instanceof Serializable) {
@@ -1206,7 +1207,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				responseSizeStatistics.addValue(result.length());
 //			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(technicalCorrelationId, result);
+				String sendMsg = sendResultToSender(technicalCorrelationId,new Message(result));
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1981,12 +1982,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 
-	private String sendResultToSender(String correlationId, String result) {
+	private String sendResultToSender(String correlationId, Message result) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(correlationId, result);
+				getSender().sendMessage(result, null);
 			}
 		} catch (Exception e) {
 			String msg = "receiver [" + getName() + "] caught exception in message post processing";
