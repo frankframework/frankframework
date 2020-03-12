@@ -60,7 +60,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=UTF-8", sender.getContentType().toString());
+		assertEquals("text/xml; charset=UTF-8", sender.getContentTypeAndCharset().toString());
 	}
 
 	@Test()
@@ -68,7 +68,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
 		sender.configure();
-		assertEquals("text/html; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/html; charset=ISO-8859-1", sender.getContentTypeAndCharset().toString());
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setCharSet("ISO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentTypeAndCharset().toString());
 	}
 
 	@Test
@@ -85,7 +85,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentTypeAndCharset().toString());
 	}
 
 	@Test
