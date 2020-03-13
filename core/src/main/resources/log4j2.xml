@@ -15,13 +15,6 @@
             </Policies>
             <DefaultRolloverStrategy max="${ctx:log.maxBackupIndex}"/>
         </RollingFile>
-        <RollingFile name="XML" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml-%i.log">
-            <IbisXmlLayout />
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${ctx:log.xml.maxFileSize}" />
-            </Policies>
-            <DefaultRolloverStrategy max="${ctx:log.xml.maxBackupIndex}" />
-        </RollingFile>
         <RollingFile name="galm" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm-%i.log">
             <PatternLayout pattern="%m%n"/>
             <Policies>
@@ -89,7 +82,6 @@
         <!-- Add root below loggers because: The content of element type "log4j:configuration" must match "(renderer*,throwableRenderer?,appender*,plugin*,(category|logger)*,root?,(categoryFactory|loggerFactory)?)". -->
         <Root>
             <AppenderRef  ref="file"/>
-            <AppenderRef ref="XML" />
             <AppenderRef  ref="stdout"/>
         </Root>
     </Loggers>
