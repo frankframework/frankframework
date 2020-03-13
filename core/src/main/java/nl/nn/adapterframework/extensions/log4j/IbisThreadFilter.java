@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.log4j;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
@@ -22,6 +23,8 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
+
+import java.util.regex.Pattern;
 
 /**
  * Extension of StringMatchFilter with the facility of executing a regular
@@ -32,13 +35,13 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  */
 @Plugin(name = "IbisThreadFilter", category = "Core", elementType = "filter", printObject = true)
 public class IbisThreadFilter extends AbstractFilter {
-	protected String regex;
+	protected Pattern regex;
 	protected Level level;
 
 	private IbisThreadFilter(Level level, String regex, Result onMatch, Result onMismatch) {
 		super(onMatch, onMismatch);
 		this.level = level;
-		this.regex = regex;
+		setRegex(regex);
 	}
 	
 	@Override
@@ -51,15 +54,22 @@ public class IbisThreadFilter extends AbstractFilter {
 		if (tn == null || regex == null)
 			return getOnMismatch();
 
-		if (tn.matches(regex)) {
+		if (regex.matcher(tn).matches()) {
 			return getOnMatch();
 		} else {
 			return getOnMismatch();
 		}
 	}
 
+	/**
+	 * Sets the pattern to match. If no pattern is given or pattern is empty,
+	 * then it will match nothing.
+	 * @param regex Regular expression to match.
+	 */
 	public void setRegex(String regex) {
-		this.regex = regex;
+		if (StringUtils.isEmpty(regex))
+			regex = "a^";
+		this.regex = Pattern.compile(regex);
 	}
 
 	public void setlevel(Level level) {

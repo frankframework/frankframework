@@ -42,8 +42,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		if (maxLength > 0 && length > maxLength) {
 			int diff = length - maxLength;
 			result = result.substring(0, maxLength) + " " + String.format(moreMessage, diff) + "\r\n";
-			System.out.println("Difference is " + (diff) + " with maxlength " + maxLength);
 		}
+
 		return result;
 	}
 

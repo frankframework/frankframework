@@ -32,6 +32,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 				.withHeader(headerPattern)
 				.withFooter(footerPattern)
 				.build();
+		System.err.println("Initialized the pattern layout! with event pattern\n" + eventPattern);
 	}
 
 	@PluginFactory
