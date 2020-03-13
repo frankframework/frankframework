@@ -366,6 +366,9 @@ public class Parameter implements INamedObject, IWithParameters {
 				result = getValue();
 			} else {
 				try {
+					if (message==null) {
+						return null;
+					}
 					message.preserve();
 					result=message.asString();
 				} catch (IOException e) {
