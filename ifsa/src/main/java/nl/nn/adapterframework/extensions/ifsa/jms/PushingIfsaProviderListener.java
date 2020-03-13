@@ -155,7 +155,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination,
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), null, destination,
 					getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(), getProviderSelector(),
 					getTimeOut(), -1);
 		} catch (Exception e) {
