@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
  */
 public interface IRecordHandlerManager extends INamedObject {
 
-	public void configure(Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
+	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
 
 	/**
 	 * @param flow New flow to be added to the managed flow elements

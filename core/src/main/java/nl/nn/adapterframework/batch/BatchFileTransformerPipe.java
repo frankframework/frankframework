@@ -62,9 +62,11 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	private boolean overwrite = false;
 	private boolean delete = false;
 
+	@Override
 	protected String getStreamId(Object input, IPipeLineSession session) throws PipeRunException {
 		return ((File)input).getName();
 	}
+	@Override
 	protected InputStream getInputStream(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		try {
 			return new FileInputStream((File)input);
@@ -82,6 +84,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");

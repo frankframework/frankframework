@@ -20,15 +20,13 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -43,7 +41,7 @@ public class Result2Filewriter extends ResultWriter {
 	private String move2dirAfterFinalize;
 	private String filenamePattern;
 	
-	private Map openFiles = Collections.synchronizedMap(new HashMap());
+	private Map<String,File> openFiles = Collections.synchronizedMap(new HashMap<>());
 	
 	public Result2Filewriter() {
 		super();
@@ -51,7 +49,8 @@ public class Result2Filewriter extends ResultWriter {
 		setOnCloseDocument("");
 	}
 	
-	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	@Override
+	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
 		log.debug("create writer ["+streamId+"]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
@@ -62,16 +61,18 @@ public class Result2Filewriter extends ResultWriter {
 		return new FileWriter(outputFile, false);
 	}
 
-	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
-		File outputFile = (File)openFiles.remove(streamId);
+	@Override
+	public void closeDocument(IPipeLineSession session, String streamId) {
+		File outputFile = openFiles.remove(streamId);
 	}
 
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	@Override
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
-		super.finalizeResult(session,streamId, error, prc);
-		super.closeDocument(session,streamId, prc);
+		super.finalizeResult(session,streamId, error);
+		super.closeDocument(session,streamId);
 		
-		File file = (File)openFiles.get(streamId);
+		File file = openFiles.get(streamId);
 		if (file==null) {
 			return null;
 		}
