@@ -72,7 +72,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	@Override
-	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
+	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		String selector=getSelector();
 		if (startTime!=null) {
 			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));

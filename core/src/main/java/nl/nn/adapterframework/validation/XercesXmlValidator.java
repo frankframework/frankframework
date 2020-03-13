@@ -124,7 +124,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache<>();
+			cache = new EhCache<PreparseResult>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
@@ -164,7 +164,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				if (cache == null || isIgnoreCaching()) {
 					this.preparseResult = preparseResult;
 				} else {
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
@@ -262,7 +262,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
 					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
@@ -356,6 +356,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// See comment in method XmlValidator.getSchemas() too.
 		// See ClassLoaderXmlEntityResolver too.
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+	}
+
+	@Override
+	public List<XSModel> getXSModels() {
+		return preparseResult.getXsModels();
 	}
 
 }

@@ -15,23 +15,25 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Send messages to the ibisstore to have them processed exactly-once by another
@@ -112,37 +114,29 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message)
-			throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null);
-	}
-
-	@Override
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		if (sessionKeys != null) {
 			List<String> list = new ArrayList<String>();
-			list.add(StringEscapeUtils.escapeCsv(message));
+			list.add(StringEscapeUtils.escapeCsv(message.asString()));
 			StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 			while (tokenizer.hasMoreElements()) {
 				String sessionKey = (String)tokenizer.nextElement();
-				list.add(StringEscapeUtils.escapeCsv((String)prc.getSession().get(sessionKey)));
+				list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
 			}
 			StrBuilder sb = new StrBuilder();
 			sb.appendWithSeparators(list, ",");
-			message = sb.toString();
+			message = new Message(sb.toString());
 		}
-		String messageId = prc.getSession().getMessageId();
-		if (prc != null && paramList != null
-				&& paramList.findParameter("messageId") != null) {
+		String messageId = session.getMessageId();
+		String correlationID = messageId;
+		if (paramList != null && paramList.findParameter("messageId") != null) {
 			try {
-				messageId = (String)prc.getValueMap(paramList).get("messageId");
+				messageId = (String)paramList.getValues(message, session).getValue("messageId");
 			} catch (ParameterException e) {
 				throw new SenderException("Could not resolve parameter messageId", e);
 			}
 		}
-		return storeMessage(messageId, correlationID, new Date(), null, null, message);
+		return new Message(storeMessage(messageId, correlationID, new Date(), null, null, message.asString()));
 	}
 
 	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", ""})

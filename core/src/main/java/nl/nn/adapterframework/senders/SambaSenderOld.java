@@ -22,27 +22,27 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
+
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
@@ -128,12 +128,11 @@ public class SambaSenderOld extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ParameterValueList pvl = null;
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList != null) {
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "Sender [" + getName()
@@ -142,7 +141,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 
 		SmbFile file;
 		try {
-			file = new SmbFile(smbContext, message);
+			file = new SmbFile(smbContext, message.asString());
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "unable to get SMB file", e);
 		}
@@ -151,9 +150,9 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			if (getAction().equalsIgnoreCase("download")) {
 				SmbFileInputStream is = new SmbFileInputStream(file);
 				InputStream base64 = new Base64InputStream(is, true);
-				return Misc.streamToString(base64);
+				return new Message(Misc.streamToString(base64));
 			} else if (getAction().equalsIgnoreCase("list")) {
-				return listFilesInDirectory(file);
+				return new Message(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {
 				Object paramValue = pvl.getParameterValue("file").getValue();
 				byte[] fileBytes = null;
@@ -171,7 +170,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 				out.write(fileBytes);
 				out.close();
 
-				return getFileAsXmlBuilder(new SmbFile(smbContext, message)).toXML();
+				return new Message(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
 			} else if (getAction().equalsIgnoreCase("delete")) {
 				if (!file.exists())
 					throw new SenderException("file not found");
@@ -209,7 +208,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 					+ file.getCanonicalPath() + "]", e);
 		}
 
-		return "<result>ok</result>";
+		return new Message("<result>ok</result>");
 	}
 
 	private String listFilesInDirectory(SmbFile directory) throws IOException {

@@ -24,12 +24,12 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -48,8 +48,8 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				.getIbisManager().getIbisContext();
 	}
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);
@@ -110,9 +110,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				}
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"", session);
-				result = qs.sendMessage("", "", prc);
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)
@@ -144,9 +142,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				qs.addParameter(param);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"", session);
-				result = qs.sendMessage("", "", prc);
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)
@@ -167,9 +163,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 				qs.addParameter(param);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"", session);
-				result = qs.sendMessage("", "", prc);
+				result = qs.sendMessage(new Message(""), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this,
 						getLogPrefix(session)

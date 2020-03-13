@@ -28,8 +28,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -125,12 +125,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	EchoSender sender = new EchoSender() {
 
 			@Override
-			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 				if (sc!=null) sc.mark("out");
-				if (message.contains("error")) {
-					throw new SenderException("Exception triggered",e);
+				if (message.asString().contains("error")) {
+					throw new SenderException("Exception triggered", e);
 				}
-				return super.sendMessage(correlationID, message, prc);
+				return super.sendMessage(message, session);
 			}
 
 		};

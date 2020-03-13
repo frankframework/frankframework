@@ -108,8 +108,6 @@ public class ApiStreamPipe extends StreamPipe {
 								"Exception configuring dummy query sender", e);
 					}
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(
-							"", session);
 					String slotId = AppConstants.getInstance()
 							.getResolvedProperty("instance.name") + "/"
 							+ session.get("operation");

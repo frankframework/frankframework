@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.SenderWrapperBase;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.senders.SenderWrapperBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * @author  Gerrit van Brakel
@@ -28,23 +31,24 @@ import org.apache.commons.lang.StringUtils;
  */
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
-	public String sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String senderInput=(String)message;
+	@Override
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=(String)prc.getSession().get(senderWrapperBase.getGetInputFromSessionKey());
+			senderInput=new Message(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
-				senderInput=senderWrapperBase.getGetInputFromFixedValue();
+				senderInput=new Message(senderWrapperBase.getGetInputFromFixedValue());
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		String result = senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			prc.getSession().put(senderWrapperBase.getStoreResultInSessionKey(),result);
+			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
 		}
-		return senderWrapperBase.isPreserveInput()?(String)message:result;
+		return senderWrapperBase.isPreserveInput()?message:result;
 	}
 
 }

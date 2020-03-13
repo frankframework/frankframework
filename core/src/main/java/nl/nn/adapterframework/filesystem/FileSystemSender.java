@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -97,17 +96,17 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		return actor.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return actor.provideOutputStream(session, nextProvider);
 	}
 
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(
@@ -115,7 +114,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			Object result=actor.doAction(message, pvl, prc.getSession());
+			Object result=actor.doAction(message, pvl, session);
 			if (result instanceof PipeRunResult) {
 				return (PipeRunResult)result;
 			}
@@ -157,50 +156,38 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})
-	public void setInputFolder(String inputFolder) {
-		actor.setInputFolder(inputFolder);
-	}
-	
-	public String getInputFolder() {
-		return actor.getInputFolder();
-	}
-
-	@IbisDocRef({"3", FILESYSTEMACTOR})
-	public void setBase64(String base64) {
-		actor.setBase64(base64);
-	}
-	public String getBase64() {
-		return actor.getBase64();
-	}
-
-	@IbisDocRef({"4", FILESYSTEMACTOR})
-	public void setRotateDays(int rotateDays) {
-		actor.setRotateDays(rotateDays);
-	}
-	public int getRotateDays() {
-		return actor.getRotateDays();
-	}
-
-	@IbisDocRef({"5", FILESYSTEMACTOR})
-	public void setRotateSize(int rotateSize) {
-		actor.setRotateSize(rotateSize);
-	}
-	public int getRotateSize() {
-		return actor.getRotateSize();
-	}
-
-	@IbisDocRef({"6", FILESYSTEMACTOR})
-	public void setNumberOfBackups(int numberOfBackups) {
-		actor.setNumberOfBackups(numberOfBackups);
-	}
-
-	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	public String getFilename() {
-		return actor.getFilename();
+	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setInputFolder(String inputFolder) {
+		actor.setInputFolder(inputFolder);
+	}
+	
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setCreateFolder(boolean createFolder) {
+		actor.setCreateFolder(createFolder);
+	}
+
+	@IbisDocRef({"5", FILESYSTEMACTOR})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+
+	@IbisDocRef({"6", FILESYSTEMACTOR})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+
+	@IbisDocRef({"7", FILESYSTEMACTOR})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+
+	@IbisDocRef({"8", FILESYSTEMACTOR})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
 	}
 
 }

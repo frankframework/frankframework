@@ -33,13 +33,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Send a message with JMS.
@@ -196,7 +197,12 @@ public final class SendJmsMessage extends Base {
 
 		try {
 			qms.open();
-			qms.sendMessage(technicalCorrelationId, message);
+			/*
+			 * this used to be:
+			 *   qms.sendMessage(technicalCorrelationId,new Message(message), null);
+			 * Be aware that 'technicalCorrelationId' will not be used by default
+			 */
+			qms.sendMessage(new Message(message), null);
 		} catch (Exception e) {
 			throw new ApiException("Error occured sending message", e);
 		} 

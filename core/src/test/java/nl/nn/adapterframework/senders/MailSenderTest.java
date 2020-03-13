@@ -1,16 +1,19 @@
 package nl.nn.adapterframework.senders;
 
-import javax.mail.Provider;
-import javax.mail.Session;
-import javax.mail.Provider.Type;
+import java.io.IOException;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
-import nl.nn.adapterframework.senders.mail.TransportMock;
+import javax.mail.Provider;
+import javax.mail.Provider.Type;
+import javax.mail.Session;
 
 import org.junit.Test;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
+import nl.nn.adapterframework.senders.mail.TransportMock;
+import nl.nn.adapterframework.stream.Message;
 
 public class MailSenderTest extends MailSenderTestBase<MailSender> {
 
@@ -33,10 +36,11 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-				super.sendMessage(correlationID, message, prc);
-				prc.getSession().put("mailSession", mailSession);
-				return correlationID;
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+				super.sendMessage(message, session);
+				session.put("mailSession", mailSession);
+				String correlationID = session.getMessageId();
+				return new Message(correlationID);
 			}
 		};
 		mailSender.setSmtpHost("localhost");

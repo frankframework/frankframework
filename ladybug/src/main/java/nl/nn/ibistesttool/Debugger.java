@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationListener;
+
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -31,6 +33,9 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -40,7 +45,7 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
 	private static final String STUB_STRATEY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEY_NEVER = "Never";
 	private static final String STUB_STRATEY_ALWAYS = "Always";
@@ -50,7 +55,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 	private PipeDescriptionProvider pipeDescriptionProvider;
 	private List<String> rerunRoles;
 
-	protected Set inRerun = new HashSet();
+	protected Set<String> inRerun = new HashSet<String>();
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
@@ -68,23 +73,28 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		this.rerunRoles = rerunRoles;
 	}
 
+	@Override
 	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input) {
 		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input);
 	}
 
+	@Override
 	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue) {
 		return testTool.inputpoint(correlationId, null, "SessionKey " + sessionKey, sessionValue);
 	}
 
+	@Override
 	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output) {
 		return (String)testTool.endpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), output);
 	}
 
+	@Override
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
 		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), throwable.getMessage());
 		return throwable;
 	}
 
+	@Override
 	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Object input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
 		Object result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
@@ -99,90 +109,109 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return result;
 	}
 	
+	@Override
 	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Object output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
 		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output);
 	}
 
+	@Override
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
 		testTool.abortpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), throwable.getMessage());
 		return throwable;
 	}
 
-	public String senderInput(ISender sender, String correlationId, Object input) {
-		return (String)testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
+	@Override
+	public Message senderInput(ISender sender, String correlationId, Message input) {
+		return (Message)testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
 	}
 
-	public String senderOutput(ISender sender, String correlationId, Object output) {
-		return (String)testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
+	@Override
+	public Message senderOutput(ISender sender, String correlationId, Message output) {
+		return (Message)testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
 	}
 
+	@Override
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
 		testTool.abortpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), throwable.getMessage());
 		return throwable;
 	}
 
+	@Override
 	public String replyListenerInput(IListener listener, String correlationId, String input) {
 		return (String)testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input);
 	}
 
+	@Override
 	public String replyListenerOutput(IListener listener, String correlationId, String output) {
 		return (String)testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
 	}
 
+	@Override
 	public Throwable replyListenerAbort(IListener listener, String correlationId, Throwable throwable){
 		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), throwable.getMessage());
 		return throwable;
 	}
 
+	@Override
 	public void createThread(Object sourceObject, String threadId, String correlationId) {
 		testTool.threadCreatepoint(correlationId, threadId); 
 	}
 
+	@Override
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input) {
 		return testTool.threadStartpoint(correlationId, threadId, sourceObject.getClass().getName(), getCheckpointNameForThread(), input);
 	}
 
+	@Override
 	public Object endThread(Object sourceObject, String correlationId, Object output) {
 		return testTool.threadEndpoint(correlationId, sourceObject.getClass().getName(), getCheckpointNameForThread(), output);
 	}
 
+	@Override
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable) {
 		testTool.abortpoint(correlationId, null, getCheckpointNameForThread(), throwable.getMessage());
 		return throwable;
 	}
 
+	@Override
 	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue) {
 		return testTool.inputpoint(correlationId, null, "GetInputFromSessionKey " + sessionKey, sessionValue);
 	}
 
+	@Override
 	public Object getInputFromFixedValue(String correlationId, Object fixedValue) {
 		return testTool.inputpoint(correlationId, null, "GetInputFromFixedValue", fixedValue);
 	}
 
+	@Override
 	public Object getEmptyInputReplacement(String correlationId, Object replacementValue) {
 		return testTool.inputpoint(correlationId, null, "getEmptyInputReplacement", replacementValue);
 	}
 
+	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
 
+	@Override
 	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey.toString(), result);
 	}
 
+	@Override
 	public Object preserveInput(String correlationId, Object input) {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 	
+	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
 		if (securityContext.isUserInRoles(rerunRoles)) {
 			int i = 0;
-			List checkpoints = originalReport.getCheckpoints();
-			Checkpoint checkpoint = (Checkpoint)checkpoints.get(i);
+			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
+			Checkpoint checkpoint = checkpoints.get(i);
 			String checkpointName = checkpoint.getName();
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
@@ -192,7 +221,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 					IPipeLineSession pipeLineSession = new PipeLineSessionBase();
 					while (checkpoints.size() > i + 1) {
 						i++;
-						checkpoint = (Checkpoint)checkpoints.get(i);
+						checkpoint = checkpoints.get(i);
 						checkpointName = checkpoint.getName();
 						if (checkpointName.startsWith("SessionKey ")) {
 							String sessionKey = checkpointName.substring("SessionKey ".length());
@@ -225,29 +254,34 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return errorMessage;
 	}
 
-	public List getStubStrategies() {
-		List stubStrategies = new ArrayList();
+	@Override
+	public List<String> getStubStrategies() {
+		List<String> stubStrategies = new ArrayList<String>();
 		stubStrategies.add(STUB_STRATEY_STUB_ALL_SENDERS);
 		stubStrategies.add(STUB_STRATEY_NEVER);
 		stubStrategies.add(STUB_STRATEY_ALWAYS);
 		return stubStrategies;
 	}
 
+	@Override
 	public String getDefaultStubStrategy() {
 		return STUB_STRATEY_STUB_ALL_SENDERS;
 	}
 
 	// Called by TestTool
+	@Override
 	public boolean stub(Checkpoint checkpoint, String strategy) {
 		return stub(checkpoint.getName(), checkpoint.getType() == Checkpoint.TYPE_ENDPOINT, strategy);
 	}
 
 	// Called by IbisDebuggerAdvice
+	@Override
 	public boolean stubSender(ISender sender, String correlationId) {
 		return stubINamedObject("Sender ", sender, correlationId);
 	}
 
 	// Called by IbisDebuggerAdvice
+	@Override
 	public boolean stubReplyListener(IListener listener, String correlationId) {
 		return stubINamedObject("Listener ", listener, correlationId);
 	}
@@ -323,4 +357,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return name;
 	}
 
+	@Override
+	public void updateReportGeneratorStatus(boolean enabled) {
+		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
+	}
+
+	@Override
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+		testTool.setReportGeneratorEnabled(event.isEnabled());
+	}
 }

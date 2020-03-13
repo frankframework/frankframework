@@ -90,10 +90,9 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			try {
 				pvl = prc.getValues(getParameterList());
 				if (pvl != null) {
-					for (int i = 0; i < parameterList.size(); i++) {
-						Parameter parameter = parameterList.getParameter(i);
-						if("uriPattern".equalsIgnoreCase(parameter.getName()))
-							uriPatternSessionKey = (String) parameter.getValue(pvl, prc);
+					String uriPattern = (String)pvl.getValue("uriPattern");
+					if (uriPattern!=null) {
+						uriPatternSessionKey = uriPattern;
 					}
 				}
 			} catch (ParameterException e) {

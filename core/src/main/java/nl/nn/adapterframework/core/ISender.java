@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * The <code>ISender</code> is responsible for sending a message to
@@ -33,7 +36,7 @@ public interface ISender extends INamedObject {
 	
 	/**
 	 * This method will be called to start the sender. After this method is called the sendMessage method may be called.
-	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(String,String) sendMessage()} method.
+	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(Message,IPipeLineSession) sendMessage()} method.
 	 */ 
 	public void open() throws SenderException;
 	
@@ -63,5 +66,5 @@ public interface ISender extends INamedObject {
 	 * Multiple objects may try to call this method at the same time, from different threads. 
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */ 
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException;
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException;
 }

@@ -59,18 +59,18 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		return null; // JsonParser requires inputSource
 	}
 
 	@Override
-	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(correlationID, input, session, target);
+			return super.createHandler(input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,correlationID);
-		return super.createHandler(correlationID, input, session, prev);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,session);
+		return super.createHandler(input, session, prev);
 	}
 
 

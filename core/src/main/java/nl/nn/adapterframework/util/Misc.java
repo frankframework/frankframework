@@ -890,7 +890,7 @@ public class Misc {
 				return null;
 			}
 		}
-	  }
+	}
 
 	public static String getAge(long value) {
 		long currentTime = (new Date()).getTime();
@@ -909,6 +909,12 @@ public class Misc {
 			}
 		}
 		return ageString;
+	}
+
+	public static String getDurationInMs(long value) {
+		long currentTime = (new Date()).getTime();
+		long duration = currentTime - value;
+		return duration + "ms";
 	}
 
 	public static long parseAge(String value, long defaultValue) {

@@ -27,6 +27,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
 public class TestCreateAction extends SenderBase<CmisSender>{
@@ -57,13 +59,13 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	
 	private String bindingType;
 	private String action;
-	private String input;
+	private Message input;
 	private String expectedResult;
 
 	public TestCreateAction(String bindingType, String action, String input, String expected) {
 		this.bindingType = bindingType;
 		this.action = action;
-		this.input = input;
+		this.input = new Message(input);
 		this.expectedResult = expected;
 	}
 	
@@ -97,7 +99,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 		doReturn("dummy_id").when(objectId).getId();
 		
 		try {
-			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -113,69 +115,63 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	}
 
 	@Test
-	public void fileContentFromSessionKeyAsString() throws ConfigurationException, SenderException, TimeOutException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileContentFromSessionKeyAsString() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileContentSessionKey("fileContent");
 		sender.setUseRootFolder(false);
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
 	@Test
-	public void fileContentFromSessionKeyAsByteArray() throws ConfigurationException, SenderException, TimeOutException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileContentFromSessionKeyAsByteArray() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
 	@Test
-	public void fileContentFromSessionKeyAsInputStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileContentFromSessionKeyAsInputStream() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
 	@Test
-	public void fileStreamFromSessionKeyAsString() throws ConfigurationException, SenderException, TimeOutException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileStreamFromSessionKeyAsString() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
 	@Test
-	public void fileStreamFromSessionKeyAsByteArray() throws ConfigurationException, SenderException, TimeOutException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileStreamFromSessionKeyAsByteArray() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fis", "some content here for test FileStream as byte array".getBytes());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
 	@Test
-	public void fileStreamFromSessionKeyAsInputStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+	public void fileStreamFromSessionKeyAsInputStream() throws Exception {
 		sender.setGetProperties(true);
 		session.put("fis", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 	
@@ -183,12 +179,11 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		exception.expect(SenderException.class);
 		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", 1);
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 

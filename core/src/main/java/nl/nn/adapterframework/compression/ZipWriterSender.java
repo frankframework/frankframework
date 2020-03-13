@@ -23,12 +23,12 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -58,6 +58,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	private Parameter filenameParameter=null;
 	private Parameter contentsParameter=null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		filenameParameter=paramList.findParameter(PARAMETER_FILENAME);
@@ -69,20 +70,20 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ParameterValueList pvl;
 		try {
-			pvl = prc.getValues(paramList);
+			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new SenderException("cannot determine filename and/or contents of zip entry",e);
 		}
 
-		IPipeLineSession session = prc.getSession();
 		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
 		if (sessionData==null) {
 			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
 		} 
-		String filename=filenameParameter==null?message:(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
+		String filename=filenameParameter==null?message.asString():(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
 		try {
 			if (contentsParameter==null) {
 				if (message!=null) {

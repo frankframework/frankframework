@@ -24,10 +24,10 @@ public class ParameterTest {
 		p.setUserName("fakeUsername");
 		p.configure();
 		
+		IPipeLineSession session = new PipeLineSessionBase();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, new PipeLineSessionBase());
 		
-		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, prc));
+		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -38,10 +38,10 @@ public class ParameterTest {
 		p.setPassword("fakePassword");
 		p.configure();
 		
+		IPipeLineSession session = new PipeLineSessionBase();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, new PipeLineSessionBase());
 		
-		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, prc));
+		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -55,9 +55,8 @@ public class ParameterTest {
 		session.put("sessionKey", "fakeSessionVariable");
 		
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		
-		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, prc));
+		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -69,15 +68,14 @@ public class ParameterTest {
 		
 		IPipeLineSession session = new PipeLineSessionBase();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
 		siblingParameter.setName("siblingParameter");
 		siblingParameter.setValue("fakeParameterValue");
 		siblingParameter.configure();
-		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, prc)));
+		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, null, session, false)));
 		
-		assertEquals("fakeParameterValue", p.getValue(alreadyResolvedParameters, prc));
+		assertEquals("fakeParameterValue", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -93,15 +91,14 @@ public class ParameterTest {
 		IPipeLineSession session = new PipeLineSessionBase();
 		session.put("sessionKey", "fakeSessionVariable");
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
 		siblingParameter.setName("siblingParameter");
 		siblingParameter.setValue("fakeParameterValue");
 		siblingParameter.configure();
-		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, prc)));
+		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, null, session, false)));
 		
-		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, prc));
+		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -114,10 +111,9 @@ public class ParameterTest {
 		IPipeLineSession session = new PipeLineSessionBase();
 		
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		
 		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
-		p.getValue(alreadyResolvedParameters, prc);
+		p.getValue(alreadyResolvedParameters, null, session, false);
 	}
 
 }

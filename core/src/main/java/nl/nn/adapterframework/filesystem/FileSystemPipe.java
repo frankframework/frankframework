@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -108,8 +110,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream result = actor.provideOutputStream(session, nextProvider);
 		if (result!=null && result.getForward()==null) {
 			result.setForward(getForward());
 		}
@@ -120,12 +122,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
-		
+		Message message = new Message(input);
 		try {
 			if (paramList != null) {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
@@ -133,9 +134,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 		Object result;
 		try {
-			result = actor.doAction(new Message(input), pvl, session);
+			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
-			if (getForwards().containsKey("exception")) {
+			Map<String, PipeForward> forwards = getForwards();
+			if (forwards!=null && forwards.containsKey("exception")) {
 				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
@@ -175,37 +177,36 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})
-	public void setInputFolder(String inputFolder) {
-		actor.setInputFolder(inputFolder);
-	}
-	public String getInputFolder() {
-		return actor.getInputFolder();
-	}
-	
-	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
-	public String getFilename() {
-		return actor.getFilename();
-	}
 
 	@IbisDocRef({"3", FILESYSTEMACTOR})
+	public void setInputFolder(String inputFolder) {
+		actor.setInputFolder(inputFolder);
+	}
+	
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setCreateFolder(boolean createFolder) {
+		actor.setCreateFolder(createFolder);
+	}
+
+	@IbisDocRef({"5", FILESYSTEMACTOR})
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
 
-	@IbisDocRef({"4", FILESYSTEMACTOR})
+	@IbisDocRef({"6", FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({"5", FILESYSTEMACTOR})
+	@IbisDocRef({"7", FILESYSTEMACTOR})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({"6", FILESYSTEMACTOR})
+	@IbisDocRef({"8", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}

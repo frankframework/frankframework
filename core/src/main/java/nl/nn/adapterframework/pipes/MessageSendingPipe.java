@@ -222,6 +222,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
+	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
+
 
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
@@ -481,7 +483,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 
 		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
 			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
@@ -495,7 +497,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (nextProvider == null) {
 				nextProvider = getStreamTarget();
 			}
-			MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, nextProvider);
+			MessageOutputStream result = streamingSender.provideOutputStream(session, nextProvider);
 			return result;
 			// TODO insert input wrapper
 			// TODO insert input validator
@@ -537,7 +539,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			ParameterList pl = getParameterList();
 			result=returnString;
 			if (pl != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+				ParameterResolutionContext prc = new ParameterResolutionContext (input, session);
 				Map params;
 				try {
 					params = prc.getValueMap(pl);
@@ -812,7 +814,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return validResult;
 	}
 
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, InterruptedException {
+	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		PipeRunResult sendResult = null;
 		String exitState = null;
@@ -835,7 +837,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			try {
 				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext, nextProvider);
-			} catch (SenderException se) {
+			} catch (IOException|SenderException se) {
 				exitState = EXCEPTION_FORWARD;
 				throw se;
 			} catch (TimeOutException toe) {
@@ -868,8 +870,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						}
 					}
 					if (MsgLogUtil.getMsgLogLevelNum(adapter.getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
-						String durationString = Misc.getAge(startTime);
-						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + exitState + "]");
+
+						String duration;
+						if(msgLogHumanReadable) {
+							duration = Misc.getAge(startTime);
+						} else {
+							duration = Misc.getDurationInMs(startTime);
+						}
+						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + duration + "] got exit-state [" + exitState + "]");
 					}
 				}
 			}
@@ -877,11 +885,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sendResult;
 	}
 	
-	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException, IOException {
 		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, next);
+			return ((IStreamingSender)sender).sendMessage(message, session, next);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {
@@ -892,14 +899,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
-			ISenderWithParameters psender = (ISenderWithParameters) sender;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, session, isNamespaceAware());
-			String result = psender.sendMessage(correlationID, (String) input, prc);
-			return new PipeRunResult(null, result);
-		} 
-		Object result = sender.sendMessage(correlationID, (String) input);
-		return new PipeRunResult(null,result);
+		Message result = sender.sendMessage(new Message(input), session);
+		return new PipeRunResult(null,result.asString());
 	}
 
 	public int increaseRetryIntervalAndWait(IPipeLineSession session, int retryInterval, String description) throws InterruptedException {

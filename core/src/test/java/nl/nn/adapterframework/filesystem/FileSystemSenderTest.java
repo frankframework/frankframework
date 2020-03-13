@@ -16,10 +16,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -79,11 +80,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		waitForActionToFinish();
 		
 		String actual = readFile(null, filename);
@@ -114,11 +113,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		waitForActionToFinish();
 
 
@@ -151,11 +148,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		waitForActionToFinish();
 
 		String actual = readFile(null, filename);
@@ -187,8 +182,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		//assertTrue(fileSystemSender.canProvideOutputStream());
 
-		String correlationId="fakecorrelationid";
-		MessageOutputStream target = fileSystemSender.provideOutputStream(correlationId, session, null);
+		MessageOutputStream target = fileSystemSender.provideOutputStream(session, null);
 		assertNotNull(target);
 
 		// stream the contents
@@ -218,14 +212,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		
 		// test
-		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
+		assertEquals("result should be base64 of file content", contents.trim(), result.asString().trim());
 	}
 
 	@Test
@@ -241,25 +234,24 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setBase64("encode");
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
-		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.trim());
+		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.asString().trim());
 	}
 
-	public void fileSystemSenderMoveActionTest(String folder1, String folder2) throws Exception {
+	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folder2!=null) {
+		if (folderExists && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -271,14 +263,16 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setName("destination");
 		p.setValue(folder2);
 		fileSystemSender.addParameter(p);
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		
 		// test
 		// result should be name of the moved file
@@ -293,7 +287,16 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolder() throws Exception {
-		fileSystemSenderMoveActionTest(null,"folder");
+		fileSystemSenderMoveActionTest(null,"folder",true,false);
+	}
+	@Test
+	public void fileSystemSenderMoveActionTestRootToFolderCreateFolder() throws Exception {
+		fileSystemSenderMoveActionTest(null,"folder",false,true);
+	}
+	@Test
+	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		fileSystemSenderMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
 //	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {
@@ -316,18 +319,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=folder;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(folder);
+		Message result = fileSystemSender.sendMessage(message, session);
 		waitForActionToFinish();
 
 		// test
 		
 		boolean actual = _folderExists(folder);
 		// test
-		assertEquals("result of sender should be name of created folder",folder,result);
+		assertEquals("result of sender should be name of created folder",folder,result.asString());
 		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
 
@@ -343,14 +345,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=folder;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(folder);
+		Message result = fileSystemSender.sendMessage(message, session);
 
 		// test
-		assertEquals("result of sender should be name of deleted folder",folder,result);
+		assertEquals("result of sender should be name of deleted folder",folder,result.asString());
 		waitForActionToFinish();
 		
 		boolean actual = _folderExists(folder);
@@ -370,17 +371,16 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 
 		waitForActionToFinish();
 		
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be name of deleted file",filename,result);
+		assertEquals("result of sender should be name of deleted file",filename,result.asString());
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
@@ -404,14 +404,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		deleteFile(null, dest);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 
 		// test
-		assertEquals("result of sender should be new name of file",dest,result);
+		assertEquals("result of sender should be new name of file",dest,result.asString());
 
 		boolean actual = _fileExists(filename);
 		// test
@@ -440,11 +439,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
+		IPipeLineSession session = new PipeLineSessionBase();
 		String correlationId="fakecorrelationid";
-		String message="";
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message("");
+		Message result = fileSystemSender.sendMessage(message, session);
 
 		log.debug(result);
 		
@@ -457,13 +455,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 //		}
 		
 		String anchor=" count=\"";
-		int posCount=result.indexOf(anchor);
+		int posCount=result.asString().indexOf(anchor);
 		if (posCount<0) {
 			fail("result does not contain anchor ["+anchor+"]");
 		}
-		int posQuote=result.indexOf('"',posCount+anchor.length());
+		int posQuote=result.asString().indexOf('"',posCount+anchor.length());
 		
-		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
+		int resultCount = Integer.valueOf(result.asString().substring(posCount+anchor.length(), posQuote));
 		// test
 		assertEquals("count mismatch",numberOfFiles, resultCount);
 		assertEquals("mismatch in number of files",numberOfFiles, resultCount);
@@ -553,22 +551,20 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 		assertTrue("File ["+filename2+"]expected to be present", _fileExists(inputFolder, filename2));
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		String correlationId="fakecorrelationid";
-		String message=filename;
-		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		Message message=new Message(filename);
+		Message result = fileSystemSender.sendMessage(message, session);
 		System.err.println(result);
 		waitForActionToFinish();
 		
 		String anchor=" count=\"";
-		int posCount=result.indexOf(anchor);
+		int posCount=result.asString().indexOf(anchor);
 		if (posCount<0) {
 			fail("result does not contain anchor ["+anchor+"]");
 		}
-		int posQuote=result.indexOf('"',posCount+anchor.length());
+		int posQuote=result.asString().indexOf('"',posCount+anchor.length());
 		
-		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
+		int resultCount = Integer.valueOf(result.asString().substring(posCount+anchor.length(), posQuote));
 		// test
 		assertEquals("count mismatch", 2, resultCount);
 		assertEquals("mismatch in number of files", 2, resultCount);

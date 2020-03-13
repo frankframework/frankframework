@@ -60,6 +60,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
@@ -75,7 +76,6 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
@@ -99,7 +99,7 @@ public class TestTool {
 	protected static final int DEFAULT_TIMEOUT = 30000;
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
-	protected static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
+	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	private static final int RESULT_ERROR = 0;
 	private static final int RESULT_OK = 1;
@@ -1418,7 +1418,7 @@ public class TestTool {
 						try {
 							deleteQuerySender.configure();				 		
 							deleteQuerySender.open(); 						
-							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+							deleteQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, null);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
 							closeQueues(queues, properties, writers);
@@ -1466,14 +1466,16 @@ public class TestTool {
 						}
 						if (queues != null) {
 							try {
-								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+								PipeLineSessionBase session = new PipeLineSessionBase();
+								session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
 								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
-							} catch(SenderException e) {
+							} catch(IOException | SenderException e) {
 								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
@@ -1718,7 +1720,7 @@ public class TestTool {
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
 				HttpSender httpSender = null;
-				ParameterResolutionContext parameterResolutionContext = null;
+				IPipeLineSession session = null;
 				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					// Use directoryClassLoader to make it possible to specify
@@ -1753,9 +1755,8 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
-					parameterResolutionContext = new ParameterResolutionContext();
-					parameterResolutionContext.setSession(new PipeLineSessionBase());
-					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+					session = new PipeLineSessionBase();
+					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
 						String parameterName = (String)parameterNameIterator.next();
@@ -1783,7 +1784,7 @@ public class TestTool {
 					if (queues != null) {
 						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
 						httpSenderInfo.put("httpSender", httpSender);
-						httpSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						httpSenderInfo.put("session", session);
 						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, httpSenderInfo);
 						debugMessage("Opened http sender '" + name + "'", writers);
@@ -1806,9 +1807,8 @@ public class TestTool {
 				IbisJavaSender ibisJavaSender = new IbisJavaSender();
 				ibisJavaSender.setName("Test Tool IbisJavaSender");
 				ibisJavaSender.setServiceName(serviceName);
-				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
-				parameterResolutionContext.setSession(new PipeLineSessionBase());
-				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+				IPipeLineSession session = new PipeLineSessionBase();
+				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
 					String parameterName = (String)parameterNameIterator.next();
@@ -1833,7 +1833,7 @@ public class TestTool {
 					if (queues != null) {
 						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
 						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
-						ibisJavaSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						ibisJavaSenderInfo.put("session", session);
 						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, ibisJavaSenderInfo);
 						debugMessage("Opened ibis java sender '" + name + "'", writers);
@@ -2144,16 +2144,18 @@ public class TestTool {
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+						PipeLineSessionBase session = new PipeLineSessionBase();
+						session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 							
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 							} catch(TimeOutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
-							} catch(SenderException e) {
+							} catch(IOException | SenderException e) {
 								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
 							}
 							if (message != null) {
@@ -2166,7 +2168,7 @@ public class TestTool {
 						prePostFixedQuerySender.close();
 					} catch(TimeOutException e) {
 						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
-					} catch(SenderException e) {
+					} catch(IOException | SenderException e) {
 						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
 					}
 				}
@@ -2187,6 +2189,10 @@ public class TestTool {
 					SenderException senderException = senderThread.getSenderException();
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+					}
+					IOException ioException = senderThread.getIOException();
+					if (ioException != null) {
+						errorMessage("Found remaining IOException: " + ioException.getMessage(), ioException, writers);
 					}
 					TimeOutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
@@ -2477,12 +2483,12 @@ public class TestTool {
 			if (correlationId == null) {
 				correlationId = TESTTOOL_CORRELATIONID;
 			}
-			jmsSender.sendMessage(correlationId, fileContent);
+			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(TimeOutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(SenderException e) {
+		} catch(IOException | SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
 		
@@ -2494,13 +2500,8 @@ public class TestTool {
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
-		ParameterResolutionContext parameterResolutionContext = (ParameterResolutionContext)senderInfo.get("parameterResolutionContext");
-		SenderThread senderThread;
-		if (parameterResolutionContext == null) {
-			senderThread = new SenderThread(sender, fileContent, convertExceptionToMessage.booleanValue());
-		} else {
-			senderThread = new SenderThread((ISenderWithParameters)sender, fileContent, parameterResolutionContext, convertExceptionToMessage.booleanValue());
-		}
+		IPipeLineSession session = (IPipeLineSession)senderInfo.get("session");
+		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue());
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
 		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
@@ -2553,7 +2554,7 @@ public class TestTool {
 		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
 		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
 		try {
-			delaySender.sendMessage(null, fileContent);
+			delaySender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(Exception e) {
@@ -2631,24 +2632,29 @@ public class TestTool {
 		} else {
 			SenderException senderException = senderThread.getSenderException();
 			if (senderException == null) {
-				TimeOutException timeOutException = senderThread.getTimeOutException();
-				if (timeOutException == null) {
-					String message = senderThread.getResponse();
-					if (message == null) {
-						if ("".equals(fileName)) {
-							result = RESULT_OK;
+				IOException ioException = senderThread.getIOException();
+				if (ioException == null) {
+					TimeOutException timeOutException = senderThread.getTimeOutException();
+					if (timeOutException == null) {
+						String message = senderThread.getResponse();
+						if (message == null) {
+							if ("".equals(fileName)) {
+								result = RESULT_OK;
+							} else {
+								errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
+							}
 						} else {
-							errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
+							if ("".equals(fileName)) {
+								debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+							} else {
+								result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+							}
 						}
 					} else {
-						if ("".equals(fileName)) {
-							debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
-						} else {
-							result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
-						}
+						errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException, writers);
 					}
 				} else {
-					errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException, writers);
+					errorMessage("Could not read " + senderType + "Sender message (IOException): " + ioException.getMessage(), ioException, writers);
 				}
 			} else {
 				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
@@ -2716,7 +2722,9 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+				PipeLineSessionBase session = new PipeLineSessionBase();
+				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -2727,7 +2735,7 @@ public class TestTool {
 				querySendersInfo.put("prePostQueryResult", postResult);
 			} catch(TimeOutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
-			} catch(SenderException e) {
+			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			}
 		}
@@ -2735,10 +2743,12 @@ public class TestTool {
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
-				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+				PipeLineSessionBase session = new PipeLineSessionBase();
+				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeOutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
-			} catch(SenderException e) {
+			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			}
 		}
@@ -3661,15 +3671,16 @@ public class TestTool {
 	 * for a property with a .value suffix to specify the file to read the
 	 * value for the Map from. More than one param can be specified by using
 	 * param2, param3 etc.
-	 *  
-	 * @param propertiesDirectory suffix for filenames specified by properties
-	 *                            with a .valuefile suffix. Can be left empty.
 	 * @param properties
 	 * @param property
 	 * @param writers
+	 * @param session TODO
+	 * @param propertiesDirectory suffix for filenames specified by properties
+	 *                            with a .valuefile suffix. Can be left empty.
+	 *  
 	 * @return A map with parameters
 	 */
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
+	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, IPipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
 		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
@@ -3824,7 +3835,7 @@ public class TestTool {
 							parameter.setName(name);
 							if (value != null && !(value instanceof String)) {
 								parameter.setSessionKey(name);
-								parameterResolutionContext.getSession().put(name, value);
+								session.put(name, value);
 							} else {
 								parameter.setValue((String)value);
 								parameter.setPattern(pattern);

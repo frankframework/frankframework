@@ -66,7 +66,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * If nextProvider is null, then descendants must replace it with getStreamTarget().
 	 */
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		return null;
 	}
 

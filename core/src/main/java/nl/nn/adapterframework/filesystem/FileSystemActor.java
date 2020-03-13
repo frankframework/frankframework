@@ -36,7 +36,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -113,6 +112,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String action;
 	private String filename;
 	private String inputFolder; // folder for action=list
+	private boolean createFolder; // for action move, rename and list
 
 	private String base64;
 	private int rotateDays=0;
@@ -190,9 +190,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder())) {
-			if (!fileSystem.folderExists(getInputFolder())) {
-				throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist");
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder())) {
+			if (isCreateFolder()) {
+				log.debug("creating inputFolder ["+getInputFolder()+"]");
+				fileSystem.createFolder(getInputFolder());
+			} else {
+				F file = fileSystem.toFile(getInputFolder());
+				if (file!=null && fileSystem.exists(file)) {
+					throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
+				} else {
+					throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist");
+				}
 			}
 		}
 	}
@@ -263,6 +271,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = determineInputFoldername(input, pvl);
+				if (folder!=null && !folder.equals(getInputFolder()) && !fileSystem.folderExists(folder)) {
+					if (isCreateFolder()) {
+						fileSystem.createFolder(folder);
+					} else {
+						F file = fileSystem.toFile(folder);
+						if (file!=null && fileSystem.exists(file)) {
+							throw new FileNotFoundException("folder ["+folder+"], does not exist as a folder, but is a file");
+						} else {
+							throw new FileNotFoundException("folder ["+folder+"], does not exist");
+						}
+					}
+				}
 				Iterator<F> fileList = fileSystem.listFiles(folder);
 				int count = 0;
 				XmlBuilder dirXml = new XmlBuilder("directory");
@@ -310,7 +330,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
 				if (destination == null) {
-					throw new SenderException("unknown destination [" + destination + "]");
+					throw new FileSystemException("unknown destination [" + destination + "]");
 				}
 				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
 				return destination;
@@ -318,9 +338,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F file=getFile(input, pvl);
 				String destinationFolder = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
 				if (destinationFolder == null) {
-					throw new SenderException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
+					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
-				F moved=fileSystem.moveFile(file, destinationFolder, false);
+				if (!isCreateFolder() && !fileSystem.folderExists(destinationFolder)) {
+					throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
+				}
+				F moved=fileSystem.moveFile(file, destinationFolder, isCreateFolder());
 				return fileSystem.getName(moved);
 			}
 		} catch (Exception e) {
@@ -428,16 +451,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {
 			if (parameterList != null) {
-				pvl = prc.getValues(parameterList);
+				pvl = parameterList.getValues(null, session);
 			}
 		} catch (ParameterException e) {
 			throw new StreamingException("caught exception evaluating parameters", e);
@@ -519,7 +541,23 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDoc({"3", "when set to <code>true</code>, the folder to move to is created if it does not exist", "false"})
+	public void setCreateFolder(boolean createFolder) {
+		this.createFolder = createFolder;
+	}
+	public boolean isCreateFolder() {
+		return createFolder;
+	}
+
+//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
+//	public void setForce(boolean force) {
+//		this.force = force;
+//	}
+//	public boolean isForce() {
+//		return force;
+//	}
+
+	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
 	public void setBase64(String base64) {
 		this.base64 = base64;
 	}
@@ -527,7 +565,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return base64;
 	}
 
-	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	@IbisDoc({"5", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -536,7 +574,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDoc({"6", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
@@ -544,7 +582,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDoc({"7", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
@@ -552,7 +590,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateSize;
 	}
 
-	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDoc({"8", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}

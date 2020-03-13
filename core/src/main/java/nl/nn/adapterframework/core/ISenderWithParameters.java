@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-
 /**
  * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
  * 
@@ -25,5 +22,4 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {
 	
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
 }
