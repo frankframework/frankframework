@@ -489,13 +489,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		TopicSubscriber topicSubscriber;
 		if (subscriberType.equalsIgnoreCase("DURABLE")) {
 			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled())
-				if (log.isDebugEnabled()) log.debug("[" + name + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + name + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 
 		} else {
 			topicSubscriber = session.createSubscriber(topic, selector, false);
-			if (log.isDebugEnabled())
-				if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 		}
 
 		return topicSubscriber;
