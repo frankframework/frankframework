@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -71,7 +72,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
+public class SpringJmsConnector<M extends Message> extends AbstractJmsConfigurator implements IListenerConnector<M>, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener<M> {
 
  	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
@@ -85,6 +86,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
 
+	private CredentialFactory credentialFactory;
 	private String cacheMode;
 	private int acknowledgeMode;
 	private boolean sessionTransacted;
@@ -111,11 +113,13 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureEndpointConnection(final IPortConnectedListener jmsListener,
-			ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener,
-			String cacheMode, int acknowledgeMode, boolean sessionTransacted, String messageSelector,
-			long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
+	@Override
+	public void configureEndpointConnection(final IPortConnectedListener<M> jmsListener,
+			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
+			IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted,
+			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
+		this.credentialFactory = credentialFactory;
 		this.cacheMode = cacheMode;
 		this.acknowledgeMode = acknowledgeMode;
 		this.sessionTransacted = sessionTransacted;
@@ -132,6 +136,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// that all required properties are set before we get a chance
 		// to insert our dynamic values from the config. file.
 		jmsContainer = createMessageListenerContainer();
+		
+		if (jmsContainer instanceof IbisMessageListenerContainer) {
+			IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
+			ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
+		}
 
 		if (getReceiver().isTransacted()) {
 			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
