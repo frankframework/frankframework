@@ -224,7 +224,7 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentTypeAndCharset());
 
 				method.setEntity(entity);
 				return method;
@@ -240,7 +240,7 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentTypeAndCharset());
 				method.setEntity(entity);
 				return method;
 			}
@@ -256,8 +256,8 @@ public class HttpSender extends HttpSenderBase {
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
 				HttpReport method = new HttpReport(path.toString(), element);
-				if (null != getContentType()) {
-					method.setHeader("Content-Type", getContentType().toString());
+				if (null != getContentTypeAndCharset()) {
+					method.setHeader("Content-Type", getContentTypeAndCharset().toString());
 				}
 				return method;
 			}

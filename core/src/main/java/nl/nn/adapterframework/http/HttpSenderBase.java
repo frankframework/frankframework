@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Integration Partners
+   Copyright 2017-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -777,7 +777,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setContentType(String string) {
 		mimeType = string;
 	}
-	public ContentType getContentType() {
+	public String getContentType() {
+		return mimeType;
+	}
+	public ContentType getContentTypeAndCharset() {
 		return contentType;
 	}
 
