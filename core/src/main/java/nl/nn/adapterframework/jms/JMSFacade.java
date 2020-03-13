@@ -443,6 +443,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
@@ -907,6 +908,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * relied this specific functionality. New configurations should not use it.
 	 *
 	 */
+	@Deprecated
 	public void setJmsTransacted(boolean jmsTransacted) {
 		this.jmsTransacted = jmsTransacted;
 	}
@@ -963,6 +965,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Indicates whether messages are send under transaction control.
 	 * @see #setTransacted(boolean)
 	 */
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}
