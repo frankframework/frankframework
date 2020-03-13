@@ -17,8 +17,10 @@ package nl.nn.adapterframework.core;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Interface specifying method to configure a JMS receiver or some sort.
@@ -26,13 +28,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public interface IListenerConnector {
+public interface IListenerConnector<M extends Message> {
 
 	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
 
-	void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory,
-			Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode,
-			boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
+	void configureEndpointConnection(IPortConnectedListener<M> listener, ConnectionFactory connectionFactory,
+			CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode,
+			int acknowledgeMode, boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
 			throws ConfigurationException;
 
 	/**
