@@ -15,41 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -73,12 +42,23 @@ import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
@@ -264,6 +244,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		msgLog = LogManager.getLogger("MSG." + getAdapter().getName() + "." + getName());
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			URL stubUrl;
 			try {
@@ -869,16 +850,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
 						}
 					}
-					if (MsgLogUtil.getMsgLogLevelNum(adapter.getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
 
-						String duration;
-						if(msgLogHumanReadable) {
-							duration = Misc.getAge(startTime);
-						} else {
-							duration = Misc.getDurationInMs(startTime);
-						}
-						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + duration + "] got exit-state [" + exitState + "]");
+					String duration;
+					if(msgLogHumanReadable) {
+						duration = Misc.getAge(startTime);
+					} else {
+						duration = Misc.getDurationInMs(startTime);
 					}
+					msgLog.log(Level.toLevel("TERSE"), String.format("Sender [%s] class [%s] correlationID [%s] duration [%s] got exit state [%s]", sender.getName(), sender.getClass().getSimpleName(), correlationID, duration, exitState));
 				}
 			}
 		}
