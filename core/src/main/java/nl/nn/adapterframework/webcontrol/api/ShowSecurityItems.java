@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -104,7 +103,7 @@ public final class ShowSecurityItems extends Base {
 		catch (Exception e) {
 			return null;
 		}
-		
+
 		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
 
 		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
@@ -129,6 +128,10 @@ public final class ShowSecurityItems extends Base {
 				} catch(Exception e) {};
 				resultList.put(row.getAttribute("id"), tmp);
 			}
+		}
+
+		if(resultList.size() == 0) {
+			return null;
 		}
 
 		return resultList;

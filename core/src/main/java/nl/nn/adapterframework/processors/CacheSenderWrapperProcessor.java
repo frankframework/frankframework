@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * SenderWrapperProcessor that handles caching.
@@ -29,32 +32,35 @@ import nl.nn.adapterframework.senders.SenderWrapperBase;
  */
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
-	public String sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		
-		String key=cache.transformKey(message, prc.getSession());
+		String key=cache.transformKey(message.asString(), session);
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
-		String result=cache.getString(key);
-		if (result==null) {
+		Message result;
+		String cacheResult=cache.get(key);
+		if (cacheResult!=null) {
+			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
+			result= new Message(cacheResult);
+		} else {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-			result=senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
+			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-			String cacheValue=cache.transformValue(result, prc.getSession());
+			String cacheValue=cache.transformValue(result.asString(), session);
 			if (cacheValue==null) {
 				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
 				return result;
 			}
-			result = cacheValue;
-			cache.putString(key, result);
-		} else {
-			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
+			cache.put(key, cacheValue);
+			result = new Message(cacheValue);
 		}
 		return result;
 	}

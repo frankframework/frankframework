@@ -18,21 +18,20 @@ package nl.nn.adapterframework.pipes;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -58,23 +57,24 @@ public class HashPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
-		String message = (String) input;
+		Message message = new Message(input);
 
 		String authAlias = getAuthAlias();
 		String secret = getSecret();
 		try {
 			ParameterList parameterList = getParameterList();
-			ParameterResolutionContext prc = new ParameterResolutionContext(message, session);
-			ParameterValueList pvl = prc.getValues(parameterList);
+			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session, isNamespaceAware());
 			if(pvl != null) {
-				Parameter authAliasParam = parameterList.findParameter("authAlias");
-				if(authAliasParam != null)
-					authAlias = (String) authAliasParam.getValue(pvl, prc);
-
-				Parameter secretParam = parameterList.findParameter("secret");
-				if(secretParam != null)
-					secret = (String) secretParam.getValue(pvl, prc);
+				String authAliasParamValue = (String)pvl.getValue("authAlias");
+				if (StringUtils.isNotEmpty(authAliasParamValue)) {
+					authAlias = authAliasParamValue;
+				}
+				String secretParamValue = (String)pvl.getValue("secret");
+				if (StringUtils.isNotEmpty(secretParamValue)) {
+					secret = secretParamValue;
+				}
 			}
 		}
 		catch (Exception e) {
@@ -93,7 +93,7 @@ public class HashPipe extends FixedForwardPipe {
 			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getEncoding()), "algorithm");
 			mac.init(secretkey);
 
-			String hash = Base64.encodeBase64String(mac.doFinal(message.getBytes()));
+			String hash = Base64.encodeBase64String(mac.doFinal(message.asByteArray()));
 			return new PipeRunResult(getForward(), hash);
 		}
 		catch (Exception e) {

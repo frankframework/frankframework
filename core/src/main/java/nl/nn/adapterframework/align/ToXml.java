@@ -89,8 +89,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	}
 
 	public ToXml(ValidatorHandler validatorHandler) {
-		super((PSVIProvider)validatorHandler);
-		validatorHandler.setContentHandler(this);
+		super(validatorHandler);
 		this.validatorHandler=validatorHandler;
 	}
 

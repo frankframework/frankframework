@@ -215,7 +215,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/ShowConfiguration.html",
 		data: {
 			pageTitle: 'Configurations',
-			breadcrumbs: 'Configurations > Show',
+			breadcrumbs: 'Configuration > Show',
 		}
 	})
 	.state('pages.upload_configuration', {

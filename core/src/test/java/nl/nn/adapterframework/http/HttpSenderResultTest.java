@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -24,12 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -43,6 +37,13 @@ import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
 
 public class HttpSenderResultTest extends Mockito {
 
@@ -127,8 +128,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession session = new PipeLineSessionBase();
 
 		sender.setMethodType("GET");
 
@@ -136,7 +136,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "", prc);
+		String result = sender.sendMessage(new Message(""), session).asString();
 		assertEquals("<dummy result/>", result);
 	}
 
@@ -144,8 +144,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleBase64MockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession session = new PipeLineSessionBase();
 
 		sender.setMethodType("GET");
 		sender.setBase64(true);
@@ -154,7 +153,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "", prc);
+		String result = sender.sendMessage(new Message(""), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -170,8 +169,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleBase64MockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession session = new PipeLineSessionBase();
 
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("inputMessageParam");
@@ -182,7 +180,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -192,7 +190,6 @@ public class HttpSenderResultTest extends Mockito {
 		String SESSIONKEY_KEY = "result";
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("GET");
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
@@ -201,9 +198,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
-		pls = prc.getSession();
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
@@ -215,7 +211,6 @@ public class HttpSenderResultTest extends Mockito {
 		String SESSIONKEY_KEY = "result";
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("POST");
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
@@ -224,9 +219,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
-		pls = prc.getSession();
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
@@ -238,7 +232,6 @@ public class HttpSenderResultTest extends Mockito {
 		String SESSIONKEY_KEY = "result";
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("GET");
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
@@ -247,9 +240,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
-		pls = prc.getSession();
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", Misc.streamToString(stream));
@@ -261,7 +253,6 @@ public class HttpSenderResultTest extends Mockito {
 		String SESSIONKEY_KEY = "result";
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("POST");
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
@@ -270,9 +261,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("", result);
-		pls = prc.getSession();
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", Misc.streamToString(stream));
@@ -283,7 +273,6 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("GET");
 		sender.setMultipartResponse(true);
@@ -291,9 +280,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
-		pls = prc.getSession();
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
@@ -314,7 +302,6 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
 
 		IPipeLineSession pls = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
 		sender.setMethodType("GET");
 		sender.setMultipartResponse(true);
@@ -322,10 +309,9 @@ public class HttpSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, "tralala", prc);
+		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());
 
-		pls = prc.getSession();
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
 			System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");

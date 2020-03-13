@@ -104,7 +104,6 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		Message message = new Message(input);
-		ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware()); 
 		try {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				nextProvider=null;
@@ -113,7 +112,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 					nextProvider = getStreamTarget();
 				}
 			}
-			PipeRunResult prr = sender.sendMessage(null, message, prc, nextProvider);
+			PipeRunResult prr = sender.sendMessage(message, session, nextProvider);
 			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();
@@ -140,8 +139,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		return sender.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		return sender.provideOutputStream(session, nextProvider);
 	}
 
 	@Override

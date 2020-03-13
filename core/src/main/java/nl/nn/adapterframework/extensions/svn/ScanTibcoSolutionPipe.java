@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.svn;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
@@ -23,10 +24,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.xpath.XPathExpressionException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -36,10 +38,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe which scans TIBCO sources in Subversion and creates a report in xml.
@@ -52,13 +53,12 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private String url;
 	private int level = 0;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
 		XMLStreamWriter xmlStreamWriter;
 		try {
-			xmlStreamWriter = XmlUtils.OUTPUT_FACTORY
-					.createXMLStreamWriter(stringWriter);
+			xmlStreamWriter = XmlUtils.OUTPUT_FACTORY.createXMLStreamWriter(stringWriter);
 			xmlStreamWriter.writeStartDocument();
 			xmlStreamWriter.writeStartElement("root");
 			xmlStreamWriter.writeAttribute("url", getUrl());
@@ -76,13 +76,10 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "XPathExpressionException", e);
 		}
 
-		return new PipeRunResult(getForward(), stringWriter.getBuffer()
-				.toString());
+		return new PipeRunResult(getForward(), stringWriter.getBuffer().toString());
 	}
 
-	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel)
-			throws XMLStreamException, DomBuilderException,
-			XPathExpressionException {
+	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, DomBuilderException, XPathExpressionException {
 		String html;
 		try {
 			html = getHtml(cUrl);
@@ -411,8 +408,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		xmlStreamWriter.writeEndElement();
 	}
 
-	private String getHtml(String urlString) throws ConfigurationException,
-			SenderException, TimeOutException {
+	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -423,7 +419,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setXhtml(true);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, "");
+			String result = httpSender.sendMessage(new Message(""), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {

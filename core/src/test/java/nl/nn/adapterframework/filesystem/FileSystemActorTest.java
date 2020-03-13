@@ -179,7 +179,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message("");
 		IPipeLineSession session = new PipeLineSessionBase();
-		ParameterValueList pvl= createParameterValueList(null, message, session);
+		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
 
@@ -269,7 +269,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertTrue("File ["+filename2+"] expected to be present", _fileExists(inputFolder, filename2));
 		
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, null);
+		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 		System.err.println(result);
 		String stringResult=(String)result;
@@ -302,10 +302,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message= new Message(fileViaAttribute?null:filename);
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		ParameterValueList pvl = null;
 		String result = (String)actor.doAction(message, pvl, session);
 		assertThat(result,StringContains.containsString("<file name=\"senderfile1.txt\""));
 		assertThat(result,StringContains.containsString("size=\"17\""));
@@ -339,10 +337,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message= new Message(fileViaAttribute?null:filename);
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
 		String actualContents = Misc.streamToString((InputStream)result);
@@ -388,7 +384,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, session);
+		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 		
@@ -425,10 +421,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, session);
+		ParameterValueList pvl= params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 
 		String stringResult=(String)result;
@@ -467,10 +461,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, session);
+		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 
 		String stringResult=(String)result;
@@ -510,9 +502,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		assertTrue(actor.canProvideOutputStream());
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
-		MessageOutputStream target = actor.provideOutputStream(null, session, null);
+		MessageOutputStream target = actor.provideOutputStream(session, null);
 
 		// stream the contents
 		try (Writer writer = target.asWriter()) {
@@ -557,7 +547,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		for (int i=0;i<numOfWrites;i++) {
 			session.put("uploadActionTargetwString", contents+i);
-			ParameterValueList pvl= createParameterValueList(params, message, session);
+			ParameterValueList pvl= params.getValues(message, session);
 			Object result = actor.doAction(message, pvl, null);
 
 			String stringResult=(String)result;
@@ -606,7 +596,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(filename);
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendActionwString", contents+i);
-			ParameterValueList pvl = createParameterValueList(params, message, session);
+			ParameterValueList pvl = params.getValues(message, session);
 			String result = (String)actor.doAction(message, pvl, null);
 
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
@@ -654,10 +644,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, null);
+		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 		
 		// test
@@ -711,10 +699,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message = new Message(folder);
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
@@ -738,10 +724,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message = new Message(folder);
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
@@ -765,10 +749,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(null, message, null);
+		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 
 		waitForActionToFinish();
@@ -804,10 +786,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		deleteFile(null, dest);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(new PipeLineSessionBase());
 		Message message = new Message(filename);
-		ParameterValueList pvl= createParameterValueList(params, message, null);
+		ParameterValueList pvl= params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
@@ -837,9 +817,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	
 	
 	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		ParameterValueList pvl = prc.getValues(paramList);
-		return pvl;
+		if (paramList==null) {
+			return null;
+		}
+		return paramList.getValues(input, session);
 	}
 	
 	

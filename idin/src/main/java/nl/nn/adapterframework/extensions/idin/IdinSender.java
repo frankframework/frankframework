@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.idin;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +24,9 @@ import java.util.Map.Entry;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
 
 import net.bankid.merchant.library.AssuranceLevel;
 import net.bankid.merchant.library.AuthenticationRequest;
@@ -38,18 +42,16 @@ import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * Requires the net.bankid.merchant.library V1.06+.
@@ -153,12 +155,12 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
 
 		Element queryElement = null;
 		try {
-			if (XmlUtils.isWellFormed(message, "idin")) {
-				queryElement = XmlUtils.buildElement(message);
+			if (XmlUtils.isWellFormed(message.asString(), "idin")) {
+				queryElement = XmlUtils.buildElement(message.asString());
 			} else {
 				queryElement = XmlUtils.buildElement("<idin/>");
 			}
@@ -356,7 +358,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			result.addSubElement(errorXml);
 		}
 
-		return result.toXML();
+		return new Message(result.toXML());
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class TransformerPoolTest {
 		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
 		TransformerPool transformerPool = TransformerPool.getInstance(xpathEvaluatorSource);
 		Source source = XmlUtils.stringToSource(xml);
-		String result = transformerPool.transform(source, null);
+		String result = transformerPool.transform(source);
 		assertEquals(expectedXpath, result);
 		assertEquals(0, TransformerPool.getTransformerPoolsKeys().size());
 	}

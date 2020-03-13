@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import nl.nn.adapterframework.senders.SendGridSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -135,9 +136,9 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 		email.addSubElement(message);
 		message.setValue(Misc.streamToString(currentFile.getInputStream()));
 
-		String msg=email.toXML();
+		Message msg=new Message(email.toXML());
 		System.out.println("email: ["+msg+"]");
-		mailSender.sendMessage("fakeCorrelationId", msg);
+		mailSender.sendMessage(msg, null);
 		Thread.sleep(5000);
 	}
 }

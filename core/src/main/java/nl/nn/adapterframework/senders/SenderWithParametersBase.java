@@ -13,12 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.senders.SenderBase;
 
 /**
  * Provides a base class for senders with parameters.
@@ -38,12 +38,6 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 
 	@Override
-	// can make this sendMessage() 'final', debugging handled by the abstract sendMessage() defined by ISenderWithParameters, that includes the parameterResolutionContext
-	public final String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
-		return sendMessage(correlationID,message,null);
-	}
-
-	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
@@ -54,6 +48,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	/**
 	 * return the Parameters
 	 */
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}

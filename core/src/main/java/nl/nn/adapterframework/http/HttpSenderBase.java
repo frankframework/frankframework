@@ -76,13 +76,14 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -561,17 +562,18 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param prc ParameterResolutionContext
+	 * @param session TODO
 	 * @return a string that will be passed to the pipeline
 	 */
-	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
+	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+		String message=input.asString();
 		ParameterValueList pvl = null;
 		try {
-			if (prc !=null && paramList !=null) {
-				pvl=prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(input, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
@@ -606,13 +608,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				message = URLEncoder.encode(message, getCharSet());
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, (prc==null) ? null : prc.getSession());
+			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
 			//Set all headers
-			if(prc != null && APPEND_MESSAGEID_HEADER) {
-				httpRequestBase.setHeader("Message-Id", prc.getSession().getMessageId());
+			if(session != null && APPEND_MESSAGEID_HEADER) {
+				httpRequestBase.setHeader("Message-Id", session.getMessageId());
 			}
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
@@ -658,8 +660,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				StatusLine statusline = httpResponse.getStatusLine();
 				statusCode = statusline.getStatusCode();
 
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && prc != null) {
-					prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 				}
 
 				// Only give warnings for 4xx (client errors) and 5xx (server errors)
@@ -669,7 +671,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 
-				result = extractResult(responseHandler, prc);
+				result = extractResult(responseHandler, session);
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
@@ -727,9 +729,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true);
+					Message resultMsg = new Message(result);
 					try {
-						result = transformerPool.transform(prc_xslt.getInputSource(true), null);
+						result = transformerPool.transform(resultMsg.asSource());
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}
@@ -737,7 +739,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		return result;
+		return new Message(result);
 	}
 
 	@Override

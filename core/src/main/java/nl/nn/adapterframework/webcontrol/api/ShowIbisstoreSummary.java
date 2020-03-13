@@ -45,6 +45,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -88,7 +89,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
+				result = qs.sendMessage(new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query", t);
 			} finally {

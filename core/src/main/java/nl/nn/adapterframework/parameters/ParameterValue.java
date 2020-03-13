@@ -50,6 +50,13 @@ public class ParameterValue {
 	}
 
 	/**
+	 * Returns the name of the parameter
+	 */
+	public String getName() {
+		return definition.getName();
+	}
+
+	/**
 	 * Returns the value of the parameter
 	 */
 	public Object getValue() {

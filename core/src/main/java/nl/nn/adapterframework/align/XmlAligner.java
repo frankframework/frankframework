@@ -15,33 +15,22 @@
 */
 package nl.nn.adapterframework.align;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-
-import javax.xml.validation.ValidatorHandler;
-
+import nl.nn.adapterframework.xml.SaxException;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.xs.ElementPSVI;
-import org.apache.xerces.xs.PSVIProvider;
-import org.apache.xerces.xs.XSComplexTypeDefinition;
-import org.apache.xerces.xs.XSElementDeclaration;
-import org.apache.xerces.xs.XSModelGroup;
-import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSParticle;
-import org.apache.xerces.xs.XSTerm;
-import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.xs.XSWildcard;
+import org.apache.xerces.xs.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import org.apache.logging.log4j.LogManager;
+import javax.xml.validation.ValidatorHandler;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * XMLFilter with option to get schema information about child elements to be parsed.
@@ -86,14 +75,9 @@ public class XmlAligner extends XMLFilterImpl {
 		super();
 	}
 
-	public XmlAligner(PSVIProvider psviProvider) {
+	private XmlAligner(PSVIProvider psviProvider) {
 		this();
 		setPsviProvider(psviProvider);
-	}
-
-	public XmlAligner(XMLReader psviProvidingXmlReader) {
-		this((PSVIProvider)psviProvidingXmlReader);
-		psviProvidingXmlReader.setContentHandler(this);
 	}
 
 	public XmlAligner(ValidatorHandler psviProvidingValidatorHandler) {
@@ -122,6 +106,9 @@ public class XmlAligner extends XMLFilterImpl {
 		if (DEBUG) log.debug("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
 		typeDefinition=getTypeDefinition(psviProvider);
+		if (typeDefinition==null) {
+			throw new SaxException("No typeDefinition found for element ["+localName+"] in namespace ["+namespaceUri+"] qName ["+qName+"]");
+		}
 		multipleOccurringElements.push(multipleOccurringChildElements);
 		parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
 		// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array

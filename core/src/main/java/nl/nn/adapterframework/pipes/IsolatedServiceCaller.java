@@ -15,18 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.util.HashMap;
-
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.RequestReplyExecutor;
-import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import org.apache.logging.log4j.LogManager;
-
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.task.TaskExecutor;
+
+import java.util.HashMap;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -50,12 +48,12 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, null);
 		getTaskExecutor().execute(ise);
 	}
 	
-	public String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+	public Message callServiceIsolated(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, guard);
@@ -72,7 +70,7 @@ public class IsolatedServiceCaller {
 				throw new ListenerException(ise.getThrowable());
 			}
 		} else {
-			return (String)ise.getReply();
+			return ise.getReply();
 		}
 	}
 

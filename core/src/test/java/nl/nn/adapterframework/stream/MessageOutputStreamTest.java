@@ -199,7 +199,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, null)) {
 		
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -216,7 +216,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, "fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -274,7 +274,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, null)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -306,7 +306,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, "fakecorrelationid")) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, null)) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {

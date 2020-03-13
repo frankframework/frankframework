@@ -43,6 +43,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -239,12 +240,12 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 	}
 
-	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
+	private Object transform(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
 			
 			DOMResult transformResult = new DOMResult();
-			pool.transform(xmlSource,transformResult,prc.getValueMap(paramList));
+			pool.transform(xmlSource,transformResult, pvl);
 			Node result=transformResult.getNode();
 			if (result!=null && TYPE_NODE.equals(getType())) {
 				result=result.getFirstChild();
@@ -253,8 +254,9 @@ public class Parameter implements INamedObject, IWithParameters {
 			return result;
 
 		} 
-		return pool.transform(xmlSource,prc.getValueMap(paramList));
+		return pool.transform(xmlSource, pvl);
 	}
+	
 	
 	public boolean requiresInputValueForResolution() {
 		if (transformerPoolSessionKey != null) { //TODO: Check if this clause needs to go after the next one. Having a transformerpool on itself doesn't make it necessary to have the input.
@@ -270,7 +272,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * determines the raw value 
 	 */
-	public Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -280,24 +282,23 @@ public class Parameter implements INamedObject, IWithParameters {
 		String requestedSessionKey;
 		if (transformerPoolSessionKey != null) {
 			try {
-				requestedSessionKey = transformerPoolSessionKey.transform(prc.getMessage().asSource(), null);
+				requestedSessionKey = transformerPoolSessionKey.transform(message.asSource());
 			} catch (Exception e) {
 				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
 		} else {
 			requestedSessionKey = getSessionKey();
 		}
-		Message message = prc.getMessage();
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
 				Object transformResult=null;
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
-					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
+					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					String sourceString;
-					Object sourceObject = prc.getSession().get(requestedSessionKey);
+					Object sourceObject = session.get(requestedSessionKey);
 					if (TYPE_LIST.equals(getType())	&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
@@ -324,15 +325,15 @@ public class Parameter implements INamedObject, IWithParameters {
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
-						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
-					String sourceString = format(alreadyResolvedParameters, prc);
+					String sourceString = format(alreadyResolvedParameters, session);
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
-						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
 					} else {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
@@ -341,10 +342,11 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 				if (source!=null) {
 					if (transformerPoolRemoveNamespaces != null) {
-						String rnResult = transformerPoolRemoveNamespaces.transform(source, null);
+						String rnResult = transformerPoolRemoveNamespaces.transform(source);
 						source = XmlUtils.stringToSource(rnResult);
 					}
-					transformResult = transform(source,prc);
+					ParameterValueList pvl = paramList==null ? null : paramList.getValues(message, session, namespaceAware);
+					transformResult = transform(source,pvl);
 				}
 				if (!(transformResult instanceof String) || StringUtils.isNotEmpty((String)transformResult)) {
 						result = transformResult;
@@ -354,12 +356,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		} else {
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
-				result=prc.getSession().get(requestedSessionKey);
+				result=session.get(requestedSessionKey);
 				if (result==null || (result instanceof String && ((String)result).isEmpty())) {
 					log.warn("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
-				result=format(alreadyResolvedParameters, prc);
+				result=format(alreadyResolvedParameters, session);
 			} else if (StringUtils.isNotEmpty(getValue())) {
 				result = getValue();
 			} else {
@@ -383,9 +385,9 @@ public class Parameter implements INamedObject, IWithParameters {
 				if ("defaultValue".equals(token)) {
 					result = getDefaultValue();
 				} else if ("sessionKey".equals(token)) {
-					result = prc.getSession().get(requestedSessionKey);
+					result = session.get(requestedSessionKey);
 				} else if ("pattern".equals(token)) {
-					result = format(alreadyResolvedParameters, prc);
+					result = format(alreadyResolvedParameters, session);
 				} else if ("value".equals(token)) {
 					result = getValue();
 				} else if ("input".equals(token)) {
@@ -419,7 +421,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					if (transformerPoolRemoveNamespaces != null) {
 						result = transformerPoolRemoveNamespaces.transform((String)result, null);
 					}
-					result=XmlUtils.buildNode((String)result,prc. isNamespaceAware());
+					result=XmlUtils.buildNode((String)result,namespaceAware);
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
@@ -430,7 +432,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					if (transformerPoolRemoveNamespaces != null) {
 						result = transformerPoolRemoveNamespaces.transform((String)result, null);
 					}
-					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
+					result=XmlUtils.buildDomDocument((String)result,namespaceAware);
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
@@ -516,7 +518,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return hiddenString;
 	}
 
-	private String format(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
+	private String format(ParameterValueList alreadyResolvedParameters, IPipeLineSession session) throws ParameterException {
 		int startNdx = -1;
 		int endNdx = 0;
 
@@ -545,20 +547,20 @@ public class Parameter implements INamedObject, IWithParameters {
 			String substitutionName = pattern.substring(startNdx + 1, endNdx);
 			
 			// get value
-			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, prc, substitutionName);
+			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionName);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
 		
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
-	
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc, String name) throws ParameterException {
+
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String name) throws ParameterException {
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 		  
 		if (substitutionValue == null) {
-			substitutionValue = prc.getSession().get(name);
+			substitutionValue = session.get(name);
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
@@ -576,7 +578,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 				Date d;
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-				String fixedDateTime = (String)prc.getSession().get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				String fixedDateTime = (String)session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}

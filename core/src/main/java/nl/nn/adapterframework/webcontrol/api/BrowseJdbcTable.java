@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
-
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -38,6 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
@@ -111,10 +111,9 @@ public final class BrowseJdbcTable extends Base {
 
 		DirectQuerySender qs;
 		try {
-			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+			qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			log.error(e);
-			throw new ApiException("An error occured on creating or closing the connection!", 500);
+			throw new ApiException("An error occured on creating or closing the connection!", e);
 		}
 		
 		try {
@@ -132,7 +131,7 @@ public final class BrowseJdbcTable extends Base {
 				if (!rs.isBeforeFirst()) {
 					rs = qs.getConnection().getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
 				}
-				
+
 				String fielddefinition = "<fielddefinition>";
 				while(rs.next()) {
 					String field = "<field name=\""
@@ -178,12 +177,12 @@ public final class BrowseJdbcTable extends Base {
 					Transformer t = XmlUtils.createTransformer(url);
 					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 				}
-				result = qs.sendMessage("dummy", query);
+				result = qs.sendMessage(new Message(query), null).asString();
 			//} else {
 				//error("errors.generic","This function only supports oracle databases",null);
 			//}
 		} catch (Throwable t) {
-			throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
+			throw new ApiException("An error occured on executing jdbc query ["+query+"]", t);
 		} finally {
 			qs.close();
 		}
@@ -193,7 +192,7 @@ public final class BrowseJdbcTable extends Base {
 			resultMap = XmlQueryResult2Map(result);
 		}
 		if(resultMap == null)
-			throw new ApiException("Invalid query result.", 400);
+			throw new ApiException("Invalid query result [null].", 400);
 
 		Map<String, Object> resultObject = new HashMap<String, Object>();
 		resultObject.put("table", tableName);

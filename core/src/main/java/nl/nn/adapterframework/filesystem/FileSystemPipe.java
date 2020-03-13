@@ -110,8 +110,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream result = actor.provideOutputStream(session, nextProvider);
 		if (result!=null && result.getForward()==null) {
 			result.setForward(getForward());
 		}
@@ -122,12 +122,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
-		
+		Message message = new Message(input);
 		try {
 			if (paramList != null) {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
@@ -135,7 +134,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 		Object result;
 		try {
-			result = actor.doAction(new Message(input), pvl, session);
+			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards!=null && forwards.containsKey("exception")) {

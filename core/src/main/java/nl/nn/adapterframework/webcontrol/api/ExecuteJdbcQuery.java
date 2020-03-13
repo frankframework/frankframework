@@ -36,6 +36,7 @@ import javax.xml.transform.Transformer;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -119,8 +120,7 @@ public final class ExecuteJdbcQuery extends Base {
 		try {
 			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			log.error(e);
-			throw new ApiException("An error occured on creating or closing the connection!", 500);
+			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
 		try {
@@ -130,7 +130,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
-			result = qs.sendMessage("dummy", query);
+			result = qs.sendMessage(new Message(query), null).asString();
 			if (resultType.equalsIgnoreCase("csv")) {
 				URL url = ClassUtils.getResourceURL(getClassLoader(), DBXML2CSV_XSLT);
 				if (url!=null) {

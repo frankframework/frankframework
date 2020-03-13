@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
+import nl.nn.adapterframework.core.IPipeLineSession;
 
 public class ThreadConnector {
 	protected Logger log = LogManager.getLogger(this);
@@ -29,14 +30,16 @@ public class ThreadConnector {
 	private Object threadInfo;
 	private Set<String> hideRegex;
 	
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 	}
-
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+	}
 	
 	public Object startThread(Object input) {
 		Thread currentThread = Thread.currentThread();

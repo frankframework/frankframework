@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.xerces.xs.XSModel;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -189,7 +190,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return configurationException;
 	}
 
-
+	public List<XSModel> getXSModels() {
+		return validator.getXSModels();
+	}
+ 
 	/**
 	 * Validate the XML string
 	 * 

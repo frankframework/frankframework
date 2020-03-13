@@ -21,8 +21,9 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Puts each parameter value in the PipeLineSession, under the key specified by the parameter name.
@@ -36,20 +37,20 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  */
 public class PutParametersInSession extends FixedForwardPipe {
 	
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
+			Message message = new Message(input);
 			try {
-				pvl = prc.getValues(getParameterList());
+				ParameterValueList pvl = parameterList.getValues(message, session, isNamespaceAware());
 				if (pvl != null) {
-					for (int i = 0; i < parameterList.size(); i++) {
-						Parameter parameter = parameterList.getParameter(i);
-						String pn = parameter.getName();
-						Object pv = parameter.getValue(pvl, prc);
-						session.put(pn, pv);
-						log.debug(getLogPrefix(session)+"stored ["+pv+"] in pipeLineSession under key ["+pn+"]");
+					for (int i = 0; i < pvl.size(); i++) {
+						ParameterValue pv = pvl.getParameterValue(i);
+						String name  = pv.getName();
+						Object value = pv.getValue();
+						session.put(name, value);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"stored ["+value+"] in pipeLineSession under key ["+name+"]");
 					}
 				}
 			} catch (ParameterException e) {
