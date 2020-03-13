@@ -6,8 +6,6 @@ import java.util.Enumeration;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-
 import javax.jms.BytesMessage;
 
 public class TestJMSMessage implements BytesMessage {
