@@ -74,12 +74,12 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		try {
 			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
 			return new Message(proxy.dispatchRequest(getServiceName(),correlationID,message.asString()));
-		} catch (SOAPException e) {
+		} catch (SOAPException | IOException e) {
 			throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
 		}
 	}

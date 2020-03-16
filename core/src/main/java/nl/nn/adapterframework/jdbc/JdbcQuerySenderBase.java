@@ -469,35 +469,37 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	
 	protected String executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
 		BlobOutputStream blobOutputStream=null;
-		try {
+		if (message!=null) {
 			try {
-				blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-				InputStream inputStream = null;
-				if (message instanceof Reader) {
-					inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
-				} else if (message instanceof InputStream) {
-					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
+				try {
+					blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+					InputStream inputStream = null;
+					if (message instanceof Reader) {
+						inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
+					} else if (message instanceof InputStream) {
+						if (StringUtils.isNotEmpty(getStreamCharset())) {
+							inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
+						} else {
+							inputStream = (InputStream)message;
+						}
+					} else if (message instanceof byte[]) {
+						inputStream = new ByteArrayInputStream((byte[])message);
 					} else {
-						inputStream = (InputStream)message;
+						inputStream = new ReaderInputStream(new StringReader(message.toString()), getBlobCharset());
 					}
-				} else if (message instanceof byte[]) {
-					inputStream = new ByteArrayInputStream((byte[])message);
-				} else {
-					inputStream = new ReaderInputStream(new StringReader(message.toString()), getBlobCharset());
+					Misc.streamToStream(inputStream,blobOutputStream,isCloseInputstreamOnExit());
+				} finally {
+					if (blobOutputStream!=null) {
+						blobOutputStream.close();
+					}
 				}
-				Misc.streamToStream(inputStream,blobOutputStream,isCloseInputstreamOnExit());
-			} finally {
-				if (blobOutputStream!=null) {
-					blobOutputStream.close();
-				}
+			} catch (SQLException sqle) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",sqle );
+			} catch (JdbcException e) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
 			}
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",sqle );
-		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
 		}
 		return blobOutputStream==null ? null : blobOutputStream.getWarnings().toXML();
 	}
@@ -515,36 +517,38 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected String executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ClobWriter clobWriter=null;
-		try {
+		if (message!=null) {
 			try {
-				clobWriter = getClobWriter(statement, getClobColumn());
-				Reader reader=null;
-				if (message instanceof Reader) {
-					reader = (Reader)message;
-				} else if (message instanceof InputStream) {
-					InputStream inStream = (InputStream)message;
-					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
+				try {
+					clobWriter = getClobWriter(statement, getClobColumn());
+					Reader reader=null;
+					if (message instanceof Reader) {
+						reader = (Reader)message;
+					} else if (message instanceof InputStream) {
+						InputStream inStream = (InputStream)message;
+						if (StringUtils.isNotEmpty(getStreamCharset())) {
+							reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
+						} else {
+							reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
+						}
+					}
+					if (reader!=null) {
+						Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
 					} else {
-						reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
+						clobWriter.write(message.toString());
+					}
+				} finally {
+					if (clobWriter!=null) {
+						clobWriter.close();
 					}
 				}
-				if (reader!=null) {
-					Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
-				} else {
-					clobWriter.write(message.toString());
-				}
-			} finally {
-				if (clobWriter!=null) {
-					clobWriter.close();
-				}
+			} catch (SQLException sqle) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",sqle );
+			} catch (JdbcException e) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
 			}
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",sqle );
-		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
 		}
 		return clobWriter==null ? null : clobWriter.getWarnings().toXML();
 	}

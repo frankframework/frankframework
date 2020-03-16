@@ -66,7 +66,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -110,8 +110,12 @@ public class ParallelSenders extends SenderSeries {
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
-					resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
-					resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
+					try {
+						resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
+						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
+					} catch (IOException e) {
+						throw new SenderException(getLogPrefix(),e);
+					}
 				}
 			} else {
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));

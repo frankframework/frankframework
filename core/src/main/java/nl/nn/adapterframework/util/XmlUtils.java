@@ -696,8 +696,15 @@ public class XmlUtils {
 	 * (namespace aware)
 	 */
 	public static Element buildElement(String s) throws DomBuilderException {
-
 		return buildDomDocument(s).getDocumentElement();
+	}
+
+	public static Element buildElement(Message s) throws DomBuilderException {
+		try {
+			return buildElement(s.asString());
+		} catch (IOException e) {
+			throw new DomBuilderException(e);
+		}
 	}
 	
 	public static String skipXmlDeclaration(String xmlString) {
@@ -1677,10 +1684,8 @@ public class XmlUtils {
 			rootValidations = new HashSet<List<String>>();
 			rootValidations.add(path);
 		}
-		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
-				null, rootValidations, null, true);
-		XmlValidatorErrorHandler xmlValidatorErrorHandler =
-				new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
 			SAXSource saxSource = stringToSAXSource(input, true, false);

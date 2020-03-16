@@ -101,7 +101,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
@@ -116,23 +116,27 @@ public class JavascriptSender extends SenderSeries {
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+" exception extracting parameters", e);
 		}
-		if(pvl != null)
+		if(pvl != null) {
 			numberOfParameters = pvl.size();
+		}
 
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
 		for (int i=0; i<numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
 			Object value = pv.getValue();
-			jsParameters[i] = value instanceof Message ? ((Message)value).asString() : value;
+			try {
+				jsParameters[i] = value instanceof Message ? ((Message)value).asString() : value;
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
+			}
 		}
 
 		//Start using an engine
 		if(engine.equalsIgnoreCase("Rhino")) {
 			jsInstance = new Rhino();
 			jsInstance.startRuntime();
-		}
-		else {
+		} else {
 			jsInstance = new J2V8();
 			jsInstance.startRuntime();
 
@@ -157,7 +161,7 @@ public class JavascriptSender extends SenderSeries {
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-		public String getJsFileName() {
+	public String getJsFileName() {
 		return jsFileName;
 	}
 

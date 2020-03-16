@@ -184,7 +184,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		
 		try {
 			if (isSynchronous()) {
@@ -223,7 +223,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		if (StringUtils.isEmpty(BIF)) {
 			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
-		return new Message(sendMessage(message.asString(), params, BIF,null));
+		try {
+			return new Message(sendMessage(message.asString(), params, BIF,null));
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {

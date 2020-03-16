@@ -109,32 +109,36 @@ public class XfbSender extends SenderWithParametersBase {
  	} 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		File file = new File(message.asString());
-		if (getCopy()) {
-			File fromFile = file;
-			String name = fromFile.getName();
-			if (name.startsWith(getCopyPrefix())) {
-				name = name.substring(getCopyPrefix().length());
-			} else {
-				name = getCopyPrefix() + name;
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			File file = new File(message.asString());
+			if (getCopy()) {
+				File fromFile = file;
+				String name = fromFile.getName();
+				if (name.startsWith(getCopyPrefix())) {
+					name = name.substring(getCopyPrefix().length());
+				} else {
+					name = getCopyPrefix() + name;
+				}
+				File toFile = new File(fromFile.getParentFile(), name);
+				file = toFile;
+				if (toFile.exists()) {
+					throw new SenderException("File " + toFile.getAbsolutePath() + " already exist");
+				}
+				if (!FileUtils.copyFile(fromFile, toFile, false)) {
+					throw new SenderException("Could not copy file");
+				}
 			}
-			File toFile = new File(fromFile.getParentFile(), name);
-			file = toFile;
-			if (toFile.exists()) {
-				throw new SenderException("File " + toFile.getAbsolutePath() + " already exist");
+			String command = getScript() + " ft=" +getFt() + " flow=" +getFlow() + " appli="+getAppli();
+			if (StringUtils.isNotEmpty(getNoname())) {
+				command = command + " noname=" +getNoname();
 			}
-			if (!FileUtils.copyFile(fromFile, toFile, false)) {
-				throw new SenderException("Could not copy file");
-			}
+			command = command + " filename=" +file.getAbsolutePath();
+			String output = ProcessUtil.executeCommand(command);
+			return new Message(output);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
 		}
-		String command = getScript() + " ft=" +getFt() + " flow=" +getFlow() + " appli="+getAppli();
-		if (StringUtils.isNotEmpty(getNoname())) {
-			command = command + " noname=" +getNoname();
-		}
-		command = command + " filename=" +file.getAbsolutePath();
-		String output = ProcessUtil.executeCommand(command);
-		return new Message(output);
 	}
 
 	public void setScript(String script) {

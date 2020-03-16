@@ -296,9 +296,7 @@ public class FileHandler {
 
 		String writeSuffix_work = null;
 		if (paramList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) null, session);
-			ParameterValueList pvl = prc.getValues(paramList);
+			ParameterValueList pvl = paramList.getValues(null, session);
 			if (pvl != null) {
 				ParameterValue writeSuffixParamValue = pvl
 						.getParameterValue("writeSuffix");
