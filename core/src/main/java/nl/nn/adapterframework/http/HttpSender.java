@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -211,6 +211,9 @@ public class HttpSender extends HttpSenderBase {
 				HttpGet method = new HttpGet(path+(parameters==null? message:""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
+				if (null != getFullContentType()) { //Manually set Content-Type header
+					method.setHeader("Content-Type", getFullContentType().toString());
+				}
 				return method;
 			} else if (getMethodType().equals("POST")) {
 				HttpPost method = new HttpPost(path.toString());
@@ -223,7 +226,7 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getFullContentType());
 
 				method.setEntity(entity);
 				return method;
@@ -239,12 +242,15 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getContentType());
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getFullContentType());
 				method.setEntity(entity);
 				return method;
 			}
 			if (getMethodType().equals("DELETE")) {
 				HttpDelete method = new HttpDelete(path.toString());
+				if (null != getFullContentType()) { //Manually set Content-Type header
+					method.setHeader("Content-Type", getFullContentType().toString());
+				}
 				return method;
 			}
 			if (getMethodType().equals("HEAD")) {
@@ -255,8 +261,8 @@ public class HttpSender extends HttpSenderBase {
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
 				HttpReport method = new HttpReport(path.toString(), element);
-				if (null != getContentType()) {
-					method.setHeader("Content-Type", getContentType().toString());
+				if (null != getFullContentType()) { //Manually set Content-Type header
+					method.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return method;
 			}

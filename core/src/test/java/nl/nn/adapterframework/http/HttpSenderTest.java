@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -62,7 +61,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=UTF-8", sender.getContentType().toString());
+		assertEquals("text/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
 	@Test()
@@ -70,7 +69,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
 		sender.configure();
-		assertEquals("text/html; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
@@ -79,7 +78,16 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setCharSet("ISO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+	}
+
+	@Test
+	public void testMimeTypeAndCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.setCharSet("ISO-8859-1");
+		sender.setMimeType("text/xml");
+		sender.configure();
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
@@ -87,7 +95,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
@@ -253,7 +261,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 
 			sender.setMethodType("POST");
-			sender.setContentType("application/json");
+			sender.setMimeType("application/json");
 
 			sender.configure();
 			sender.open();
@@ -278,7 +286,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 
 			sender.setMethodType("PUT");
-			sender.setContentType("application/json");
+			sender.setMimeType("application/json");
 
 			sender.configure();
 			sender.open();

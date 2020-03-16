@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Integration Partners
+   Copyright 2017-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -775,15 +774,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return methodType.toUpperCase();
 	}
 
-	@IbisDoc({"4", "content-type of the request, only for POST and PUT methods", "text/html"})
+	@Deprecated
+	/**
+	 * This is a superset of mimetype + charset + optional payload metadata.
+	 */
+	@IbisDoc({"4", "superset of mimetype + charset", "automatically determined"})
 	public void setContentType(String string) {
+		setMimeType(string);
+	}
+
+	@IbisDoc({"5", "mimetype of the request. Typically only used on PUT and POST requests.", "text/html"})
+	public void setMimeType(String string) {
 		mimeType = string;
 	}
-	public ContentType getContentType() {
+	public ContentType getFullContentType() {
 		return contentType;
 	}
 
-	@IbisDoc({"5", "charset of the request, only for POST and PUT methods", "UTF-8"})
+	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
