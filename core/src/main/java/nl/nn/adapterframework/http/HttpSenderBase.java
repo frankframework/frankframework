@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Integration Partners
+   Copyright 2017-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -171,8 +170,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String urlParam = "url";
 	private String methodType = "GET";
 	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType contentType = null;
-	private String mimeType = "text/html";
+	private ContentType fullContentType = null;
+	private String contentType = null;
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -303,10 +302,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		if(StringUtils.isNotEmpty(mimeType)) {
-			contentType = ContentType.parse(mimeType);
-			if(contentType != null && contentType.getCharset() == null) {
-				contentType = contentType.withCharset(getCharSet());
+		if(StringUtils.isNotEmpty(getContentType())) {
+			fullContentType = ContentType.parse(getContentType());
+			if(fullContentType != null && fullContentType.getCharset() == null) {
+				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
 
@@ -780,15 +779,21 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return methodType.toUpperCase();
 	}
 
-	@IbisDoc({"4", "content-type of the request, only for POST and PUT methods", "text/html"})
+	/**
+	 * This is a superset of mimetype + charset + optional payload metadata.
+	 */
+	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
-		mimeType = string;
+		contentType = string;
 	}
-	public ContentType getContentType() {
+	public String getContentType() {
 		return contentType;
 	}
+	public ContentType getFullContentType() {
+		return fullContentType;
+	}
 
-	@IbisDoc({"5", "charset of the request, only for POST and PUT methods", "UTF-8"})
+	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
