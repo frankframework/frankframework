@@ -15,8 +15,8 @@
  */
 package nl.nn.adapterframework.extensions.graphviz;
 
+import static nl.nn.adapterframework.testutil.TestAssertions.*;
 import static org.junit.Assert.*;
-import static nl.nn.adapterframework.util.TestAssertions.*;
 
 import java.io.IOException;
 import java.net.URL;
