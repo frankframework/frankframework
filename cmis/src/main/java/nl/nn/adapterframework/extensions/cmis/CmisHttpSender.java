@@ -123,10 +123,11 @@ public class CmisHttpSender extends HttpSenderBase {
 		}
 
 		if (session.get("headers") != null) {
+			@SuppressWarnings("unchecked")
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+				if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}

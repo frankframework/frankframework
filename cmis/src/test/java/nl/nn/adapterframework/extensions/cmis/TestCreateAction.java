@@ -26,7 +26,6 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
@@ -76,7 +75,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 
 		sender.setUrl("http://dummy.url");
 		sender.setRepository("dummyRepository");
-		sender.setUserName("test");
+		sender.setUsername("test");
 		sender.setPassword("test");
 		sender.setKeepSession(false);
 

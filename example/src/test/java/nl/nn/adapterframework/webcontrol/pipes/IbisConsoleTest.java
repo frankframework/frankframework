@@ -63,13 +63,13 @@ public class IbisConsoleTest {
 		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
 
-		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_CONFIGURATION_STATUS_XSLT);
+		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), SHOW_CONFIGURATION_STATUS_XSLT);
 		if (showConfigurationStatusUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_CONFIGURATION_STATUS_XSLT + "]");
 		}
 		showConfigurationStatusTransformer = XmlUtils.createTransformer(showConfigurationStatusUrl);
 
-		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_ENVIRONMENT_VARIABLES_XSLT);
+		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), SHOW_ENVIRONMENT_VARIABLES_XSLT);
 		if (showEnvironmentVariablesUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_ENVIRONMENT_VARIABLES_XSLT + "]");
 		}
@@ -140,7 +140,7 @@ public class IbisConsoleTest {
 	}
 
 	private void compareXML(String expectedFile, String result) throws SAXException, IOException, DomBuilderException, TransformerException {
-		URL expectedUrl = ClassUtils.getResourceURL(this, expectedFile);
+		URL expectedUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}

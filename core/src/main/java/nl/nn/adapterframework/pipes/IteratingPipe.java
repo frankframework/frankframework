@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -186,9 +185,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected Message itemToMessage(I item) throws SenderException {
 		return new Message(item);
 	}
-	
+
 	/**
-	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
+	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link #getIterator}.
 	 * For each item in the input callback.handleItem(item) is called.
 	 */
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
@@ -197,7 +196,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected class ItemCallback {
 		private IPipeLineSession session;
-		private String correlationID;
 		private ISender sender; 
 		private StringBuffer results = new StringBuffer();
 		int count=0;
@@ -207,7 +205,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public ItemCallback(IPipeLineSession session, String correlationID, ISender sender) {
 			this.session=session;
-			this.correlationID=correlationID;
 			this.sender=sender;
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();

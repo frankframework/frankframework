@@ -549,7 +549,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @param uri endpoint to send the message to
 	 * @param message to be sent
 	 * @param parameters ParameterValueList that contains all the senders parameters
-	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
 	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
