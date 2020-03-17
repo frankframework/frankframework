@@ -639,6 +639,12 @@
 				<artifactId>frankdoc-plugin</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 				<configuration>
+					<quiet>true</quiet>
+					<show>private</show>
+					<sourcepath>C:/Users/chakir/Documents/iaf/core/src/main/java</sourcepath>
+					<subpackages>nl.nn.adapterframework</subpackages>
+					<excludes>nl.nn.adapterframework.doc.doclet.domain</excludes>
+					<doclet>nl.nn.adapterframework.doc.doclet.ListClass</doclet>
 					<tags>
 						<tag>description</tag>
 						<tag>default</tag>
