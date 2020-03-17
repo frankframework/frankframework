@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+	<Resource
+		name="jdbc/ibis4test"
+		type="javax.sql.DataSource"
+		username="testiaf_user"
+		password="testiaf_user"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:@localhost:1521:xe"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
+	/>
+	<Resource
+		name="jms/qcf_tibco_esb_ff"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.tibco.tibjms.TibjmsXAQueueConnectionFactory"
+		serverUrl="${qcf_tibco_esb_ff.serverUrl}"
+		userName="${qcf_tibco_esb_ff.userName}"
+		userPassword="${qcf_tibco_esb_ff.userPassword}"
+		SSLVendor="j2se"
+		SSLEnableVerifyHost="false"
+		SSLEnableVerifyHostName="false"
+		SSLTrace="false"
+		SSLDebugTrace="false"
+	/>
+	<Resource
+		name="jms/qcf_tibco_esb_rr"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.tibco.tibjms.TibjmsQueueConnectionFactory"
+		serverUrl="${qcf_tibco_esb_rr.serverUrl}"
+		userName="${qcf_tibco_esb_rr.userName}"
+		userPassword="${qcf_tibco_esb_rr.userPassword}"
+		SSLVendor="j2se"
+		SSLEnableVerifyHost="false"
+		SSLEnableVerifyHostName="false"
+		SSLTrace="false"
+		SSLDebugTrace="false"
+	/>
+</Context>

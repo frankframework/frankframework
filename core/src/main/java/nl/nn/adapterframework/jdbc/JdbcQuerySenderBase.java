@@ -181,6 +181,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
+	protected String convertQuery(String query) throws JdbcException, SQLException {
+		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
+		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
+		convertQuery(null, queryContext);
+		return queryContext.getQuery();
+	}
+
 	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
 		convertQuery(con, queryContext);
 		String query = queryContext.getQuery();
@@ -752,8 +759,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				Statement resStmt = null;
 				try { 
 					resStmt = connection.createStatement();
-					log.debug("obtaining result from ["+getResultQuery()+"]");
-					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					String resultQuery = this.convertQuery(getResultQuery());
+					log.debug("obtaining result from ["+resultQuery+"]");
+					ResultSet rs = resStmt.executeQuery(resultQuery);
 					return getResult(rs);
 				} finally {
 					if (resStmt!=null) {
