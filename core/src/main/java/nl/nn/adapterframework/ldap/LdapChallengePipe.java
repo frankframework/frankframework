@@ -27,7 +27,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
