@@ -15,20 +15,23 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Perform an JSON to XML transformation
@@ -60,18 +63,20 @@ public class JsonPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
-		if (input == null) {
+		if (message == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
 		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got an invalid type as input, expected String, got " + input.getClass().getName());
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 
 		try {
-			String stringResult = (String) input;
+			String stringResult = input;
 			String actualDirection = getDirection();
 			String actualVersion = getVersion();
 			
@@ -96,7 +101,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 			if ("xml2json".equalsIgnoreCase(actualDirection)) {
 				if ("2".equals(actualVersion)) {
-					stringResult = (String) input;
+					stringResult = input;
 					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
 					stringResult = tpXml2Json.transform(prc.getInputSource(isNamespaceAware()));
 				} else {

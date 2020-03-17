@@ -15,25 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.coolgen;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.coolgen.proxy.CoolGenXMLProxy;
-import nl.nn.coolgen.proxy.XmlProxyException;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-
-import org.xml.sax.SAXException;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -42,6 +23,24 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+
+import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.coolgen.proxy.CoolGenXMLProxy;
+import nl.nn.coolgen.proxy.XmlProxyException;
 
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
@@ -232,11 +231,10 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * call the required proxy, transform the output (optionally)
      */
     @Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;
-    Variant inputVar;
     String wrapperResult = "";
     CoolGenXMLProxy proxy;
 
@@ -277,8 +275,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
     proxy.addExceptionListener(actionListener);
 
     try {
-        inputVar = new Variant(input);
-        in = inputVar.asXmlSource();
+        in = message.asSource();
 
         if (preProcTransformer != null) {
             proxypreProc = XmlUtils.transformXml(preProcTransformer, in);
@@ -288,7 +285,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
                     + proxypreProc
                     + "]");
         } else
-            proxypreProc = inputVar.asString();
+            proxypreProc = message.asString();
 
         if (proxyInputFixTransformer != null)
             proxypreProc = XmlUtils.transformXml(proxyInputFixTransformer, proxypreProc);
@@ -336,8 +333,6 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
             wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
         } else
             wrapperResult = proxyResult.toString();
-	} catch (DomBuilderException e) {
-		throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
 	} catch (SAXException e) {
 		throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
     } catch (IOException e) {

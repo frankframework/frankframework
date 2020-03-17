@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns simply the input message.
@@ -33,8 +34,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 public class EchoPipe extends FixedForwardPipe {
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
-		return new PipeRunResult(getForward(),input);
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) {
+		return new PipeRunResult(getForward(),message);
 	}
 
 }

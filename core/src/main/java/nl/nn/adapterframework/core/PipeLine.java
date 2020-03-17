@@ -42,6 +42,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -102,7 +103,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine implements ICacheEnabled, HasStatistics {
+public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
     private Logger log = LogUtil.getLogger(this);
 
 	private PipeLineProcessor pipeLineProcessor;
@@ -536,7 +537,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		if (transformNullMessage != null && message == null) {
 			message = transformNullMessage;
 		}
-		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(this, messageId, new Message(message), pipeLineSession, firstPipe);
 	}
 
 	/**
@@ -824,11 +825,11 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 
 	@Override
-	public void registerCache(ICacheAdapter cache) {
+	public void registerCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter getCache() {
+	public ICacheAdapter<String,String> getCache() {
 		return cache;
 	}
 

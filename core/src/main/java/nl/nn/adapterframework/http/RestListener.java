@@ -21,7 +21,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -32,7 +31,9 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -45,7 +46,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */
-public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class RestListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private String uriPattern;
 	private String method;
@@ -154,16 +155,17 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String transformToJson(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection("xml2json");
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
 		return (String) pipeResult.getResult();
 	}
 
 	public String transformToXml(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
 		return (String) pipeResult.getResult();
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
 	}
@@ -223,8 +225,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return view;
 	}
 
-	public Object getSpecialDefaultValue(String attributeName,
-			Object defaultValue, Map<String, String> attributes) {
+	@Override
+	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("view".equals(attributeName)) {
 			if (attributes.get("method").equalsIgnoreCase("GET")) {
 				return true;

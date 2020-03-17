@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
@@ -408,6 +409,10 @@ public class TransformerPool {
 
 	public String transform(Document d, Map<String,Object> parameters)	throws TransformerException, IOException {
 		return transform(new DOMSource(d),parameters);
+	}
+
+	public String transform(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
+		return transform(m.asSource(),parameters);
 	}
 
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {

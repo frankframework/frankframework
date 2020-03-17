@@ -1,20 +1,21 @@
 package nl.nn.adapterframework.pipes;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
+import java.util.Collection;
+import java.util.StringTokenizer;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.StringTokenizer;
+import edu.emory.mathcs.backport.java.util.Arrays;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
@@ -85,14 +86,16 @@ public class PgpPipeTest {
 			configurePipe(decryptPipe, decryptParams);
 
 			// Encryption phase
-			PipeRunResult encryptionResult = encryptPipe.doPipe(MESSAGE, session);
+			Message encryptMessage = new Message(MESSAGE);
+			PipeRunResult encryptionResult = encryptPipe.doPipe(encryptMessage, session);
 
 			// Make sure it's PGP message
 			String mid = new String((byte[]) encryptionResult.getResult());
 			assertMessage(mid, MESSAGE);
 
 			// Decryption phase
-			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
+			Message decryptMessage = new Message(encryptionResult.getResult());
+			PipeRunResult decryptionResult = decryptPipe.doPipe(decryptMessage, session);
 			byte[] result = (byte[]) decryptionResult.getResult();
 
 			// Assert decrypted message equals to the original message

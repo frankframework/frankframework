@@ -115,7 +115,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String queueRegex;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		Message message = new Message(input);
 		String result;
 		String url_work;

@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -202,47 +203,45 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 	}
 
-    @Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
-				String payload = input.toString();
+				String payload = message.asString();
 				if (rootTp != null) {
 					payload = rootTp.transform(payload, null, true);
 				}
 				if (outputNamespaceTp != null) {
 					payload = outputNamespaceTp.transform(payload, null, true);
 				}
-				ParameterResolutionContext prc = null;
 				Map<String,Object> parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					prc = new ParameterResolutionContext(payload, session, true);
-					parameterValues = prc.getValueMap(getParameterList());
+					parameterValues = getParameterList().getValues(message, session).getValueMap();
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(prc.getInputSource(true), parameterValues);
+					soapHeader = soapHeaderTp.transform(message, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(prc.getInputSource(true), parameterValues);
+					payload = soapBodyTp.transform(message, parameterValues);
 				}
 
 				result = wrapMessage(payload, soapHeader);
 			} else {
-				result = unwrapMessage(input.toString());
+				result = unwrapMessage(message.asString());
 				if (StringUtils.isEmpty(result)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
 				}
-				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(input.toString()) > 0) {
+				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(message.asString()) > 0) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-					String soapHeader = soapWrapper.getHeader(input.toString());
+					String soapHeader = soapWrapper.getHeader(message.asString());
 					session.put(getSoapHeaderSessionKey(), soapHeader);
 				}
 				if (removeOutputNamespacesTp != null) {

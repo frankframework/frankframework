@@ -17,22 +17,24 @@ package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.mozilla.javascript.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 
 /**
  * Rhino JavaScript Runtime Factory Pipe.
@@ -75,6 +77,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	 * is used as java-script function library. After evaluation the result is returned via
 	 * <code>Pipeline</code>.
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -109,25 +112,22 @@ public class RhinoPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-//INIT
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		//INIT
 		String eol = System.getProperty("line.separator");
-		if (input==null) {
-//No input from previous pipes. We will use filename and or string input.
+		if (message==null) {
+			//No input from previous pipes. We will use filename and or string input.
 	        if ((StringUtils.isEmpty(fileInput)) && inputString==null && isLookupAtRuntime()) {  // No input from file or input string. Nowhere to GO!
 				throw new PipeRunException(this,getLogPrefix(session)+"No input specified anywhere. No string input, no file input and no previous pipe input");
 	        }
 		}
- 	    if (!(input instanceof String)) {
-	        throw new PipeRunException(this,
-	            getLogPrefix(session)+"got an invalid type as input, expected String, got "+input.getClass().getName());
-	    }
 		
-		inputString = (String)input;
-//Default console bindings. Used to map javascript commands to java commands as CONSTANT
-//Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("halllo world!");
 		
-//Get the input from the file at Run Time
+		//Default console bindings. Used to map javascript commands to java commands as CONSTANT
+		//Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("hello world!");
+		
+		//Get the input from the file at Run Time
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
@@ -144,12 +144,11 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
 			}
 		}
-//Get all params as input
+		//Get all params as input
 		if (getParameterList()!=null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
 			ParameterValueList pvl;
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
@@ -159,60 +158,60 @@ public class RhinoPipe extends FixedForwardPipe {
 			}
 		}
 
-	    String javascriptcode = "Packages.java;"  + eol;
-	    if(fileInput!=null){
-	    	javascriptcode= javascriptcode + fileInput;
-	    }
-	    if(paramsInput!=null){
-	    	javascriptcode= paramsInput + eol + javascriptcode ;		    
-	    }
-	    String stringResult = (String)javascriptcode;
-	    stringResult = "INPUTSTREAM used in case of ERROR" + eol + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + eol + stringResult;
-	    //Start your engines
-//Rhino engine Ok.
+		String javascriptcode = "Packages.java;" + eol;
+		if (fileInput != null) {
+			javascriptcode = javascriptcode + fileInput;
+		}
+		if (paramsInput != null) {
+			javascriptcode = paramsInput + eol + javascriptcode;
+		}
+		String stringResult = (String) javascriptcode;
+		stringResult = "INPUTSTREAM used in case of ERROR" + eol + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + eol + stringResult;
+		// Start your engines
+		// Rhino engine Ok.
 		Context cx = Context.enter();
-        Scriptable scope = cx.initStandardObjects();
+		Scriptable scope = cx.initStandardObjects();
 		if(isDebug()) {
 			System.out.println("debug active");
-	        cx.setLanguageVersion(Context.VERSION_1_2);
-	        cx.setGeneratingDebug(true); 
+			cx.setLanguageVersion(Context.VERSION_1_2);
+			cx.setGeneratingDebug(true);
 		}
 		
-//Load javascript factory with javascript functions from file, stringinput and paraminput
-	    String jsResult = "";
-	    try {
-			
-	   		cx.evaluateString(scope, javascriptcode, "jsScript", 1, null);
-            Function fct = (Function)scope.get(jsfunctionName, scope);
-//            Object result = fct.call(cx, scope, scope, new Object[]{jsfunctionArguments});
-            Object result = fct.call(cx, scope, scope, new Object[]{input});
+		// Load javascript factory with javascript functions from file, stringinput and paraminput
+		String jsResult = "";
+		try {
 
-    		if(isDebug()) {
-    			System.out.println(cx.jsToJava(result, String.class));
-    		};
-            
-            jsResult = (String) cx.jsToJava(result, String.class);
-			
+			cx.evaluateString(scope, javascriptcode, "jsScript", 1, null);
+			Function fct = (Function) scope.get(jsfunctionName, scope);
+			// Object result = fct.call(cx, scope, scope, new
+			// Object[]{jsfunctionArguments});
+			Object result = fct.call(cx, scope, scope, new Object[] { message.asObject() });
+
+			if (isDebug()) {
+				System.out.println(cx.jsToJava(result, String.class));
+			}
+			;
+
+			jsResult = (String) cx.jsToJava(result, String.class);
+
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
-//System.out.println(ex.getMessage());
-        }finally {
-            Context.exit(); 
-        } 
-//Use the result
-	 	    if (!(jsResult instanceof String)) {
-
-	 	    }else{
-				if((String)jsResult != null){
-					stringResult = (String)jsResult;
-				}
-	 	    }
-			if (StringUtils.isEmpty(getSessionKey())){
-				return new PipeRunResult(getForward(), stringResult);
-			}else{
-				session.put(getSessionKey(), stringResult);
-				return new PipeRunResult(getForward(), input);
+			// System.out.println(ex.getMessage());
+		} finally {
+			Context.exit();
+		}
+		// Use the result
+		if (jsResult instanceof String) {
+			if ((String) jsResult != null) {
+				stringResult = (String) jsResult;
 			}
+		}
+		if (StringUtils.isEmpty(getSessionKey())) {
+			return new PipeRunResult(getForward(), stringResult);
+		} else {
+			session.put(getSessionKey(), stringResult);
+			return new PipeRunResult(getForward(), message);
+		}
 	}
 
 	@IbisDoc({"when set <code>true</code> or set to something else then \"true\", (even set to the empty string), the debugging is not active", "true"})

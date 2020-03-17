@@ -73,11 +73,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	/**
 	 * Descendants of this class must implement this method. When nextProvider is not null, they can use that to obtain an OutputStream to write their results to. 
 	 */
-	public abstract PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException;
+	public abstract PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException;
 	
 	@Override
-	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input, session, getStreamTarget());
+	public final PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		return doPipe(message, session, getStreamTarget());
 	}
 
 	

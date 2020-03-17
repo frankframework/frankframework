@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -27,9 +28,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, IPipeLineSession pipeLineSession, String firstPipe
-			) throws PipeRunException {
+	@Override
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		if (pipeLineSession==null) {
 			pipeLineSession= new PipeLineSessionBase();
 		}

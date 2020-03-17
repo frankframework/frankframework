@@ -21,6 +21,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -38,14 +40,15 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	private String sessionKey=null;
 	private int increment=1;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(sessionKey))
 			throw new ConfigurationException(getLogPrefix(null)+"sessionKey must be filled");
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
 		String sessionKeyString = (String) session.get(sessionKey);
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
@@ -54,7 +57,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(session)+"stored ["+session.get(sessionKey)+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		}
-		return new PipeRunResult(findForward("success"), input);
+		return new PipeRunResult(findForward("success"), message);
 	}
 
 	@IbisDoc({"reference to the session variable whose value is to be increased", ""})

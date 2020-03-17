@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 
 
@@ -82,7 +83,7 @@ public class WsdlXmlValidatorMixedModeTest {
 
     
     protected void validate(IPipe val, String msg, String failureReason) throws IOException {
-        String messageToValidate = getTestXml(msg);
+        Message messageToValidate = new Message(getTestXml(msg));
         try {
         	val.doPipe(messageToValidate, session);
         	if (failureReason!=null) {

@@ -54,7 +54,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private int level = 0;
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
 		XMLStreamWriter xmlStreamWriter;
 		try {

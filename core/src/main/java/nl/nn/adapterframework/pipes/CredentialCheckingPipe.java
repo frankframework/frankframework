@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +38,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	private String defaultPassword;
 	private String authAlias;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (getTargetUserid()==null) {
@@ -48,7 +50,8 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	}
 
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		CredentialFactory cf=new CredentialFactory(getAuthAlias(),getDefaultUserid(),getDefaultPassword());
 		String result="";
 		if (!getTargetUserid().equals(cf.getUsername())) {

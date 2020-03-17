@@ -20,6 +20,7 @@ import java.security.Principal;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns the name of the user executing the request.
@@ -30,7 +31,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class GetPrincipalPipe extends FixedForwardPipe {
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException{
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException{
 		Principal principal=session.getPrincipal();
 		String principalName = "";
 		if (principal==null) {

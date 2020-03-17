@@ -15,23 +15,19 @@
 */
 package nl.nn.adapterframework.extensions.rekenbox;
 
-import java.io.StringReader;
-
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Transforms between ascii and an XML representation.
@@ -77,27 +73,26 @@ public class LabelFormat extends FixedForwardPipe {
 	private String direction=null;
 	private final String DIRECTION_XML2LABEL = "Xml2Label";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 	}	
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
 			String result;
 			if (getDirection().equalsIgnoreCase(DIRECTION_XML2LABEL)) {
 				
-				Variant v = new Variant(input); 
-
 				DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
-				Document document = documentBuilder.parse(new InputSource(new StringReader(v.asString())));
+				Document document = documentBuilder.parse(message.asInputSource());
 
 				result = XmlToLabelFormat.doTransformation(document).toString();
 				return new PipeRunResult(getForward(), result);
 			}
 			else {
-				Variant v = new Variant(input);
 				XMLReader reader = XMLReaderFactory.createXMLReader("nl.nn.adapterframework.extensions.rekenbox.CalcboxOutputReader");
-				CalcboxContentHandler handler = new CalcboxContentHandler(v.asString());
+				CalcboxContentHandler handler = new CalcboxContentHandler(message.asString());
 				reader.setContentHandler(handler);
 				
 				return new PipeRunResult(getForward(), handler.getStringResult());

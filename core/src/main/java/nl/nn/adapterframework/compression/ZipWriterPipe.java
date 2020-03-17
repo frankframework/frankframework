@@ -22,6 +22,8 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -31,13 +33,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that creates a ZipStream.
@@ -77,6 +77,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
 
+	@Override
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);
 		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
@@ -162,19 +163,17 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		session.remove(getZipWriterHandle());
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
 			return new PipeRunResult(getForward(),input);
 		}
-		String msg=null;
-		if (input instanceof String) {
-			msg=(String)input;
-		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(msg, session);
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		try {
-			pvl = prc.getValues(getParameterList());
+			if (getParameterList()!=null) {
+				pvl = getParameterList().getValues(input, session);
+			}
 		} catch (ParameterException e1) {
 			throw new PipeRunException(this,getLogPrefix(session)+"cannot determine filename",e1);
 		}
@@ -219,6 +218,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	protected String getLogPrefix(IPipeLineSession session) {
 		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
 	}

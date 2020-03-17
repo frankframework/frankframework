@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,9 +49,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private PipeProcessor pipeProcessor;
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
-		Object object = (Object) message;
+		Object object = message.asObject();
 		PipeRunResult pipeRunResult;
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
@@ -66,11 +67,17 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+					String input;
+					try {
+						input = message.asString();
+					} catch (IOException e) {
+						throw new PipeRunException(null, "cannot open stream", e);
+					}
+					PipeLineResult plr = adapter.processMessage(messageId, input, pipeLineSession);
 					if (plr == null || !plr.getState().equals("success")) {
 						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
-					message = plr.getResult();
+					message = new Message(plr.getResult());
 					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 					object = (Object) message;
 				}
@@ -104,7 +111,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				Object validatedMessage = validationResult.getResult();
 				if (validatedMessage!=null) {
 					object=validatedMessage;
-					message=validatedMessage.toString();
+					message=new Message(validatedMessage);
 				}
 			}
 		}
@@ -125,17 +132,25 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
 					}
 				} else {
-					message = wrapResult.getResult().toString();
+					message = new Message(wrapResult.getResult());
 				}
 				log.debug("input after wrapping [" + message + "]");
-				object = (Object) message;
+				object = message.asObject();
 			}
 		}
 
-		pipeLine.getRequestSizeStats().addValue(message.length());
-
+		if (object instanceof String) {
+			pipeLine.getRequestSizeStats().addValue(((String)object).length());
+		}
+		
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
-			if (XmlUtils.isWellFormed(message)) {
+			String input;
+			try {
+				input = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(null, "cannot open stream", e);
+			}
+			if (XmlUtils.isWellFormed(input)) {
 				try{
 					TransformerPool tpRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,true);
 					String xsltResult = tpRemoveNamespaces.transform(message,null);
@@ -159,7 +174,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
 				object=pipeRunResult.getResult();
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
@@ -190,7 +205,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
 					if (outputWrapper !=null) {
 						log.debug("wrapping PipeLineResult");
-						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, messageId, object, pipeLineSession);
+						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, messageId, message, pipeLineSession);
 						if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 							PipeForward wrapForward=wrapResult.getPipeForward();
 							if (wrapForward.getPath()==null) {
@@ -215,7 +230,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, message, pipeLineSession);
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {

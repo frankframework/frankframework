@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
@@ -44,7 +46,8 @@ import org.apache.commons.lang.StringUtils;
 	/**
      * Checks whether the proper forward is defined.
      */
-    public void configure() throws ConfigurationException {
+    @Override
+	public void configure() throws ConfigurationException {
 	    super.configure();
 
 	/*
@@ -55,37 +58,42 @@ import org.apache.commons.lang.StringUtils;
 	*/
     }
 	 
-  public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-	String result = null;
-
-	String sessionKeys = getSessionKey();
-	if (StringUtils.isEmpty(sessionKeys)) {
-		sessionKeys = (String)input;
-	}
-	if (StringUtils.isEmpty(sessionKeys)) {
-		log.warn(getLogPrefix(session)+"no key specified");
-		result="[null]";
-	} else {
-		StringTokenizer st = new StringTokenizer(sessionKeys, ",");
-		while (st.hasMoreElements()) {
-			String sk = st.nextToken();
-			Object skResult = session.remove(sk);
-			if (skResult==null) {
-				log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
-				skResult="[null]";
-			} else {
-				log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
-			}
-			if (result == null) {
-				result = (String)skResult;
-			} else {
-				result = result + "," + skResult;
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		String result = null;
+	
+		String sessionKeys = getSessionKey();
+		if (StringUtils.isEmpty(sessionKeys)) {
+			try {
+				sessionKeys = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
 		}
+		if (StringUtils.isEmpty(sessionKeys)) {
+			log.warn(getLogPrefix(session)+"no key specified");
+			result="[null]";
+		} else {
+			StringTokenizer st = new StringTokenizer(sessionKeys, ",");
+			while (st.hasMoreElements()) {
+				String sk = st.nextToken();
+				Object skResult = session.remove(sk);
+				if (skResult==null) {
+					log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
+					skResult="[null]";
+				} else {
+					log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
+				}
+				if (result == null) {
+					result = (String)skResult;
+				} else {
+					result = result + "," + skResult;
+				}
+			}
+		}
+	
+		return new PipeRunResult(getForward(), result);
 	}
-
-	return new PipeRunResult(getForward(), result);
-  }
 
 	 
 	@IbisDoc({"name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", ""})

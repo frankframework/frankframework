@@ -34,6 +34,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -159,7 +160,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();

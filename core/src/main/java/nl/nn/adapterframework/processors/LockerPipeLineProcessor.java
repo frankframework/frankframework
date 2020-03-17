@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Locker;
 
 /**
@@ -28,7 +29,8 @@ import nl.nn.adapterframework.util.Locker;
  */
 public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	@Override
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
 		String objectId = null;

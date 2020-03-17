@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -123,8 +125,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
      */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
-		String messageToValidate=input==null?"{}":input.toString();
+	public PipeRunResult doPipe(Message input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+		String messageToValidate;
+		try {
+			messageToValidate=input==null || input.asObject()==null?"{}":input.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 		int i=0;
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
@@ -140,7 +147,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
-					PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
+					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode);
 					if (isProduceNamespaceLessXml()) {
 						String msg=(String)result.getResult();
 						msg=XmlUtils.removeNamespaces(msg);

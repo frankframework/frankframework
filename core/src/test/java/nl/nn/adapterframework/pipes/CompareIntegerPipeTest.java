@@ -33,14 +33,14 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
     public void wrongSessionKey() throws PipeRunException {
         pipe.setSessionKey1("1");
         pipe.setSessionKey2("2");
-        pipe.doPipe("input", session);
+        doPipe(pipe,"input", session); // TODO should assert proper return value
     }
 
     @Test(expected = PipeRunException.class)
     public void nullSessionKey() throws PipeRunException {
         pipe.setSessionKey1(null);
         pipe.setSessionKey2(null);
-        pipe.doPipe("input", session);
+        doPipe(pipe,"input", session); // TODO should assert proper return value
     }
 
     @Test

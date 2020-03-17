@@ -33,9 +33,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -121,7 +121,7 @@ public class FixedResult extends FixedForwardPipe {
     }
     
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result=returnString;
 		if ((StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime())
 				|| StringUtils.isNotEmpty(getFileNameSessionKey())) {
@@ -143,7 +143,7 @@ public class FixedResult extends FixedForwardPipe {
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
-					return new PipeRunResult(fileNotFoundForward, input);
+					return new PipeRunResult(fileNotFoundForward, message);
 				} else {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+fileName+"]");
 				}
@@ -155,10 +155,9 @@ public class FixedResult extends FixedForwardPipe {
 			}
 		}
 		if (getParameterList()!=null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
 			ParameterValueList pvl;
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}

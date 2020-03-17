@@ -19,6 +19,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Skip a number of bytes or characters from the input. 
@@ -32,11 +33,12 @@ public class SkipPipe extends FixedForwardPipe {
 	private int skip = 0;
 	private int length = -1;
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
 			Object result = "SkipPipe doesn't work for this type of object";
-			if (input instanceof String) {
-				String stringInput = (String)input;
+			if (message.asObject() instanceof String) {
+				String stringInput = (String)message.asObject();
 				if (skip > stringInput.length()) {
 					result = "";
 				} else {
@@ -46,8 +48,8 @@ public class SkipPipe extends FixedForwardPipe {
 						result = stringInput.substring(skip);
 					}
 				}
-			} else if (input instanceof byte[]) {
-				byte[] bytesInput = (byte[])input;
+			} else if (message.asObject() instanceof byte[]) {
+				byte[] bytesInput = (byte[])message.asObject();
 				byte[] bytesResult;
 				if (skip > bytesInput.length) {
 					bytesResult = new byte[0];

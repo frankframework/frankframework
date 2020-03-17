@@ -16,11 +16,12 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import javax.xml.transform.Source;
@@ -39,11 +40,17 @@ public class Message {
 	private Object request;
 
 	public Message(Message request) {
-		this.request = request.asObject();
+		if (request!=null) {
+			this.request = request.asObject();
+		}
 	}
 
 	public Message(Object request) {
-		this.request = request;
+		if (request instanceof Message) {
+			this.request = ((Message)request).asObject();
+		} else {
+			this.request = request;
+		}
 	}
 
 	/**
@@ -77,6 +84,9 @@ public class Message {
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
 	public Reader asReader() throws IOException {
+		return asReader(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public Reader asReader(String defaultCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -86,15 +96,23 @@ public class Message {
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request);
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, defaultCharset);
 		}
 		if (request instanceof URL) {
 			log.debug("returning URL as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream());
+			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), defaultCharset);
+		}
+		if (request instanceof File) {
+			log.debug("returning File as Reader");
+			try {
+				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), defaultCharset);
+			} catch (IOException e) {
+				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
+			}
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request));
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), defaultCharset);
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -104,6 +122,10 @@ public class Message {
 	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
 	public InputStream asInputStream() throws IOException {
+		return asInputStream(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	
+	public InputStream asInputStream(String defaultCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -115,21 +137,24 @@ public class Message {
 			log.debug("returning URL as InputStream");
 			return ((URL) request).openStream();
 		}
+		if (request instanceof File) {
+			log.debug("returning File as InputStream");
+			try {
+				return new FileInputStream((File)request);
+			} catch (IOException e) {
+				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
+			}
+		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputStream");
-			return new ReaderInputStream((Reader) request, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new ReaderInputStream((Reader) request, defaultCharset);
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as InputStream");
 			return new ByteArrayInputStream((byte[]) request);
 		}
-		try {
-			log.debug("returning String as InputStream");
-			return new ByteArrayInputStream(request.toString().getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-			return null;
-		}
+		log.debug("returning String as InputStream");
+		return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
 	}
 
 	/**
@@ -143,24 +168,16 @@ public class Message {
 			log.debug("returning InputSource as InputSource");
 			return (InputSource) request;
 		}
-		if (request instanceof InputStream) {
-			log.debug("returning InputStream as InputSource");
-			return (new InputSource((InputStream) request));
-		}
-		if (request instanceof URL) {
-			log.debug("returning URL as InputSource");
-			return (new InputSource(((URL) request).openStream()));
-		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
 			return (new InputSource((Reader) request));
 		}
-		if (request instanceof byte[]) {
-			log.debug("returning byte[] as InputSource");
-			return (new InputSource(new ByteArrayInputStream((byte[]) request)));
+		if (request instanceof String) {
+			log.debug("returning String as InputSource");
+			return (new InputSource(new StringReader((String) request)));
 		}
-		log.debug("returning String as InputSource");
-		return (new InputSource(new StringReader(request.toString())));
+		log.debug("returning as InputSource");
+		return (new InputSource(asInputStream()));
 	}
 
 	/**
@@ -174,38 +191,34 @@ public class Message {
 			log.debug("returning Source as Source");
 			return (Source) request;
 		}
-		if (request instanceof InputStream) {
-			log.debug("returning InputStream as InputSource");
-			return (new StreamSource((InputStream) request));
-		}
-		if (request instanceof URL) {
-			log.debug("returning URL as InputSource");
-			return (new StreamSource(((URL) request).openStream()));
-		}
 		if (request instanceof Reader) {
-			log.debug("returning Reader as InputSource");
+			log.debug("returning Reader as Source");
 			return (new StreamSource((Reader) request));
 		}
-		if (request instanceof byte[]) {
-			log.debug("returning byte[] as InputSource");
-			return (new StreamSource(new ByteArrayInputStream((byte[]) request)));
+		if (request instanceof String) {
+			log.debug("returning String as Source");
+			return (new StreamSource(new StringReader((String) request)));
 		}
-		log.debug("returning String as InputSource");
-		return (new StreamSource(new StringReader(request.toString())));
+		log.debug("returning as Source");
+		return (new StreamSource(asInputStream()));
 	}
 
 	/**
 	 * return the request object as a byte array. Has the side effect of preserving the input as byte array.
 	 */
 	public byte[] asByteArray() throws IOException {
+		return asByteArray(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public byte[] asByteArray(String defaultCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof String) {
-			return ((String)request).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return ((String)request).getBytes(defaultCharset);
 		}
 		if (!(request instanceof byte[])) {
-			request = StreamUtil.streamToByteArray(asInputStream(), false);
+			// save the generated byte array as the request before returning it
+			request = StreamUtil.streamToByteArray(asInputStream(defaultCharset), false);
 		}
 		return (byte[]) request;
 	}
@@ -214,11 +227,15 @@ public class Message {
 	 * return the request object as a String. Has the side effect of preserving the input as a String.
 	 */
 	public String asString() throws IOException {
+		return asString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public String asString(String defaultCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (!(request instanceof String)) {
-			request = StreamUtil.readerToString(asReader(), null);
+			// save the generated String as the request before returning it
+			request = StreamUtil.readerToString(asReader(defaultCharset), null);
 		}
 		return (String) request;
 	}

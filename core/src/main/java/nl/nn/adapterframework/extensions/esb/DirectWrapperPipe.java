@@ -23,10 +23,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Kind of extension to EsbSoapWrapperPipe for real time destinations.
@@ -39,19 +38,16 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String CMHVERSION = "cmhVersion";
 	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public String doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
 		String result;
 
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
 
@@ -81,11 +77,10 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		eswPipe.registerForward(pf);
 		try {
 			eswPipe.configure();
-			PipeRunResult prr = eswPipe.doPipe(input, session);
+			PipeRunResult prr = eswPipe.doPipe(message, session);
 			result = (String) prr.getResult();
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Exception on wrapping input", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Exception on wrapping input", e);
 		}
 		return result;
 	}

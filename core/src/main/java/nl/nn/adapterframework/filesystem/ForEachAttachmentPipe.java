@@ -77,12 +77,12 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 	
 	@Override
-	protected IDataIterator<A> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<A> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		
 		FS ifs = getFileSystem();
 		
 		try {
-			F file = ifs.toFile((String)input);
+			F file = ifs.toFile(message.asString());
 			Iterator<A> it = ifs.listAttachments(file);
 			return new AttachmentIterator(it);
 		} catch (Exception e) {

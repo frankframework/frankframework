@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileHandler;
 
 
@@ -44,21 +45,23 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler = new FileHandler();
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		fileHandler.configure();
 	}
 	
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(), fileHandler.handle(input, session, getParameterList()));
+			return new PipeRunResult(getForward(), fileHandler.handle(message, session, getParameterList()));
 		}
 		catch(Exception e) {
 			if (findForward("exception") != null) {
-				return new PipeRunResult(findForward("exception"), input);
+				return new PipeRunResult(findForward("exception"), message);
 			} else {
 				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
 			}

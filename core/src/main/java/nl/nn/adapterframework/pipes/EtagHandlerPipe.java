@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,8 +31,8 @@ import nl.nn.adapterframework.http.rest.ApiEhcache;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe to manage RESTFUL etag caching
@@ -74,21 +75,17 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
-		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got "+ input.getClass().getName());
 		}
 
 		String uriPatternSessionKey = null;
 		ParameterValueList pvl = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
 					String uriPattern = (String)pvl.getValue("uriPattern");
 					if (uriPattern!=null) {
@@ -110,14 +107,22 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			Object returnCode = false;
 
 			if(getAction().equalsIgnoreCase("generate")) {
-				cache.put(cacheKey, RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), input.hashCode()));
+				try {
+					cache.put(cacheKey, RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), message.asString().hashCode()));
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				returnCode = true;
 			}
 			else if(getAction().equalsIgnoreCase("get")) {
 				returnCode = cache.get(cacheKey);
 			}
 			else if(getAction().equalsIgnoreCase("set")) {
-				cache.put(cacheKey, input.toString());
+				try {
+					cache.put(cacheKey, message.asString());
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				returnCode = true;
 			}
 			else if(getAction().equalsIgnoreCase("delete")) {

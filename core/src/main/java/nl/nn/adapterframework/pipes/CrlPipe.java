@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -75,24 +76,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		X509CRL crl;
-		InputStream inputStream = (InputStream)input;
-		try {
+		try (InputStream inputStream = message.asInputStream()) {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			crl = (X509CRL)cf.generateCRL(inputStream);
-		} catch (CertificateException e) {
+		} catch (CertificateException | IOException | CRLException e) {
 			throw new PipeRunException(this, "Could not read CRL", e);
-		} catch (CRLException e) {
-			throw new PipeRunException(this, "Could not read CRL", e);
-		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					log.warn("Could not close CRL input stream", e);
-				}
-			}
 		}
 		String result = null;
 		if (isCRLOK(crl, (InputStream)session.get(getIssuerSessionKey()))) {

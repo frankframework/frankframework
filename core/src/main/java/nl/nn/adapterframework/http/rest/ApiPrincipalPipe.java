@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.io.IOException;
 import java.rmi.server.UID;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -60,12 +62,15 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got "+ input.getClass().getName());
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 
 		if(getAction().equals("get")) {
@@ -80,7 +85,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
-			userPrincipal.setData((String) input);
+			userPrincipal.setData(input);
 			cache.put(userPrincipal.getToken(), userPrincipal, authTTL);
 
 			return new PipeRunResult(getForward(), "");
@@ -92,7 +97,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			String token = random.nextInt() + uidString + Integer.toHexString(uidString.hashCode()) + random.nextInt(8);
 
 			ApiPrincipal userPrincipal = new ApiPrincipal(authTTL);
-			userPrincipal.setData((String) input);
+			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
 
 			if(getAuthenticationMethod().equals("cookie")) {

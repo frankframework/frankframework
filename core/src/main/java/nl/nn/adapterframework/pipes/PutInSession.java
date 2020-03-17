@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Puts the input in the PipeLineSession, under the key specified by
@@ -43,16 +44,16 @@ public class PutInSession extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		Object v;
 		if (getValue() == null) {
-			v = input;
+			v = message;
 		} else {
 			v = value;
 		}
 		session.put(getSessionKey(), v);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getForward(), message);
 	}
 
 	@IbisDoc({"1", "Key of the session variable to store the input in", "" })

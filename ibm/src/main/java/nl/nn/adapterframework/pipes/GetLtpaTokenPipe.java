@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SsoUtil;
 
 /**
@@ -38,7 +39,8 @@ import nl.nn.adapterframework.util.SsoUtil;
  */
 public class GetLtpaTokenPipe extends FixedForwardPipe {
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
 			return new PipeRunResult(getForward(),SsoUtil.getSsoToken());
 		} catch (Exception e) {

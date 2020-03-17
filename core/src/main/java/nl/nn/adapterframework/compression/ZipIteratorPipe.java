@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.compression;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,6 +23,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -33,11 +34,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -64,7 +63,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipIteratorPipe extends IteratingPipe {
+public class ZipIteratorPipe extends IteratingPipe<String> {
 
 	private String contentsSessionKey="zipdata";
 	private boolean streamingContents=true;
@@ -72,6 +71,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean skipBOM=false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 			if (StringUtils.isEmpty(getContentsSessionKey())) {
@@ -79,7 +79,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 			}
 	}
 	
-	private class ZipStreamIterator implements IDataIterator {
+	private class ZipStreamIterator implements IDataIterator<String> {
 		
 		ZipInputStream source; 
 		IPipeLineSession session;
@@ -106,6 +106,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 			}
 		}
 
+		@Override
 		public boolean hasNext() throws SenderException {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"hasNext()");
 			try {
@@ -116,7 +117,8 @@ public class ZipIteratorPipe extends IteratingPipe {
 			}
 		}
 
-		public Object next() throws SenderException {
+		@Override
+		public String next() throws SenderException {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"next()");
 			try {
 				skipCurrent();
@@ -145,6 +147,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 			}
 		}
 
+		@Override
 		public void close() throws SenderException {
 			try {
 				if (isCloseInputstreamOnExit()) {
@@ -157,28 +160,24 @@ public class ZipIteratorPipe extends IteratingPipe {
 		}
 	}
 	
-	protected ZipInputStream getZipInputStream(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected ZipInputStream getZipInputStream(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
 		}
 		InputStream source=null;
-		if (input instanceof InputStream) {
-			source=(InputStream)input;
-		} else if (input instanceof File) {
-			try {
-				source= new FileInputStream((File)input);
-			} catch (FileNotFoundException e) {
-				throw new SenderException("Cannot find file ["+((File)input).getName()+"]",e);
+		try {
+			if (input.asObject() instanceof String) {
+				String filename=(String)input.asObject();
+				try {
+					source=new FileInputStream(filename);
+				} catch (FileNotFoundException e) {
+					throw new SenderException("Cannot find file ["+filename+"]",e);
+				}
+			} else {
+				source = input.asInputStream();
 			}
-		} else if (input instanceof String) {
-			String filename=(String)input;
-			try {
-				source=new FileInputStream(filename);
-			} catch (FileNotFoundException e) {
-				throw new SenderException("Cannot find file ["+filename+"]",e);
-			}
-		} else {
-			throw new SenderException("input is of type ["+ClassUtils.nameOf(input)+"]. Must supply String (Filename), File or InputStream as input");
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
 		}
 		if (!(source instanceof BufferedInputStream)) {
 			source=new BufferedInputStream(source);
@@ -187,8 +186,9 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return zipstream;
 	}
 	
-	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
-		ZipInputStream source=getZipInputStream(input, session, correlationID, threadContext);
+	@Override
+	protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+		ZipInputStream source=getZipInputStream(input, session, threadContext);
 		if (source==null) {
 			throw new SenderException(getLogPrefix(session)+"no ZipInputStream found");
 		}

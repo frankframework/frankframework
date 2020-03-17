@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
@@ -37,9 +38,8 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
 	private PlatformTransactionManager txManager;
 	
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, IPipeLineSession pipeLineSession
-			) throws PipeRunException {
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		int txOption;
 		int txTimeout=0;

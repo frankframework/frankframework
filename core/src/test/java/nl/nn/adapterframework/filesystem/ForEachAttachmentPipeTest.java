@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.SenderSeries;
+import nl.nn.adapterframework.stream.Message;
 
 public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<F, A, FS>, F, A, FS extends IWithAttachments<F,A>> extends HelperedFileSystemTestBase {
 
@@ -90,8 +91,10 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 
+
 		// test
-		PipeRunResult prr = pipe.doPipe(filename, session);
+		Message message= new Message(filename);
+		PipeRunResult prr = pipe.doPipe(message, session);
 		assertNotNull(prr);
 		System.out.println(prr.getResult());
 		assertEquals(expected, prr.getResult());

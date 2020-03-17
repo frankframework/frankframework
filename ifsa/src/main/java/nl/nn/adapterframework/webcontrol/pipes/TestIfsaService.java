@@ -45,8 +45,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class TestIfsaService extends TimeoutGuardPipe {
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);

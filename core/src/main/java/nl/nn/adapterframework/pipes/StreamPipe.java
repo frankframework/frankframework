@@ -43,6 +43,7 @@ import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -107,25 +108,15 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
-		Object result = input;
-		String inputString;
-		if (input instanceof String) {
-			inputString = (String) input;
-		} else {
-			inputString = "";
-		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(
-				inputString, session, isNamespaceAware());
-		Map parameters = null;
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		Object result = message;
+		Map<String,Object> parameters = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
 			try {
-				parameters = prc.getValueMap(parameterList);
+				parameters = parameterList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, "Could not resolve parameters",
-						e);
+				throw new PipeRunException(this, "Could not resolve parameters", e);
 			}
 		}
 		InputStream inputStream = null;
@@ -143,53 +134,39 @@ public class StreamPipe extends FixedForwardPipe {
 				outputStream = (OutputStream) parameters.get("outputStream");
 			}
 			if (parameters.get("httpRequest") != null) {
-				httpRequest = (HttpServletRequest) parameters
-						.get("httpRequest");
+				httpRequest = (HttpServletRequest) parameters.get("httpRequest");
 			}
 			if (parameters.get("httpResponse") != null) {
-				httpResponse = (HttpServletResponse) parameters
-						.get("httpResponse");
+				httpResponse = (HttpServletResponse) parameters.get("httpResponse");
 			}
 			if (parameters.get("contentType") != null) {
 				contentType = (String) parameters.get("contentType");
 			}
 			if (parameters.get("contentDisposition") != null) {
-				contentDisposition = (String) parameters
-						.get("contentDisposition");
+				contentDisposition = (String) parameters.get("contentDisposition");
 			}
 			if (parameters.get("redirectLocation") != null) {
-				redirectLocation = (String) parameters
-						.get("redirectLocation");
+				redirectLocation = (String) parameters.get("redirectLocation");
 			}
 		}
-		if (inputStream == null && input instanceof InputStream) {
-			inputStream = (InputStream) input;
-		}
 		try {
+			if (inputStream == null) {
+				inputStream = message.asInputStream();
+			}
 			if (httpResponse != null) {
-				HttpSender.streamResponseBody(inputStream, contentType,
-						contentDisposition, httpResponse, log,
-						getLogPrefix(session), redirectLocation);
+				HttpSender.streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, getLogPrefix(session), redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
 				List<AntiVirusObject> antiVirusObjects = new ArrayList<AntiVirusObject>();
 				if (ServletFileUpload.isMultipartContent(httpRequest)) {
-					log.debug(getLogPrefix(session)
-							+ "request with content type ["
-							+ httpRequest.getContentType() + "] and length ["
-							+ httpRequest.getContentLength()
-							+ "] contains multipart content");
+					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] contains multipart content");
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-					ServletFileUpload servletFileUpload = new ServletFileUpload(
-							diskFileItemFactory);
-					List<FileItem> items = servletFileUpload
-							.parseRequest(httpRequest);
+					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+					List<FileItem> items = servletFileUpload.parseRequest(httpRequest);
 					int fileCounter = 0;
 					int stringCounter = 0;
-					log.debug(getLogPrefix(session)
-							+ "multipart request items size [" + items.size()
-							+ "]");
+					log.debug(getLogPrefix(session) + "multipart request items size [" + items.size() + "]");
 					String lastFoundFileName = null;
 					String lastFoundAVStatus = null;
 					String lastFoundAVMessage = null;
@@ -199,39 +176,20 @@ public class StreamPipe extends FixedForwardPipe {
 							// type="text|radio|checkbox|etc", select, etc).
 							String fieldValue = item.getString();
 							String fieldName = item.getFieldName();
-							if (isCheckAntiVirus() && fieldName
-									.equalsIgnoreCase(getAntiVirusPartName())) {
-								log.debug(getLogPrefix(session)
-										+ "found antivirus status part [" + fieldName
-										+ "] with value [" + fieldValue + "]");
+							if (isCheckAntiVirus() && fieldName.equalsIgnoreCase(getAntiVirusPartName())) {
+								log.debug(getLogPrefix(session) + "found antivirus status part [" + fieldName + "] with value [" + fieldValue + "]");
 								lastFoundAVStatus = fieldValue;
-							} else if (isCheckAntiVirus() && fieldName
-									.equalsIgnoreCase(getAntiVirusMessagePartName())) {
-								log.debug(getLogPrefix(session)
-										+ "found antivirus message part [" + fieldName
-										+ "] with value [" + fieldValue + "]");
+							} else if (isCheckAntiVirus() && fieldName.equalsIgnoreCase(getAntiVirusMessagePartName())) {
+								log.debug(getLogPrefix(session) + "found antivirus message part [" + fieldName + "] with value [" + fieldValue + "]");
 								lastFoundAVMessage = fieldValue;
 							} else {
-								log.debug(getLogPrefix(session)
-										+ "found string part [" + fieldName
-										+ "] with value [" + fieldValue + "]");
-								if (isExtractFirstStringPart()
-										&& firstStringPart == null) {
+								log.debug(getLogPrefix(session) + "found string part [" + fieldName + "] with value [" + fieldValue + "]");
+								if (isExtractFirstStringPart() && firstStringPart == null) {
 									firstStringPart = fieldValue;
 								} else {
-									String sessionKeyName = "part_string"
-											+ (++stringCounter > 1
-													? stringCounter : "");
-									addSessionKey(session, sessionKeyName,
-											fieldValue);
-									partsString
-											.append("<part type=\"string\" name=\""
-													+ fieldName
-													+ "\" sessionKey=\""
-													+ sessionKeyName
-													+ "\" size=\""
-													+ fieldValue.length()
-													+ "\"/>");
+									String sessionKeyName = "part_string" + (++stringCounter > 1 ? stringCounter : "");
+									addSessionKey(session, sessionKeyName, fieldValue);
+									partsString.append("<part type=\"string\" name=\"" + fieldName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + fieldValue.length() + "\"/>");
 								}
 							}
 						} else {
@@ -245,81 +203,50 @@ public class StreamPipe extends FixedForwardPipe {
 								lastFoundAVStatus = null;
 								lastFoundAVMessage = null;
 							}
-							log.debug(
-									getLogPrefix(session) + "found file part ["
-											+ item.getName() + "]");
-							String sessionKeyName = "part_file"
-									+ (++fileCounter > 1 ? fileCounter : "");
-							String fileName = FilenameUtils
-									.getName(item.getName());
+							log.debug(getLogPrefix(session) + "found file part [" + item.getName() + "]");
+							String sessionKeyName = "part_file" + (++fileCounter > 1 ? fileCounter : "");
+							String fileName = FilenameUtils.getName(item.getName());
 							InputStream is = item.getInputStream();
 							int size = is.available();
 							String mimeType = item.getContentType();
 							if (size > 0) {
-								addSessionKey(session, sessionKeyName, is,
-										fileName);
+								addSessionKey(session, sessionKeyName, is, fileName);
 							} else {
 								addSessionKey(session, sessionKeyName, null);
 							}
-							partsString.append("<part type=\"file\" name=\""
-									+ fileName + "\" sessionKey=\""
-									+ sessionKeyName + "\" size=\"" + size
-									+ "\" mimeType=\"" + mimeType + "\"/>");
+							partsString.append("<part type=\"file\" name=\"" + fileName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + size + "\" mimeType=\"" + mimeType + "\"/>");
 							lastFoundFileName = fileName;
 						}
 					}
-					if (lastFoundFileName != null
-							&& lastFoundAVStatus != null) {
-						antiVirusObjects
-								.add(new AntiVirusObject(lastFoundFileName,
-										lastFoundAVStatus, lastFoundAVMessage));
+					if (lastFoundFileName != null && lastFoundAVStatus != null) {
+						antiVirusObjects.add(new AntiVirusObject(lastFoundFileName, lastFoundAVStatus, lastFoundAVMessage));
 					}
 				} else {
-					log.debug(getLogPrefix(session)
-							+ "request with content type ["
-							+ httpRequest.getContentType() + "] and length ["
-							+ httpRequest.getContentLength()
-							+ "] does NOT contain multipart content");
+					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] does NOT contain multipart content");
 				}
 				partsString.append("</parts>");
 				if (isExtractFirstStringPart()) {
 					result = adjustFirstStringPart(firstStringPart, session);
-					session.put(getMultipartXmlSessionKey(),
-							partsString.toString());
+					session.put(getMultipartXmlSessionKey(), partsString.toString());
 				} else {
 					result = partsString.toString();
 				}
 				if (!antiVirusObjects.isEmpty()) {
 					for (AntiVirusObject antiVirusObject : antiVirusObjects) {
-						if (!antiVirusObject.getStatus().equalsIgnoreCase(
-								getAntiVirusPassedMessage())) {
-							String errorMessage = "multipart contains file ["
-									+ antiVirusObject.getFileName()
-									+ "] with antivirus status ["
-									+ antiVirusObject.getStatus()
-									+ "] and message ["
-									+ StringUtils.defaultString(
-											antiVirusObject.getMessage())
-									+ "]";
-							PipeForward antiVirusFailedForward = findForward(
-									ANTIVIRUS_FAILED_FORWARD);
+						if (!antiVirusObject.getStatus().equalsIgnoreCase(getAntiVirusPassedMessage())) {
+							String errorMessage = "multipart contains file [" + antiVirusObject.getFileName() + "] with antivirus status [" + antiVirusObject.getStatus() + "] and message [" + StringUtils.defaultString(antiVirusObject.getMessage()) + "]";
+							PipeForward antiVirusFailedForward = findForward(ANTIVIRUS_FAILED_FORWARD);
 							if (antiVirusFailedForward == null) {
-								throw new PipeRunException(this,
-										errorMessage);
+								throw new PipeRunException(this, errorMessage);
 							} else {
 								if (antiVirusFailureAsSoapFault) {
-									errorMessage = createSoapFaultMessage(
-											errorMessage);
+									errorMessage = createSoapFaultMessage(errorMessage);
 								}
 								if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
-									return new PipeRunResult(
-											antiVirusFailedForward,
-											errorMessage);
+									return new PipeRunResult(antiVirusFailedForward, errorMessage);
 								} else {
 									session.put(getAntiVirusFailureReasonSessionKey(), errorMessage);
-									return new PipeRunResult(
-											antiVirusFailedForward,
-											result);
+									return new PipeRunResult(antiVirusFailedForward, result);
 								}
 							}
 						}
@@ -329,18 +256,14 @@ public class StreamPipe extends FixedForwardPipe {
 				Misc.streamToStream(inputStream, outputStream);
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this,
-					"IOException streaming input to output", e);
+			throw new PipeRunException(this, "IOException streaming input to output", e);
 		} catch (FileUploadException e) {
-			throw new PipeRunException(this,
-					"FileUploadException getting multiparts from httpServletRequest",
-					e);
+			throw new PipeRunException(this, "FileUploadException getting multiparts from httpServletRequest", e);
 		}
 		return new PipeRunResult(getForward(), result);
 	}
 	
-	protected String adjustFirstStringPart(String firstStringPart,
-			IPipeLineSession session) throws PipeRunException {
+	protected String adjustFirstStringPart(String firstStringPart, IPipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";
 		} else {
@@ -348,26 +271,20 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String createSoapFaultMessage(String errorMessage)
-			throws PipeRunException {
+	private String createSoapFaultMessage(String errorMessage) throws PipeRunException {
 		try {
-			return SoapWrapper.getInstance()
-					.createSoapFaultMessage(errorMessage);
+			return SoapWrapper.getInstance().createSoapFaultMessage(errorMessage);
 		} catch (ConfigurationException e) {
-			throw new PipeRunException(this,
-					"Could not get soapWrapper instance", e);
+			throw new PipeRunException(this, "Could not get soapWrapper instance", e);
 		}
 	}
 
-	private void addSessionKey(IPipeLineSession session, String key,
-			Object value) {
+	private void addSessionKey(IPipeLineSession session, String key, Object value) {
 		addSessionKey(session, key, value, null);
 	}
 
-	private void addSessionKey(IPipeLineSession session, String key,
-			Object value, String name) {
-		String message = getLogPrefix(session) + "setting sessionKey [" + key
-				+ "] to ";
+	private void addSessionKey(IPipeLineSession session, String key, Object value, String name) {
+		String message = getLogPrefix(session) + "setting sessionKey [" + key + "] to ";
 		if (value instanceof InputStream) {
 			message = message + "input stream of file [" + name + "]";
 		} else {

@@ -100,7 +100,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String soapAction;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		Message message = new Message(input);
 		Connection connection = null;
 		Session jSession = null;

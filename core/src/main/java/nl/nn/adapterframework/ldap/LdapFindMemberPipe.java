@@ -31,8 +31,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
 /**
@@ -48,14 +48,13 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
@@ -85,10 +84,10 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				throw new PipeRunException(this, msg);
 			} else {
 				log.info(msg);
-				return new PipeRunResult(notFoundForward, input);
+				return new PipeRunResult(notFoundForward, message);
 			}
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getForward(), message);
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {

@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
 
+	@Override
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
 	}

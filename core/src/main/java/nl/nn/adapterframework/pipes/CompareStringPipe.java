@@ -30,6 +30,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -109,12 +110,11 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
@@ -126,7 +126,11 @@ public class CompareStringPipe extends AbstractPipe {
 				operand1 = (String) session.get(getSessionKey1());
 			}
 			if (operand1 == null) {
-				operand1 = (String) input;
+				try {
+					operand1 = message.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
+				}
 			}
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
@@ -135,7 +139,11 @@ public class CompareStringPipe extends AbstractPipe {
 				operand2 = (String) session.get(getSessionKey2());
 			}
 			if (operand2 == null) {
-				operand2 = (String) input;
+				try {
+					operand2 = message.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
+				}
 			}
 		}
 
@@ -188,11 +196,11 @@ public class CompareStringPipe extends AbstractPipe {
 
 		int comparison = operand1.compareTo(operand2);
 		if (comparison == 0)
-			return new PipeRunResult(findForward(EQUALSFORWARD), input);
+			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
-			return new PipeRunResult(findForward(LESSTHANFORWARD), input);
+			return new PipeRunResult(findForward(LESSTHANFORWARD), message);
 		else
-			return new PipeRunResult(findForward(GREATERTHANFORWARD), input);
+			return new PipeRunResult(findForward(GREATERTHANFORWARD), message);
 
 	}
 

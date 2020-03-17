@@ -33,19 +33,19 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -164,18 +164,20 @@ public class FileHandler {
 //		return handle(input, session, null);
 //	}
 	
-	public Object handle(Object input, IPipeLineSession session, ParameterList paramList) throws Exception {
+	public Object handle(Message input, IPipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
-		if (input instanceof byte[]) {
-			output = (byte[])input;
-		} else if (input instanceof InputStream) {
-			if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
-				output = input;
+		if (input!=null) {
+			if (input.asObject() instanceof byte[]) {
+				output = input.asObject();
+			} else if (input.asObject() instanceof InputStream) {
+				if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
+					output = input.asObject();
+				} else {
+					output = input.asByteArray();
+				}
 			} else {
-				output = Misc.streamToBytes((InputStream)input);
+				output = input.asByteArray(charset);
 			}
-		} else {
-			output = (input == null) ? null : input.toString().getBytes(charset);
 		}
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 			TransformerAction transformerAction = (TransformerAction)it.next();

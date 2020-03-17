@@ -18,17 +18,17 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.Variant;
-
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -122,15 +122,15 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class BytesOutputPipe extends FixedForwardPipe {
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		Object result = null;
-		Variant in = new Variant(input);
 
 		try {
 			XMLReader parser = XMLReaderFactory.createXMLReader();
 			FieldsContentHandler fieldsContentHandler = new FieldsContentHandler();
 			parser.setContentHandler(fieldsContentHandler);
-			parser.parse(in.asXmlInputSource());
+			parser.parse(message.asInputSource());
 			result = fieldsContentHandler.getResult();
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "SAXException", e);
@@ -143,6 +143,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 	private class FieldsContentHandler extends DefaultHandler {
 		private byte[] result = new byte[0];
 
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes attributes) throws SAXException {
 			if ("field".equals(qName)) {
 				String type = attributes.getValue("type");

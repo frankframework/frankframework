@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 
@@ -38,10 +42,10 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
-
 public class XmlWellFormedChecker extends FixedForwardPipe {
 	private String root = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
@@ -49,17 +53,24 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 	}
 
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
-		if (XmlUtils.isWellFormed(input.toString(), getRoot())) {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
+		if (XmlUtils.isWellFormed(input, getRoot())) {
 			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(getForward(), message);
 		}
 		throwEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 		PipeForward forward = findForward("parserError");
 		if (forward==null) {
 			forward = findForward("failure");
 		}
-		return new PipeRunResult(forward, input);
+		return new PipeRunResult(forward, message);
 	}
 
 	@IbisDoc({"name of the root element", ""})

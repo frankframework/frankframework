@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.digester.Digester;
@@ -48,11 +49,11 @@ public class DigesterPipe extends FixedForwardPipe {
 	private URL rulesURL;
 
 	@Override
-    public void configure() throws ConfigurationException {
+	public void configure() throws ConfigurationException {
 		super.configure();
 
 		try {
-     		 rulesURL = ClassUtils.getResourceURL(getConfigurationClassLoader(), digesterRulesFile);
+			rulesURL = ClassUtils.getResourceURL(getConfigurationClassLoader(), digesterRulesFile);
  			 DigesterLoader.createDigester(rulesURL); // load rules to check if they can be loaded when needed
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e);
@@ -61,19 +62,14 @@ public class DigesterPipe extends FixedForwardPipe {
 	}
 
 	@Override
-    public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
 		//Multi threading: instantiate digester for each request as the digester is NOT thread-safe.
 		//TODO: make a pool of digesters
 		Digester digester = DigesterLoader.createDigester(rulesURL);
 
 		try {
-			ByteArrayInputStream xmlInputStream =
-				new ByteArrayInputStream(input.toString().getBytes());
-
-			return new PipeRunResult(getForward(), digester.parse(xmlInputStream));
-
+			return new PipeRunResult(getForward(), digester.parse(message.asReader()));
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"exception in digesting", e);
 		}

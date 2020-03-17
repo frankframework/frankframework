@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Semaphore;
 
 /**
@@ -31,11 +32,10 @@ import nl.nn.adapterframework.util.Semaphore;
  */
 public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 
-	private Map pipeThreadCounts=new Hashtable();
+	private Map<IPipe,Semaphore> pipeThreadCounts=new Hashtable<>();
 
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, IPipeLineSession pipeLineSession
-			) throws PipeRunException {
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);
 		if (s != null) {
@@ -65,7 +65,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 			Semaphore s;
 			synchronized (pipeThreadCounts) {
 				if (pipeThreadCounts.containsKey(pipe)) {
-					s = (Semaphore) pipeThreadCounts.get(pipe);
+					s = pipeThreadCounts.get(pipe);
 				} else {
 					s = new Semaphore(maxThreads);
 					pipeThreadCounts.put(pipe, s);

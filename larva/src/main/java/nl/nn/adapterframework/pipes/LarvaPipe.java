@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -94,7 +95,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
 		// Property webapp.realpath is not available in appConstants which was

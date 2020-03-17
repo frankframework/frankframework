@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns the number of bytes or characters in the input.
@@ -28,11 +29,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 public class SizePipe extends FixedForwardPipe {
 
 	/**
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
 			int size = -1;
+			Object input = message.asObject();
 			if (input instanceof String) {
 				size = ((String)input).length();
 			} else if (input instanceof byte[]) {

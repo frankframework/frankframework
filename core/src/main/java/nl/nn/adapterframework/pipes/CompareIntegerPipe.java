@@ -21,6 +21,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -49,6 +51,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -68,8 +71,8 @@ public class CompareIntegerPipe extends AbstractPipe {
 			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ EQUALSFORWARD+ "] is not defined");
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
 		String sessionKey1StringValue = (String) session.get(sessionKey1);
 		String sessionKey2StringValue = (String) session.get(sessionKey2);
@@ -85,19 +88,17 @@ public class CompareIntegerPipe extends AbstractPipe {
 			sessionKey1IntegerValue = new Integer(sessionKey1StringValue);
 			sessionKey2IntegerValue = new Integer(sessionKey2StringValue);
 		} catch (Exception e) {
-			PipeRunException prei =
-				new PipeRunException(
-					this, "Exception while comparing integers", e);
+			PipeRunException prei = new PipeRunException(this, "Exception while comparing integers", e);
 			throw prei;
 		}
 
 		int comparison=sessionKey1IntegerValue.compareTo(sessionKey2IntegerValue);
 		if (comparison == 0)
-			return new PipeRunResult(findForward(EQUALSFORWARD), input);
+			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
-			return new PipeRunResult(findForward(LESSTHANFORWARD), input);
+			return new PipeRunResult(findForward(LESSTHANFORWARD), message);
 		else
-			return new PipeRunResult(findForward(GREATERTHANFORWARD), input);
+			return new PipeRunResult(findForward(GREATERTHANFORWARD), message);
 
 	}
 

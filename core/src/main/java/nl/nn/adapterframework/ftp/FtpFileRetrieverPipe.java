@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.ftp;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -22,6 +24,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
@@ -73,10 +76,15 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
  
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+* @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		String orgFilename = (String)input;
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		String orgFilename;
+		try {
+			orgFilename = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 		try {
 			boolean close = ! deleteAfterGet;
 			String localFilename = ftpSession.get(getParameterList(), session, localDirectory, remoteDirectory, orgFilename, localFilenamePattern, close);
@@ -86,11 +94,11 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), localFilename);
 		}
 		catch(Exception e) {
-			String msg="Error while getting file [" + remoteDirectory + "/" + input+"]";
+			String msg="Error while getting file [" + remoteDirectory + "/" + orgFilename+"]";
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {
 				log.warn(msg, e);
-				return new PipeRunResult(exceptionForward, input);
+				return new PipeRunResult(exceptionForward, message);
 			}
 			throw new PipeRunException(this, msg, e);
 		}

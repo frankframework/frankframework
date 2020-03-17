@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.util;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class FileHandlerTestBase {
@@ -162,7 +163,7 @@ public abstract class FileHandlerTestBase {
 		handler.setWriteLineSeparator(writeSeparator);
 		handler.configure();
 
-		String contents=getTestFile(contentFile, charset);
+		Message contents=new Message(getTestFile(contentFile, charset));
 		String actFilename=(String)handler.handle(contents,session,paramList);
 		if (filename==null) {
 			assertNotNull(actFilename);

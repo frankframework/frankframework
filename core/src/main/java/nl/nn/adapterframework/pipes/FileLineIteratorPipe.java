@@ -16,19 +16,16 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
-import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Sends a message to a Sender for each line of the file that the input message refers to.
@@ -40,44 +37,29 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
 
-	@Override
-	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
-		if (input==null) {
-			throw new SenderException("got null input instead of String containing filename");
-		}
-		if (!(input instanceof File)) {
-			throw new SenderException("expected File as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
-		}
-		File file = (File)input;
-		try {
-			return new FileReader(file);
-		} catch (Exception e) {
-			throw new SenderException("cannot open file ["+file.getPath()+"]",e);
-		}
-	}
-
 	/**
 	 * Open a reader for the file named according the input messsage and 
 	 * transform it.
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
-		if (!(input instanceof String)) {
+		
+		if (!(input.asObject() instanceof String)) {
 			throw new PipeRunException(this,"expected String containing filename as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
 		}
-		String filename	= input.toString();
+		String filename	= (String)input.asObject();
 		File file = new File(filename);
 
 		try {
 			
-			PipeRunResult result = super.doPipe(file,session,next);
+			PipeRunResult result = super.doPipe(new Message(file),session,next);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 

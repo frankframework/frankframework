@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
@@ -25,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -46,32 +48,31 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result = null;
 		IAdapter adapter;
-		if ("input".equals(getFrom())) {
-			adapter = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getRegisteredAdapter((String)input);
-			if (adapter == null) {
-				throw new PipeRunException(this, "Could not find adapter: " + input);
+		try {
+			if ("input".equals(getFrom())) {
+				String adapterName = message.asString();
+				adapter = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getRegisteredAdapter(adapterName);
+				if (adapter == null) {
+					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
+				}
+			} else {
+				adapter = getPipeLine().getAdapter();
 			}
-		} else {
-			adapter = getPipeLine().getAdapter();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "Could not determine adapter name", e); 
 		}
 		try {
 			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine());
-			wsdl.setDocumentation("Generated at "
-				+ AppConstants.getInstance().getResolvedProperty("dtap.stage")
-				+ "-"
-				+ AppConstants.getInstance().getResolvedProperty("dtap.side")
-				+ " on " + DateUtils.getIsoTimeStamp() + ".");
+			wsdl.setDocumentation("Generated at " + AppConstants.getInstance().getResolvedProperty("dtap.stage") + "-" + AppConstants.getInstance().getResolvedProperty("dtap.side") + " on " + DateUtils.getIsoTimeStamp() + ".");
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			wsdl.wsdl(outputStream, null);
 			result = outputStream.toString("UTF-8");
 		} catch (Exception e) {
-			throw new PipeRunException(this,
-					"Could not generate WSDL for adapter '" + adapter.getName()
-					+ "'", e); 
+			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
 		}
 		return new PipeRunResult(getForward(), result);
 	}

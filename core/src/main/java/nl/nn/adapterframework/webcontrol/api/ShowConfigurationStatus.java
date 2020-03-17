@@ -519,7 +519,6 @@ public final class ShowConfigurationStatus extends Base {
 			}
 
 			pipesInfo.put("name", pipename);
-			pipesInfo.put("type", pipe.getType());
 			pipesInfo.put("forwards", forwards);
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;

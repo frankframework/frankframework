@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -41,6 +44,7 @@ public class EscapePipe extends FixedForwardPipe {
 	private boolean encodeSubstring = false;
 
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String dir = getDirection();
@@ -51,17 +55,10 @@ public class EscapePipe extends FixedForwardPipe {
 		if (!dir.equalsIgnoreCase("encode")
 			&& !dir.equalsIgnoreCase("decode")
 				&& !dir.equalsIgnoreCase("cdata2text")) {
-			throw new ConfigurationException(
-				getLogPrefix(null)
-					+ "illegal value for direction ["
-					+ dir
-					+ "], must be 'encode', 'decode' or 'cdata2text'");
+			throw new ConfigurationException(getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
 		}
-		if ((substringStart != null && substringEnd == null)
-			|| (substringStart == null && substringEnd != null)) {
-			throw new ConfigurationException(
-				getLogPrefix(null)
-					+ "cannot have only one of substringStart or substringEnd");
+		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
+			throw new ConfigurationException(getLogPrefix(null) + "cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
 			substringStart = XmlUtils.encodeChars(substringStart);
@@ -69,24 +66,28 @@ public class EscapePipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
-		String string = input.toString();
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
+		}
 		String substring = null;
-		String result = string;
+		String result = input;
 		int i = -1;
 		int j = -1;
-		log.debug("string [" + string + "]");
+		log.debug("input [" + input + "]");
 		log.debug("substringStart [" + substringStart + "]");
 		log.debug("substringEnd [" + substringEnd + "]");
 		if (substringStart != null && substringEnd != null) {
-			i = string.indexOf(substringStart);
+			i = input.indexOf(substringStart);
 			if (i != -1) {
-				j = string.indexOf(substringEnd, i);
+				j = input.indexOf(substringEnd, i);
 				if (j != -1) {
-					substring =
-						string.substring(i + substringStart.length(), j);
+					substring = input.substring(i + substringStart.length(), j);
 					if ("encode".equalsIgnoreCase(getDirection())) {
 						substring = XmlUtils.encodeChars(substring);
 					} else {
@@ -96,20 +97,17 @@ public class EscapePipe extends FixedForwardPipe {
 							substring = XmlUtils.cdataToText(substring);
 						}
 					}
-					result =
-						string.substring(0, i + substringStart.length())
-							+ substring
-							+ string.substring(j);
+					result = input.substring(0, i + substringStart.length()) + substring + input.substring(j);
 				}
 			}
 		} else {
 			if ("encode".equalsIgnoreCase(getDirection())) {
-				result = XmlUtils.encodeChars(string);
+				result = XmlUtils.encodeChars(input);
 			} else {
 				if ("decode".equalsIgnoreCase(getDirection())) {
-					result = XmlUtils.decodeChars(string);
+					result = XmlUtils.decodeChars(input);
 				} else {
-					result = XmlUtils.cdataToText(string);
+					result = XmlUtils.cdataToText(input);
 				}
 			}
 		}

@@ -2,12 +2,16 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
@@ -21,8 +25,15 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		log.debug("inputfile ["+input+"]");
 		configureAdapter();
 		PipeRunResult prr = doPipe(pipe,input,session);
-		String xmlOut=(String)prr.getResult();
-		assertEquals(input,xmlOut.trim());
+
+		String result = null;
+		try {
+			result = new Message(prr.getResult()).asString();
+		} catch (IOException e) {
+			fail("cannot open stream: " + e.getMessage());
+		}
+		
+		assertEquals(input,result.trim());
 		
 		PipeForward forward=prr.getPipeForward();
 		assertNotNull(forward);

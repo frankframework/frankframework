@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -36,6 +37,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	private String type = "alphanumeric";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String uType = getType();
@@ -53,8 +55,8 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
 		String result = null;
 		if ("alphanumeric".equalsIgnoreCase(getType())) {

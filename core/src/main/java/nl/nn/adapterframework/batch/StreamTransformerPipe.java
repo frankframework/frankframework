@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.senders.ConfigurationAware;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -80,20 +81,24 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	
 	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
 
-	protected String getStreamId(Object input, IPipeLineSession session) throws PipeRunException {
+	protected String getStreamId(Message input, IPipeLineSession session) throws PipeRunException {
 		return session.getMessageId();
 	}
 	
 	/*
 	 * obtain data inputstream.
 	 */
-	protected InputStream getInputStream(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
-		return (InputStream)input;
+	protected InputStream getInputStream(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
+		try {
+			return input.asInputStream();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
+		}
 	}
 	/*
 	 * method called by doPipe to obtain reader.
 	 */
-	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
 		try {
 			Reader reader=getReaderFactory().getReader(getInputStream(streamId, input,session),getCharset(),streamId,session);
 			if (reader instanceof BufferedReader) {
@@ -105,6 +110,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (registeredManagers.size()==0) {
@@ -158,6 +164,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 
 
+	@Override
 	public void start() throws PipeStartException {
 		super.start();
 		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
@@ -179,6 +186,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 		}
 	}
+	@Override
 	public void stop() {
 		super.stop();
 		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
@@ -206,6 +214,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Register a uniquely named manager.
 	 * @deprecated please use registerManager
 	 */
+	@Deprecated
 	public void registerChild(IRecordHandlerManager manager) throws Exception {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = "configuration using element 'child' is deprecated. Please use element 'manager'";
@@ -233,6 +242,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Register a flow element that contains the handlers for a specific record type (key)
 	 * @deprecated please use manager.addFlow()
 	 */
+	@Deprecated
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'";
@@ -249,6 +259,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Register a uniquely named record manager.
 	 * @deprecated please use registerRecordHandler()
 	 */
+	@Deprecated
 	public void registerChild(IRecordHandler handler) throws Exception {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = "configuration using element 'child' is deprecated. Please use element 'recordHandler'";
@@ -271,6 +282,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Register a uniquely named result manager.
 	 * @deprecated Please use registerResultHandler()
 	 */
+	@Deprecated
 	public void registerChild(IResultHandler handler) throws Exception {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = "configuration using element 'child' is deprecated. Please use element 'resultHandler'";
@@ -298,9 +310,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);
 		BufferedReader reader = getReader(streamId, input,session);
 		if (reader==null) {

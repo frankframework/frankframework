@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -171,18 +172,16 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
-			xmlInput = new FileInputStream((String) input);
+			xmlInput = new FileInputStream((String) input.asObject());
 		} catch (FileNotFoundException e) {
 			throw new SenderException("could not find file [" + input + "]", e);
 		}
-		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(
-				callback);
+		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
 
-		log.debug("obtaining list of elements [" + getElementName()
-				+ "] using sax parser");
+		log.debug("obtaining list of elements [" + getElementName() + "] using sax parser");
 		try {
 			SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 			parserFactory.setNamespaceAware(true);
@@ -193,9 +192,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 				throw handler.getTimeOutException();
 			}
 			if (!handler.isStopRequested()) {
-				throw new SenderException(
-						"Could not extract list of elements [" + getElementName()
-								+ "] using sax parser", e);
+				throw new SenderException("Could not extract list of elements [" + getElementName() + "] using sax parser", e);
 			}
 		}
 	}

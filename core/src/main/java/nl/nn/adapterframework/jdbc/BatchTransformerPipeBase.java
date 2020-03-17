@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -94,12 +93,11 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
 
 	@Override
-	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Message message, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			Message msg = new Message(input);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, msg, session);
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, message, session);
 			PreparedStatement statement=queryContext.getStatement();
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {

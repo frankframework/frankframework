@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
@@ -37,22 +41,30 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 
 public class JsonWellFormedChecker extends FixedForwardPipe {
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
+	
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		PipeForward forward = findForward("success");
 
-		if (input.toString().isEmpty()) {
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
+		if (input.isEmpty()) {
 			forward = findForward("failure");
 		} else {
 			try {
-				new JSONObject(input.toString());
+				new JSONObject(input);
 			} catch (JSONException ex) {
 				try {
-					new JSONArray(input.toString());
+					new JSONArray(input);
 				} catch (JSONException ex1) {
 					forward = findForward("failure");
 				}
 			}
 		}
-		return new PipeRunResult(forward, input);
+		return new PipeRunResult(forward, message);
 	}
 }

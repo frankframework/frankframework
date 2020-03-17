@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -95,15 +96,18 @@ public class XQueryPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
 		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got an invalid type as input, expected String, got " + input.getClass().getName());
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		try {
-			String stringResult = (String)input;
+			String stringResult = input;
 			// We already specifically use Saxon in this pipe, hence set xslt2
 			// to true to make XmlUtils use the Saxon
 			// DocumentBuilderFactoryImpl.
