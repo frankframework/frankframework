@@ -336,6 +336,9 @@ public class IbisContext extends IbisApplicationContext {
 		if (classLoader != null) {
 			Thread.currentThread().setContextClassLoader(classLoader);
 			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+			if(StringUtils.isEmpty(currentConfigurationVersion)) {
+				LOG.info("unable to determine [configuration.version] for configuration ["+currentConfigurationName+"]");
+			}
 		}
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");

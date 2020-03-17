@@ -166,6 +166,10 @@ angular.module('iaf.beheerconsole')
 			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
 			delete configurations.totalErrorStoreCount;
 
+			for(x in configurations.warnings) {
+				$scope.addWarning('', configurations.warnings[x]);
+			}
+
 			for(i in configurations) {
 				var configuration = configurations[i];
 				if(configuration.exception)
