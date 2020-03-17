@@ -170,8 +170,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String urlParam = "url";
 	private String methodType = "GET";
 	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType contentType = null;
-	private String mimeType = "text/html";
+	private ContentType fullContentType = null;
+	private String contentType = null;
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -302,10 +302,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		if(StringUtils.isNotEmpty(mimeType)) {
-			contentType = ContentType.parse(mimeType);
-			if(contentType != null && contentType.getCharset() == null) {
-				contentType = contentType.withCharset(getCharSet());
+		if(StringUtils.isNotEmpty(getContentType())) {
+			fullContentType = ContentType.parse(getContentType());
+			if(fullContentType != null && fullContentType.getCharset() == null) {
+				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
 
@@ -774,21 +774,18 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return methodType.toUpperCase();
 	}
 
-	@Deprecated
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"4", "superset of mimetype + charset", "automatically determined"})
+	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
-		setMimeType(string);
+		contentType = string;
 	}
-
-	@IbisDoc({"5", "mimetype of the request. Typically only used on PUT and POST requests.", "text/html"})
-	public void setMimeType(String string) {
-		mimeType = string;
+	public String getContentType() {
+		return contentType;
 	}
 	public ContentType getFullContentType() {
-		return contentType;
+		return fullContentType;
 	}
 
 	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})

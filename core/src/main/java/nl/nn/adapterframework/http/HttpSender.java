@@ -167,6 +167,11 @@ public class HttpSender extends HttpSenderBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
+		if(StringUtils.isEmpty(getContentType()) && (getMethodType().equals("POST") || getMethodType().equals("PUT"))) {
+			setContentType("text/html");
+		}
+
 		super.configure();
 
 		if (!getMethodType().equals("POST")) {
@@ -226,6 +231,7 @@ public class HttpSender extends HttpSenderBase {
 						message=msg.toString();
 					}
 				}
+
 				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getFullContentType());
 
 				method.setEntity(entity);

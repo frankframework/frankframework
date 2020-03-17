@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 
@@ -68,26 +69,31 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void testCharset() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
+		sender.setMethodType("post");
 		sender.configure();
 		assertEquals("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
-	public void testContentTypeAndCharset() throws Throwable {
+	public void testContentTypeAndCharset1() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
-		sender.setCharSet("ISO-8859-1");
+		sender.setCharSet("IsO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
+
+		//Make sure charset is parsed properly and capital case
 		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
-	public void testMimeTypeAndCharset() throws Throwable {
+	public void testContentTypeAndCharset2() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
-		sender.setCharSet("ISO-8859-1");
-		sender.setMimeType("text/xml");
+		sender.setContentType("application/xml");
+		sender.setCharSet("uTf-8");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+
+		//Make sure charset is parsed properly and capital case
+		assertEquals("application/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
 	@Test
@@ -96,6 +102,21 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
 		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+	}
+
+	@Test
+	public void notContentTypeUnlessExplicitlySet() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.configure();
+		assertNull(sender.getFullContentType());
+	}
+
+	@Test()
+	public void notCharsetUnlessContentTypeExplicitlySet() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setCharSet("ISO-8859-1");
+		sender.configure();
+		assertNull(sender.getFullContentType());
 	}
 
 	@Test
@@ -113,6 +134,106 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGetWithContentType() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("GET"); //Make sure its a GET request
+			sender.setContentType("application/json");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("GET"); //Make sure its a GET request
+			sender.setContentType("application/json");
+			sender.setCharSet("ISO-8859-1");
+
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetWithContentTypeAndCharset.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPost() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPost.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPut() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPut.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -261,7 +382,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 
 			sender.setMethodType("POST");
-			sender.setMimeType("application/json");
+			sender.setContentType("application/json");
 
 			sender.configure();
 			sender.open();
@@ -286,7 +407,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 
 			sender.setMethodType("PUT");
-			sender.setMimeType("application/json");
+			sender.setContentType("application/json");
 
 			sender.configure();
 			sender.open();
