@@ -37,9 +37,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 		try {
 			setThreadContextMap(LOG4J_PROPS_FILE);
 			setThreadContextMap(DS_PROPERTIES_FILE);
-			setInstanceNameLc();
-			setLogDir();
-			setLevel();
+			init();
 			setThreadContextMap(System.getProperties());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -88,7 +86,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	/**
 	 * Converts instance.name property to lower case.
 	 */
-	private void setInstanceNameLc() {
+	private static void setInstanceNameLc() {
 		String instanceNameLowerCase = ThreadContext.get("instance.name");
 		if (instanceNameLowerCase != null) {
 			instanceNameLowerCase = instanceNameLowerCase.toLowerCase();
@@ -102,7 +100,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 * Checks if log.dir property exists.
 	 * Sets it with findLogDir function.
 	 */
-	private void setLogDir() {
+	private static void setLogDir() {
 		if (System.getProperty("log.dir") == null) {
 			File logDir = findLogDir(logDirHierarchy);
 			if (logDir != null) {
@@ -123,7 +121,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 * Checks if the log.level is set on system level.
 	 * If not set, sets it based on dtap.stage
 	 */
-	private void setLevel() {
+	private static void setLevel() {
 		if (System.getProperty("log.level") == null) {
 			// In the log4j2.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
@@ -145,7 +143,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 *                  and after split will be the subdirectory.
 	 * @return File object that is a directory. Or null, if no directories were found.
 	 */
-	private File findLogDir(String[] hierarchy) {
+	private static File findLogDir(String[] hierarchy) {
 		for(String option : hierarchy) {
 			int splitIndex = option.indexOf('/');
 
@@ -165,5 +163,11 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 				return dir;
 		}
 		return null;
+	}
+
+	public static void init() {
+		setInstanceNameLc();
+		setLogDir();
+		setLevel();
 	}
 }
