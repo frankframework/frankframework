@@ -27,7 +27,6 @@ import org.springframework.core.task.TaskExecutor;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -103,7 +102,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -138,7 +137,11 @@ public class ShadowSender extends ParallelSenders {
 		resultsXml.addAttribute("correlationID", correlationID);
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
+		try {
+			originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		resultsXml.addSubElement(originalMessageXml);
 
 		// First loop through all (Shadow)Senders and handle their results

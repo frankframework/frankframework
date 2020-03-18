@@ -37,30 +37,33 @@ import org.apache.logging.log4j.Logger;
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogManager.getLogger(this);
 
-	private Map valueHandlersMap;
+	private Map<String,RecordHandlingFlow> valueHandlersMap;
 	private String name;
 	private boolean initial;
 
 	RecordHandlerManager() {
-		this.valueHandlersMap = new LinkedHashMap();
+		this.valueHandlersMap = new LinkedHashMap<>();
 	}
 	
+	@Override
 	public IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String inputFilename) {
 		return this;
 	}
 
-	public void configure(Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
-		for(Iterator it=valueHandlersMap.keySet().iterator();it.hasNext();) {
-			String name=(String)it.next();
+	@Override
+	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+		for(Iterator<String> it=valueHandlersMap.keySet().iterator();it.hasNext();) {
+			String name=it.next();
 			RecordHandlingFlow flow = getFlowByName(name);
 			flow.configure(this, registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
 		}
 	}
 
 	private RecordHandlingFlow getFlowByName(String name) {
-		return (RecordHandlingFlow)valueHandlersMap.get(name);
+		return valueHandlersMap.get(name);
 	}
 	
+	@Override
 	public void addHandler(RecordHandlingFlow handlers) {
 		valueHandlersMap.put(handlers.getRecordKey(), handlers);
 		if (handlers.getNextRecordHandlerManager() == null) {
@@ -68,16 +71,17 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		}
 	}
 
-	public Collection getRecordHandlers() {
+	public Collection<RecordHandlingFlow> getRecordHandlers() {
 		return valueHandlersMap.values();	
 	}
 	
-	protected Map getValueHandlersMap() {
+	protected Map<String,RecordHandlingFlow> getValueHandlersMap() {
 		return valueHandlersMap;	
 	}
 	
+	@Override
 	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
-		return (RecordHandlingFlow)valueHandlersMap.get("*");
+		return valueHandlersMap.get("*");
 	}
 
 	/**
@@ -87,9 +91,9 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	 * @return RecordHandlingFlow element to be used for handling records of type recordkey
 	 */
 	public RecordHandlingFlow getRecordHandlerByKey(String recordKey) throws Exception {
-		RecordHandlingFlow rhf =(RecordHandlingFlow)valueHandlersMap.get(recordKey);
+		RecordHandlingFlow rhf =valueHandlersMap.get(recordKey);
 		if  (rhf == null) {
-			rhf =(RecordHandlingFlow)valueHandlersMap.get("*");
+			rhf =valueHandlersMap.get("*");
 			if  (rhf == null) {
 				throw new Exception("No handlers (flow) found for recordKey [" + recordKey + "]");
 			}
@@ -98,18 +102,22 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		
 	}
 
+	@Override
 	@IbisDoc({"name of the manager", ""})
 	public void setName(String string) {
 		name = string;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	@IbisDoc({"this manager is the initial manager, i.e. to be used for the first record", "false"})
 	public void setInitial(boolean b) {
 		initial = b;
 	}
+	@Override
 	public boolean isInitial() {
 		return initial;
 	}

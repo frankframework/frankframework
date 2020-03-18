@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import javax.mail.Provider;
 import javax.mail.Provider.Type;
 import javax.mail.Session;
@@ -36,7 +34,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
 				String correlationID = session.getMessageId();

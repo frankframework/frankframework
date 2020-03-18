@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
@@ -113,17 +113,12 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		try {
 			queueBrowserElement = XmlUtils.buildElement(message.asString());
 			root = queueBrowserElement.getTagName();
-			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement,
-					"jmsRealm");
-			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement,
-					"queueConnectionFactoryName");
-			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement,
-					"destinationName");
-			destinationType = XmlUtils.getChildTagAsString(queueBrowserElement,
-					"destinationType");
-		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix()
-					+ "got exception parsing [" + message + "]", e);
+			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement, "jmsRealm");
+			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
+			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
+			destinationType = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType");
+		} catch (DomBuilderException | IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
 		JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();

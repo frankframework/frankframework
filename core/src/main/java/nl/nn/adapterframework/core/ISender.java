@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -66,5 +64,5 @@ public interface ISender extends INamedObject {
 	 * Multiple objects may try to call this method at the same time, from different threads. 
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */ 
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException;
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException;
 }

@@ -87,7 +87,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public List parse(IPipeLineSession session, String record) {
+	public List<String> parse(IPipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -158,7 +158,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public String getRecordType(List record) {
+	public String getRecordType(List<String> record) {
 		String result=null;
 		
 		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
@@ -175,7 +175,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List prevRecord, List curRecord) {
+	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
 			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;

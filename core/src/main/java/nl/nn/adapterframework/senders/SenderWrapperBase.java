@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -89,10 +87,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException; 
+	public abstract Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException; 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}

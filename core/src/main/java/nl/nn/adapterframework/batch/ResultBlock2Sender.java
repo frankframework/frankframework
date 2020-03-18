@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -86,14 +85,14 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 	}
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
-		super.openDocument(session, streamId, prc);
+		super.openDocument(session, streamId);
 	}
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
-		super.closeDocument(session,streamId, prc);
+	public void closeDocument(IPipeLineSession session, String streamId) {
+		super.closeDocument(session,streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
 	}
@@ -145,16 +144,16 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 
 
 	@Override
-	public void openBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
-		super.openBlock(session,streamId,blockName, prc);
+	public void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+		super.openBlock(session,streamId,blockName);
 		incLevel(streamId);
 	}
 	@Override
-	public void closeBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
-		super.closeBlock(session,streamId,blockName, prc);
+	public void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+		super.closeBlock(session,streamId,blockName);
 		int level=decLevel(streamId);
 		if (level==0) {
-			StringWriter writer=(StringWriter)getWriter(session,streamId,false, prc);
+			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
 			if (writer!=null) {
 				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");

@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
  * Interface for transforming a record (= structured ASCII line). 
@@ -39,17 +38,17 @@ public interface IRecordHandler extends INamedObject {
 	 * 
 	 * @return List with String values for each inputfield
 	 */
-	List parse(IPipeLineSession session, String record) throws Exception;
+	List<String> parse(IPipeLineSession session, String record) throws Exception;
 
 	/**
 	 * Perform an action on the array of fields.
 	 * 
 	 * @return transformed result
 	 */	
-	Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
+	Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception;
 	
-	boolean isNewRecordType(IPipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) throws Exception;
+	boolean isNewRecordType(IPipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
 	
-	public String getRecordType(List record);
+	public String getRecordType(List<String> record);
 	
 }

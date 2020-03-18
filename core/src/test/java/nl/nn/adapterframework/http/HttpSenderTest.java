@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 
@@ -25,7 +26,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -62,24 +62,38 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=UTF-8", sender.getContentType().toString());
+		assertEquals("text/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
 	@Test()
 	public void testCharset() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
+		sender.setMethodType("post");
 		sender.configure();
-		assertEquals("text/html; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
-	public void testContentTypeAndCharset() throws Throwable {
+	public void testContentTypeAndCharset1() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
-		sender.setCharSet("ISO-8859-1");
+		sender.setCharSet("IsO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+
+		//Make sure charset is parsed properly and capital case
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+	}
+
+	@Test
+	public void testContentTypeAndCharset2() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.setContentType("application/xml");
+		sender.setCharSet("uTf-8");
+		sender.configure();
+
+		//Make sure charset is parsed properly and capital case
+		assertEquals("application/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
 	@Test
@@ -87,7 +101,22 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
-		assertEquals("text/xml; charset=ISO-8859-1", sender.getContentType().toString());
+		assertEquals("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+	}
+
+	@Test
+	public void notContentTypeUnlessExplicitlySet() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender.configure();
+		assertNull(sender.getFullContentType());
+	}
+
+	@Test()
+	public void notCharsetUnlessContentTypeExplicitlySet() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setCharSet("ISO-8859-1");
+		sender.configure();
+		assertNull(sender.getFullContentType());
 	}
 
 	@Test
@@ -105,6 +134,106 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGetWithContentType() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("GET"); //Make sure its a GET request
+			sender.setContentType("application/json");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("GET"); //Make sure its a GET request
+			sender.setContentType("application/json");
+			sender.setCharSet("ISO-8859-1");
+
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetWithContentTypeAndCharset.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPost() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPost.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPut() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPut.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
