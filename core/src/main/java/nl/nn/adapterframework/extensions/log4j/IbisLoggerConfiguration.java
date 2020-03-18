@@ -28,12 +28,10 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 
 	public IbisLoggerConfiguration(final LoggerContext context, final ConfigurationSource configSource) {
 		super(context, configSource);
-		System.out.println("IN HEREE!!");
 	}
 
 	@Override
 	protected void doConfigure() {
-		System.out.println("IN HEREE!!2");
 		try {
 			setThreadContextMap(LOG4J_PROPS_FILE);
 			setThreadContextMap(DS_PROPERTIES_FILE);
@@ -114,7 +112,6 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 				System.out.println(DEBUG_LOG_PREFIX + "did not find system property log.dir and unable to locate it automatically");
 			}
 		}
-		System.out.println("LOGDIR:" + System.getProperty("log.dir"));
 	}
 
 	/**

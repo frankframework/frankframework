@@ -17,14 +17,11 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	@Override
 	protected String[] getSupportedTypes() {
-
-		System.out.println("IN HEREE!!3");
 		return SUFFIXES;
 	}
 
 	@Override
 	public Configuration getConfiguration(LoggerContext loggerContext, ConfigurationSource source) {
-		System.out.println("IN HEREE!!4");
 		return new IbisLoggerConfiguration(loggerContext, source);
 	}
 }
