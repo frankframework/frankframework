@@ -26,7 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +39,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.10
  */
 public class ZipWriter {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private ZipOutputStream zipoutput;
 	private boolean entryOpen=false;

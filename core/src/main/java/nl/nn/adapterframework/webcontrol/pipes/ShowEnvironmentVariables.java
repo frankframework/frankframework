@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
@@ -45,7 +45,7 @@ import java.util.Properties;
  */
 
 public class ShowEnvironmentVariables extends ConfigurationBase {
-	protected Logger secLog = LogManager.getLogger("SEC");
+	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	@Override
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
@@ -87,7 +87,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 
 		AppConstants.getInstance().setProperty("log.logIntermediaryResults",
 				Boolean.toString(formLogIntermediaryResults));
-		Configurator.setLevel(LogManager.getRootLogger().getName(), Level.toLevel(formLogLevel));
+		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.toLevel(formLogLevel));
 
 		return retrieveFormInput(session, true);
 	}
@@ -157,7 +157,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	}
 
 	private String retrieveLogLevel() {
-		return LogManager.getRootLogger().getLevel().toString();
+		return LogUtil.getRootLogger().getLevel().toString();
 	}
 
 	private boolean retrieveLogIntermediaryResults() {

@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
@@ -43,8 +43,8 @@ public class ServletDispatcher extends HttpServletDispatcher {
 
 	private static final long serialVersionUID = 1L;
 
-	private Logger secLog = LogManager.getLogger("SEC");
-	private Logger log = LogManager.getLogger(this);
+	private Logger secLog = LogUtil.getLogger("SEC");
+	private Logger log = LogUtil.getLogger(this);
 	private AppConstants appConstants = AppConstants.getInstance();
 
 	private final boolean IAF_API_ENABLED = appConstants.getBoolean("iaf-api.enabled", true);

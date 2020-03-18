@@ -26,7 +26,7 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Extend the DefaultMessageListenerContainer from Spring to add trace logging and make it possible to monitor the last
@@ -36,7 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * @author Jaco de Groot
  */
 public class IbisMessageListenerContainer extends DefaultMessageListenerContainer {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	@Override
 	protected Connection createConnection() throws JMSException {

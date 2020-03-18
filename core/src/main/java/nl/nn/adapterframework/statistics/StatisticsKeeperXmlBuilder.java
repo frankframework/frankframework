@@ -23,7 +23,7 @@ import java.util.Date;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9
  */
 public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHandler {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
 	private DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);

@@ -34,7 +34,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-//	private Logger log = LogManager.getLogger(this);
+//	private Logger log = LogUtil.getLogger(this);
 
 	static {
 		// add methodname to find cause of JMS-Exceptions

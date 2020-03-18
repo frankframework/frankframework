@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -157,7 +157,7 @@ public class IbisTester {
 
 	public String testStartAdapters() {
 		// Log4J2 will automatically create a console appender and basic pattern layout.
-		Configurator.setLevel(LogManager.getRootLogger().getName(), Level.INFO);
+		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();

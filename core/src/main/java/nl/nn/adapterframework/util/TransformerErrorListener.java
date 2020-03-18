@@ -20,7 +20,7 @@ import java.io.IOException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  * @author Peter Leeuwenburgh
  */
 public class TransformerErrorListener implements ErrorListener {
-	static Logger log = LogManager.getLogger(TransformerErrorListener.class);
+	static Logger log = LogUtil.getLogger(TransformerErrorListener.class);
 
 	private boolean throwException;
 	private TransformerException fatalTransformerException;

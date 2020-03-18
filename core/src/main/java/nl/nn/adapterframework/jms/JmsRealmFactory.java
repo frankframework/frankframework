@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Singleton that has the different jmsRealms.<br/>
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private static JmsRealmFactory self = null;
 	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<String, JmsRealm>();

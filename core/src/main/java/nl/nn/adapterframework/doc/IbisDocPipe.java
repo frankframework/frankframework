@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 import nl.nn.adapterframework.doc.objects.*;
 import nl.nn.adapterframework.util.*;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * @author Jaco de Groot
  */
 public class IbisDocPipe extends FixedForwardPipe {
-	private static Logger log = LogManager.getLogger(IbisDocPipe.class);
+	private static Logger log = LogUtil.getLogger(IbisDocPipe.class);
 	private static Set<String> excludeFilters = new TreeSet<String>();
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class

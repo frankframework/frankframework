@@ -17,7 +17,7 @@ package nl.nn.adapterframework.align;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.*;
 
@@ -29,7 +29,7 @@ import java.util.List;
 
 
 public class XmlTypeToJsonSchemaConverter  {
-	protected Logger log = LogManager.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private List<XSModel> models;
 	private boolean skipArrayElementContainers;

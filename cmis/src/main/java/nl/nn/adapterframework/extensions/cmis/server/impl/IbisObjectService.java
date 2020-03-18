@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -57,7 +57,7 @@ import org.w3c.dom.Node;
 public class IbisObjectService implements ObjectService {
 
 	private ObjectService objectService;
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
 
 	public IbisObjectService(ObjectService objectService) {

@@ -37,7 +37,7 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
  * @since 5.0.29
  */
 public class IbmMisc {
-    private static final Logger LOG = LogManager.getLogger(Misc.class);
+    private static final Logger LOG = LogUtil.getLogger(Misc.class);
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 

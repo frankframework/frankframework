@@ -72,7 +72,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -113,7 +113,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author  Johan Verrips
  */
 public class XmlUtils {
-	static Logger log = LogManager.getLogger(XmlUtils.class);
+	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = 2;
 

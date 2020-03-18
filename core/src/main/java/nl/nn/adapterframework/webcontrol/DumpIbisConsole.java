@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -51,7 +51,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Peter Leeuwenburgh
  */
 public class DumpIbisConsole extends HttpServlet {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private String directoryName = "";
 	private ServletContext servletContext;

@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author John Dekker
  */
 public class FTPsClient extends FTPClient {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	
 	public final String FTP_CLIENT_CHARSET="ISO-8859-1";

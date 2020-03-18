@@ -52,7 +52,7 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -71,7 +71,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * @since   4.1
  */
 public class JdbcUtil {
-	protected static Logger log = LogManager.getLogger(JdbcUtil.class);
+	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");

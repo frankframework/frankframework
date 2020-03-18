@@ -24,10 +24,10 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private LexicalHandler lexicalHandler;
 	

@@ -26,7 +26,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -77,7 +77,7 @@ public class IbisApplicationContext {
 	private ApplicationContext parentContext = null;
 
 	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private BootState STATE = BootState.FIRST_START;
 	private Map<String, String> iafModules = new HashMap<String, String>();
 

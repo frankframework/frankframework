@@ -17,7 +17,7 @@ package nl.nn.adapterframework.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -51,7 +51,7 @@ import java.util.zip.Inflater;
  * Miscellaneous conversion functions.
  */
 public class Misc {
-	static Logger log = LogManager.getLogger(Misc.class);
+	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";

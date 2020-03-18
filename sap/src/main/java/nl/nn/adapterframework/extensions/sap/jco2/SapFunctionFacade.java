@@ -30,7 +30,7 @@ import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   4.2
  */
 public class SapFunctionFacade implements ISapFunctionFacade {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String sapSystemName;

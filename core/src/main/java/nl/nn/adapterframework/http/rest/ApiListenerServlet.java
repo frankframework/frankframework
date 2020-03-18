@@ -34,7 +34,7 @@ import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -57,7 +57,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	private final String CHARSET="UTF-8";
 	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days

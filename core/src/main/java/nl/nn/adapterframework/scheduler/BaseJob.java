@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.quartz.Job;
@@ -27,7 +27,7 @@ import org.quartz.JobExecutionContext;
  * @since   4.0
  */
 public abstract class BaseJob implements Job {
-    protected Logger log=LogManager.getLogger(this);
+    protected Logger log=LogUtil.getLogger(this);
 
 	public String getLogPrefix(JobExecutionContext context) {
 		String instName = context.getJobDetail().getKey().getName();

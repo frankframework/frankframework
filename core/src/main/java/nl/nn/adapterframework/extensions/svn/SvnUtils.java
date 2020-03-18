@@ -23,7 +23,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -34,7 +34,7 @@ import java.io.IOException;
  * @author Peter Leeuwenburgh
  */
 public class SvnUtils {
-	protected static Logger log = LogManager.getLogger(SvnUtils.class);
+	protected static Logger log = LogUtil.getLogger(SvnUtils.class);
 
 	public static String getLogReport(String urlString) throws DomBuilderException, XPathExpressionException, ConfigurationException, SenderException, TimeOutException, IOException {
 		String head = getHeadHtml(urlString);

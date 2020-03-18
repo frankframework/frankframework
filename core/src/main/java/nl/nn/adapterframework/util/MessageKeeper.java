@@ -17,7 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.util.Date;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
  * @see MessageKeeperMessage
  */
 public class MessageKeeper extends SizeLimitedVector {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	public MessageKeeper() {
 		super();

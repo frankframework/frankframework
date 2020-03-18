@@ -25,7 +25,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -49,7 +49,7 @@ import org.quartz.impl.matchers.GroupMatcher;
  * @since 4.0
   */
 public class SchedulerAdapter {
-	protected Logger log=LogManager.getLogger(this);
+	protected Logger log=LogUtil.getLogger(this);
 
 	private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
 	private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);

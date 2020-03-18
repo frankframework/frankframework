@@ -18,7 +18,7 @@ package nl.nn.adapterframework.statistics.parser;
 import java.text.DecimalFormat;
 
 import nl.nn.adapterframework.statistics.Basics;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.logging.log4j.Logger;
@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.10
  */
 public class SummaryRecord extends Basics {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	

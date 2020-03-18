@@ -20,7 +20,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.task.TaskExecutor;
 
@@ -33,7 +33,7 @@ import java.util.HashMap;
  * @since   4.3
  */
 public class IsolatedServiceCaller {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	/**
 	 * The thread-pool for spawning threads, injected by Spring

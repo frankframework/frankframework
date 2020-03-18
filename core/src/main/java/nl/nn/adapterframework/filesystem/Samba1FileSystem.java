@@ -34,7 +34,7 @@ import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 
@@ -43,7 +43,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String share = null;
 	private String username = null;

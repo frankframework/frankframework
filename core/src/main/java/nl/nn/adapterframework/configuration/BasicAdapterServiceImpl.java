@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class BasicAdapterServiceImpl extends AdapterServiceImpl {
 
-    private static final Logger LOG = LogManager.getLogger(BasicAdapterServiceImpl.class);
+    private static final Logger LOG = LogUtil.getLogger(BasicAdapterServiceImpl.class);
 
     @Override
     public void registerAdapter(IAdapter adapter) throws ConfigurationException {

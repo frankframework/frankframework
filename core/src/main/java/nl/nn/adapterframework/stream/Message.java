@@ -30,11 +30,11 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class Message {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 

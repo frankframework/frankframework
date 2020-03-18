@@ -29,7 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     // JNDI

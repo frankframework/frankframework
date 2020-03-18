@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTestBase<P> {
 
@@ -104,7 +104,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	@Before
 	public void init() {
 		testAppender = new TestAppender("Test", null, null, false, null);
-		((org.apache.logging.log4j.core.Logger)LogManager.getRootLogger()).addAppender(testAppender);
+		((org.apache.logging.log4j.core.Logger)LogUtil.getRootLogger()).addAppender(testAppender);
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr=System.err;

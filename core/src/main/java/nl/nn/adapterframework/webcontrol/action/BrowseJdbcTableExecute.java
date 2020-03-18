@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -43,7 +43,7 @@ import java.util.List;
 
 public class BrowseJdbcTableExecute extends ActionBase {
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
-	private static Logger log = LogManager.getLogger(BrowseJdbcTableExecute.class);
+	private static Logger log = LogUtil.getLogger(BrowseJdbcTableExecute.class);
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
 
 	@Override

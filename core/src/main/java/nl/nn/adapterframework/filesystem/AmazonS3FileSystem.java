@@ -57,11 +57,11 @@ import com.amazonaws.services.s3.model.Tier;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 	public static final List<String> STORAGE_CLASSES = getStorageClasses();

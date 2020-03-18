@@ -31,12 +31,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
 	private final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";

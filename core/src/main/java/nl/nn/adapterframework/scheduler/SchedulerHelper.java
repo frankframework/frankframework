@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,7 @@ public class SchedulerHelper {
 
 	public static final String DEFAULT_GROUP = Scheduler.DEFAULT_GROUP;
 
-	protected static Logger log = LogManager.getLogger(SchedulerHelper.class);
+	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
 
 	private Scheduler scheduler;
 

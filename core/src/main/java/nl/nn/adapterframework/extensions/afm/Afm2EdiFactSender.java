@@ -21,7 +21,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -48,7 +48,7 @@ import java.util.Date;
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
-	protected Logger logger = LogManager.getLogger(this);
+	protected Logger logger = LogUtil.getLogger(this);
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";

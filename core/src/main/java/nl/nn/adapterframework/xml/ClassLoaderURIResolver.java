@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.Resource;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
  * @see ClassLoaderXmlEntityResolver
  */
 public class ClassLoaderURIResolver implements URIResolver {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private ClassLoader classLoader;
 

@@ -21,7 +21,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class LiquibaseClassLoaderWrapper extends ClassLoader {
 
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	public LiquibaseClassLoaderWrapper(ClassLoader parent) {
 		super(parent);

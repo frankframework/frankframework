@@ -53,7 +53,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -98,7 +98,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @see IPipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;

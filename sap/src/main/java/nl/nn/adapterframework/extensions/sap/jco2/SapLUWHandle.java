@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ import com.sap.mw.jco.JCO;
  * @since   4.6.0
  */
 public class SapLUWHandle {
-	protected static Logger log = LogManager.getLogger(SapLUWHandle.class);
+	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
 	private SapSystem sapSystem;
 	private JCO.Client client;

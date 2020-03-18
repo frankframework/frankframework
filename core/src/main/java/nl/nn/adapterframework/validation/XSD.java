@@ -44,7 +44,7 @@ import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Jaco de Groot
  */
 public class XSD implements Schema, Comparable<XSD> {
-	private static final Logger LOG = LogManager.getLogger(XSD.class);
+	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private ClassLoader classLoader;
 	private javax.wsdl.Definition wsdlDefinition;

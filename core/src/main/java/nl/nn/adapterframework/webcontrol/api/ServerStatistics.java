@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
@@ -270,7 +270,7 @@ public class ServerStatistics extends Base {
 	public Response getLogConfiguration() throws ApiException {
 
 		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		Logger rootLogger = LogManager.getRootLogger();
+		Logger rootLogger = LogUtil.getRootLogger();
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
@@ -298,7 +298,7 @@ public class ServerStatistics extends Base {
 		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
 
-		Logger rootLogger = LogManager.getRootLogger();
+		Logger rootLogger = LogUtil.getRootLogger();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -359,7 +359,7 @@ public class ServerStatistics extends Base {
 		
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
-			LogManager.getLogger("SEC").info(msg.toString());
+			LogUtil.getLogger("SEC").info(msg.toString());
 		}
 
 		return Response.status(Response.Status.NO_CONTENT).build();

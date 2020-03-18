@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class AppConstantsTest {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private ClassLoaderMock classLoader;
 	private AppConstants constants;

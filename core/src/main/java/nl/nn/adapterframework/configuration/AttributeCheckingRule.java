@@ -19,7 +19,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
 import nl.nn.adapterframework.core.INamedObject;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.Rule;
@@ -34,7 +34,7 @@ import org.xml.sax.Locator;
  * @author  Gerrit van Brakel
  */
 public class AttributeCheckingRule extends Rule {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	private String getObjectName(Object o) {

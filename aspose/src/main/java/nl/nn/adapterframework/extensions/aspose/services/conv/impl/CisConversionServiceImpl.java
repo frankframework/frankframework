@@ -36,7 +36,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
@@ -45,7 +45,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class CisConversionServiceImpl implements CisConversionService {
 
-	private static final Logger LOGGER = LogManager.getLogger(CisConversionServiceImpl.class);
+	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
 
 	// location of converted pdf files
 	private String pdfOutputlocation = "";

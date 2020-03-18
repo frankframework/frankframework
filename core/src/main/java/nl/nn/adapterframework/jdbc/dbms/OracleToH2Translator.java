@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryContext;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Class to translate Oracle queries to H2.
@@ -43,7 +43,7 @@ import org.apache.logging.log4j.LogManager;
  * @author Peter Leeuwenburgh
  */
 public class OracleToH2Translator {
-	private static Logger log = LogManager.getLogger(OracleToH2Translator.class);
+	private static Logger log = LogUtil.getLogger(OracleToH2Translator.class);
 
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);

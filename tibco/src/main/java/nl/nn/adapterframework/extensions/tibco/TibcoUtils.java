@@ -26,7 +26,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -43,7 +43,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * @author Jaco de Groot
  */
 public class TibcoUtils {
-	static Logger log = LogManager.getLogger(TibcoUtils.class);
+	static Logger log = LogUtil.getLogger(TibcoUtils.class);
 
 	public static long getQueueFirstMessageAge(String provUrl,
 			String authAlias, String userName, String password, String queueName)

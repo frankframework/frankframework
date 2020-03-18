@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.10
  */
 public class DelphiStringRecordReader extends Reader {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private InputStream in;
 	private String charsetName;

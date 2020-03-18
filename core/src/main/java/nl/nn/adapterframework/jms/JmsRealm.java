@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
@@ -38,7 +38,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
 

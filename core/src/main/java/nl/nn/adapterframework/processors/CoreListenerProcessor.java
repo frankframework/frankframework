@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeOutException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  * @author Jaco de Groot
  */
 public class CoreListenerProcessor implements ListenerProcessor {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	public String getMessage(ICorrelatedPullingListener listener,
 			String correlationID, IPipeLineSession pipeLineSession

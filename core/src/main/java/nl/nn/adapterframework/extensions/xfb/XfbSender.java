@@ -24,7 +24,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.ProcessUtil;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -84,7 +84,7 @@ import java.io.IOException;
  * @since   4.11
  */
 public class XfbSender extends SenderWithParametersBase {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private String script;
 	private String ft = "SEND_FF";

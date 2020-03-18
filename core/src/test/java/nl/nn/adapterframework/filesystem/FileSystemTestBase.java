@@ -12,10 +12,10 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
 import liquibase.util.StreamUtil;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class FileSystemTestBase {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	protected boolean doTimingTests=false;
 

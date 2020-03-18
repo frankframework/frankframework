@@ -51,7 +51,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -393,7 +393,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 }
 
 class PollGuard extends TimerTask {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 	private SpringJmsConnector springJmsConnector;
 	private long lastCheck;

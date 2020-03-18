@@ -36,7 +36,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -67,7 +67,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	// types of ftp transports
 	static final int FTP = 1;

@@ -9,11 +9,11 @@ import javax.security.auth.login.Configuration;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class KerberosLoginConfiguration extends Configuration{
 
-	private final static Logger logger = LogManager.getLogger(KerberosLoginConfiguration.class);
+	private final static Logger logger = LogUtil.getLogger(KerberosLoginConfiguration.class);
 	//define a map of params you wish to pass and fill them up
 	private Map<String, String> params = new HashMap<String, String>();
 	

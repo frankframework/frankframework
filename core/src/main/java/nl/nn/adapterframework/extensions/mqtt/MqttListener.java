@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang3.StringUtils;

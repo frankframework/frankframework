@@ -44,7 +44,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * @author  Johan Verrips
  */
 public class PipeLine implements ICacheEnabled, HasStatistics {
-    private Logger log = LogManager.getLogger(this);
+    private Logger log = LogUtil.getLogger(this);
 
 	private PipeLineProcessor pipeLineProcessor;
 

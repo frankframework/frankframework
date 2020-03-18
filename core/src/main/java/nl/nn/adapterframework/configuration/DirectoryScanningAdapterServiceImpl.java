@@ -14,7 +14,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import nl.nn.adapterframework.core.IAdapter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.digester.Digester;
@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
  */
 public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl {
 
-    private static final Logger LOG = LogManager.getLogger(DirectoryScanningAdapterServiceImpl.class);
+    private static final Logger LOG = LogUtil.getLogger(DirectoryScanningAdapterServiceImpl.class);
     private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2);
     private static final FileFilter IS_XML =  new FileFilter() {
         public boolean accept (File pathname){

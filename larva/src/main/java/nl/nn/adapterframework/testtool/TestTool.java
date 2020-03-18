@@ -84,7 +84,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.FileUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -93,7 +93,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger logger = LogManager.getLogger(TestTool.class);
+	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final int DEFAULT_TIMEOUT = 30000;

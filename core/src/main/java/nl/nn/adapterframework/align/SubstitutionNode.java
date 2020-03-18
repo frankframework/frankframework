@@ -21,10 +21,10 @@ import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class SubstitutionNode<V> {
-	protected Logger log = LogManager.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private Map<String,SubstitutionNode<V>> parents;
 	private V value;

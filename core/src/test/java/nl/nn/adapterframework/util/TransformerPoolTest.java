@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import nl.nn.adapterframework.core.Resource;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
@@ -10,7 +10,7 @@ import javax.xml.transform.Source;
 import static org.junit.Assert.assertEquals;
 
 public class TransformerPoolTest {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String xml = "<root><message active=\"false\">hello</message></root>";
 	private String xpath = "root/message";

@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -93,7 +93,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String TYPE_XML="xml";

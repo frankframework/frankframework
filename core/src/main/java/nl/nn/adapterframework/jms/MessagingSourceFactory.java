@@ -22,7 +22,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public abstract class MessagingSourceFactory  {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	protected abstract Map getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;

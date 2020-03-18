@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
-	protected static Logger log = LogManager.getLogger(Dir2Xml.class);
+	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
 	
   	private String path;
   	private String wildcard="*.*";

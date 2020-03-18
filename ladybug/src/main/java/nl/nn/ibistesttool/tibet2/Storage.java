@@ -32,7 +32,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,7 +55,7 @@ import java.util.Map;
  * @author Jaco de Groot
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
-	private static final Logger log = LogManager.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
+	private static final Logger log = LogUtil.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
 	private String name;

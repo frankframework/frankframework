@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
  * @author  John Dekker
  */
 public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	/**
 	 * Constructs the verification instance with the specified known_hosts
 	 * file.

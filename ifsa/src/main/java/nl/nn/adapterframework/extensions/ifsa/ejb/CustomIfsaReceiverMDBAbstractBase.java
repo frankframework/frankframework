@@ -25,7 +25,7 @@ import javax.ejb.EJBException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  * @author Tim van der Leeuw
  */
 public abstract class CustomIfsaReceiverMDBAbstractBase implements MessageDrivenBean, MessageListener {
-    protected final Logger log = LogManager.getLogger(this);
+    protected final Logger log = LogUtil.getLogger(this);
     /**
      * Service Locator instance: Should be per-instance to avoid unwanted
      * EJB aliasing effects.

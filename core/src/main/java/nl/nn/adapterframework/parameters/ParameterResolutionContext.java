@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
  
 /**
@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  */
 public class ParameterResolutionContext {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private Message message;
 	private IPipeLineSession session;

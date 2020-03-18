@@ -22,10 +22,10 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -240,7 +240,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	}
 
 	private static Logger getLoggerImplementation() {
-		 return (Logger) LogManager.getRootLogger();
+		 return (Logger) LogUtil.getRootLogger();
 	}
 
 	class TestAppender extends AbstractAppender {

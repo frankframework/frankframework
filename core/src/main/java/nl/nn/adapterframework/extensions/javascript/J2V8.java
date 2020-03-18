@@ -30,11 +30,11 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class J2V8 implements JavascriptEngine<V8> {
 
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private V8 v8;
 
 	@Override

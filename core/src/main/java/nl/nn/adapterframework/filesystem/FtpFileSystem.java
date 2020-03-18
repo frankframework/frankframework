@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 
@@ -42,7 +42,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String remoteDirectory = "";
 

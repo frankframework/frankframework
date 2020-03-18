@@ -31,7 +31,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -77,8 +77,8 @@ import java.util.StringTokenizer;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
-	private Logger log = LogManager.getLogger(this);
-	protected Logger msgLog = LogManager.getLogger("MSG");
+	private Logger log = LogUtil.getLogger(this);
+	protected Logger msgLog = LogUtil.getLogger("MSG");
 	private Level msgLogLevel = Level.toLevel(System.getProperty("msg.log.level.default", "BASIC"));
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -154,7 +154,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		msgLog = LogManager.getLogger("MSG." + getName());
+		msgLog = LogUtil.getLogger("MSG." + getName());
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");

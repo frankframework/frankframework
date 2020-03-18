@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.RollbackException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +33,7 @@ import com.sap.conn.jco.JCoException;
  * @since   5.0
  */
 public class SapLUWHandle {
-	protected static Logger log = LogManager.getLogger(SapLUWHandle.class);
+	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
 	private JCoDestination destination;
 	private String tid;

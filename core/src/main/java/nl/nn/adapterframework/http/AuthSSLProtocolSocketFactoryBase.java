@@ -35,7 +35,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.commons.net.SocketFactory;
@@ -147,7 +147,7 @@ import org.apache.logging.log4j.Logger;
  */
 
 public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory, SecureProtocolSocketFactory {
-	protected static Logger log = LogManager.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
+	protected static Logger log = LogUtil.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
 
 	protected String protocol = "SSL";
 

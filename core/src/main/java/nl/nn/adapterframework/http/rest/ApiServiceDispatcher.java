@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import nl.nn.adapterframework.core.ListenerException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class ApiServiceDispatcher {
 
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<String, ApiDispatchConfig>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
 

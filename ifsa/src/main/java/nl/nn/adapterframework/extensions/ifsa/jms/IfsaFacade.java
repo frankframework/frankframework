@@ -35,7 +35,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -79,7 +79,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-    protected Logger log = LogManager.getLogger(this);
+    protected Logger log = LogUtil.getLogger(this);
     
  	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;

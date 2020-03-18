@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.GDate;
 
@@ -31,7 +31,7 @@ import org.apache.xmlbeans.GDate;
  * @author Johan Verrips IOS
  */
 public class DateUtils {
-	protected static Logger log = LogManager.getLogger(DateUtils.class);
+	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";

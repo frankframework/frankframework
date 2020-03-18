@@ -29,7 +29,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import java.io.IOException;
 /**
@@ -47,7 +47,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		log=LogManager.getLogger(getLogCategory());
+		log=LogUtil.getLogger(getLogCategory());
 		level=Level.toLevel(getLogLevel());
 	}
 

@@ -30,7 +30,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.util.EncapsulatingReader;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.digester.Digester;
@@ -45,7 +45,7 @@ import org.xml.sax.InputSource;
  * @since   4.9.10
  */
 public class StatisticsParser {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 		
 	private final String ROOT_ELEM_NAME="root";
 	

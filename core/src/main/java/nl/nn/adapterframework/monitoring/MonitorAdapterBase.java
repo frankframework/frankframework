@@ -18,7 +18,7 @@ package nl.nn.adapterframework.monitoring;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9
  */
 public abstract class MonitorAdapterBase implements IMonitorAdapter {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String SOURCE_ID_KEY="galm.source";
 

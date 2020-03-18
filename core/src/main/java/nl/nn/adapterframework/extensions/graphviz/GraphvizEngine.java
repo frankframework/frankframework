@@ -28,7 +28,7 @@ import com.eclipsesource.v8.V8Object;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 //TODO: consider moving this to a separate module
@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  */
 public class GraphvizEngine {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private static final ThreadLocal<Env> ENVS = new ThreadLocal<Env>();
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
@@ -155,7 +155,7 @@ public class GraphvizEngine {
 	}
 
 	private static class Env {
-		protected Logger log = LogManager.getLogger(this);
+		protected Logger log = LogUtil.getLogger(this);
 
 		J2V8 V8Instance = new J2V8();
 		final ResultHandler resultHandler = new ResultHandler();

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author Gerrit van Brakel
  */
 public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String inputFolder;

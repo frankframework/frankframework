@@ -26,7 +26,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
@@ -43,7 +43,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CmisHttpInvoker implements HttpInvoker {
 
-	private Logger log = LogManager.getLogger(CmisHttpInvoker.class);
+	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
 
 	CmisHttpSender sender = null;
 

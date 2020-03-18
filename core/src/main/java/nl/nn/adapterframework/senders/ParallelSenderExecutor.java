@@ -21,11 +21,11 @@ import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private ISender sender;
 	private IPipeLineSession session;
 	private Guard guard;

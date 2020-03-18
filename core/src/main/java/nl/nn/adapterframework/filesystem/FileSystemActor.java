@@ -46,7 +46,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -82,7 +82,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Gerrit van Brakel
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	public final String ACTION_LIST="list";
 	public final String ACTION_INFO="info";

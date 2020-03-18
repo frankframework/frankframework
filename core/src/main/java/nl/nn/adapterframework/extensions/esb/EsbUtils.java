@@ -38,7 +38,7 @@ import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -56,7 +56,7 @@ import bitronix.tm.resource.jms.PoolingConnectionFactory;
  * @author Peter Leeuwenburgh
  */
 public class EsbUtils {
-	protected static Logger log = LogManager.getLogger(EsbUtils.class);
+	protected static Logger log = LogUtil.getLogger(EsbUtils.class);
 
 	public static String receiveMessageAndMoveToErrorStorage(
 			EsbJmsListener esbJmsListener, JdbcTransactionalStorage errorStorage) {

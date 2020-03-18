@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.Properties;
 
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -33,7 +33,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  */
 public class FxfPropertyPlaceholderConfigurer
 		extends PropertyPlaceholderConfigurer {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	public FxfPropertyPlaceholderConfigurer() {
 		setIgnoreUnresolvablePlaceholders(true);

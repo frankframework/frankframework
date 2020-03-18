@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServlet;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.logging.log4j.Logger;
@@ -36,7 +36,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class IbisApplicationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";
 	private IbisContext ibisContext;
 

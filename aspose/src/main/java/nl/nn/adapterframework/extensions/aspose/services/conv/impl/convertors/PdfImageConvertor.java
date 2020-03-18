@@ -37,7 +37,7 @@ import com.aspose.pdf.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose pdf
@@ -57,7 +57,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 	private static final String TIFF = "tiff";
 
-	private static final Logger LOGGER = LogManager.getLogger(PdfImageConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(PdfImageConvertor.class);
 
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.

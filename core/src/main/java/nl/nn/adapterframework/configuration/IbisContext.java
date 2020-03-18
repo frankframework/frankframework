@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 
@@ -56,9 +56,9 @@ import java.util.Set;
  * @since 4.8
  */
 public class IbisContext extends IbisApplicationContext {
-	private final static Logger LOG = LogManager.getLogger(IbisContext.class);
+	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
 
-	private final static Logger secLog = LogManager.getLogger("SEC");
+	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";

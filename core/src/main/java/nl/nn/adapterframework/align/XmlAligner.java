@@ -17,7 +17,7 @@ package nl.nn.adapterframework.align;
 
 import nl.nn.adapterframework.xml.SaxException;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.*;
@@ -38,7 +38,7 @@ import java.util.Stack;
  * @author Gerrit van Brakel
  */
 public class XmlAligner extends XMLFilterImpl {
-	protected Logger log = LogManager.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 	
 	public final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
 	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";

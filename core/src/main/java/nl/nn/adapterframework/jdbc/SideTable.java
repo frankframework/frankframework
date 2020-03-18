@@ -18,7 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 
 import nl.nn.adapterframework.util.JdbcUtil;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.8
  */
 public class SideTable {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private String selectQuery;
 	private String selectNextValueQuery;

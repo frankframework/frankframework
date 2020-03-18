@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -31,7 +31,7 @@ import com.sap.mw.jco.JCO;
  * @since   4.2
  */
 public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private SapFunctionHandler handler = null;
 	private SapSystem system;

@@ -33,7 +33,7 @@ import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.file.TestStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
  *
  */
 public class LadybugPipe extends FixedForwardPipe {
-	private static final Logger log = LogManager.getLogger(LadybugPipe.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
+	private static final Logger log = LogUtil.getLogger(LadybugPipe.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static String FAILURE_FORWARD_NAME = "failure";
 	private PipeForward failureForward;
 	private boolean writeToLog = false;

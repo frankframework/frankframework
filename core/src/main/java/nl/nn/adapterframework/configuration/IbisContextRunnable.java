@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.configuration;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
 public class IbisContextRunnable implements Runnable {
 	private static final int IBIS_INIT_EXCEPTION_TIMEOUT = 60*1000;
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext;
 
 	public IbisContextRunnable(IbisContext ibisContext) {

@@ -41,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
@@ -49,7 +49,7 @@ public final class BrowseJdbcTable extends Base {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})

@@ -24,7 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.8
  */
 public class StatisticsKeeperIterationHandlerCollection implements StatisticsKeeperIterationHandler {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	List iterationHandlerList = new LinkedList();
 	

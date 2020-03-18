@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class ConvertorFactory {
 
-	private static final Logger LOGGER = LogManager.getLogger(ConvertorFactory.class);
+	private static final Logger LOGGER = LogUtil.getLogger(ConvertorFactory.class);
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 

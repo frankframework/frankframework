@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.WebServiceListener;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 /**
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  * @see ServiceClient
  */
 public class ServiceDispatcher  {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;

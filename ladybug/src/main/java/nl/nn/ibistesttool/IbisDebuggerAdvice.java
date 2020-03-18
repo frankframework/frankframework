@@ -49,14 +49,14 @@ import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;

@@ -16,14 +16,14 @@
 package nl.nn.adapterframework.stream;
 
 import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
 import nl.nn.adapterframework.core.IPipeLineSession;
 
 public class ThreadConnector {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private Thread parentThread;

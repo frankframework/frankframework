@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -44,7 +44,7 @@ public class LiquibaseImpl {
 	private LabelExpression labelExpression = new LabelExpression();
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, String configurationName, String changeLogFile) throws LiquibaseException {
 		this.ibisContext = ibisContext;

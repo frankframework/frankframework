@@ -56,7 +56,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -352,8 +352,8 @@ import java.util.Set;
  * @author  Johan  Verrips
  */
 public class JobDef {
-	protected Logger log=LogManager.getLogger(this);
-	protected Logger heartbeatLog = LogManager.getLogger("HEARTBEAT");
+	protected Logger log=LogUtil.getLogger(this);
+	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 

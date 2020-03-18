@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.INamedObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
     private static Hashtable<String, GlobalListItem> items = new Hashtable<String, GlobalListItem>();
     private String name;

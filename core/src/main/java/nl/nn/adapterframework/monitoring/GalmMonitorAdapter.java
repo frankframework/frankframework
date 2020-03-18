@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since   4.7
  */
 public class GalmMonitorAdapter extends MonitorAdapterBase {
-	protected Logger galmLog = LogManager.getLogger("GALM");
+	protected Logger galmLog = LogUtil.getLogger("GALM");
 
 	private String DTAP_STAGE_KEY="galm.stage";
 	private String SOURCE_ID_KEY="galm.source";

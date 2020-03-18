@@ -6,7 +6,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.io.IOException;
  * @author Jaco de Groot
  */
 public class SenderThread extends Thread {
-	private static Logger log = LogManager.getLogger(SenderThread.class);
+	private static Logger log = LogUtil.getLogger(SenderThread.class);
 
 	private String name;
 	private ISender sender;

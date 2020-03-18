@@ -31,12 +31,12 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private INamedObject owner;
 	protected Object requestStream;

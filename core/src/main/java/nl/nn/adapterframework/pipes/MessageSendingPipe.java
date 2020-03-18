@@ -49,7 +49,7 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -121,7 +121,7 @@ import java.util.Map;
  */
 
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
-	protected Logger msgLog = LogManager.getLogger("MSG");
+	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -244,7 +244,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgLog = LogManager.getLogger("MSG." + getAdapter().getName() + "." + getName());
+		msgLog = LogUtil.getLogger("MSG." + getAdapter().getName() + "." + getName());
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			URL stubUrl;
 			try {

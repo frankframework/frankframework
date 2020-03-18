@@ -19,7 +19,7 @@ import java.io.File;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * @author Peter Leeuwenburgh
  */
 public class DirectoryCleaner {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String directory;
 	private String retention = "30d";

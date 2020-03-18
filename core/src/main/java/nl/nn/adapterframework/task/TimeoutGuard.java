@@ -18,7 +18,7 @@ package nl.nn.adapterframework.task;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * @since   4.9.10  
  */
 public class TimeoutGuard {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	int timeout;
 	String description;

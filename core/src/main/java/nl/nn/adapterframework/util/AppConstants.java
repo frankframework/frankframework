@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
  *
  */
 public final class AppConstants extends Properties implements Serializable {
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";

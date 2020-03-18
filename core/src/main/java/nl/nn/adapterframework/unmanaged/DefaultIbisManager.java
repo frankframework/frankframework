@@ -36,7 +36,7 @@ import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationEventPublisher;
@@ -55,8 +55,8 @@ import java.util.List;
  * @since   4.8
  */
 public class DefaultIbisManager implements IbisManager {
-	protected Logger log = LogManager.getLogger(this);
-	protected Logger secLog = LogManager.getLogger("SEC");
+	protected Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private IbisContext ibisContext;
 	private List<Configuration> configurations = new ArrayList<Configuration>();

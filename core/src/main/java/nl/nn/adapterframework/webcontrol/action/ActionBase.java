@@ -31,7 +31,7 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -56,8 +56,8 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	protected Logger log = LogManager.getLogger(this);
-	protected Logger secLog = LogManager.getLogger("SEC");
+	protected Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("SEC");
 
     protected Locale locale;
 	protected MessageResources messageResources;

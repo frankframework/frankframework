@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JmxUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -47,7 +47,7 @@ import java.util.Set;
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-    private static final Logger LOG = LogManager.getLogger(JmxMbeanHelper.class);
+    private static final Logger LOG = LogUtil.getLogger(JmxMbeanHelper.class);
 
 	private static MBeanServer mbServer = null;
 	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<IAdapter, ObjectName>();

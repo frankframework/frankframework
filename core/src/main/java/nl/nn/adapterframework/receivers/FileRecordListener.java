@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -50,7 +50,7 @@ import java.util.StringTokenizer;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String inputDirectory;

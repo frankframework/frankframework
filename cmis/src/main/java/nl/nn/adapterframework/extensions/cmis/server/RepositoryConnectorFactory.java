@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
-	private static final Logger LOG = LogManager.getLogger(RepositoryConnectorFactory.class);
+	private static final Logger LOG = LogUtil.getLogger(RepositoryConnectorFactory.class);
 	private ThreadLocal<CallContextAwareCmisService> threadLocalService = new ThreadLocal<CallContextAwareCmisService>();
 
 	@Override

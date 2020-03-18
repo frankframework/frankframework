@@ -23,7 +23,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * @author  John Dekker
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private Map<String,RecordHandlingFlow> valueHandlersMap;
 	private String name;

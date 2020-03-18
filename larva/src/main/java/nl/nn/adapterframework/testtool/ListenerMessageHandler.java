@@ -8,7 +8,7 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
  * @author Jaco de Groot
  */
 public class ListenerMessageHandler implements IMessageHandler {
-	private static Logger log = LogManager.getLogger(ListenerMessageHandler.class);
+	private static Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
 	private List requestMessages = new ArrayList();
 	private List responseMessages = new ArrayList();
 	private long requestTimeOut = TestTool.DEFAULT_TIMEOUT;

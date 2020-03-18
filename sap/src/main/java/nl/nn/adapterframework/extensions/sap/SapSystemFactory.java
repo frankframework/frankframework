@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ public class SapSystemFactory {
 
 	private SapSystemFactory() {
 		super();
-		log = LogManager.getLogger(this);
+		log = LogUtil.getLogger(this);
 	}
 
 	public static synchronized SapSystemFactory getInstance() {

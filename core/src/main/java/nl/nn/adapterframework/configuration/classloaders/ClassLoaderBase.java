@@ -30,7 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
@@ -49,7 +49,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	private String configurationName = null;
 	private String configurationFile = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private ReportLevel reportLevel = ReportLevel.ERROR;
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");

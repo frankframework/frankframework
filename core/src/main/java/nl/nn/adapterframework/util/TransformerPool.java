@@ -40,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -69,7 +69,7 @@ import nl.nn.adapterframework.xml.TransformerFilter;
 public class TransformerPool {
 	private static final boolean USE_CACHING = AppConstants.getInstance().getBoolean("transformerPool.useCaching", false);
 
-	protected static Logger log = LogManager.getLogger(TransformerPool.class);
+	protected static Logger log = LogUtil.getLogger(TransformerPool.class);
 
 	private TransformerFactory tFactory;
 

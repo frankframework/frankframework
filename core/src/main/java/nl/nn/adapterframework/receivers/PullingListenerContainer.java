@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 
@@ -43,7 +43,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.8
  */
 public class PullingListenerContainer implements IThreadCountControllable {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
     private TransactionDefinition txNew=null;
 

@@ -26,7 +26,7 @@ import javax.ejb.EJBHome;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
  * @author Tim van der Leeuw
  */
 public class CustomIfsaServiceLocatorEJB extends ServiceLocatorEJB {
-    private final static Logger log = LogManager.getLogger(CustomIfsaServiceLocatorEJB.class);
+    private final static Logger log = LogUtil.getLogger(CustomIfsaServiceLocatorEJB.class);
     
     public final static String SERVICE_DISPATCHER_EJB_NAME = "java:comp/env/ejb/ibis/ServiceDispatcher";
     protected final NamingHelper namingHelper = new NamingHelper();

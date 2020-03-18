@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 public class ApiException extends WebApplicationException implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	private Logger log = LogManager.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	public ApiException() {
 		super();

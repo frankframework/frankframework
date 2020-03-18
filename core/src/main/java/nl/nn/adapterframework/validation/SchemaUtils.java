@@ -51,7 +51,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.logging.log4j.Logger;
@@ -61,7 +61,7 @@ import org.apache.logging.log4j.Logger;
  * @author Jaco de Groot
  */
 public class SchemaUtils {
-	protected static final Logger LOG = LogManager.getLogger(SchemaUtils.class);
+	protected static final Logger LOG = LogUtil.getLogger(SchemaUtils.class);
 
 	public static final String XSD		  = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
 

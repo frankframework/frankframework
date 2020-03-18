@@ -41,7 +41,7 @@ import com.ibm.ws.security.auth.WSCredentialImpl;
  * @since   4.8
  */
 public class SsoUtil {
-	private static Logger log = LogManager.getLogger(SsoUtil.class);
+	private static Logger log = LogUtil.getLogger(SsoUtil.class);
 	
 	public static String getSsoTokenName() {
 		return "LtpaToken";

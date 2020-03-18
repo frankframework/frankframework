@@ -31,7 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.core.Headers;
@@ -51,7 +51,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	private static final ServerResponse ACCESS_FORBIDDEN = new ServerResponse(null, 403, new Headers<Object>());
 	private static final ServerResponse SERVER_ERROR = new ServerResponse(null, 500, new Headers<Object>());
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {

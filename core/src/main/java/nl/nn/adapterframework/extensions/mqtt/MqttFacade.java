@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +32,7 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 public class MqttFacade implements HasPhysicalDestination {
 
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private String name;
 	protected MqttClient client;
 	protected MqttConnectOptions connectOptions;

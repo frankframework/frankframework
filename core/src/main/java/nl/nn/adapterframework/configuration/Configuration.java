@@ -35,7 +35,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-    protected Logger log = LogManager.getLogger(this);
+    protected Logger log = LogUtil.getLogger(this);
     private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("configurations.autoStart", true);

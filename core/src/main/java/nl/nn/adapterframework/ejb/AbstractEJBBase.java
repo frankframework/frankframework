@@ -22,7 +22,7 @@ import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -35,7 +35,7 @@ import org.springframework.jndi.JndiLookupFailureException;
  */
 abstract public class AbstractEJBBase {
     public static final String COMP_ENV_JNDI_PREFIX = "java:comp/env/";
-    private final static Logger log = LogManager.getLogger(AbstractEJBBase.class);
+    private final static Logger log = LogUtil.getLogger(AbstractEJBBase.class);
     
     protected static IbisContext ibisContext;
     protected static IbisManager ibisManager;

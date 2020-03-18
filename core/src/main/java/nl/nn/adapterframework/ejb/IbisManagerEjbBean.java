@@ -28,7 +28,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,7 +45,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, IbisManager {
-    private final static Logger log = LogManager.getLogger(IbisManagerEjbBean.class);
+    private final static Logger log = LogUtil.getLogger(IbisManagerEjbBean.class);
     
     SessionContext sessionContext;
 	private ApplicationEventPublisher applicationEventPublisher;

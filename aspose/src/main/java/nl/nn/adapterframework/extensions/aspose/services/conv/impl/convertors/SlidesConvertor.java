@@ -32,7 +32,7 @@ import com.aspose.slides.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import org.apache.logging.log4j.LogManager;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose slides
@@ -43,7 +43,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SlidesConvertor extends AbstractConvertor {
 
-	private static final Logger LOGGER = LogManager.getLogger(SlidesConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(SlidesConvertor.class);
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
