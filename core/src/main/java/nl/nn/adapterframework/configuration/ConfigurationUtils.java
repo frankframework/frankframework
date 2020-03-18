@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -73,6 +74,7 @@ public class ConfigurationUtils {
 	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
@@ -429,13 +431,9 @@ public class ConfigurationUtils {
 
 	/**
 	 * 
-	 * @param ibisContext
-	 * @return A map with all configurations to load (KEY = configName, VALUE = ClassLoader)
+	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
-		// For now only database configurations are returned, but also
-		// configuration from other resources (like file system directories) can
-		// be added
 		Map<String, String> allConfigNameItems = new LinkedHashMap<String, String>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
@@ -443,6 +441,27 @@ public class ConfigurationUtils {
 			allConfigNameItems.put(tokenizer.nextToken(), null);
 		}
 
+		if (CONFIG_AUTO_FS_CLASSLOADER) {
+			try {
+				String configDir = AppConstants.getInstance().getProperty("configurations.directory");
+				if(StringUtils.isEmpty(configDir))
+					throw new IOException("property [configurations.directory] not set");
+	
+				File directory = new File(configDir);
+				if(!directory.exists())
+					throw new IOException("failed to open configurations.directory ["+configDir+"]");
+				if(!directory.isDirectory())
+					throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
+	
+				for (File subFolder : directory.listFiles()) {
+					if(subFolder.isDirectory()) {
+						allConfigNameItems.put(subFolder.getName(), "DirectoryClassLoader");
+					}
+				}
+			} catch (Exception e) {
+				ConfigurationWarnings.getInstance().add(log, "failed to autoload configurations", e);
+			}
+		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			log.info("scanning database for configurations");
 			try {

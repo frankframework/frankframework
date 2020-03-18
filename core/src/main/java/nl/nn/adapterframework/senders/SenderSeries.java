@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,7 +24,6 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -88,7 +86,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {

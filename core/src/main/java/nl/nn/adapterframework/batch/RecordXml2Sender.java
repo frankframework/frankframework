@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -68,8 +67,8 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	}
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
-		String xml = (String)super.handleRecord(session,parsedRecord,prc);
+	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+		String xml = (String)super.handleRecord(session,parsedRecord);
 		return getSender().sendMessage(new Message(xml), session).asString(); 
 	}
 	

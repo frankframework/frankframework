@@ -15,8 +15,6 @@
  */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -48,7 +46,7 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 	private boolean forceReload = false;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		String configName = null;
 		String activeVersion = null;

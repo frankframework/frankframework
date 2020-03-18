@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -51,7 +49,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			return new Message(handle(message, session, getParameterList()));
 		} catch(Exception e) {

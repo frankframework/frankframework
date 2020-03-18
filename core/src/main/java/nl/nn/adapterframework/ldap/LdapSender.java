@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.ldap;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -1052,7 +1051,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			return new Message(performOperation(message, session));
 		} catch (Exception e) {

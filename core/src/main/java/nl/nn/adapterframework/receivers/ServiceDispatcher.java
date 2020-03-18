@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 - 2019 Nationale-Nederlanden
+   Copyright 2013, 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.WebServiceListener;
@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 public class ServiceDispatcher  {
 	protected Logger log = LogManager.getLogger(this);
 
-	private Map<String, ServiceClient> registeredListeners = new HashMap<String, ServiceClient>();
+	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;
 
 	/**
@@ -71,7 +71,7 @@ public class ServiceDispatcher  {
 			throw new ListenerException("service ["+serviceName+"] is not registered");
 		}
 
-		String result=client.processRequest(correlationId, request, requestContext);
+		String result = client.processRequest(correlationId, request, requestContext);
 		if (result == null) {
 			log.warn("result is null!");
 		}
@@ -96,13 +96,23 @@ public class ServiceDispatcher  {
 		return (registeredListeners.get(name)!=null);
 	}
 
-	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
+	public void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
 		if (isRegisteredServiceListener(name)) {
+			//TODO throw ListenerException if already registered!
 			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
 		}
 
 		registeredListeners.put(name, listener);
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
+	}
+
+	public void unregisterServiceClient(String name) {
+		if (!isRegisteredServiceListener(name)) {
+			log.warn("listener ["+name+"] not registered with ServiceDispatcher");
+		} else {
+			registeredListeners.remove(name);
+			log.info("Listener ["+name+"] unregistered from ServiceDispatcher");
+		}
 	}
 
 	public ServiceClient getListener(String name) {

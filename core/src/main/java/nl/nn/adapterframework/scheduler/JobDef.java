@@ -748,9 +748,7 @@ public class JobDef {
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		
-		String configJmsRealm = JmsRealmFactory.getInstance()
-				.getFirstDatasourceJmsRealm();
+		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
 			List<String> configNames = new ArrayList<String>();
@@ -777,13 +775,11 @@ public class JobDef {
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
 							String configVersion = configuration.getVersion();
-							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
-									configVersion)) {
-								log.info(getLogPrefix() + "configuration ["
-										+ configName + "] with version ["
-										+ configVersion
-										+ "] will be reloaded with new version ["
-										+ ibisConfigVersion + "]");
+							if(StringUtils.isEmpty(configVersion)) {
+								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+							}
+							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
 								configsToReload.add(configName);
 							}
 						}

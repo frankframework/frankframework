@@ -100,8 +100,7 @@ public class FileUtils {
 		}
 		
 		// resolve the parameters
-		ParameterResolutionContext prc = new ParameterResolutionContext((String)null, session);
-		ParameterValueList pvl = prc.getValues(pl);
+		ParameterValueList pvl = pl.getValues(null, session);
 		String filename = pvl.getParameterValue("__filename").getValue().toString(); 
 		
 		return filename;

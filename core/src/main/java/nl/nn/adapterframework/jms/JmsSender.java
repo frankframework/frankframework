@@ -140,16 +140,21 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(Message input, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException, IOException {
-		String message= input.asString();
+	public Message sendMessage(Message input, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getMessageId();
 
+		String message;
+		try {
+			message = input.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {

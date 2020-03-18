@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -34,7 +32,7 @@ public class EchoSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return message;
 	}
 

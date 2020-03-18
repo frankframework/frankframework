@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -68,7 +66,7 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message,session);
 	}
 
