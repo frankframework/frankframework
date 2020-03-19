@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017, 2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
 import liquibase.database.jvm.JdbcConnection;
@@ -74,14 +73,14 @@ public class Migrator extends JdbcFacade {
 				JdbcConnection connection = new JdbcConnection(getConnection());
 				instance = new LiquibaseImpl(ibisContext, cl, connection, configurationName, changeLogFile);
 			}
-			catch (JdbcException e) {
-				throw new ConfigurationException("migrator error connecting to database ["+dataSource+"]", e);
-			}
 			catch (ValidationFailedException e) {
 				throw new ConfigurationException("liquibase validation failed", e);
 			}
 			catch (LiquibaseException e) {
 				throw new ConfigurationException("liquibase failed to initialize", e);
+			}
+			catch (Throwable e) {
+				throw new ConfigurationException("liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
 			}
 		}
 	}
