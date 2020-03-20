@@ -985,7 +985,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(String string) {
-		return Misc.toFileSize(string.getBytes().length, false, true);
+		return string==null?"null": Misc.toFileSize(string.getBytes().length, false, true);
 	}
 	
 	@Override
