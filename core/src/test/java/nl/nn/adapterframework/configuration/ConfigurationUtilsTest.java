@@ -36,9 +36,9 @@ import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 public class ConfigurationUtilsTest extends Mockito {
 
 	private IbisContext ibisContext = spy(new IbisContext());
-	PreparedStatementMock stmt;
+	private PreparedStatementMock stmt;
 
-	private void mockDatabase(boolean throwException) throws Exception {
+	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
 		FixedQuerySender fq = mock(FixedQuerySender.class);
 		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
@@ -105,7 +105,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void ConfigurationValidator() throws Exception {
+	public void configurationValidator() throws Exception {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
 
@@ -117,7 +117,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test(expected=ConfigurationException.class)
-	public void ConfigurationValidatorNoBuildInfoZip() throws Exception {
+	public void configurationValidatorNoBuildInfoZip() throws Exception {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
 
@@ -127,7 +127,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void addConfigToDatabaseOld() throws Exception {
-		mockDatabase(false);
+		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
@@ -142,7 +142,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void addConfigToDatabaseNew() throws Exception {
-		mockDatabase(false);
+		mockDatabase();
 
 		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
@@ -158,7 +158,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void addConfigToDatabaseNewBuildInfoSC() throws Exception {
-		mockDatabase(false);
+		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
@@ -174,7 +174,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void addConfigToDatabaseNewBuildInfoSPECIAL() throws Exception {
-		mockDatabase(false);
+		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
@@ -190,7 +190,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	@Test
 	public void processMultiConfigZipFile() throws Exception {
-		mockDatabase(false);
+		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/multiConfig.zip");
 		assertNotNull("multiConfig.zip not found", zip);

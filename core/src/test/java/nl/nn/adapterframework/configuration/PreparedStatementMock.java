@@ -54,7 +54,7 @@ public class PreparedStatementMock implements PreparedStatement {
 			String fieldName = fieldTokenizer.nextToken().trim();
 			String fieldIndex = valueTokenizer.nextToken().trim();
 			Object value = null;
-			if(fieldIndex.equals("?")) {
+			if("?".equals(fieldIndex)) {
 				value = parameterMap.get(index);
 				index++;
 			} else {
