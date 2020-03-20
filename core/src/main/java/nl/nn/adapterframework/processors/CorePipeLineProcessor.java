@@ -51,12 +51,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
-		Object object = message.asObject();
 		PipeRunResult pipeRunResult;
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
 
-		if (object == null || (object instanceof String && StringUtils.isEmpty(object.toString()))) {
+		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
 				IAdapter adapter = pipeLine
@@ -79,7 +78,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					}
 					message = new Message(plr.getResult());
 					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
-					object = (Object) message;
 				}
 			}
 		}
@@ -110,8 +108,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				}
 				Object validatedMessage = validationResult.getResult();
 				if (validatedMessage!=null) {
-					object=validatedMessage;
-					message=new Message(validatedMessage);
+					message=(validatedMessage instanceof Message)?(Message)validatedMessage:new Message(validatedMessage);
 				}
 			}
 		}
@@ -135,12 +132,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					message = new Message(wrapResult.getResult());
 				}
 				log.debug("input after wrapping [" + message + "]");
-				object = message.asObject();
 			}
 		}
 
-		if (object instanceof String) {
-			pipeLine.getRequestSizeStats().addValue(((String)object).length());
+		if (message.asObject() instanceof String) {
+			pipeLine.getRequestSizeStats().addValue(((String)message.asObject()).length());
 		}
 		
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
@@ -175,14 +171,19 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			while (!ready){
 
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
-				object=pipeRunResult.getResult();
+				Object resultObject=pipeRunResult.getResult();
+				if (resultObject instanceof Message) {
+					message = (Message)resultObject;
+				} else {
+					message = new Message(resultObject);
+				}
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
 				if (!(pipeToRun instanceof AbstractPipe)) {
-					if (object!=null && object instanceof String) {
+					if (resultObject!=null && resultObject instanceof String) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
 						if (sizeStat!=null) {
-							sizeStat.addValue(((String)object).length());
+							sizeStat.addValue(((String)resultObject).length());
 						}
 					}
 				}
@@ -219,9 +220,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							}
 						} else {
 							log.debug("wrap succeeded");
-							object = wrapResult.getResult();
+							Object wrappedObject = wrapResult.getResult();
+							if (wrappedObject instanceof Message) {
+								message = (Message)wrappedObject;
+							} else {
+								message = new Message(wrappedObject);
+							}
 						}
-						log.debug("PipeLineResult after wrapping [" + object.toString() + "]");
+						log.debug("PipeLineResult after wrapping [" + message.toString() + "]");
 					}
 
 					if (!outputWrapError) {
@@ -243,7 +249,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								}
 							} else {
 								log.debug("validation succeeded");
-								object = validationResult.getResult();
+								Object validatedObject = validationResult.getResult();
+								if (validatedObject instanceof Message) {
+									message = (Message)validatedObject;
+								} else {
+									message = new Message(validatedObject);
+								}
 								ready=true;
 							}
 						} else {
@@ -256,27 +267,25 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (object!=null && !plExit.getEmptyResult()) {
-							pipeLineResult.setResult(object.toString());
-						}
-						else {
+						if (message.asObject()!=null && !plExit.getEmptyResult()) {
+							try {
+								pipeLineResult.setResult(message.asString());
+							} catch (IOException e) {
+								throw new PipeRunException(null, "cannot open result stream", e);
+							}
+						} else {
 							pipeLineResult.setResult(null);
 						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
 							String skString = "";
-							for (Iterator it = pipeLineSession.keySet()
-									.iterator(); it.hasNext();) {
-								String key = (String) it.next();
+							for (Iterator<String> it = pipeLineSession.keySet().iterator(); it.hasNext();) {
+								String key = it.next();
 								Object value = pipeLineSession.get(key);
-								skString = skString + "\n " + key + "=["
-										+ value + "]";
+								skString = skString + "\n " + key + "=[" + value + "]";
 							}
-							log.debug("Available session keys at finishing pipeline of adapter ["
-									+ pipeLine.getOwner().getName()
-									+ "]:"
-									+ skString);
-							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object+ "] with exit-state ["+state+"]");
+							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
+							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ (message.asObject()==null?"<null>":"("+message.asObject().getClass().getSimpleName()+") ["+message.asObject() +"]" )+ "] with exit-state ["+state+"]");
 						}
 					}
 				} else {
