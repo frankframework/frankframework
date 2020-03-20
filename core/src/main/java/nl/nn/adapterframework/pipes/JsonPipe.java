@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -101,9 +100,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 			if ("xml2json".equalsIgnoreCase(actualDirection)) {
 				if ("2".equals(actualVersion)) {
-					stringResult = input;
-					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
-					stringResult = tpXml2Json.transform(prc.getInputSource(isNamespaceAware()));
+					stringResult = tpXml2Json.transform(message,null);
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(stringResult);
 					stringResult = jsonObject.toString();

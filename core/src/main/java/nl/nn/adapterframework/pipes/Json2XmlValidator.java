@@ -42,7 +42,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
@@ -212,9 +211,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setFailOnWildcards(isFailOnWildcards());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware());
 				Map<String,Object> parametervalues = null;
-				parametervalues = prc.getValueMap(parameterList);
+				parametervalues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
 				// remove parameters with null values, to support optional request parameters
 				for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
 					String key=it.next();

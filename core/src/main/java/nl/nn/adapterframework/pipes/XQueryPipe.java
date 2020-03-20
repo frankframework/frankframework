@@ -29,6 +29,8 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
+import org.apache.commons.lang.StringUtils;
+
 import net.sf.saxon.xqj.SaxonXQDataSource;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -36,12 +38,9 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Perform an XQuery.
@@ -113,9 +112,8 @@ public class XQueryPipe extends FixedForwardPipe {
 			// DocumentBuilderFactoryImpl.
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
 			if (getParameterList() != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
 				Map<String,Object> parametervalues = null;
-				parametervalues = prc.getValueMap(getParameterList());
+				parametervalues = getParameterList().getValues(message, session).getValueMap();
 				Iterator<Parameter> iterator = getParameterList().iterator();
 				while (iterator.hasNext()) {
 					Parameter parameter = iterator.next();

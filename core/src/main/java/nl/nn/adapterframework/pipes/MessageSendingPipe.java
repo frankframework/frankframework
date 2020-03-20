@@ -59,7 +59,6 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.ConfigurationAware;
@@ -539,10 +538,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			ParameterList pl = getParameterList();
 			result=returnString;
 			if (pl != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext (input, session);
-				Map params;
+				Map<String,Object> params;
 				try {
-					params = prc.getValueMap(pl);
+					params = pl.getValues(input, session).getValueMap();
 				} catch (ParameterException e1) {
 					throw new PipeRunException(this,getLogPrefix(session)+"got exception evaluating parameters",e1);
 				}

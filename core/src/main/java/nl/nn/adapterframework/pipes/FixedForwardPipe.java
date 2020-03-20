@@ -26,9 +26,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provides a base-class for a Pipe that always has the same forward.
@@ -64,7 +64,7 @@ public class FixedForwardPipe extends AbstractPipe {
     /**
      * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
      */
-    public PipeRunResult doInitialPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    public PipeRunResult doInitialPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
 			return new PipeRunResult(getForward(), input);
 		}
@@ -73,9 +73,8 @@ public class FixedForwardPipe extends AbstractPipe {
 
 			ParameterValueList pvl = null;
 			if (getParameterList() != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 				try {
-					pvl = prc.getValues(getParameterList());
+					pvl = getParameterList().getValues(input, session);
 				} catch (ParameterException e) {
 					throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 				}

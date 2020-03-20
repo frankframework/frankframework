@@ -22,16 +22,16 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -85,10 +85,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 						log.error("exception while configuring parameters",e);
 					}
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = prc.getValueMap(params);
+						parametervalues = params.getValues(new Message(message), new PipeLineSessionBase()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}
