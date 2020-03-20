@@ -30,9 +30,11 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message {
 	protected Logger log = LogUtil.getLogger(this);
@@ -183,7 +185,7 @@ public class Message {
 	/**
 	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
-	public Source asSource() throws IOException {
+	public Source asSource() throws IOException, SAXException {
 		if (request == null) {
 			return null;
 		}
@@ -191,16 +193,8 @@ public class Message {
 			log.debug("returning Source as Source");
 			return (Source) request;
 		}
-		if (request instanceof Reader) {
-			log.debug("returning Reader as Source");
-			return (new StreamSource((Reader) request));
-		}
-		if (request instanceof String) {
-			log.debug("returning String as Source");
-			return (new StreamSource(new StringReader((String) request)));
-		}
 		log.debug("returning as Source");
-		return (new StreamSource(asInputStream()));
+		return (XmlUtils.inputSourceToSAXSource(asInputSource(), true, false));
 	}
 
 	/**
@@ -240,6 +234,10 @@ public class Message {
 		return (String) request;
 	}
 
+	public boolean isEmpty() {
+		return request == null || request instanceof String && ((String)request).isEmpty();
+	}
+	
 	/**
 	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
 	 */

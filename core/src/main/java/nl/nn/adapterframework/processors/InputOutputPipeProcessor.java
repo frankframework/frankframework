@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
@@ -88,7 +89,13 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
 				Object result = pipeRunResult.getResult();
 				if (result!=null) {
-					String resultString = (String)result;
+					Message resultMessage = new Message(result);
+					String resultString;
+					try {
+						resultString = resultMessage.asString();
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "cannot open stream of result", e);
+					}
 					pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
 				}
 			}

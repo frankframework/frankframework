@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -120,4 +121,17 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		testSwitch("<dummy name=\"input\"/>","2");
 	}
+	
+	@Test
+	public void withSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
+		pipe.setSessionKey("selectKey");
+		session=new PipeLineSessionBase();
+		session.put("selectKey", "selectValue");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"selectValue");
+	}
+
+
 }

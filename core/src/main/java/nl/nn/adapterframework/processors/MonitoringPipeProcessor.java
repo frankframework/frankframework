@@ -67,7 +67,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 				}
 			}
 			if (lir) {
-				sb.append(" current result ["+ message +"] ");
+				sb.append(" current result "+ (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" )+" ");
 			}
 
 			log.debug(sb.toString());

@@ -82,6 +82,11 @@ import nl.nn.adapterframework.stream.Message;
 					log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
 					skResult="[null]";
 				} else {
+					try {
+						skResult = new Message(skResult).asString();
+					} catch (IOException e) {
+						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					}
 					log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
 				}
 				if (result == null) {

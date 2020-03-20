@@ -280,20 +280,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
-						+ "] for mode [" + mode.toString()
-						+ "] should be set to '1' or '2', assuming '1'";
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString() + "] should be set to '1' or '2', assuming '1'";
 				configWarnings.add(log, msg);
 				cmhVersion = 1;
 			}
 		} else {
 			if (cmhVersion != 0) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
-						+ "] for mode [" + mode.toString()
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString()
 						+ "] should not be set, assuming '0'";
 				configWarnings.add(log, msg);
 				cmhVersion = 0;

@@ -105,9 +105,10 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
+	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
+		Object input=message.asObject();
 		if (input==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"input cannot be null, must be OutputStream, HttpResponse or String containing filename");
 		}
@@ -138,7 +139,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 		}
 		if (resultStream==null) {
-			throw new PipeRunException(this,getLogPrefix(session)+"Dit not find OutputStream or HttpResponse, and could not find filename");
+			throw new PipeRunException(this,getLogPrefix(session)+"did not find OutputStream or HttpResponse, and could not find filename");
 		}
 		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseOutputstreamOnExit());
 		return sessionData;

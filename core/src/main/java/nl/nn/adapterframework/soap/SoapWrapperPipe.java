@@ -217,18 +217,18 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				}
 				Map<String,Object> parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					parameterValues = getParameterList().getValues(message, session).getValueMap();
+					parameterValues = getParameterList().getValues(new Message(payload), session).getValueMap();
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(message, parameterValues);
+					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(message, parameterValues);
+					payload = soapBodyTp.transform(payload, parameterValues);
 				}
 
 				result = wrapMessage(payload, soapHeader);
@@ -265,8 +265,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 
 	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException, SenderException {
-		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null,
-				getSoapNamespace(), wssCredentialFactory, isWssPasswordDigest());
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, getSoapNamespace(), wssCredentialFactory, isWssPasswordDigest());
 	}
 
 	public String getDirection() {

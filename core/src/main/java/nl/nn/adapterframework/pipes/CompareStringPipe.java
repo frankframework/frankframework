@@ -250,7 +250,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
 	public void setSessionKey1(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey1 has been deprecated. Please use the parameter operand1";
@@ -261,7 +261,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
 	public void setSessionKey2(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey2 has been deprecated. Please use the parameter operand2";

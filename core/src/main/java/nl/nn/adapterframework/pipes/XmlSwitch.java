@@ -153,24 +153,31 @@ public class XmlSwitch extends AbstractPipe {
 		String forward="";
 		PipeForward pipeForward = null;
 
-		if (StringUtils.isNotEmpty(getSessionKey())) {
-			message = new Message(session.get(sessionKey));
-		}
 		if (transformerPool!=null) {
 			ParameterList parameterList = null;
 			try {
 				Map<String,Object> parametervalues = null;
 				parameterList =  getParameterList();
 				if (parameterList!=null) {
+					message.preserve();
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
-				forward = transformerPool.transform(message, parametervalues);
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = transformerPool.transform(new Message(session.get(sessionKey)), parametervalues);
+				} else {
+					message.preserve();
+					forward = transformerPool.transform(message, parametervalues);
+				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
 			}
 		} else {
 			try {
-				forward = message.asString();
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = new Message(session.get(sessionKey)).asString();
+				} else {
+					forward = message.asString();
+				}
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
@@ -196,7 +203,7 @@ public class XmlSwitch extends AbstractPipe {
 		}
 		
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, message);
 	}
