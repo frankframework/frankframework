@@ -28,6 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Tom van der Heijden
  * @deprecated not necessary when using Messages.
  */
+@Deprecated
 public class Stream2StringPipe extends FixedForwardPipe {
 
 	@Override

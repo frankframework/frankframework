@@ -56,10 +56,6 @@ public abstract class FileHandlerTestBase {
 		return FileHandlerTestBase.class.getResource(BASEDIR+file);
 	}
  
-	protected String getTestFile(String file, String charset) throws IOException {
-		return TestFileUtils.getTestFile(BASEDIR+file,charset);
-	}
-
 	public String removeNewlines(String contents) {
 		return contents.replaceAll("[\n\r]", "");
 	}
@@ -96,7 +92,7 @@ public abstract class FileHandlerTestBase {
 		handler.setOutputType(outputType);
 		handler.configure();
 		
-		String expectedContents=getTestFile(compareFile, charset);
+		String expectedContents=TestFileUtils.getTestFile(BASEDIR+compareFile, charset);
 		if (outputType==null || outputType.equalsIgnoreCase("string")) {
 			String actualContents = (String) handler.handle(null,session,null);
 			assertEquals("file contents", removeNewlines(expectedContents), removeNewlines(actualContents));
@@ -163,7 +159,7 @@ public abstract class FileHandlerTestBase {
 		handler.setWriteLineSeparator(writeSeparator);
 		handler.configure();
 
-		Message contents=new Message(getTestFile(contentFile, charset));
+		Message contents=TestFileUtils.getTestFileMessage(BASEDIR+contentFile, charset);
 		String actFilename=(String)handler.handle(contents,session,paramList);
 		if (filename==null) {
 			assertNotNull(actFilename);
@@ -179,7 +175,7 @@ public abstract class FileHandlerTestBase {
 			expectedContents="";
 		}
 		if (write) {
-			expectedContents+=getTestFile(compareFile, charset);
+			expectedContents+=TestFileUtils.getTestFile(BASEDIR+compareFile, charset);
 			if (writeSeparator) {
 				expectedContents+=System.getProperty("line.separator");
 			}

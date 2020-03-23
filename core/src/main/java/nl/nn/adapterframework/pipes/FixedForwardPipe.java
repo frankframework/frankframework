@@ -41,30 +41,29 @@ import nl.nn.adapterframework.stream.Message;
  * </p>
  * @author Gerrit van Brakel
  */
-public class FixedForwardPipe extends AbstractPipe {
+public abstract class FixedForwardPipe extends AbstractPipe {
 
-    private String forwardName = "success";
-    private PipeForward forward;
-	private boolean skipOnEmptyInput=false;
+	private String forwardName = "success";
+	private PipeForward forward;
+	private boolean skipOnEmptyInput = false;
 	private String ifParam = null;
 	private String ifValue = null;
-	
-    /**
-     * checks for correct configuration of forward
-     */
-    @Override
-    public void configure() throws ConfigurationException {
-    	super.configure();
-        forward = findForward(forwardName);
-        if (forward == null)
-            throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
-    }
 
+	/**
+	 * checks for correct configuration of forward
+	 */
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		forward = findForward(forwardName);
+		if (forward == null)
+			throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
+	}
 
-    /**
-     * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
-     */
-    public PipeRunResult doInitialPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	/**
+	 * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
+	 */
+	public PipeRunResult doInitialPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
 			return new PipeRunResult(getForward(), input);
 		}

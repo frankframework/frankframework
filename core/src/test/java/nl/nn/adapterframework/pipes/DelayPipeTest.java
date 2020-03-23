@@ -32,19 +32,13 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 	}
 
 	@Test
-	public void testUnInterruptedSession() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testUnInterruptedSession() throws Exception {
 		Object input = "dummyInput";
 		pipe.setDelayTime(1000);
 		pipe.configure();
 		pipe.start();
 		PipeRunResult prr = doPipe(pipe, input, session);
-
-		String result = null;
-		try {
-			result = new Message(prr.getResult()).asString();
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
+		String result = Message.asString(prr.getResult());
 		assertEquals(input, result);
 	}
 }

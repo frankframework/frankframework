@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -23,16 +22,12 @@ public class EchoPipeTest extends PipeTestBase<EchoPipe> {
 	}
 
 	@Test
-	public void testDoPipe() throws PipeRunException {
+	public void testDoPipe() throws PipeRunException, IOException {
 		String dummyInput = "dummyInput";
+		
 		PipeRunResult prr = doPipe(pipe, dummyInput, session);
+		String result = Message.asString(prr.getResult());
 
-		String result = null;
-		try {
-			result = new Message(prr.getResult()).asString();
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
 		assertEquals(dummyInput, result);
 	}
 

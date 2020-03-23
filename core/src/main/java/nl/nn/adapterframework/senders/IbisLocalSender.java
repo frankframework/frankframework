@@ -171,7 +171,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						result = new Message(isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false));
+						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
@@ -214,7 +214,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
-						result = new Message(isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true));
+						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
 						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);

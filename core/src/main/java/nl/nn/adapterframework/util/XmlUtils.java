@@ -511,7 +511,7 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
-		parseXml(handler,new Message(source).asInputSource());
+		parseXml(handler,Message.asInputSource(source));
 	}
 
 	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {

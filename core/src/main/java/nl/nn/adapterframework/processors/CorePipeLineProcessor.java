@@ -108,7 +108,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				}
 				Object validatedMessage = validationResult.getResult();
 				if (validatedMessage!=null) {
-					message=(validatedMessage instanceof Message)?(Message)validatedMessage:new Message(validatedMessage);
+					message=Message.asMessage(validatedMessage);
 				}
 			}
 		}
@@ -129,7 +129,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
 					}
 				} else {
-					message = new Message(wrapResult.getResult());
+					message = Message.asMessage(wrapResult.getResult());
 				}
 				log.debug("input after wrapping [" + message + "]");
 			}
@@ -172,11 +172,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
 				Object resultObject=pipeRunResult.getResult();
-				if (resultObject instanceof Message) {
-					message = (Message)resultObject;
-				} else {
-					message = new Message(resultObject);
-				}
+				message = Message.asMessage(resultObject);
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
 				if (!(pipeToRun instanceof AbstractPipe)) {
@@ -221,11 +217,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						} else {
 							log.debug("wrap succeeded");
 							Object wrappedObject = wrapResult.getResult();
-							if (wrappedObject instanceof Message) {
-								message = (Message)wrappedObject;
-							} else {
-								message = new Message(wrappedObject);
-							}
+							message = Message.asMessage(wrappedObject);
 						}
 						log.debug("PipeLineResult after wrapping [" + message.toString() + "]");
 					}
@@ -250,11 +242,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							} else {
 								log.debug("validation succeeded");
 								Object validatedObject = validationResult.getResult();
-								if (validatedObject instanceof Message) {
-									message = (Message)validatedObject;
-								} else {
-									message = new Message(validatedObject);
-								}
+								message = Message.asMessage(validatedObject);
 								ready=true;
 							}
 						} else {

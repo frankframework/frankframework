@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -67,19 +65,14 @@ public class JsonPipe extends FixedForwardPipe {
 		if (message == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
 		}
-		String input;
-		try {
-			input = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-		}
 
 		try {
-			String stringResult = input;
+			String stringResult=null;
 			String actualDirection = getDirection();
 			String actualVersion = getVersion();
 			
 			if ("json2xml".equalsIgnoreCase(actualDirection)) {
+				stringResult = message.asString();
 				JSONTokener jsonTokener = new JSONTokener(stringResult);
 				if (stringResult.startsWith("{")) {
 					JSONObject jsonObject = new JSONObject(jsonTokener);
@@ -102,7 +95,7 @@ public class JsonPipe extends FixedForwardPipe {
 				if ("2".equals(actualVersion)) {
 					stringResult = tpXml2Json.transform(message,null);
 				} else {
-					JSONObject jsonObject = XML.toJSONObject(stringResult);
+					JSONObject jsonObject = XML.toJSONObject(message.asString());
 					stringResult = jsonObject.toString();
 				}
 			}

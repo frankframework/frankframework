@@ -35,7 +35,10 @@ import nl.nn.adapterframework.util.FileUtils;
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
+ * 
+ * @deprecated Please use LocalFileSystemPipe with action="move"
  */
+@Deprecated
 public class MoveFilePipe extends FixedForwardPipe {
 
 	private String directory;

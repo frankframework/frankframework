@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -44,30 +45,30 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		}
 	}
 
-//	@Test
-//	public void testNoNamespaceXml() throws Exception {
-//		XmlValidator pipe = new XmlValidator();
-//		
-//		pipe.setName("Response_Validator");
-//		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
-////		pipe.setRoot("GetPartiesOnAgreement_Response");
-////		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
-//		pipe.setThrowException(true);
-//		pipe.registerForward(new PipeForward("success",null));
-//		pipe.configure();
-//		pipe.start();
-//		
-//		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
-//		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
-//		
-//		PipeLineSessionBase session = new PipeLineSessionBase();
-//		try {
-//			PipeRunResult prr = doPipe(pipe, input,session);
-//			fail("expected to fail");
-//		} catch (PipeRunException e) {
-//			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
-//		}
-//	}
+	@Test
+	public void testNoNamespaceXml() throws Exception {
+		XmlValidator pipe = new XmlValidator();
+		
+		pipe.setName("Response_Validator");
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+//		pipe.setRoot("GetPartiesOnAgreement_Response");
+//		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
+		pipe.setThrowException(true);
+		pipe.registerForward(new PipeForward("success",null));
+		pipe.configure();
+		pipe.start();
+		
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		try {
+			PipeRunResult prr = pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
+			fail("expected to fail");
+		} catch (PipeRunException e) {
+			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
+		}
+	}
 
 
 	@Test

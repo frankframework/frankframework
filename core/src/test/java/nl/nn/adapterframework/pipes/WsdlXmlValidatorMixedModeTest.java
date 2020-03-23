@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 import org.junit.Test;
 
@@ -70,7 +71,7 @@ public class WsdlXmlValidatorMixedModeTest {
         return val;
     }
 
-    protected String getTestXml(String testxml) throws IOException {
+    protected Message getTestXml(String testxml) throws IOException {
         BufferedReader buf = new BufferedReader(new InputStreamReader(XmlValidator.class.getResourceAsStream(testxml)));
         StringBuilder string = new StringBuilder();
         String line = buf.readLine();
@@ -78,12 +79,12 @@ public class WsdlXmlValidatorMixedModeTest {
             string.append(line);
             line = buf.readLine();
         }
-        return string.toString();
+        return new Message(new StringReader(string.toString()));
     }
 
     
     protected void validate(IPipe val, String msg, String failureReason) throws IOException {
-        Message messageToValidate = new Message(getTestXml(msg));
+        Message messageToValidate = getTestXml(msg);
         try {
         	val.doPipe(messageToValidate, session);
         	if (failureReason!=null) {

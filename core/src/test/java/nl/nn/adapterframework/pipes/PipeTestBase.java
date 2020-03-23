@@ -79,7 +79,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	}
 	
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(pipe, new Message(input), session);
+		return doPipe(pipe, Message.asMessage(input), session);
 	}
 
 }

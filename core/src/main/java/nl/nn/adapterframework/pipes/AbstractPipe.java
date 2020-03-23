@@ -215,9 +215,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * to be handled by the caller of this object.
 	 */
 	@Override
-	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
-		throw new PipeRunException(this, "Pipe should implement method doPipe()");
-	}
+	public abstract PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException;
 
 	/**
 	 * looks up a key in the pipeForward hashtable. <br/>

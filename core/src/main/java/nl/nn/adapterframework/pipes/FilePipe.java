@@ -36,8 +36,11 @@ import nl.nn.adapterframework.util.FileHandler;
  * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
+ * 
+ * @deprecated Please use LocalFileSystemPipe instead
  *
  */
+@Deprecated
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 

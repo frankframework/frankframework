@@ -507,11 +507,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
- 		String originalMessage = input==null?null:input.toString();
+ 		Message originalMessage = null;
 		Object result = null;
 		String correlationID = session.getMessageId();
 		PipeForward forward = getForward();
 
+		if (messageLog!=null) {
+			try {
+				input.preserve();
+			} catch (IOException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve",e);
+			}
+			originalMessage=input;
+		}
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, correlationID, input, session);
@@ -521,7 +529,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
 			} else {
-				input = new Message(wrapResult.getResult());
+				input = Message.asMessage(wrapResult.getResult());
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
@@ -582,7 +590,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					try {
 						sendResult = sendMessage(input, session, getSender(), threadContext, nextProvider);
 						if (retryTp!=null) {
-							String retry=retryTp.transform(new Message(sendResult.getResult()).asString(),null);
+							String retry=retryTp.transform(Message.asString(sendResult.getResult()),null);
 							if (retry.equalsIgnoreCase("true")) {
 								if (retriesLeft>=1) {
 									retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
@@ -624,16 +632,16 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
 					}
-					result = sendResult.getResult()==null?null:sendResult.getResult().toString();
+					result = sendResult;
 				} else {
-					messageID = new Message(sendResult.getResult()).asString();
+					messageID = Message.asString(sendResult.getResult());
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
-						correlationID = new Message(sendResult.getResult()).asString();
+						correlationID = Message.asString(sendResult.getResult());
 						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
 				}
@@ -691,7 +699,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (getListener() != null) {
 					result = listenerProcessor.getMessage(getListener(), correlationID, session);
 					} else {
-					result = sendResult.getResult();
+					result = sendResult.getResult(); // is this correct? result was already set at line 635!
 				}
 				if (result == null) {
 					result = "";
@@ -759,14 +767,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (outputValidator!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
-			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, new Message(result),session);
+			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, Message.asMessage(result),session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
 		}
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
-			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, new Message(result), session);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, Message.asMessage(result), session);
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
@@ -778,7 +786,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 
 		if (isStreamResultToServlet()) {
-			Message mia = new Message(result);
+			Message mia = Message.asMessage(result);
 			
 			try {
 				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
@@ -792,14 +800,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			return new PipeRunResult(forward, "");
 		} else {
-			return new PipeRunResult(forward, result.toString());
+			return new PipeRunResult(forward, result);
 		}
 	}
 
 	private boolean validResult(Object result) throws IOException {
 		boolean validResult = true;
 		if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
-			if (!XmlUtils.isWellFormed(new Message(result).asString(), getCheckRootTag())) {
+			if (!XmlUtils.isWellFormed(Message.asString(result), getCheckRootTag())) {
 				validResult = false;
 			}
 		}
@@ -828,8 +836,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				sendResult = sendTextMessage(input, session, getSender(), threadContext, nextProvider);
-			} catch (IOException|SenderException se) {
+				if (sender instanceof IStreamingSender) {
+					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, nextProvider);
+				} else {
+					// sendResult has a messageID for async senders, the result for sync senders
+					Message result = sender.sendMessage(input, session);
+					sendResult = new PipeRunResult(null,result);
+				}
+			} catch (SenderException se) {
 				exitState = EXCEPTION_FORWARD;
 				throw se;
 			} catch (TimeOutException toe) {
@@ -840,11 +854,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				exitState = INTERRUPT_FORWARD;
 				throw new InterruptedException();
 			}
-			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult.getResult().toString())) {
+			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult.getResult().toString())) { // TODO must be asString()!
 				exitState = TIMEOUT_FORWARD;
 				throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 			}
-			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult.getResult().toString())) {
+			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult.getResult().toString())) { // TODO must be asString()!
 				exitState = EXCEPTION_FORWARD;
 				throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 			}
@@ -877,14 +891,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sendResult;
 	}
 	
-	protected PipeRunResult sendTextMessage(Message message, IPipeLineSession session, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport next) throws SenderException, TimeOutException, IOException {
-		if (sender instanceof IStreamingSender) {
-			return ((IStreamingSender)sender).sendMessage(message, session, next);
-		}
-		// sendResult has a messageID for async senders, the result for sync senders
-		Message result = sender.sendMessage(message, session);
-		return new PipeRunResult(null,result.asString());
-	}
 
 	public int increaseRetryIntervalAndWait(IPipeLineSession session, int retryInterval, String description) throws InterruptedException {
 		long currentInterval;

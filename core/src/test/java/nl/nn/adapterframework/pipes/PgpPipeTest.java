@@ -94,7 +94,7 @@ public class PgpPipeTest {
 			assertMessage(mid, MESSAGE);
 
 			// Decryption phase
-			Message decryptMessage = new Message(encryptionResult.getResult());
+			Message decryptMessage = Message.asMessage(encryptionResult.getResult());
 			PipeRunResult decryptionResult = decryptPipe.doPipe(decryptMessage, session);
 			byte[] result = (byte[]) decryptionResult.getResult();
 

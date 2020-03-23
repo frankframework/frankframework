@@ -83,7 +83,7 @@ import nl.nn.adapterframework.stream.Message;
 					skResult="[null]";
 				} else {
 					try {
-						skResult = new Message(skResult).asString();
+						skResult = Message.asString(skResult);
 					} catch (IOException e) {
 						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 					}

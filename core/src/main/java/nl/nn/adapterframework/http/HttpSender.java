@@ -492,7 +492,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 			} else {
 				try {
-					String fileName = new Message(session.get(getStreamResultToFileNameSessionKey())).asString();
+					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
 					File file = new File(fileName);
 					Misc.streamToFile(responseHandler.getResponse(), file);
 					return fileName;

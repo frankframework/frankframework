@@ -48,7 +48,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = null;
 		try {
-			result = new Message(prr.getResult()).asString();
+			result = Message.asString(prr.getResult());
 		} catch (IOException e) {
 			fail("cannot open stream: " + e.getMessage());
 		}
@@ -65,7 +65,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = null;
 		try {
-			result = new Message(prr.getResult()).asString();
+			result = Message.asString(prr.getResult());
 		} catch (IOException e) {
 			fail("cannot open stream: " + e.getMessage());
 		}
@@ -82,7 +82,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = null;
 		try {
-			result = new Message(prr.getResult()).asString();
+			result = Message.asString(prr.getResult());
 		} catch (IOException e) {
 			fail("cannot open stream: " + e.getMessage());
 		}

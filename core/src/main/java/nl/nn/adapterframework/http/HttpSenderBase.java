@@ -733,9 +733,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					Message resultMsg = new Message(result);
 					try {
-						result = transformerPool.transform(resultMsg.asSource());
+						result = transformerPool.transform(Message.asSource(result));
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}
@@ -743,7 +742,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		return new Message(result);
+		return Message.asMessage(result);
 	}
 
 	@Override

@@ -116,7 +116,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	@Override
 	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -127,7 +126,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
-				pvl = getParameterList().getValues(message, session);
+				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}

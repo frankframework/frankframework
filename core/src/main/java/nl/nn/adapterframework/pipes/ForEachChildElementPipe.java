@@ -313,7 +313,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			}
 		} else {
 			try {
-				src = new Message(input).asInputSource();
+				src = input.asInputSource();
 			} catch (IOException e) {
 				throw new SenderException("could not get InputSource",e);
 			}

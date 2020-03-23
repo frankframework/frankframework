@@ -183,7 +183,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected Message itemToMessage(I item) throws SenderException {
-		return new Message(item);
+		return Message.asMessage(item);
 	}
 	
 	/**

@@ -125,7 +125,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	@Test(expected = PipeRunException.class)
 	public void cantCalculate() throws PipeRunException {
-		doPipe(pipe, new Message(null), session);
+		doPipe(pipe, new Message((String)null), session);
 	}
 
 	@Test(expected = PipeRunException.class)

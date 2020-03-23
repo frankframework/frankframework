@@ -321,7 +321,7 @@ public class Parameter implements INamedObject, IWithParameters {
 						}
 						sourceString = itemsXml.toXML();
 					} else {
-						sourceString = new Message(sourceObject).asString();
+						sourceString = Message.asString(sourceObject);
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
@@ -379,7 +379,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		if (result !=null && result instanceof Message && ((Message)result).asObject() instanceof String) {
-			result = ((Message)result).asObject();
+			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) {

@@ -268,10 +268,10 @@ public class FileHandler {
 		}
 	}
 
-	private String getEffectiveFileName(byte[] in, IPipeLineSession session) {
+	private String getEffectiveFileName(byte[] in, IPipeLineSession session) throws IOException {
 		String name = getFileName();
 		if (StringUtils.isEmpty(name)) {
-			name = (String)session.get(fileNameSessionKey);
+			name = Message.asString(session.get(fileNameSessionKey));
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);

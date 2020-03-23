@@ -57,9 +57,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private String xpathExpression;
 
 	@Override
-	public String format(String message, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
 
-		String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
+		String result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
@@ -87,7 +87,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = params.getValues(new Message(message), new PipeLineSessionBase()).getValueMap();
+						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSessionBase()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}

@@ -55,7 +55,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 			result = val.doPipe(new Message(input), session);
 	        String resultStr=null;
 			try {
-				resultStr = new Message(result).asString();
+				resultStr = Message.asString(result);
 			} catch (IOException e) {
 				fail("cannot open stream: "+description +": "+ e.getMessage());
 			}
@@ -139,7 +139,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         PipeRunResult result;
 		try {
 			result = val.doPipe(new Message(input), session);
-	        String resultStr=(String)result.getResult();
+	        String resultStr=Message.asString(result.getResult());
 	        fail("expected error ["+expectedError+"]");
 		} catch (PipeRunException e) {
 			String msg=e.getMessage();

@@ -102,7 +102,6 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
-		Message message = new Message(input);
 		try {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				nextProvider=null;
@@ -111,7 +110,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 					nextProvider = getStreamTarget();
 				}
 			}
-			PipeRunResult prr = sender.sendMessage(message, session, nextProvider);
+			PipeRunResult prr = sender.sendMessage(input, session, nextProvider);
 			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();

@@ -25,7 +25,6 @@ import java.io.StringReader;
 import java.net.URL;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.log4j.Logger;
@@ -41,20 +40,39 @@ public class Message {
 
 	private Object request;
 
-	public Message(Message request) {
-		if (request!=null) {
-			this.request = request.asObject();
-		}
-	}
-
-	public Message(Object request) {
+	private Message(Object request) {
 		if (request instanceof Message) {
+			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
+			// e.g. new Message(pipeRunResult.getResult());
 			this.request = ((Message)request).asObject();
 		} else {
 			this.request = request;
 		}
 	}
 
+	public Message(String request) {
+		this((Object)request);
+	}
+
+	public Message(byte[] request) {
+		this((Object)request);
+	}
+
+	public Message(Reader request) {
+		this((Object)request);
+	}
+
+	public Message(InputStream request) {
+		this((Object)request);
+	}
+
+	public Message(File request) {
+		this((Object)request);
+	}
+
+	public Message(URL request) {
+		this((Object)request);
+	}
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
@@ -249,4 +267,104 @@ public class Message {
 		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
+	public static Message asMessage(Object object) {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof Message) {
+			return (Message)object;
+		}
+		return new Message(object);
+	}
+	
+	public static Reader asReader(Object object) throws IOException {
+		return asReader(object, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public static Reader asReader(Object object, String defaultCharset) throws IOException {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof Reader) {
+			return (Reader)object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asReader(defaultCharset);
+		}
+		return new Message(object).asReader(defaultCharset);
+	}
+	
+	public static InputStream asInputStream(Object object) throws IOException {
+		return asInputStream(object, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public static InputStream asInputStream(Object object, String defaultCharset) throws IOException {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof InputStream) {
+			return (InputStream)object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asInputStream(defaultCharset);
+		}
+		return new Message(object).asInputStream(defaultCharset);
+	}
+	
+	public static InputSource asInputSource(Object object) throws IOException {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof InputSource) {
+			return (InputSource)object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asInputSource();
+		}
+		return new Message(object).asInputSource();
+	}
+	
+	public static Source asSource(Object object) throws IOException, SAXException  {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof Source) {
+			return (Source)object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asSource();
+		}
+		return new Message(object).asSource();
+	}
+	
+	public static String asString(Object object) throws IOException {
+		return asString(object, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public static String asString(Object object, String defaultCharset) throws IOException {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof String) {
+			return (String)object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asString();
+		}
+		return new Message(object).asString();
+	}
+	
+	public static byte[] asByteArray(Object object) throws IOException {
+		return asByteArray(object, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	public static byte[] asByteArray(Object object, String defaultCharset) throws IOException {
+		if (object==null) {
+			return null;
+		}
+		if (object instanceof byte[]) {
+			return (byte[])object;
+		}
+		if (object instanceof Message) {
+			return ((Message)object).asByteArray(defaultCharset);
+		}
+		return new Message(object).asByteArray(defaultCharset);
+	}
+	
 }
