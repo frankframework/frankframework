@@ -32,6 +32,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Base class for building JDBC-senders.
@@ -84,7 +85,9 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 			connection = getConnection();
 			connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
 		} catch (Throwable t) {
+			JdbcUtil.close(connection);
 			connection = null;
+
 			throw new SenderException(t);
 		}
 
