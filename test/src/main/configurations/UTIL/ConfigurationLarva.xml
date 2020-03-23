@@ -59,7 +59,7 @@
 				>
 				<param name="hostname" value="${hostname}" />
 				<param name="message" sessionKey="message" />
-				<param name="mailaddresses" value="${mailaddresses}" />
+				<param name="mailaddresses" value="${errorreport.mailaddresses}" />
 				
 				<forward name="success" path="SendMail" />
 			</pipe>
