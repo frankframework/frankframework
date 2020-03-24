@@ -17,8 +17,8 @@ package nl.nn.adapterframework.extensions.akamai;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -40,7 +40,6 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -48,6 +47,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
+public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 
 	private String action = null;
@@ -96,6 +96,11 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 	@Override
 	public void configure() throws ConfigurationException {
+		Parameter urlParameter = new Parameter();
+		urlParameter.setName(getUrlParam());
+		urlParameter.setSessionKey("urlParam");
+		addParameter(urlParameter);
+
 		super.configure();
 
 		//Safety checks
@@ -133,23 +138,20 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param path to append to the root
 	 * @return full path to use as endpoint
 	 */
-	private URIBuilder buildUri(String path) throws SenderException {
+	@Override
+	protected URI getURI(String path) throws URISyntaxException {
 		if (!path.startsWith("/")) path = "/" + path;
-		try {
-			String url = getUrl() + getCpCode();
+		String url = getUrl() + getCpCode();
 
-			if(getRootDir() != null)
-				url += getRootDir();
+		if(getRootDir() != null)
+			url += getRootDir();
 
-			url += path;
+		url += path;
 
-			if(url.endsWith("/")) //The path should never end with a '/'
-				url = url.substring(0, url.length() -1);
+		if(url.endsWith("/")) //The path should never end with a '/'
+			url = url.substring(0, url.length() -1);
 
-			return new URIBuilder(url);
-		} catch (URISyntaxException e) {
-			throw new SenderException(e);
-		}
+		return new URIBuilder(url).build();
 	}
 
 	@Override
@@ -162,14 +164,14 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		staticUri = buildUri(path); // TODO: this is not thread safe!
+		session.put("urlParam", path);
 
 		//We don't need to send any message to the HttpSenderBase
 		return super.sendMessage(new Message(""), session);
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);
@@ -179,23 +181,14 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 			netStorageAction.mapParameters(parameters);
 
 		try {
-			URL url = uri.build().toURL();
-
 			setMethodType(netStorageAction.getMethod());
 			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
 
-			NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
+			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 			Map<String, String> headers = signer.computeHeaders();
 
-			boolean queryParametersAppended = false;
-			StringBuffer path = new StringBuffer(uri.getPath());
-
 			if (getMethodType().equals("GET")) {
-				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
-				}
-				HttpGet method = new HttpGet(uri.build());
+				HttpGet method = new HttpGet(uri);
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
@@ -206,7 +199,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 				return method;
 			}
 			else if (getMethodType().equals("PUT")) {
-				HttpPut method = new HttpPut(uri.build());
+				HttpPut method = new HttpPut(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
@@ -222,7 +215,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 				return method;
 			}
 			else if (getMethodType().equals("POST")) {
-				HttpPost method = new HttpPost(uri.build());
+				HttpPost method = new HttpPost(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");

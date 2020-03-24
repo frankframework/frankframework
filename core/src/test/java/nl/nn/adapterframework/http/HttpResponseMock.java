@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import nl.nn.adapterframework.http.mime.MultipartEntity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -41,6 +42,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
+	private String lineSeparator = System.getProperty("line.separator");
 
 	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
@@ -77,27 +79,33 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	public InputStream doGet(HttpHost host, HttpGet request, HttpContext context) {
 		assertEquals("GET", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		String lineSeparator = System.getProperty("line.separator");
 		response.append(request.toString() + lineSeparator);
 
-		Header[] headers = request.getAllHeaders();
-		for (Header header : headers) {
-			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
-		}
+		appendHeaders(request, response);
 
 		return new ByteArrayInputStream(response.toString().getBytes());
+	}
+
+	private void appendHeaders(HttpRequestBase request, StringBuilder response) {
+		Header[] headers = request.getAllHeaders();
+		for (Header header : headers) {
+			String headerName = header.getName();
+			String headerValue = header.getValue();
+			if(headerName.equals("X-Akamai-ACS-Auth-Data")) { //Ignore timestamps in request header
+				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
+				int end = headerValue.lastIndexOf(",");
+				headerValue = headerValue.substring(0, start) + ", timestamp, timestamp" + headerValue.substring(end);
+			}
+			response.append(headerName + ": " + headerValue + lineSeparator);
+		}
 	}
 
 	public InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
 		assertEquals("POST", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		String lineSeparator = System.getProperty("line.separator");
 		response.append(request.toString() + lineSeparator);
 
-		Header[] headers = request.getAllHeaders();
-		for (Header header : headers) {
-			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
-		}
+		appendHeaders(request, response);
 
 		HttpEntity entity = request.getEntity();
 		if(entity instanceof MultipartEntity) {
@@ -129,13 +137,9 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	public InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
 		assertEquals("PUT", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		String lineSeparator = System.getProperty("line.separator");
 		response.append(request.toString() + lineSeparator);
 
-		Header[] headers = request.getAllHeaders();
-		for (Header header : headers) {
-			response.append(header.getName() + ": " + header.getValue() + lineSeparator);
-		}
+		appendHeaders(request, response);
 
 		Header contentTypeHeader = request.getEntity().getContentType();
 		if(contentTypeHeader != null) {

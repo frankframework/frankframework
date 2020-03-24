@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -36,7 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 
@@ -55,7 +55,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		String methodType = (String) session.get("method");
@@ -64,10 +64,10 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		try {
 			if(methodType.equals("GET")) {
-				method = new HttpGet(uri.build());
+				method = new HttpGet(uri);
 			}
 			else if (methodType.equals("POST")) {
-				HttpPost httpPost = new HttpPost(uri.build());
+				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -90,7 +90,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				}
 			}
 			else if (methodType.equals("PUT")) {
-				HttpPut httpPut = new HttpPut(uri.build());
+				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -113,7 +113,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				}
 			}
 			else if (methodType.equals("DELETE")) {
-				method = new HttpDelete(uri.build());
+				method = new HttpDelete(uri);
 			}
 			else {
 				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
