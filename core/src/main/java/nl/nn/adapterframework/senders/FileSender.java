@@ -51,7 +51,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
-			return new Message(handle(message, session, getParameterList()));
+			return Message.asMessage(handle(message, session, getParameterList()));
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}

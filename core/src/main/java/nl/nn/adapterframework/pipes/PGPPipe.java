@@ -151,8 +151,7 @@ public class PGPPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			pgpAction.run(message.asInputStream(), baos);

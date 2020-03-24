@@ -12,7 +12,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.SenderTestBase;

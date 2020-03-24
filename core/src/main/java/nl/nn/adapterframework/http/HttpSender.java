@@ -32,19 +32,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
@@ -69,6 +56,20 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
@@ -490,10 +491,14 @@ public class HttpSender extends HttpSenderBase {
 					return getResponseBodyAsString(responseHandler);
 				}
 			} else {
-				String fileName = (String) session.get(getStreamResultToFileNameSessionKey());
-				File file = new File(fileName);
-				Misc.streamToFile(responseHandler.getResponse(), file);
-				return fileName;
+				try {
+					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
+					File file = new File(fileName);
+					Misc.streamToFile(responseHandler.getResponse(), file);
+					return fileName;
+				} catch (IOException e) {
+					throw new SenderException("cannot find filename to stream result to", e);
+				}
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
@@ -599,10 +604,10 @@ public class HttpSender extends HttpSenderBase {
 			response.sendRedirect(redirectLocation);
 		}
 		if (is != null) {
-			OutputStream outputStream = response.getOutputStream();
-			Misc.streamToStream(is, outputStream);
-			outputStream.close();
-			log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+			try (OutputStream outputStream = response.getOutputStream()) {
+				Misc.streamToStream(is, outputStream);
+				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+			}
 		}
 	}
 

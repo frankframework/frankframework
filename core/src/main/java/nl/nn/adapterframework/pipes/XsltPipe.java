@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
@@ -99,11 +98,10 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
-		Message message = new Message(input);
 		try {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				nextProvider=null;
@@ -112,7 +110,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 					nextProvider = getStreamTarget();
 				}
 			}
-			PipeRunResult prr = sender.sendMessage(message, session, nextProvider);
+			PipeRunResult prr = sender.sendMessage(input, session, nextProvider);
 			Object result = prr.getResult();
 			if (result instanceof StringWriter) {
 				result = result.toString();

@@ -1,3 +1,18 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import java.util.Iterator;
@@ -77,12 +92,12 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 	
 	@Override
-	protected IDataIterator<A> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<A> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		
 		FS ifs = getFileSystem();
 		
 		try {
-			F file = ifs.toFile((String)input);
+			F file = ifs.toFile(message.asString());
 			Iterator<A> it = ifs.listAttachments(file);
 			return new AttachmentIterator(it);
 		} catch (Exception e) {

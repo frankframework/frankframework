@@ -1,27 +1,34 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 public class EchoPipeTest extends PipeTestBase<EchoPipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
+	private IPipeLineSession session = new PipeLineSessionBase();
 
-    @Override
-    public EchoPipe createPipe() {
-        return new EchoPipe();
-    }
+	@Override
+	public EchoPipe createPipe() {
+		return new EchoPipe();
+	}
 
-    @Test
-    public void testDoPipe() {
-        Object dummyInput = "dummyInput";
-        pipe.doPipe(dummyInput, session);
+	@Test
+	public void testDoPipe() throws PipeRunException, IOException {
+		String dummyInput = "dummyInput";
+		
+		PipeRunResult prr = doPipe(pipe, dummyInput, session);
+		String result = Message.asString(prr.getResult());
 
-        assertEquals(pipe.doPipe(dummyInput, session).getResult().toString(), dummyInput);
-    }
-
+		assertEquals(dummyInput, result);
+	}
 
 }

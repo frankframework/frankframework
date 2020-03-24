@@ -3,6 +3,7 @@ package nl.nn.adapterframework.testutil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 
 import nl.nn.adapterframework.stream.Message;
@@ -11,7 +12,10 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class TestFileUtils {
 	
 	public static Message getTestFileMessage(String file) throws IOException {
-		return new Message(getTestFile(file));
+		return new Message(new StringReader(getTestFile(file)));
+	}
+	public static Message getTestFileMessage(String file, String charset) throws IOException {
+		return new Message(new StringReader(getTestFile(file, charset)));
 	}
 
 	public static String getTestFile(String file) throws IOException {

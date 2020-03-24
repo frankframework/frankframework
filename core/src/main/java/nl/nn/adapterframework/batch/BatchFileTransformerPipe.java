@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -63,13 +64,17 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	private boolean delete = false;
 
 	@Override
-	protected String getStreamId(Object input, IPipeLineSession session) throws PipeRunException {
-		return ((File)input).getName();
+	protected String getStreamId(Message input, IPipeLineSession session) throws PipeRunException {
+		String filename	= (String)input.asObject();
+		File file = new File(filename);
+		return file.getName();
 	}
 	@Override
-	protected InputStream getInputStream(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
 		try {
-			return new FileInputStream((File)input);
+			String filename	= (String)input.asObject();
+			File file = new File(filename);
+			return new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
 		}
@@ -82,21 +87,22 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
-		if (!(input instanceof String)) {
+		
+		if (!(input.asObject() instanceof String)) {
 			throw new PipeRunException(this,"expected String containing filename as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
 		}
-		String filename	= input.toString();
+		String filename	= (String)input.asObject();
 		File file = new File(filename);
 
 		try {
-			PipeRunResult result = super.doPipe(file,session);
+			PipeRunResult result = super.doPipe(input,session);
 			try {
 				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups()); 
 			} catch (Exception e) {

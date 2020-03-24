@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.adapterframework.configuration;
 import java.util.Map;
 
 /**
- * Interface to be implemented when a class has one or move special default
+ * Interface to be implemented when a class has one or more special default
  * values (i.e. a default value of attribute X depends on the value of attribute
  * Y). When a class implements this interface the getSpecialDefaultValue method
  * will be called for every attribute used in the Ibis configuration when it is
@@ -39,7 +39,6 @@ import java.util.Map;
  */
 public interface HasSpecialDefaultValues {
 
-	Object getSpecialDefaultValue(String attributeName, Object defaultValue,
-			Map<String, String> attributes);
+	Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes);
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden
+   Copyright 2013-2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -47,12 +53,6 @@ import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.

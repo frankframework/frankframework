@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -280,20 +280,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
-						+ "] for mode [" + mode.toString()
-						+ "] should be set to '1' or '2', assuming '1'";
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString() + "] should be set to '1' or '2', assuming '1'";
 				configWarnings.add(log, msg);
 				cmhVersion = 1;
 			}
 		} else {
 			if (cmhVersion != 0) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
-						+ "] for mode [" + mode.toString()
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString()
 						+ "] should not be set, assuming '0'";
 				configWarnings.add(log, msg);
 				cmhVersion = 0;

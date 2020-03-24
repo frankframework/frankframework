@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  */
 package nl.nn.adapterframework.cache;
 
+import java.io.IOException;
 import java.io.Serializable;
+
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.ehcache.Cache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,8 +27,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Remove specified cache key from cache with specified name.
@@ -49,15 +51,19 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		String cacheKey = keyTransformer.transformKey((String)input, session);
-		Cache cache = ibisCacheManager.getCache(cacheName);
-		if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
-			log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
-		} else {
-			log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		try {
+			String cacheKey = keyTransformer.transformKey(message.asString(), session);
+			Cache cache = ibisCacheManager.getCache(cacheName);
+			if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
+				log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+			} else {
+				log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+			}
+			return new PipeRunResult(getForward(), message);
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		return new PipeRunResult(getForward(), input);
 	}
 
 	public String getCacheName() {

@@ -201,6 +201,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return new Message(result);
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return getUrl();
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2017 Nationale-Nederlanden
+   Copyright 2015, 2017, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private int level = 0;
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
 		XMLStreamWriter xmlStreamWriter;
 		try {
