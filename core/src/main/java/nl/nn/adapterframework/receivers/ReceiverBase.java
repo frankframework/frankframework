@@ -943,13 +943,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 		String message = null;
 		String technicalCorrelationId = null;
-		if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-			MessageWrapper wrapper = (MessageWrapper) rawMessage;
-			message = wrapper.getText();
-			technicalCorrelationId = wrapper.getId();
-		} else {
+		try {
 			message = origin.getStringFromRawMessage(rawMessage, threadContext);
+		} catch (Exception e) {
+			if(rawMessage instanceof MessageWrapper) { 
+				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+				// like JdbcListener
+				message = ((MessageWrapper)rawMessage).getText();
+			} else {
+				throw new ListenerException(e);
+			}
+		}
+		try {
 			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		} catch (Exception e) {
+			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
+			} else {
+				throw new ListenerException(e);
+			}
 		}
 		String messageId = (String)threadContext.get("id");
 		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
@@ -1229,10 +1242,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				} else {
 					afterMessageProcessedMap=pipelineSession;
 				}
-				if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-					log.warn("Unable to post process messageId ["+messageId+"] cid ["+technicalCorrelationId+"]");
-				} else {
+				try {
 					origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+				} catch (Exception e) {
+					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+					// this might cause class cast exceptions.
+					// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+					// like JdbcListener
+					log.warn("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]");
 				}
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
