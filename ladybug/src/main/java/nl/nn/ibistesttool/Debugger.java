@@ -39,7 +39,6 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
@@ -181,7 +180,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 	
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext) {
 		String errorMessage = null;
 		if (securityContext.isUserInRoles(rerunRoles)) {
 			int i = 0;
@@ -190,7 +189,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			String checkpointName = checkpoint.getName();
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
-				String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+				String inputMessage = checkpoint.getMessage();
 				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					IPipeLineSession pipeLineSession = new PipeLineSessionBase();
