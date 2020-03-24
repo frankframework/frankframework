@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -59,7 +60,9 @@ import nl.nn.adapterframework.util.Misc;
  * </p>
  * 
  * @author Barry Jacobs
+ * @deprecated Please use {@link JavascriptSender} instead
  */
+@Deprecated
 public class RhinoPipe extends FixedForwardPipe {
 
 	private String fileName;
@@ -116,7 +119,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		//INIT
 		String eol = System.getProperty("line.separator");
-		if (message==null) {
+		if (message==null || message.isEmpty()) {
 			//No input from previous pipes. We will use filename and or string input.
 	        if ((StringUtils.isEmpty(fileInput)) && inputString==null && isLookupAtRuntime()) {  // No input from file or input string. Nowhere to GO!
 				throw new PipeRunException(this,getLogPrefix(session)+"No input specified anywhere. No string input, no file input and no previous pipe input");
@@ -172,7 +175,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		Context cx = Context.enter();
 		Scriptable scope = cx.initStandardObjects();
 		if(isDebug()) {
-			System.out.println("debug active");
+			log.debug("debug active");
 			cx.setLanguageVersion(Context.VERSION_1_2);
 			cx.setGeneratingDebug(true);
 		}
@@ -187,24 +190,20 @@ public class RhinoPipe extends FixedForwardPipe {
 			// Object[]{jsfunctionArguments});
 			Object result = fct.call(cx, scope, scope, new Object[] { message.asObject() });
 
-			if (isDebug()) {
-				System.out.println(cx.jsToJava(result, String.class));
+			jsResult = (String) Context.jsToJava(result, String.class);
+			if (isDebug() && log.isDebugEnabled()) {
+				log.debug(getLogPrefix(session)+"jsResult ["+ jsResult+"]");
 			}
-			;
 
-			jsResult = (String) cx.jsToJava(result, String.class);
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
-			// System.out.println(ex.getMessage());
 		} finally {
 			Context.exit();
 		}
 		// Use the result
-		if (jsResult instanceof String) {
-			if ((String) jsResult != null) {
-				stringResult = (String) jsResult;
-			}
+		if ( jsResult != null) {
+			stringResult =jsResult;
 		}
 		if (StringUtils.isEmpty(getSessionKey())) {
 			return new PipeRunResult(getForward(), stringResult);
