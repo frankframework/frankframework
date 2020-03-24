@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);

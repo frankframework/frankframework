@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  */
 public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

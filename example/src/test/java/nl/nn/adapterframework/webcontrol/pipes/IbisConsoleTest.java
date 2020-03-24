@@ -145,6 +145,7 @@ public class IbisConsoleTest {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
 		String expected = Misc.resourceToString(expectedUrl);
+		XMLUnit.setIgnoreAttributeOrder(true);
 		Diff diff = XMLUnit.compareXML(expected, result);
 		assertTrue(diff.toString(), diff.identical());
 	}

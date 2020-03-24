@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +42,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 	protected String directorySessionKey = "destination";
 	private String sessionKey = "file";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 /*
@@ -57,13 +59,11 @@ public class UploadFilePipe extends FixedForwardPipe {
 */
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get(getSessionKey());
 		if (inputStream == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got null value from session under key ["
-					+ getSessionKey() + "]");
+			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File dir;
@@ -73,17 +73,21 @@ public class UploadFilePipe extends FixedForwardPipe {
 			if (StringUtils.isNotEmpty(getDirectorySessionKey())) {
 				dir = new File((String) session.get(getDirectorySessionKey()));
 			} else {
-				dir = new File(input.toString());
+				String filename;
+				try {
+					filename = message.asString();
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
+				dir = new File(filename);
 			}
 		}
 
 		if (!dir.exists()) {
 			if (dir.mkdirs()) {
-				log.debug(getLogPrefix(session) + "created directory ["
-						+ dir.getPath() + "]");
+				log.debug(getLogPrefix(session) + "created directory [" + dir.getPath() + "]");
 			} else {
-				log.warn(getLogPrefix(session) + "directory [" + dir.getPath()
-						+ "] could not be created");
+				log.warn(getLogPrefix(session) + "directory [" + dir.getPath() + "] could not be created");
 			}
 		}
 		
@@ -93,14 +97,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, dir);
 			} else {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "file extension ["
-						+ FileUtils.getFileNameExtension(fileName)
-						+ "] should be 'zip'");
+				throw new PipeRunException(this, getLogPrefix(session) + "file extension [" + FileUtils.getFileNameExtension(fileName) + "] should be 'zip'");
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on uploading and unzipping/writing file", e);
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
 		}
 
 		return new PipeRunResult(getForward(), dir.getPath());

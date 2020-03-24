@@ -18,6 +18,7 @@ import com.networknt.schema.ValidationMessage;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /*
  * @see: https://github.com/networknt/json-schema-validator
@@ -38,6 +39,8 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase{
 	public void testXml2JsonSchema(String schemaFile, String namespace, String xml, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
 		
 		URL schemaUrl=getSchemaURL(schemaFile);
+		String jsonSchemaFile = schemaFile.replace(".xsd", "-"+rootElement+".jsd");
+		URL jsonSchemaUrl=getSchemaURL(jsonSchemaFile);
     	String xmlString=getTestFile(xml+".xml");
     	String jsonString=getTestFile(xml+(skipJsonRootElements?"-compact":"-full")+".json");
  
@@ -49,7 +52,6 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase{
     	} else {
     		validator.setSchema(BASEDIR+schemaFile);
     	}
-    	validator.setTargetNamespace(namespace);
     	validator.setJsonWithRootElements(!skipJsonRootElements);
     	validator.setRoot(rootElement);
     	validator.configure();
@@ -88,31 +90,14 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase{
 		        System.out.println(errors);
 		        assertEquals(errors.toString(),0,errors.size());
 	    	}
+
+	    	if (skipJsonRootElements && compactArrays) {
+		    	String expectedJsonSchema = jsonSchemaUrl==null?null:StreamUtil.streamToString(jsonSchemaUrl.openStream(), "\n", "utf-8");
+		    	System.out.println("expected ["+expectedJsonSchema+"]");
+		    	System.out.println("actual   ["+schema.toString()+"]");
+		    	assertEquals("generated does not match ["+jsonSchemaFile+"]", expectedJsonSchema, schema.toString());
+	    	}
 	    	
-//		} catch (Exception e) {
-//			if (expectValid) {
-//				e.printStackTrace();
-//		    	System.out.println("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
-//				fail(e.getMessage());
-//			}
-//			return;
-//		}
-//    	if (expectValidRoundTrip) {
-//			String backToXml1=Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements?rootElement:null, null);
-//	    	//System.out.println("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
-//			String backToXml2=Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements?rootElement:null, null);
-//	    	//System.out.println("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
-//	
-//	    	String jsonCompactExpected=getTestFile(xml+"-compact.json");
-//	    	String jsonFullExpected=getTestFile(xml+"-full.json");
-//			
-//			if (jsonCompactExpected!=null && compactArrays && skipJsonRootElements) {
-//		    	assertEquals(jsonCompactExpected,jsonOut);
-//			}
-//			if (jsonFullExpected!=null && !compactArrays && !skipJsonRootElements) {
-//		    	assertEquals(jsonFullExpected,jsonOut);
-//			}
-//    	}		
 	}
 
 }

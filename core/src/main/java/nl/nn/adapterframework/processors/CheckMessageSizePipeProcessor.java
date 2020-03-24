@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -30,9 +31,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 	
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, IPipeLineSession pipeLineSession
-			) throws PipeRunException {
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession ) throws PipeRunException {
 		checkMessageSize(message, pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
 		Object result = pipeRunResult.getResult();

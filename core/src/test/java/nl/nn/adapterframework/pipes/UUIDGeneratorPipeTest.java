@@ -45,7 +45,7 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
     @Test
     public void checkResultNotRightType() throws PipeRunException {
     	pipe.setType("");
-    	PipeRunResult prr = pipe.doPipe(input, session);
+    	PipeRunResult prr = doPipe(pipe, input, session);
     	String result = (String) prr.getResult();
     	assertNotNull(result);
     	assertEquals(result.length(), 31);
@@ -54,8 +54,8 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
     @Test
     public void checkResultRightType() throws PipeRunException {
     	pipe.setType("alphanumeric");
-    	PipeRunResult first = pipe.doPipe(input, session);
-		PipeRunResult second = pipe.doPipe(input, session);
+    	PipeRunResult first = doPipe(pipe, input, session);
+		PipeRunResult second = doPipe(pipe, input, session);
 
 		String resultFirst = (String) first.getResult();
 		String resultSecond = (String) second.getResult();

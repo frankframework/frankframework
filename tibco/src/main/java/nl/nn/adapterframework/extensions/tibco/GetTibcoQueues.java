@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden
+   Copyright 2013-2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,8 +115,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String queueRegex;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -127,7 +126,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
-				pvl = getParameterList().getValues(message, session);
+				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}

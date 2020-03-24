@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.http;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
@@ -34,28 +34,35 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 
 	private String serviceName;
 
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
-	public void configure() throws ConfigurationException {
-		super.configure();
-		try {
-			if (StringUtils.isEmpty(getServiceName())) {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
-				ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
-			} else {
-				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceName ["+getServiceName()+"]");
-				ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
-			}
-		} catch (Exception e){
-			throw new ConfigurationException(e);
+	@Override
+	public void open() throws ListenerException {
+		if (StringUtils.isEmpty(getServiceName())) {
+			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+			ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
+		} else {
+			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
+		}
+
+		super.open();
+	}
+
+	@Override
+	public void close() {
+		super.close();
+
+		if (StringUtils.isEmpty(getServiceName())) {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getName());
+		} else {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceName());
 		}
 	}
 
 	public String getPhysicalDestinationName() {
 		return "serviceName: "+getServiceName();
 	}
-
 
 	public String getServiceName() {
 		return serviceName;

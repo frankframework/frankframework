@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -119,10 +119,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
-		Message message = new Message(input);
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
@@ -144,7 +143,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		if (result!=null) {
 			return new PipeRunResult(getForward(), result);
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getForward(), message);
 	}
 
 	@Override

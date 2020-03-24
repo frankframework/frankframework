@@ -99,7 +99,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(false);
         pipe.setCompress(true);
 
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
     @Test(expected = PipeRunException.class)
@@ -109,7 +109,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setCompress(false);
         pipe.setFileFormat("gz");
 
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
     @Test(expected = PipeRunException.class)
@@ -117,7 +117,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         Object input = "dummyString;";
         pipe.setMessageIsContent(true);
         pipe.setResultIsContent(true);
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(true);
         pipe.setResultIsContent(true);
         pipe.setCompress(true);
-        assertNotNull(pipe.doPipe(input, session));
+        assertNotNull(doPipe(pipe,input, session));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(true);
         pipe.setResultIsContent(true);
         pipe.setCompress(true);
-        assertTrue(pipe.doPipe(input, session) !=  null);
+        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
     }
 
 
@@ -148,7 +148,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(true);
         pipe.setResultIsContent(true);
         pipe.setCompress(false);
-        assertTrue(pipe.doPipe(input, session) !=  null);
+        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
     }
 
     @Test
@@ -159,7 +159,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setResultIsContent(true);
         pipe.setCompress(false);
         pipe.setConvert2String(true);
-        assertTrue(pipe.doPipe(input, session) !=  null);
+        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
     }
 
     @Test(expected = PipeRunException.class)
@@ -168,21 +168,21 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(false);
         pipe.setCompress(true);
 
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
     @Test(expected = PipeRunException.class)
     public void testCaptureIllegitimateByteArray() throws PipeRunException {
         Object input = "dummyString".getBytes();
         pipe.setMessageIsContent(true);
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
     @Test(expected = PipeRunException.class)
     public void testCaptureUnconvertableArray() throws PipeRunException {
         Object input = "dummyString";
         pipe.setMessageIsContent(true);
-        pipe.doPipe(input, session);
+        doPipe(pipe,input, session);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -31,13 +33,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that creates a ZipStream.
@@ -77,6 +77,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
 
+	@Override
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);
 		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
@@ -104,9 +105,10 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
+	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
+		Object input=message.asObject();
 		if (input==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"input cannot be null, must be OutputStream, HttpResponse or String containing filename");
 		}
@@ -137,7 +139,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 		}
 		if (resultStream==null) {
-			throw new PipeRunException(this,getLogPrefix(session)+"Dit not find OutputStream or HttpResponse, and could not find filename");
+			throw new PipeRunException(this,getLogPrefix(session)+"did not find OutputStream or HttpResponse, and could not find filename");
 		}
 		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseOutputstreamOnExit());
 		return sessionData;
@@ -162,19 +164,17 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		session.remove(getZipWriterHandle());
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
 			return new PipeRunResult(getForward(),input);
 		}
-		String msg=null;
-		if (input instanceof String) {
-			msg=(String)input;
-		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(msg, session);
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		try {
-			pvl = prc.getValues(getParameterList());
+			if (getParameterList()!=null) {
+				pvl = getParameterList().getValues(input, session);
+			}
 		} catch (ParameterException e1) {
 			throw new PipeRunException(this,getLogPrefix(session)+"cannot determine filename",e1);
 		}
@@ -219,6 +219,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	protected String getLogPrefix(IPipeLineSession session) {
 		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
 	}

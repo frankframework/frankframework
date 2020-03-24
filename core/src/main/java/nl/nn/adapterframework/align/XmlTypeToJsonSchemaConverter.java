@@ -25,6 +25,7 @@ import javax.json.JsonStructure;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -58,7 +59,7 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		XSElementDeclaration elementDecl=findElementDeclaration(elementName, namespace);
-		if (elementDecl==null) {
+		if (elementDecl==null && namespace!=null) {
 			elementDecl=findElementDeclaration(elementName, null);
 		}
 		if (elementDecl==null) {
@@ -74,19 +75,28 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	public XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
 		for (XSModel model:models) {
+			if (log.isDebugEnabled()) log.debug("search for element ["+elementName+"] in namespace ["+namespace+"]");
 			XSElementDeclaration elementDecl = model.getElementDeclaration(elementName, namespace);
 			if (elementDecl!=null) {
 				if (DEBUG) log.debug("findTypeDefinition found elementDeclaration ["+ToStringBuilder.reflectionToString(elementDecl,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				return elementDecl;
 			}
 		}
-//		for (XSModel model:models) {
-//			XSTypeDefinition typeDefinintion = model.getTypeDefinition(elementName, namespace);
-//			if (typeDefinintion!=null) {
-//				if (DEBUG) log.debug("findTypeDefinition found typeDefinintion ["+ToStringBuilder.reflectionToString(typeDefinintion,ToStringStyle.MULTI_LINE_STYLE)+"]");
-//				return typeDefinintion;
-//			}
-//		}
+		if (namespace==null) {
+			for (XSModel model:models) {
+				StringList namespaces = model.getNamespaces();
+				for (int i=0;i<namespaces.getLength();i++) {
+					namespace = (String)namespaces.item(i);
+					if (log.isDebugEnabled()) log.debug("search for element ["+elementName+"] in namespace ["+namespace+"]");
+					XSElementDeclaration elementDecl = model.getElementDeclaration(elementName, namespace);
+					if (elementDecl!=null) {
+						if (DEBUG) log.debug("findTypeDefinition found elementDeclaration ["+ToStringBuilder.reflectionToString(elementDecl,ToStringStyle.MULTI_LINE_STYLE)+"]");
+						return elementDecl;
+					}
+				}
+			}
+			
+		}
 		
 		return null;
 	}

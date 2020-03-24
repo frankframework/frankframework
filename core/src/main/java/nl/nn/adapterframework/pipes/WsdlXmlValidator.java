@@ -63,7 +63,7 @@ import javax.xml.namespace.QName;
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
-    private String soapBodyNamespace  = "";
+	private String soapBodyNamespace = "";
 
 	private static final WSDLFactory FACTORY;
 	static {
@@ -341,14 +341,14 @@ public class WsdlXmlValidator extends SoapValidator {
 		return schemaLocationToAdd;
 	}
 
-	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " "})
-    public void setSoapBodyNamespace(String soapBodyNamespace) {
-        this.soapBodyNamespace = soapBodyNamespace;
-    }
+	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
+	public void setSoapBodyNamespace(String soapBodyNamespace) {
+		this.soapBodyNamespace = soapBodyNamespace;
+	}
 
-    public String getSoapBodyNamespace() {
-        return soapBodyNamespace;
-    }
+	public String getSoapBodyNamespace() {
+		return soapBodyNamespace;
+	}
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator {
@@ -372,14 +372,17 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 		return ioException;
 	}
 
+	@Override
 	public InputSource getBaseInputSource() {
 		return getInputSource(url);
 	}
 
+	@Override
 	public String getBaseURI() {
 		return wsdl;
 	}
 
+	@Override
 	public InputSource getImportInputSource(String parentLocation, String importLocation) {
 		if (parentLocation == null) {
 			parentLocation = wsdl;
@@ -393,10 +396,12 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 		return getInputSource(latestImportURI);
 	}
 
+	@Override
 	public String getLatestImportURI() {
 		return latestImportURI;
 	}
 
+	@Override
 	public void close() {
 	}
 
