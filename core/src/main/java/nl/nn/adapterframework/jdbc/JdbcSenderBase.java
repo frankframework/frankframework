@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Base class for building JDBC-senders.
@@ -65,7 +65,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 		return paramList;
 	}
 	public void configure(ParameterList parameterList) throws ConfigurationException {
-		configure();		
+		configure();
 	}
 
 	@Override
@@ -81,14 +81,21 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 
 	@Override
 	public void open() throws SenderException {
-		if (!isConnectionsArePooled()) {
-			try {
-				connection = getConnection();
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
+		try {
+			connection = getConnection();
+			connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Throwable t) {
+			JdbcUtil.close(connection);
+			connection = null;
+
+			throw new SenderException(t);
 		}
-	}	
+
+		//When we use pooling connections we need to ask for a new connection every time we want to use it
+		if (isConnectionsArePooled()) {
+			close();
+		}
+	}
 
 	@Override
 	public void close() {

@@ -52,7 +52,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -133,16 +132,15 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean lockRows=false;
 	private int lockWait=-1;
 
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+
 		String dir=getBlobBase64Direction();
-			if (StringUtils.isNotEmpty(dir) && !dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
-				throw new ConfigurationException(getLogPrefix()+"illegal value for direction ["+dir+"], must be 'encode' or 'decode' or empty");
-			}
-		
+		if (StringUtils.isNotEmpty(dir) && !dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
+			throw new ConfigurationException(getLogPrefix()+"illegal value for direction ["+dir+"], must be 'encode' or 'decode' or empty");
+		}
+
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
 			List<String> tempList = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
@@ -156,7 +154,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		}
 	}
-	
 
 	/**
 	 * Obtain a query to be executed.
@@ -229,7 +226,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		return queryContext;
 	}
-	
+
 	@Override
 	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		QueryContext queryContext;
@@ -310,7 +307,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	
 	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) throws SenderException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
@@ -382,7 +378,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null);
 	}
-	
+
 	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException, JMSException {
 		String result=null;
 		if (isScalar()) {
@@ -466,7 +462,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		OutputStream dbmsOutputStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobUpdateHandle, rs, blobColumn, compressBlob);
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, statement.getConnection(), rs, result);
 	}
-	
+
 	protected String executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
 		BlobOutputStream blobOutputStream=null;
 		if (message!=null) {
@@ -503,7 +499,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		return blobOutputStream==null ? null : blobOutputStream.getWarnings().toXML();
 	}
-	
+
 	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException, JdbcException {
 		log.debug(getLogPrefix() + "executing an update CLOB command");
 		ResultSet rs = statement.executeQuery();
@@ -562,7 +558,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return false;
 	}
 
-	
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		if (!canProvideOutputStream()) {
@@ -603,12 +598,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-
-
 	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
 		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
 	}
-	
+
 	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
 		ResultSet resultset=null;
 		try {
@@ -642,7 +635,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		}
 	}
-	
+
 	protected String executePackageQuery(Connection connection, PreparedStatement statement, String query) throws SenderException, JdbcException, IOException, JMSException {
 		Object[] paramArray = new Object[10];
 		String callMessage = fillParamArray(paramArray, query);
@@ -898,7 +891,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return packageContent;
 		}
 
-	
 	/**
 	 * Controls wheter output is expected from the query. 
 	 * Possible values: 
