@@ -904,8 +904,6 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			datasource:"",
-			name:"",
-			version:"",
 			encoding:"",
 			multiple_configs:false,
 			activate_config:true,
@@ -918,18 +916,6 @@ angular.module('iaf.beheerconsole')
 			$scope.file = null;
 			return;
 		}
-		var name = files[0].name.replace(/^.*[\\\/]/, '');
-		var i = name.lastIndexOf(".");
-		if(i > -1)
-			name = name.substring(0, i);
-
-		var nameL = name.split("-"); //Explode the name "Test_Configuration-001-SNAPSHOT_20171122-1414.jar"
-		var splitOn = nameL.length -3; //(4) ["Test_Configuration", "001", "SNAPSHOT_20171122", "1414"]
-		if((nameL[nameL.length -2]).indexOf("SNAPSHOT")) {
-			splitOn +=1;
-		}
-		$scope.form.name = nameL.splice(0, splitOn).join("-"); //split nameL on index SPLITON and join the values with "-"
-		$scope.form.version = nameL.join("-"); //Join the remaining array with "-"
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 
@@ -942,8 +928,6 @@ angular.module('iaf.beheerconsole')
 		else 
 			fd.append("datasource", $scope.datasources[0]);
 
-		fd.append("name", $scope.form.name);
-		fd.append("version", $scope.form.version);
 		fd.append("encoding", $scope.form.encoding);
 		fd.append("multiple_configs", $scope.form.multiple_configs);
 		fd.append("activate_config", $scope.form.activate_config);
@@ -955,8 +939,6 @@ angular.module('iaf.beheerconsole')
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
 					datasource: $scope.datasources[0],
-					name:"",
-					version:"",
 					encoding:"",
 					multiple_configs:false,
 					activate_config:true,

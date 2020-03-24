@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -141,21 +142,31 @@ public class ConfigurationUtils {
 		return configurationFile;
 	}
 
+	/**
+	 * Get the version (configuration.version + configuration.timestmap) 
+	 * from the configuration's AppConstants
+	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
-		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
+		return getConfigurationVersion(AppConstants.getInstance(classLoader));
 	}
 
+	private static String getConfigurationVersion(Properties properties) {
+		return getVersion(properties, "configuration.version", "configuration.timestamp");
+	}
+
+	/**
+	 * Get the application version (instance.version + instance.timestamp)
+	 */
 	public static String getApplicationVersion() {
-		return getVersion(ConfigurationUtils.class.getClassLoader(), "instance.version", "instance.timestamp");
+		return getVersion(AppConstants.getInstance(), "instance.version", "instance.timestamp");
 	}
 
-	private static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
-		AppConstants constants = AppConstants.getInstance(classLoader);
+	private static String getVersion(Properties properties, String versionKey, String timestampKey) {
 		String version = null;
-		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
-			version = constants.getProperty(versionKey);
-			if (StringUtils.isNotEmpty(constants.getProperty(timestampKey))) {
-				version = version + "_" + constants.getProperty(timestampKey);
+		if (StringUtils.isNotEmpty(properties.getProperty(versionKey))) {
+			version = properties.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(properties.getProperty(timestampKey))) {
+				version = version + "_" + properties.getProperty(timestampKey);
 			}
 		}
 		return version;
@@ -232,6 +243,104 @@ public class ConfigurationUtils {
 		}
 	}
 
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		ConfigurationValidator configDefails = new ConfigurationValidator(file);
+		return addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDefails.getName(), configDefails.getVersion(), fileName, configDefails.getJar(), ruser);
+	}
+
+	/**
+	 * Validates if the buildinfo is present, and if the name and version properties are set
+	 */
+	public static class ConfigurationValidator {
+		private String name = null;
+		private String version = null;
+		private byte[] jar = null;
+		private String buildInfoFilename = null;
+
+		public ConfigurationValidator(InputStream stream) throws ConfigurationException {
+			String buildInfoFilename = "BuildInfo";
+			if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
+				buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
+			}
+			this.buildInfoFilename = buildInfoFilename + ".properties";
+
+			try {
+				jar = Misc.streamToBytes(stream);
+
+				read();
+				validate();
+			} catch(IOException e) {
+				throw new ConfigurationException("unable to read jarfile", e);
+			}
+		}
+
+		private void read() throws IOException, ConfigurationException {
+			boolean isBuildInfoPresent = false;
+			try (JarInputStream zipInputStream = new JarInputStream(getJar())) {
+				ZipEntry zipEntry;
+				while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
+					if (!zipEntry.isDirectory()) {
+						String entryName = zipEntry.getName();
+						String fileName = FilenameUtils.getName(entryName);
+
+						if(buildInfoFilename.equals(fileName)) {
+							name = FilenameUtils.getPathNoEndSeparator(entryName);
+							Properties props = new Properties();
+							props.load(zipInputStream);
+							version = getConfigurationVersion(props);
+
+							isBuildInfoPresent = true;
+							break;
+						}
+					}
+				}
+			}
+			if(!isBuildInfoPresent) {
+				throw new ConfigurationException("no ["+buildInfoFilename+"] persent in configuration");
+			}
+		}
+
+		private void validate() throws ConfigurationException {
+			if(StringUtils.isEmpty(name))
+				throw new ConfigurationException("unknown configuration name");
+			if(StringUtils.isEmpty(version))
+				throw new ConfigurationException("unknown configuration version");
+		}
+
+		public InputStream getJar() {
+			return new ByteArrayInputStream(jar);
+		}
+		public String getName() {
+			return name;
+		}
+		public String getVersion() {
+			return version;
+		}
+	}
+
+	public static String processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+		String result = "";
+		if (file.available() > 0) {
+			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
+				int counter = 1;
+				ZipEntry zipEntry;
+				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+					String entryName = zipEntry.getName();
+
+					if (StringUtils.isNotEmpty(result)) {
+						result += "\n";
+					}
+
+					result += entryName + ":" + 
+					ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, zipInputStream, ruser);
+	
+					counter++;
+				}
+			}
+		}
+		return result;
+	}
+
 	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		if (StringUtils.isEmpty(datasource)) {
 			String workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -244,7 +353,7 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(datasource);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -515,44 +624,15 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static String[] retrieveBuildInfo(InputStream inputStream)
-			throws IOException {
-		ZipInputStream zipInputStream = new ZipInputStream(
-				new BufferedInputStream(inputStream));
-		ZipEntry zipEntry;
+	@Deprecated
+	public static String[] retrieveBuildInfo(InputStream inputStream) throws IOException {
 		String name = null;
 		String version = null;
-		boolean buildInfoFound = false;
-		while ((zipEntry = zipInputStream.getNextEntry()) != null
-				&& !buildInfoFound) {
-			if (!zipEntry.isDirectory()) {
-				String entryName = zipEntry.getName();
-				String entryNameMinusPath = FilenameUtils.getName(entryName);
-
-				String buildInfoFilename = "BuildInfo";
-				if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX))
-					buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
-
-				if((buildInfoFilename+".properties").equals(entryNameMinusPath)) {
-					name = FilenameUtils.getPathNoEndSeparator(entryName);
-					byte[] b = new byte[4096];
-					int rb = 0;
-					int direct;
-					while ((direct = zipInputStream.read(b, 0,
-							b.length)) >= 0) {
-						rb = rb + direct;
-					}
-					String buildInfoContent = new String(b, 0, rb);
-					Properties props = new Properties();
-					props.load(new StringReader(buildInfoContent));
-					version = props.getProperty("configuration.version") + "_"
-							+ props.getProperty("configuration.timestamp");
-					buildInfoFound = true;
-				}
-			}
-			zipInputStream.closeEntry();
-		}
-		zipInputStream.close();
+		try {
+			ConfigurationValidator configDefails = new ConfigurationValidator(inputStream);
+			name = configDefails.getName();
+			version = configDefails.getVersion();
+		} catch (ConfigurationException e) { } //Do nothing
 		return new String[] { name, version };
 	}
 }
