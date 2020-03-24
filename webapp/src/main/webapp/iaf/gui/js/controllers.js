@@ -889,7 +889,6 @@ angular.module('iaf.beheerconsole')
 		fd.append("file", $scope.file, $scope.file.name);
 
 		Api.Post("configurations", fd, { 'Content-Type': undefined }, function(data) {
-			console.log(data);
 			$scope.error = "";
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
