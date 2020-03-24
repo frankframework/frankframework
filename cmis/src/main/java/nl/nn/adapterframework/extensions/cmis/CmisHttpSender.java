@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 public class CmisHttpSender extends HttpSenderBase {
 
@@ -175,7 +176,8 @@ public class CmisHttpSender extends HttpSenderBase {
 		pls.put("headers", headers);
 
 		try {
-			sendMessage(null, pls);
+			// Message is unused, we use 'Output writer' instead
+			sendMessage(new Message(""), pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {
