@@ -76,6 +76,6 @@ public class MatchUtils {
 		String testFile = TestFileUtils.getTestFile(file1);
 		assertNotNull("testFile ["+file1+"] is null",testFile);
 
-		assertEquals(testFile.trim(), file2.trim());
+		TestAssertions.assertEqualsIgnoreWhitespaces(testFile.trim(), file2.trim());
 	}
 }

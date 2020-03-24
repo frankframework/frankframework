@@ -6,7 +6,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 

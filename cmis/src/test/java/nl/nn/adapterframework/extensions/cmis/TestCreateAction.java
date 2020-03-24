@@ -75,7 +75,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 
 		sender.setUrl("http://dummy.url");
 		sender.setRepository("dummyRepository");
-		sender.setUserName("test");
+		sender.setUsername("test");
 		sender.setPassword("test");
 		sender.setKeepSession(false);
 
