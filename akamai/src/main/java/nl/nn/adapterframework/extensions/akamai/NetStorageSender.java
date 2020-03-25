@@ -78,6 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
+	private String URL_PARAM_KEY = "urlParameter";
 
 	private String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
@@ -96,9 +97,11 @@ public class NetStorageSender extends HttpSenderBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		//The HttpSenderBase dictates that you must use a Parameter with 'getUrlParam()' as name to use a dynamic endpoint.
+		//In order to not force everyone to use the URL parameter but instead the input of the sender as 'dynamic' path, this exists.
 		Parameter urlParameter = new Parameter();
 		urlParameter.setName(getUrlParam());
-		urlParameter.setSessionKey("urlParam");
+		urlParameter.setSessionKey(URL_PARAM_KEY);
 		addParameter(urlParameter);
 
 		super.configure();
@@ -164,7 +167,9 @@ public class NetStorageSender extends HttpSenderBase {
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		session.put("urlParam", path);
+		//Store the input in the IPipeLineSession, so it can be resolved as ParameterValue.
+		//See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
+		session.put(URL_PARAM_KEY, path);
 
 		//We don't need to send any message to the HttpSenderBase
 		return super.sendMessage(new Message(""), session);
