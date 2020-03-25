@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
-	<xsl:param name="environment"/>
 	<xsl:param name="mode"/>
 	<xsl:param name="cmhVersion"/>
 	<xsl:param name="namespace"/>
@@ -11,6 +10,7 @@
 	<xsl:param name="errorDetailText"/>
 	<xsl:param name="errorRootTag"/>
 	<xsl:param name="originalMessage"/>
+	<xsl:param name="addErrorsFromInputMessage">false</xsl:param>
 	<xsl:param name="serviceName"/>
 	<xsl:param name="serviceContext"/>
 	<xsl:param name="operationName"/>
@@ -22,9 +22,14 @@
 		 - the complete input message is copied
 		 - a result tag is added as last child of the root tag if it doesn't exist and $paradigm equals 'Response'
 		 - if the result tag exists and $fixResultNamespace equals true, the namespace of the result tag is changed to $namespace
-		if $errorCode is not empty then
+		else if $errorRootTag is empty (this implies that the input message is an error message) then
 		 - the root tag of the input message is copied
 		 - a result tag is wrapped in this copied root tag
+		 - if the root of the input message equals 'errorMessage', this error is copied with Detail/Code=ERROR_1
+		 - if the root of the input message equals 'reasons', all errors are copied with Detail/Code=ERROR_# (# starting with 1 and increment by 1 for each error). Also $originalMessage will be copied as error with Detail/Code=ORIGINAL_MESSAGE
+		else then
+		 - $errorRootTag is copied as root tag
+		 - a result tag is wrapped in this root tag
 	-->
 	<xsl:variable name="rootTag" select="local-name(*)"/>
 	<xsl:variable name="ns">
@@ -151,8 +156,7 @@
 								</xsl:element>
 							</xsl:element>
 							<xsl:choose>
-								<!-- from a security point of view, error details are not returned in the ACC and PRD environment -->
-								<xsl:when test="string-length($errorRootTag)&gt;0 and $rootTag='errorMessage' and not($environment='ACC' or $environment='PRD')">
+								<xsl:when test="$addErrorsFromInputMessage='true' and string-length($errorRootTag)&gt;0 and $rootTag='errorMessage'">
 									<xsl:element name="DetailList" namespace="{$ns}">
 										<xsl:element name="Detail" namespace="{$ns}">
 											<xsl:element name="Code" namespace="{$ns}">
@@ -164,7 +168,7 @@
 										</xsl:element>
 									</xsl:element>
 								</xsl:when>
-								<xsl:when test="string-length($errorRootTag)&gt;0 and $rootTag='reasons' and not($environment='ACC' or $environment='PRD')">
+								<xsl:when test="$addErrorsFromInputMessage='true' and string-length($errorRootTag)&gt;0 and $rootTag='reasons'">
 									<xsl:element name="DetailList" namespace="{$ns}">
 										<xsl:if test="string-length($originalMessage)&gt;0">
 											<xsl:element name="Detail" namespace="{$ns}">
