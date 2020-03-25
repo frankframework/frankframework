@@ -44,8 +44,6 @@ public class AttributeCheckingRule extends Rule {
 	 * Returns the name of the object. In case a Spring proxy is being used, 
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
-	 * @param o
-	 * @return
 	 */
 	private String getObjectName(Object o) {
 		String result = ClassUtils.getUserClass(o).getSimpleName();
@@ -87,8 +85,9 @@ public class AttributeCheckingRule extends Rule {
 							msg += " is deprecated";
 						}
 
-						if(StringUtils.isNotEmpty(warning.value()))
+						if(StringUtils.isNotEmpty(warning.value())) {
 							msg += ": " + warning.value();
+						}
 						configWarnings.add(log, msg);
 					}
 				}

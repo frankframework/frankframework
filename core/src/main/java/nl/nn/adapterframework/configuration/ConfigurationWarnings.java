@@ -39,8 +39,8 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	
 	public static void add(INamedObject object, Logger log, String message) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = (object==null?"":ClassUtils.nameOf(object) +"["+object.getName()+"]")+": "+message;
-		configWarnings.add(log, msg);		
+		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"]")+": "+message;
+		configWarnings.add(log, msg);
 	}
 	
 	public static void add(Adapter adapter, Logger log, String message) {

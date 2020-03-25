@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -230,10 +230,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			log.warn("setRecordIdentifyingFields(): value ["+fieldNrs+"] did result in an empty list of tokens");
 		}
 	}
+
+	@Deprecated
+	@ConfigurationWarning("The attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields'")
 	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7";
-		configWarnings.add(log, msg);
 		setRecordIdentifyingFields(fieldNrs);
 	}
 
@@ -269,18 +269,6 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			String token = st.nextToken().trim();
 			addInputField(Integer.parseInt(token));
 		}
-	}
-
-
-	/**
-	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
-	 */
-	@Deprecated
-	public void setInputSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'";
-		configWarnings.add(log, msg);
-		setInputSeparator(string);
 	}
 
 	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", ""})

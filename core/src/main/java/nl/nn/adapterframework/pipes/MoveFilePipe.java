@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -39,6 +40,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @deprecated Please use LocalFileSystemPipe with action="move"
  */
 @Deprecated
+@ConfigurationWarning("Please use LocalFileSystemPipe with action=\"move\"")
 public class MoveFilePipe extends FixedForwardPipe {
 
 	private String directory;

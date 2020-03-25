@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -24,7 +25,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(METHOD)
+@Target({METHOD, TYPE})
 @Inherited
 public @interface ConfigurationWarning {
 	String value() default "";
