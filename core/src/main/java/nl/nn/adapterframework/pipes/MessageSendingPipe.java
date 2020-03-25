@@ -530,6 +530,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return wrapResult;
 			} else {
 				input = Message.asMessage(wrapResult.getResult());
+				// TODO must preserve input here, if result can be an InputStream
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
@@ -688,7 +689,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform(input,null);
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, input);
 
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;

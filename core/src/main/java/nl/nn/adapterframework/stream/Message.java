@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URL;
 
@@ -36,8 +39,11 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message {
-	protected Logger log = LogUtil.getLogger(this);
+public class Message implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 
@@ -101,6 +107,15 @@ public class Message {
 		return request;
 	}
 
+	public boolean isBinary() {
+		if (request == null) {
+			return false;
+		}
+		if (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[]) {
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -364,4 +379,17 @@ public class Message {
 		return Message.asMessage(object).asByteArray(defaultCharset);
 	}
 	
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		if (isBinary()) {
+			stream.write(asByteArray());
+		} else {
+			stream.writeChars(asString());
+		}
+	}
+
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		log = LogUtil.getLogger(this);
+		request = stream.readObject();
+	}
+
 }
