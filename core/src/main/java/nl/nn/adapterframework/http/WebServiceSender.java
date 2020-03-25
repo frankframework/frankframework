@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.net.URI;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -29,7 +30,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Sender that sends a message via a WebService.
@@ -99,7 +99,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
