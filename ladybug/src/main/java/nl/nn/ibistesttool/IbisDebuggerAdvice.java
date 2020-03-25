@@ -61,6 +61,12 @@ import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
+	// Contract for testtool state:
+	// - appconstants testtool.enabled stores global state
+	// - when the state changes:
+	//   appconstants testtool.enabled must be updated
+	//   a DebuggerStatusChangedEvent must be fired to notify others
+	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
 	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
 	

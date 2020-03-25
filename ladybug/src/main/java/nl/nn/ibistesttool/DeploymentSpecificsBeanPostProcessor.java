@@ -39,7 +39,15 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
-			TestTool testTool = (TestTool)bean;
+			//TestTool testTool = (TestTool)bean;
+			
+			// Contract for testtool state:
+			// - appconstants testtool.enabled stores global state
+			// - when the state changes:
+			//   appconstants testtool.enabled must be updated
+			//   a DebuggerStatusChangedEvent must be fired to notify others
+			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+			
 			boolean testToolEnabled=true;
 			AppConstants appConstants = AppConstants.getInstance();
 			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
