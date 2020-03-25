@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private String inputSeparator;
 	private boolean trim=false;
 	
-	private List inputFields=new LinkedList(); 
-	private List recordIdentifyingFields=new LinkedList();
+	private List<InputField> inputFields=new LinkedList<>(); 
+	private List<Integer> recordIdentifyingFields=new LinkedList<>();
 	
 	protected ParameterList paramList = null;
 
@@ -95,19 +95,19 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return parseUsingSeparator(record);
 		}
 		else {
-			List result = new ArrayList();
+			List<String> result = new ArrayList<>();
 			result.add(record);
 			return result;
 		}
 	}
 	
-	private List parseUsingInputFields(String record) {
-		List result = new ArrayList();
+	private List<String> parseUsingInputFields(String record) {
+		List<String> result = new ArrayList<>();
 
 		int recordLength = record.length(); 
 		int curPos = 0;
-		for (Iterator fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
-			InputField field = (InputField) fieldIt.next();
+		for (Iterator<InputField> fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
+			InputField field = fieldIt.next();
 			int endPos = curPos + field.length; 
 			
 			String item;
@@ -132,8 +132,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 
-	private List parseUsingSeparator(String record) {
-		List result = new ArrayList();
+	private List<String> parseUsingSeparator(String record) {
+		List<String> result = new ArrayList<>();
 		
 		int endNdx = -1;
 		do {
@@ -161,8 +161,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public String getRecordType(List<String> record) {
 		String result=null;
 		
-		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
-			int i = ((Integer)it.next()).intValue();
+		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = (it.next()).intValue();
 			Object field=record.get(i-1);
 			String fieldValue=field==null?"":field.toString();
 			if (result==null) {
@@ -189,8 +189,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			log.debug("isNewRecordType(): no previous record, so returning true");
 			return true;
 		}
-		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
-			int i = ((Integer)it.next()).intValue();
+		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = (it.next()).intValue();
 			Object prevField=prevRecord.get(i-1);
 			Object curField=curRecord.get(i-1);
 			if (! prevField.equals(curField)) {
@@ -213,8 +213,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	/*
 	 * Returns a List, and therefore cannot be called 'getRecordIdentifyingFields', 
 	 * because then setRecordIdentifyingFields is not found as a setter.
-	 */  
-	public List getRecordIdentifyingFieldList() {
+	 */
+	public List<Integer> getRecordIdentifyingFieldList() {
 		return recordIdentifyingFields;
 	}
 
