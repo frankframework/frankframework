@@ -149,7 +149,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
-	private ICacheAdapter cache;
+	private ICacheAdapter<String,String> cache;
 
 
 	/**

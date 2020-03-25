@@ -58,9 +58,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getHashSessionKey())) {
 			if (findForward(FAILURE_FORWARD_NAME) == null) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log, getLogPrefix(null)
-						+ "has a hashSessionKey attribute but forward failure is not configured");
+				ConfigurationWarnings.add(this, log, "has hashSessionKey attribute but forward failure is not configured");
 			}
 		}
 	}

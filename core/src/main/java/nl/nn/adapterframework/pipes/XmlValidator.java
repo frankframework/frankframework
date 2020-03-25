@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
@@ -173,9 +174,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			throw e;
 		}
 		if (getRoot() == null) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix(null) + "Root not specified";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "root not specified");
 		}
 	}
 
@@ -419,10 +418,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
 	 */
+	@Deprecated
+	@ConfigurationWarning("please use 'schemaSessionKey' instead.")
 	public void setSchemaSession(String schemaSessionKey) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
-		configWarnings.add(log, msg);
 		setSchemaSessionKey(schemaSessionKey);
 	}
 
@@ -780,10 +778,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					}
 				}
 				if (!found) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix(null) + "Element '" + validElement +
-					"' not in list of available root elements " + allRootTags;
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "Element '"+validElement+"' not in list of available root elements "+allRootTags);
 				}
 			}
 		}

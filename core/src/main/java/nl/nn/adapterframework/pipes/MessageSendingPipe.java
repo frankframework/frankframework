@@ -338,20 +338,16 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			if (getMaxRetries()>0) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
-					String msg = "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit");
 					setRetryMinInterval(MIN_RETRY_INTERVAL);
 				}
 				if (getRetryMaxInterval() > MAX_RETRY_INTERVAL) {
-					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be less than or equal to ["+MAX_RETRY_INTERVAL+"], assuming the upper limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMaxInterval ["+getRetryMaxInterval()+"] should be less than or equal to ["+MAX_RETRY_INTERVAL+"], assuming the upper limit");
 					setRetryMaxInterval(MAX_RETRY_INTERVAL);
 				}
 				if (getRetryMaxInterval() < getRetryMinInterval()) {
-					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be greater than or equal to ["+getRetryMinInterval()+"], assuming the lower limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMaxInterval ["+getRetryMaxInterval()+"] should be greater than or equal to ["+getRetryMinInterval()+"], assuming the lower limit");
 					setRetryMaxInterval(getRetryMinInterval());
 				}
 			}

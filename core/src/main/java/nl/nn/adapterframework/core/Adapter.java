@@ -425,7 +425,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter cache=pipeline.getCache();
+			ICacheAdapter<String,String> cache=pipeline.getCache();
 			if (cache!=null && cache instanceof HasStatistics) {
 				((HasStatistics)cache).iterateOverStatistics(hski, recsData, action);
 			}
@@ -505,7 +505,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class listenerClass) {
+	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
