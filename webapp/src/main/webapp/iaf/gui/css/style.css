@@ -3651,8 +3651,9 @@ body.body-small .footer.fixed {
   line-height: 1.42857;
   padding: 5px;
   vertical-align: top;
-  min-width: 75px;
+  min-width: 30px;
 }
+destroy-method
 .table > thead > tr > th > input {
   font-weight: 400;
   font-size: 14px;
@@ -3844,6 +3845,8 @@ code {
   margin-bottom: 0;
   padding: 14px 15px 7px;
   min-height: 48px;
+}
+.disableUserSelect {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select:none;
