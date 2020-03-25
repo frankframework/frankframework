@@ -34,6 +34,7 @@ import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
@@ -145,14 +146,38 @@ public class XmlTypeToJsonSchemaConverter  {
 			return builder.build();
 		} else {
 			XSSimpleTypeDefinition simpleTypeDefinition = (XSSimpleTypeDefinition)typeDefinition;
-			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");
+			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");;
+			if (DEBUG) log.debug("simpleTypeDefinition.getBuiltInKind ["+simpleTypeDefinition.getBuiltInKind()+"]");
 			if (DEBUG) log.debug(ToStringBuilder.reflectionToString(typeDefinition,ToStringStyle.MULTI_LINE_STYLE));
+
  			JsonObjectBuilder builder = Json.createObjectBuilder();
-			if (simpleTypeDefinition.getNumeric()) {
-				builder.add("type", "number");
-			} else if (simpleTypeDefinition.getBuiltInKind() == XSConstants.BOOLEAN_DT) {
+			short builtInKind = simpleTypeDefinition.getBuiltInKind();
+			String dataType = getJsonDataType(builtInKind);
+			
+			if (dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("number")) {
+				builder.add("type", dataType.toLowerCase());
+
+				applyFacet(simpleTypeDefinition, builder, "maximum", XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "minimum", XSSimpleTypeDefinition.FACET_MININCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "exclusiveMaximum", XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "exclusiveMinimum", XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
+			} else if (dataType.equalsIgnoreCase("boolean")) {
 				builder.add("type", "boolean");
+			} else if (dataType.equalsIgnoreCase("string")) {	
+				builder.add("type", "string");
+			
+				applyFacet(simpleTypeDefinition, builder, "maxLength", XSSimpleTypeDefinition.FACET_MAXLENGTH);
+				applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
+				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
+			} else if (dataType.equalsIgnoreCase("date")) {		
+				builder.add("type", "date");
+
+				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			}
+			
 //			attributeDecl.getTypeDefinition();
 //			String type;
 //			switch(attributeDecl.getType()) {
@@ -338,6 +363,44 @@ public class XmlTypeToJsonSchemaConverter  {
 		
 		typeBuilder.add("anyOf", arrayBuilder.build());
 		return typeBuilder.build();
+	}
+
+	private void applyFacet(XSSimpleTypeDefinition simpleTypeDefinition, JsonObjectBuilder builder, String key, short facet){
+		if(simpleTypeDefinition.getFacet(facet) != null){
+			builder.add(key, simpleTypeDefinition.getLexicalFacetValue(facet));
+		}
+	}
+
+	private String getJsonDataType(short builtInKind){
+		String type;
+		switch(builtInKind) {
+			case XSConstants.BOOLEAN_DT:
+				type="boolean";
+				break;
+			case XSConstants.LONG_DT:
+			case XSConstants.SHORT_DT:
+			case XSConstants.INT_DT:
+			case XSConstants.INTEGER_DT:
+			case XSConstants.NEGATIVEINTEGER_DT:
+			case XSConstants.NONNEGATIVEINTEGER_DT:
+			case XSConstants.NONPOSITIVEINTEGER_DT:
+			case XSConstants.POSITIVEINTEGER_DT:
+				type="integer";
+				break;
+			case XSConstants.DECIMAL_DT:
+			case XSConstants.FLOAT_DT:
+			case XSConstants.DOUBLE_DT:
+				type="number";
+				break;
+			case XSConstants.DATE_DT:
+			case XSConstants.DATETIME_DT:
+				type="date";
+				break;
+			default:
+				type="string";
+				break;
+		}
+		return type;
 	}
 
 }

@@ -1,1 +1,1 @@
-"#" : {"oneOf":[{"type":"object","additionalProperties":false,"properties":{"order":{},"customer":{},"vendor":{}}},{"type":"object","additionalProperties":false,"properties":{"invoice":{},"vendor":{},"customer":{}}}]}
+"#" : {"oneOf":[{"type":"object","additionalProperties":false,"properties":{"order":{"type":"string"},"customer":{"type":"string"},"vendor":{"type":"string"}}},{"type":"object","additionalProperties":false,"properties":{"invoice":{"type":"string"},"vendor":{"type":"string"},"customer":{"type":"string"}}}]}
