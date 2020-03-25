@@ -1,1 +1,1 @@
-"#" : {"arrayElement":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":false,"properties":{"fielda":{},"fieldb":{},"fieldc":{}}},{"type":"null"}]}}}
+"#" : {"arrayElement":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":false,"properties":{"fielda":{"type":"string"},"fieldb":{"type":"string"},"fieldc":{"type":"string"}}},{"type":"null"}]}}}

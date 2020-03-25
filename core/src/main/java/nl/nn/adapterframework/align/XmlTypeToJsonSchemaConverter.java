@@ -171,8 +171,8 @@ public class XmlTypeToJsonSchemaConverter  {
 				applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
 				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
-			} else if (dataType.equalsIgnoreCase("date")) {		
-				builder.add("type", "date");
+			} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
+				builder.add("type", dataType);
 
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
 				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
@@ -367,7 +367,26 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	private void applyFacet(XSSimpleTypeDefinition simpleTypeDefinition, JsonObjectBuilder builder, String key, short facet){
 		if(simpleTypeDefinition.getFacet(facet) != null){
-			builder.add(key, simpleTypeDefinition.getLexicalFacetValue(facet));
+			if(simpleTypeDefinition.getLexicalFacetValue(facet) != null){
+				switch(facet){
+					case XSSimpleTypeDefinition.FACET_MAXINCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MININCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MINEXCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MAXLENGTH:
+					case XSSimpleTypeDefinition.FACET_MINLENGTH:
+						if(simpleTypeDefinition.getBuiltInKind() == XSConstants.LONG_DT){
+							builder.add(key, Long.parseLong(simpleTypeDefinition.getLexicalFacetValue(facet)));
+						}
+						else {
+							builder.add(key, Integer.parseInt(simpleTypeDefinition.getLexicalFacetValue(facet)));
+						}
+						break;
+					default:
+						builder.add(key, simpleTypeDefinition.getLexicalFacetValue(facet));
+						break;
+				}
+			}
 		}
 	}
 
@@ -393,8 +412,10 @@ public class XmlTypeToJsonSchemaConverter  {
 				type="number";
 				break;
 			case XSConstants.DATE_DT:
-			case XSConstants.DATETIME_DT:
 				type="date";
+				break;
+			case XSConstants.DATETIME_DT:
+				type="date-time";
 				break;
 			default:
 				type="string";
