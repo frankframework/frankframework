@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import javax.json.Json;
@@ -33,8 +34,8 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
@@ -146,7 +147,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			return builder.build();
 		} else {
 			XSSimpleTypeDefinition simpleTypeDefinition = (XSSimpleTypeDefinition)typeDefinition;
-			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");;
+			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");
 			if (DEBUG) log.debug("simpleTypeDefinition.getBuiltInKind ["+simpleTypeDefinition.getBuiltInKind()+"]");
 			if (DEBUG) log.debug(ToStringBuilder.reflectionToString(typeDefinition,ToStringStyle.MULTI_LINE_STYLE));
 
@@ -161,7 +162,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				applyFacet(simpleTypeDefinition, builder, "minimum", XSSimpleTypeDefinition.FACET_MININCLUSIVE);
 				applyFacet(simpleTypeDefinition, builder, "exclusiveMaximum", XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
 				applyFacet(simpleTypeDefinition, builder, "exclusiveMinimum", XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
-				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			} else if (dataType.equalsIgnoreCase("boolean")) {
 				builder.add("type", "boolean");
 			} else if (dataType.equalsIgnoreCase("string")) {	
@@ -170,14 +171,14 @@ public class XmlTypeToJsonSchemaConverter  {
 				applyFacet(simpleTypeDefinition, builder, "maxLength", XSSimpleTypeDefinition.FACET_MAXLENGTH);
 				applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
-				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
 				builder.add("type", "string");
 				
 				builder.add("format", dataType);
 
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
-				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			}
 			
 //			attributeDecl.getTypeDefinition();
@@ -369,7 +370,8 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	private void applyFacet(XSSimpleTypeDefinition simpleTypeDefinition, JsonObjectBuilder builder, String key, short facet){
 		if(simpleTypeDefinition.getFacet(facet) != null){
-			if(simpleTypeDefinition.getLexicalFacetValue(facet) != null){
+			String lexicalFacetValue = simpleTypeDefinition.getLexicalFacetValue(facet);
+			if(lexicalFacetValue != null){
 				switch(facet){
 					case XSSimpleTypeDefinition.FACET_MAXINCLUSIVE:
 					case XSSimpleTypeDefinition.FACET_MININCLUSIVE:
@@ -379,31 +381,79 @@ public class XmlTypeToJsonSchemaConverter  {
 					case XSSimpleTypeDefinition.FACET_MINLENGTH:
 						/*
 							Not sure about this.. 
-							
+	
 							simpleTypeDefinition.getLexicalFacetValue(facet) returns a numeric value as string
 							if value > MAX_INT, Integer.parseInt(value) will throw NumberFormatException
-
+	
 							currently this exception is catched and retried as Long.ParseLong(value)
 							but what if this throws NumberFormatException?
-
+	
 							how to deal with this properly?
+							-----
+							UPDATE:
+							Tried parsing as long and logging the value when couldn't parse, appears to be a 20 digit numeric value
+							which would require to use BigInteger
+
+							What is the best method to do this? Try and catch int, long & then bigint or directly to big int?
 						*/
 						try {
-							builder.add(key, Integer.parseInt(simpleTypeDefinition.getLexicalFacetValue(facet)));
+							builder.add(key, Integer.parseInt(lexicalFacetValue));
 						} catch (NumberFormatException nfe) {
+							log.warn("Couldn't parse value ["+lexicalFacetValue+"] as Integer... retrying as Long");
+	
 							try {
-							builder.add(key, Long.parseLong(simpleTypeDefinition.getLexicalFacetValue(facet)));
+								builder.add(key, Long.parseLong(lexicalFacetValue));
 							} catch (NumberFormatException nfex) {
+								log.warn("Couldn't parse value ["+lexicalFacetValue+"] as Long... retrying as BigInteger");
 								
-						}
-						}
+								try {
+									builder.add(key, new BigInteger(lexicalFacetValue));
+								} catch (NumberFormatException nfexx) {
+									log.warn("Couldn't parse value ["+lexicalFacetValue+"] as BigInteger");
+								}
+							}
+						}	
 						break;
 					default:
-						builder.add(key, simpleTypeDefinition.getLexicalFacetValue(facet));
+						// hmm never reaches this block?
+						log.debug("Setting value ["+lexicalFacetValue+"] as String for facet ["+simpleTypeDefinition.getFacet(facet)+"]");
+						builder.add(key, lexicalFacetValue);
 						break;
+				}
+			} else if (facet == XSSimpleTypeDefinition.FACET_PATTERN || facet == XSSimpleTypeDefinition.FACET_ENUMERATION) {
+				XSObjectList multiValuedFacets = simpleTypeDefinition.getMultiValueFacets();
+
+				for (int i=0; i<multiValuedFacets.getLength(); i++) {
+					XSMultiValueFacet multiValuedFacet = (XSMultiValueFacet) multiValuedFacets.item(i);
+
+					if (DEBUG) log.debug("Inspecting single multi valued facet ["+multiValuedFacet+"] which is named ["+multiValuedFacet.getName()+"] which is of type ["+multiValuedFacet.getType()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getLexicalFacetValues() for ["+multiValuedFacet.getName()+"] which has value of ["+multiValuedFacet.getLexicalFacetValues()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getEnumerationValues() for ["+multiValuedFacet.getName()+"] which has value of ["+multiValuedFacet.getEnumerationValues()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getFacetKind() == enum for ["+multiValuedFacet.getName()+"] which has value of ["+(multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_ENUMERATION)+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getFacetKind() == pattern for ["+multiValuedFacet.getName()+"] which has value of ["+(multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_PATTERN)+"]");
+
+					if(facet == multiValuedFacet.getFacetKind()){
+						StringList lexicalFacetValues = multiValuedFacet.getLexicalFacetValues();
+						JsonArrayBuilder enumBuilder = Json.createArrayBuilder();
+
+						/* 
+							Isn't this strange?
+							This assumes that an enumeration/pattern value is always a string, 
+							
+							don't we need to try and parse?
+						*/
+
+						for (int x=0; x<lexicalFacetValues.getLength(); x++) {
+							lexicalFacetValue = lexicalFacetValues.item(x); 
+							enumBuilder.add(lexicalFacetValue);
+						}
+
+						builder.add(key, enumBuilder.build());
+					}
 				}
 			}
 		}
+		
 	}
 
 	private String getJsonDataType(short builtInKind){
