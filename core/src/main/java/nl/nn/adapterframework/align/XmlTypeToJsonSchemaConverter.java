@@ -377,11 +377,25 @@ public class XmlTypeToJsonSchemaConverter  {
 					case XSSimpleTypeDefinition.FACET_MINEXCLUSIVE:
 					case XSSimpleTypeDefinition.FACET_MAXLENGTH:
 					case XSSimpleTypeDefinition.FACET_MINLENGTH:
-						if(simpleTypeDefinition.getBuiltInKind() == XSConstants.LONG_DT){
-							builder.add(key, Long.parseLong(simpleTypeDefinition.getLexicalFacetValue(facet)));
-						}
-						else {
+						/*
+							Not sure about this.. 
+							
+							simpleTypeDefinition.getLexicalFacetValue(facet) returns a numeric value as string
+							if value > MAX_INT, Integer.parseInt(value) will throw NumberFormatException
+
+							currently this exception is catched and retried as Long.ParseLong(value)
+							but what if this throws NumberFormatException?
+
+							how to deal with this properly?
+						*/
+						try {
 							builder.add(key, Integer.parseInt(simpleTypeDefinition.getLexicalFacetValue(facet)));
+						} catch (NumberFormatException nfe) {
+							try {
+							builder.add(key, Long.parseLong(simpleTypeDefinition.getLexicalFacetValue(facet)));
+							} catch (NumberFormatException nfex) {
+								
+						}
 						}
 						break;
 					default:
