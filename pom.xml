@@ -407,6 +407,12 @@
           <url>file:target/site-deploy</url>
         </site>
       </distributionManagement>
+      <repositories>
+        <repository>
+          <id>ibissource</id>
+          <url>https://nexus.ibissource.org/content/groups/public</url>
+        </repository>
+      </repositories>
     </profile>
     <profile>
       <id>default-modules</id>

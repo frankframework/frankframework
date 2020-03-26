@@ -181,7 +181,7 @@ public abstract class AbstractXmlValidator {
 			validatorHandler.setErrorHandler(context.getErrorHandler());
 		}
 
-		InputSource is = getInputSource(input);
+		InputSource is = getInputSource(Message.asMessage(input));
 
 		return validate(is, validatorHandler, session, context, resolveExternalEntities);
 	}
@@ -238,13 +238,12 @@ public abstract class AbstractXmlValidator {
 		return sb.toString();
 	}
 
-	protected InputSource getInputSource(Object input) throws XmlValidatorException {
-		Message in = new Message(input);
+	protected InputSource getInputSource(Message input) throws XmlValidatorException {
 		final InputSource is;
 		if (isValidateFile()) {
 			String filename=null;
 			try {
-				filename = in.asString();
+				filename = input.asString();
 				is = new InputSource(StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(filename), getCharset()));
 			} catch (FileNotFoundException e) {
 				throw new XmlValidatorException("could not find file [" + filename + "]", e);
@@ -255,7 +254,7 @@ public abstract class AbstractXmlValidator {
 			}
 		} else {
 			try {
-				is = in.asInputSource();
+				is = input.asInputSource();
 			} catch (IOException e) {
 				throw new XmlValidatorException("cannot obtain InputSource", e);
 			}

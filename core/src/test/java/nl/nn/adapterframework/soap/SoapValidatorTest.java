@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 
 /**
@@ -110,7 +111,7 @@ public class SoapValidatorTest {
  
     
     
-    private String getTestXml(String testxml) throws IOException {
+    private Message getTestXml(String testxml) throws IOException {
         BufferedReader buf = new BufferedReader(new InputStreamReader(XmlValidator.class.getResourceAsStream(testxml)));
         StringBuilder string = new StringBuilder();
         String line = buf.readLine();
@@ -118,8 +119,7 @@ public class SoapValidatorTest {
             string.append(line).append("\n");
             line = buf.readLine();
         }
-        return string.toString();
-
+        return new Message(string.toString());
     }
 
 

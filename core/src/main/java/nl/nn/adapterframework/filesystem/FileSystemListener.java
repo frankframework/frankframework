@@ -296,7 +296,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	/**
-	 * @Deprecated replaced by inProcessFolder
+	 * @deprecated replaced by inProcessFolder
 	 */
 	public void setInputDirectory(String inputDirectory) {
 		ConfigurationWarnings.add(this, log, "attribute 'inputDirectory' has been replaced by 'inputFolder'");
@@ -313,7 +313,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 
 	/**
-	 * @Deprecated replaced by inProcessFolder
+	 * @deprecated replaced by inProcessFolder
 	 */
 	public void setOutputDirectory(String outputDirectory) {
 		ConfigurationWarnings.add(this, log, "attribute 'outputDirectory' has been replaced by 'inProcessFolder'");
@@ -329,7 +329,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	/**
-	 * @Deprecated replaced by processedFolder
+	 * @deprecated replaced by processedFolder
 	 */
 	public void setProcessedDirectory(String processedDirectory) {
 		ConfigurationWarnings.add(this, log, "attribute 'processedDirectory' has been replaced by 'processedFolder'");

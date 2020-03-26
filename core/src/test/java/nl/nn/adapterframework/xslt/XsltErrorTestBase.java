@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -162,8 +163,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		PipeRunResult prr=doPipe(pipe, input, session);
+		String result = Message.asString(prr.getResult());
 
-		assertResultsAreCorrect(expected, prr.getResult().toString(),session);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	

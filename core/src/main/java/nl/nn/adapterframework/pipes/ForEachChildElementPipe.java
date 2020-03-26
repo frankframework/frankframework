@@ -144,8 +144,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 
 	
 	@Override
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
-		return super.sendMessage(input, session, correlationID, sender, threadContext, null);
+	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
+		return super.sendMessage(input, session, sender, threadContext, null);
 	}
 
 	private class ItemCallbackCallingHandler extends NodeSetFilter {
@@ -297,17 +297,23 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	}
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputSource src;
 		if (isProcessFile()) {
 			try {
-				src = new InputSource(new FileInputStream((String)input));
+				String filename;
+				try {
+					filename = input.asString();
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot find filename", e);
+				}
+				src = new InputSource(new FileInputStream(filename));
 			} catch (FileNotFoundException e) {
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
 			try {
-				src = new Message(input).asInputSource();
+				src = input.asInputSource();
 			} catch (IOException e) {
 				throw new SenderException("could not get InputSource",e);
 			}

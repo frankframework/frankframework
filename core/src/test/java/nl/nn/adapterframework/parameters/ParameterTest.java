@@ -10,6 +10,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 
 public class ParameterTest {
 
@@ -115,5 +116,20 @@ public class ParameterTest {
 		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
 		p.getValue(alreadyResolvedParameters, null, session, false);
 	}
+
+	@Test
+	public void testPatternMessage() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.configure();
+		
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		Message message = new Message("fakeMessage");
+		
+		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
 
 }

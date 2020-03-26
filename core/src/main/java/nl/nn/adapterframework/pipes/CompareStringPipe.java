@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -26,10 +25,11 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -109,12 +109,11 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
@@ -126,7 +125,11 @@ public class CompareStringPipe extends AbstractPipe {
 				operand1 = (String) session.get(getSessionKey1());
 			}
 			if (operand1 == null) {
-				operand1 = (String) input;
+				try {
+					operand1 = message.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
+				}
 			}
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
@@ -135,7 +138,11 @@ public class CompareStringPipe extends AbstractPipe {
 				operand2 = (String) session.get(getSessionKey2());
 			}
 			if (operand2 == null) {
-				operand2 = (String) input;
+				try {
+					operand2 = message.asString();
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
+				}
 			}
 		}
 
@@ -188,11 +195,11 @@ public class CompareStringPipe extends AbstractPipe {
 
 		int comparison = operand1.compareTo(operand2);
 		if (comparison == 0)
-			return new PipeRunResult(findForward(EQUALSFORWARD), input);
+			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
-			return new PipeRunResult(findForward(LESSTHANFORWARD), input);
+			return new PipeRunResult(findForward(LESSTHANFORWARD), message);
 		else
-			return new PipeRunResult(findForward(GREATERTHANFORWARD), input);
+			return new PipeRunResult(findForward(GREATERTHANFORWARD), message);
 
 	}
 
@@ -242,7 +249,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
 	public void setSessionKey1(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey1 has been deprecated. Please use the parameter operand1";
@@ -253,7 +260,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
 	public void setSessionKey2(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey2 has been deprecated. Please use the parameter operand2";

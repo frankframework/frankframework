@@ -52,7 +52,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		String fixedDate = "2011-12-17 09:30:47";
 		session.put("stub4testtool.fixeddate", fixedDate);
 
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
 		SimpleDateFormat parser = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
@@ -77,7 +77,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		assertEquals(formatter.format(date), result);
 
 		pipe.setSessionKey("second");
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
 		Date first = formatter.parse(result);
@@ -97,11 +97,11 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		// because of not being singleton
 		pipe.setReturnFixedDate(true);
 
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
 		pipe.setSessionKey("second");
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
 		SimpleDateFormat formatter = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
@@ -126,7 +126,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setSessionKey("dummy");
 		pipe.setGetCurrentTimeStampInMillis(true);
 		configurePipe();
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
@@ -148,11 +148,11 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		configurePipe();
 
 		pipe.setSessionKey("first");
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
 		pipe.setSessionKey("second");
-		pipe.doPipe("dummy", session);
+		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
 		SimpleDateFormat format = new SimpleDateFormat(DateUtils.fullIsoFormat);

@@ -110,7 +110,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("encode");
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -120,7 +120,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("decode");
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
     @Test
     public void testRightSubstringsNoDirection() throws PipeRunException {
@@ -129,7 +129,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("");
 
-        assertNotNull(pipe.doPipe(input, session));
+        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
     }
 
     @Test
@@ -137,7 +137,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("encode");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -145,7 +145,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("decode");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -153,7 +153,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session));
+        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
     }
 
 

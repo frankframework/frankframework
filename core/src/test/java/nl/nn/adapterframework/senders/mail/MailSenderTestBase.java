@@ -31,8 +31,8 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class MailSenderTestBase<S extends ISenderWithParameters> extends SenderTestBase<S> {
 

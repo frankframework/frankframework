@@ -16,8 +16,6 @@
 
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.IOException;
-
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

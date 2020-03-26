@@ -35,12 +35,15 @@ import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +57,7 @@ import java.util.List;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class DefaultIbisManager implements IbisManager {
+public class DefaultIbisManager implements IbisManager, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
@@ -460,5 +463,14 @@ public class DefaultIbisManager implements IbisManager {
 	@Override
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return applicationEventPublisher;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
+		if(requiresDatabase) {
+			//Try to create a new transaction to check if there is a connection to the database
+			this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+		}
 	}
 }

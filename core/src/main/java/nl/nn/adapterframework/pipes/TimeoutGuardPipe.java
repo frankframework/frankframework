@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 import org.apache.logging.log4j.ThreadContext;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
@@ -52,18 +51,19 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 	private int timeout = 30;
 
 	public class DoPipe implements Callable<String> {
-		private Object input;
+		private Message input;
 		private IPipeLineSession session;
 		private String threadName;
 		private String threadNDC;
 
-		public DoPipe(Object input, IPipeLineSession session, String threadName, String threadNDC) {
+		public DoPipe(Message input, IPipeLineSession session, String threadName, String threadNDC) {
 			this.input = input;
 			this.session = session;
 			this.threadName = threadName;
 			this.threadNDC = threadNDC;
 		}
 
+		@Override
 		public String call() throws Exception {
 			String ctName = Thread.currentThread().getName();
 			try {
@@ -76,17 +76,14 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
 		}
 		int timeout_work;
@@ -97,7 +94,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		DoPipe doPipe = new DoPipe(input, session, Thread.currentThread().getName(), ThreadContext.peek());
+		DoPipe doPipe = new DoPipe(message, session, Thread.currentThread().getName(), ThreadContext.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future future = service.submit(doPipe);
 		String result = null;
@@ -131,8 +128,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		return input.toString();
 	}
 

@@ -15,25 +15,25 @@
 */
 package nl.nn.adapterframework.doc;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import nl.nn.adapterframework.doc.objects.*;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
+import nl.nn.adapterframework.doc.objects.IbisBean;
+import nl.nn.adapterframework.doc.objects.IbisMethod;
+import nl.nn.adapterframework.doc.objects.SpringBean;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -45,18 +45,14 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Generate documentation and XSD for code completion of beautiful Ibis configurations in Eclipse
@@ -312,13 +308,14 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String uri = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				 uri = prc.getValues(getParameterList()).getParameterValue("uri").asStringValue(null);
+				ParameterValueList pvl = parameterList.getValues(message, session);
+				uri = pvl.getParameterValue("uri").asStringValue(null);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}

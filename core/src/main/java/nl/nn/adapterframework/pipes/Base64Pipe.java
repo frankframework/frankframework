@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -94,21 +93,12 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream binaryInputStream;
-
-		if (input instanceof InputStream) {
-			binaryInputStream = (InputStream)input;
-		}
-		else if (input instanceof byte[]) {
-			binaryInputStream = new ByteArrayInputStream((byte[])input);
-		}
-		else { //Try parsing it as a String
-			try {
-				binaryInputStream = new ByteArrayInputStream(input.toString().getBytes(getCharset()));
-			} catch (UnsupportedEncodingException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot encode message using charset ["+getCharset()+"]",e);
-			}
+		try {
+			binaryInputStream = message.asInputStream(getCharset());
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		boolean direction = "encode".equals(getDirection());//TRUE encode - FALSE decode
@@ -151,6 +141,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	 * @deprecated please use outputType instead
 	 * @param b convert result to string or outputStream depending on the direction used
 	 */
+	@Deprecated
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}

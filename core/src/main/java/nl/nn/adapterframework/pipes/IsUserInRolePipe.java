@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe that checks if the calling user has a specified role. 
@@ -51,6 +54,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	private String notInRoleForwardName="notInRole";
 	protected PipeForward notInRoleForward;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
@@ -67,10 +71,16 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
 			if (StringUtils.isEmpty(getRole())) {
-				String inputString = (String) input;
+				String inputString;
+				try {
+					inputString = message.asString();
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				if (StringUtils.isEmpty(inputString)) {
 					throw new PipeRunException(this, "role cannot be empty");
 				}
@@ -80,12 +90,12 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 			}
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {
-				return new PipeRunResult(notInRoleForward, input);
+				return new PipeRunResult(notInRoleForward, message);
 			} else {
 				throw new PipeRunException(this,"",e);
 			}
 		}
-		return new PipeRunResult(getForward(),input);
+		return new PipeRunResult(getForward(),message);
 	}
 	
 	public String getRole() {

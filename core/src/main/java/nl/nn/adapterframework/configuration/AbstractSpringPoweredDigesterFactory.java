@@ -17,19 +17,17 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -135,34 +133,34 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      */
     @Override
     public Object createObject(Attributes attrs) throws Exception {
-    	Map attrMap = copyAttrsToMap(attrs);
+        Map<String, String> attrMap = copyAttrsToMap(attrs);
         return createObject(attrMap);
     }
 
-    /**
-     * Create Object from Spring factory, but using the attributes
-     * from the XML converted to a Map. This is so that sub-classes
-     * can override this method and change attributes in the map
-     * before creating the object from the Spring factory.
-     */
-    protected Object createObject(Map<String, String> attrs) throws Exception {
-        String className = attrs.get("className");
-        if (log.isDebugEnabled()) {
-            log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
-                    + "], name=[" + attrs.get("name")
-                    + "], Configured ClassName=[" + className
-                    + "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
-        }
+	/**
+	 * Create Object from Spring factory, but using the attributes
+	 * from the XML converted to a Map. This is so that sub-classes
+	 * can override this method and change attributes in the map
+	 * before creating the object from the Spring factory.
+	 */
+	protected Object createObject(Map<String, String> attrs) throws Exception {
+		String className = attrs.get("className");
+		if (log.isDebugEnabled()) {
+			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
+					+ "], name=[" + attrs.get("name")
+					+ "], Configured ClassName=[" + className
+					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
+		}
 
 		Object currObj = createBeanFromClassName(className);
 		checkAttributes(currObj, attrs);
 		return currObj;
-    }
+	}
 
 	protected void checkAttributes(Object currObj, Map<String, String> attrs) throws Exception {
 		String beanName = attrs.get("name");
-		for (Iterator it = attrs.keySet().iterator(); it.hasNext();) {
-			String attributeName = (String)it.next();
+		for (Iterator<String> it = attrs.keySet().iterator(); it.hasNext();) {
+			String attributeName = it.next();
 			String value = attrs.get(attributeName);
 			checkAttribute(currObj, beanName, attributeName, value, attrs);
 		}
@@ -262,9 +260,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             throw new IllegalStateException("No ibisContext set. Call setIbisContext first.");
         }
         String beanName;
-        Class beanClass;
+        Class<?> beanClass;
 
-        // No explicit classname given; get bean from Spring Factory
+        // No explicit className given; get bean from Spring Factory
         if (className == null) {
             if (log.isDebugEnabled()) {
                 log.debug("createBeanFromClassName(): className is null");
@@ -272,8 +270,10 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             beanName = getSuggestedBeanName();
             beanClass = null;
         } else {
-            // Get all beans matching the classname given
-            beanClass = Class.forName(className);
+            // Get all beans matching the className given
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            beanClass = Class.forName(className, true, classLoader);
+
             String[] matchingBeans = ibisContext.getBeanNamesForType(beanClass);
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
@@ -322,7 +322,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         return ibisContext.getBean(beanName, beanClass);
     }
 
-	protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
+	protected <T> T createBeanAndAutoWire(Class<T> beanClass) throws InstantiationException, IllegalAccessException {
 		if (log.isDebugEnabled()) {
 			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
 		}

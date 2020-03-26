@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden
+   Copyright 2013-2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -948,7 +947,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(String string) {
-		return Misc.toFileSize(string.getBytes().length, false, true);
+		return string==null?"null": Misc.toFileSize(string.getBytes().length, false, true);
 	}
 
 	@Override

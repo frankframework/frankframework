@@ -331,7 +331,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * 
 	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
 	 * to the {@link Hashtable}.
-	 * @Deprecated Use {@link #setProperty(String, String)} instead!
+	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */
 	@Deprecated
 	@Override

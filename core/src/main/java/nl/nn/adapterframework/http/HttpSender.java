@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,19 +31,6 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -57,7 +44,6 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
@@ -69,6 +55,20 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
@@ -185,35 +185,28 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		if(isParamsInUrl())
 			return getMethod(uri, message, parameters);
 		else
 			return getPostMethodWithParamsInBody(uri, message, parameters, session);
 	}
 
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
-
-			StringBuffer path = new StringBuffer(uri.getPath());
-
-			if (uri.getQueryParams().size() > 0) {
-				path.append("?");
-				for (Iterator<NameValuePair> it=uri.getQueryParams().iterator(); it.hasNext(); ) {
-					NameValuePair pair = it.next();
-					path.append(pair.getName()).append("=").append(pair.getValue());
-					if(it.hasNext()) path.append("&");
-				}
+			StringBuffer relativePath = new StringBuffer(uri.getRawPath());
+			if (!StringUtils.isEmpty(uri.getQuery())) {
+				relativePath.append("?"+uri.getQuery());
 				queryParametersAppended = true;
 			}
 
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet method = new HttpGet(path+(parameters==null? message:""));
+				HttpGet method = new HttpGet(relativePath+(parameters==null? message:""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
@@ -221,7 +214,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 				return method;
 			} else if (getMethodType().equals("POST")) {
-				HttpPost method = new HttpPost(path.toString());
+				HttpPost method = new HttpPost(relativePath.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
 					appendParameters(true,msg,parameters);
@@ -238,7 +231,7 @@ public class HttpSender extends HttpSenderBase {
 				return method;
 			}
 			if (getMethodType().equals("PUT")) {
-				HttpPut method = new HttpPut(path.toString());
+				HttpPut method = new HttpPut(relativePath.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
 					appendParameters(true,msg,parameters);
@@ -253,20 +246,20 @@ public class HttpSender extends HttpSenderBase {
 				return method;
 			}
 			if (getMethodType().equals("DELETE")) {
-				HttpDelete method = new HttpDelete(path.toString());
+				HttpDelete method = new HttpDelete(relativePath.toString());
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					method.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return method;
 			}
 			if (getMethodType().equals("HEAD")) {
-				HttpHead method = new HttpHead(path.toString());
+				HttpHead method = new HttpHead(relativePath.toString());
 				return method;
 			}
 
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
-				HttpReport method = new HttpReport(path.toString(), element);
+				HttpReport method = new HttpReport(relativePath.toString(), element);
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					method.setHeader("Content-Type", getFullContentType().toString());
 				}
@@ -280,45 +273,42 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	protected HttpPost getPostMethodWithParamsInBody(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
-		try {
-			HttpPost hmethod = new HttpPost(uri.build());
+	protected HttpPost getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+		HttpPost hmethod = new HttpPost(uri);
 
-			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
-				List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
+		if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
+			List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
 
-				if (StringUtils.isNotEmpty(getInputMessageParam())) {
-					requestFormElements.add(new BasicNameValuePair(getInputMessageParam(),message));
-					log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
-				}
-				if (parameters!=null) {
-					for(int i=0; i<parameters.size(); i++) {
-						ParameterValue pv = parameters.getParameterValue(i);
-						String name = pv.getDefinition().getName();
-						String value = pv.asStringValue("");
+			if (StringUtils.isNotEmpty(getInputMessageParam())) {
+				requestFormElements.add(new BasicNameValuePair(getInputMessageParam(),message));
+				log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
+			}
+			if (parameters!=null) {
+				for(int i=0; i<parameters.size(); i++) {
+					ParameterValue pv = parameters.getParameterValue(i);
+					String name = pv.getDefinition().getName();
+					String value = pv.asStringValue("");
 
-						// Skip parameters that are configured as ignored
-						if (skipParameter(name))
-							continue;
+					// Skip parameters that are configured as ignored
+					if (skipParameter(name))
+						continue;
 
-						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
-					}
-				}
-				try {
-					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
+					requestFormElements.add(new BasicNameValuePair(name,value));
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
 				}
 			}
-			else {
-				HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
-				hmethod.setEntity(requestEntity);
+			try {
+				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
+			} catch (UnsupportedEncodingException e) {
+				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 			}
-		return hmethod;
-		} catch (URISyntaxException e) {
-			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
+		else {
+			HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
+			hmethod.setEntity(requestEntity);
+		}
+
+		return hmethod;
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
@@ -490,10 +480,14 @@ public class HttpSender extends HttpSenderBase {
 					return getResponseBodyAsString(responseHandler);
 				}
 			} else {
-				String fileName = (String) session.get(getStreamResultToFileNameSessionKey());
-				File file = new File(fileName);
-				Misc.streamToFile(responseHandler.getResponse(), file);
-				return fileName;
+				try {
+					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
+					File file = new File(fileName);
+					Misc.streamToFile(responseHandler.getResponse(), file);
+					return fileName;
+				} catch (IOException e) {
+					throw new SenderException("cannot find filename to stream result to", e);
+				}
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
@@ -599,10 +593,10 @@ public class HttpSender extends HttpSenderBase {
 			response.sendRedirect(redirectLocation);
 		}
 		if (is != null) {
-			OutputStream outputStream = response.getOutputStream();
-			Misc.streamToStream(is, outputStream);
-			outputStream.close();
-			log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+			try (OutputStream outputStream = response.getOutputStream()) {
+				Misc.streamToStream(is, outputStream);
+				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ public class HashPipe extends FixedForwardPipe {
 
 	List<String> algorithms = Arrays.asList("HmacMD5", "HmacSHA1", "HmacSHA256", "HmacSHA384", "HmacSHA512");
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -58,9 +59,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
-
+	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
 		String authAlias = getAuthAlias();
 		String secret = getSecret();
 		try {

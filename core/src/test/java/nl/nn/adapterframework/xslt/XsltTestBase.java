@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -75,7 +76,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = (String)prr.getResult();
+		String result = Message.asString(prr.getResult());
 		assertResultsAreCorrect(expected,result.trim(),session);
 		
 	}
@@ -211,7 +212,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -228,7 +229,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -246,7 +247,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -264,7 +265,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -280,7 +281,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -297,7 +298,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -318,7 +319,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "<dummy name=\"input\"/>", session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 
 		assertResultsAreCorrect("b", result, session);
 	}
@@ -332,7 +333,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -347,7 +348,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -363,7 +364,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -378,7 +379,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -394,7 +395,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -411,7 +412,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -432,7 +433,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected.trim(), result.trim(), session); // trim is necessary on IBM JDK
 	}
@@ -447,7 +448,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected.replaceAll("\\s", ""), result.replaceAll("\\s", ""), session);
 	}
@@ -466,7 +467,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -484,7 +485,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}

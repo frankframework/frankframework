@@ -40,7 +40,7 @@ public class DigesterPipeTest extends PipeTestBase<DigesterPipe> {
         Object input = "dummyInput";
         pipe.setDigesterRulesFile("digester-rules.xml");
         pipe.configure();
-        pipe.doPipe(input, session);
+        doPipe(pipe, input, session);
     }
 
 }

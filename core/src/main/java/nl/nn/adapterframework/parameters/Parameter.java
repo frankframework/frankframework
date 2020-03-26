@@ -321,7 +321,7 @@ public class Parameter implements INamedObject, IWithParameters {
 						}
 						sourceString = itemsXml.toXML();
 					} else {
-						sourceString = (String) sourceObject;
+						sourceString = Message.asString(sourceObject);
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
@@ -357,7 +357,9 @@ public class Parameter implements INamedObject, IWithParameters {
 		} else {
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
-				if (result==null || (result instanceof String && ((String)result).isEmpty())) {
+				if (result==null || 
+					result instanceof String  && ((String)result).isEmpty() ||
+					result instanceof Message && ((Message)result).isEmpty()) {
 					log.warn("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
@@ -375,6 +377,9 @@ public class Parameter implements INamedObject, IWithParameters {
 					throw new ParameterException(e);
 				}
 			}
+		}
+		if (result !=null && result instanceof Message && ((Message)result).asObject() instanceof String) {
+			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) {
@@ -408,15 +413,15 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && !TYPE_NUMBER.equals(getType())) {
-				if (result.toString().length()<getMinLength()) {
-					log.debug("Padding parameter ["+getName()+"] because length ["+result.toString().length()+"] deceeds minLength ["+getMinLength()+"]" );
-					result = StringUtils.rightPad(result.toString(), getMinLength());
+				if (((String)result).length()<getMinLength()) {
+					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] deceeds minLength ["+getMinLength()+"]" );
+					result = StringUtils.rightPad(((String)result), getMinLength());
 				}
 			}
 			if (getMaxLength()>=0) {
-				if (result.toString().length()>getMaxLength()) {
-					log.debug("Trimming parameter ["+getName()+"] because length ["+result.toString().length()+"] exceeds maxLength ["+getMaxLength()+"]" );
-					result = result.toString().substring(0, getMaxLength());
+				if (((String)result).length()>getMaxLength()) {
+					log.debug("Trimming parameter ["+getName()+"] because length ["+((String)result).length()+"] exceeds maxLength ["+getMaxLength()+"]" );
+					result = ((String)result).substring(0, getMaxLength());
 				}
 			}
 			if (TYPE_NODE.equals(getType())) {
