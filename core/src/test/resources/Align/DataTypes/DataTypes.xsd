@@ -81,7 +81,7 @@
 					</xs:complexType>
 				</xs:element>
 				<xs:element name="PatternString" minOccurs="0">
-					<xs:simpleType name="AN1JN">
+					<xs:simpleType>
 						<xs:restriction base="xs:string">
 							<xs:length value="1"/>
 							<xs:pattern value="J|N"/>
