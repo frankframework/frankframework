@@ -504,6 +504,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return null;
 	}
 
+	protected void preserve(Message input, IPipeLineSession session) throws PipeRunException {
+		try {
+			input.preserve();
+		} catch (IOException e) {
+			throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message",e);
+		}
+	}
 	
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
@@ -513,11 +520,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		PipeForward forward = getForward();
 
 		if (messageLog!=null) {
-			try {
-				input.preserve();
-			} catch (IOException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve",e);
-			}
+			preserve(input, session);
 			originalMessage=input;
 		}
 		if (getInputWrapper()!=null) {
@@ -530,12 +533,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return wrapResult;
 			} else {
 				input = Message.asMessage(wrapResult.getResult());
-				// TODO must preserve input here, if result can be an InputStream
+				if (messageLog!=null) {
+					preserve(input, session);
+				}
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
 
 		if (getInputValidator()!=null) {
+			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, input, session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
