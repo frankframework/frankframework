@@ -172,7 +172,9 @@ public class XmlTypeToJsonSchemaConverter  {
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
 				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
-				builder.add("type", dataType);
+				builder.add("type", "string");
+				
+				builder.add("format", dataType);
 
 				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
 				applyFacet(simpleTypeDefinition, builder, "enumeration", XSSimpleTypeDefinition.FACET_ENUMERATION);
