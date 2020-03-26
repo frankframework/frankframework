@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.align;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.json.Json;
@@ -212,7 +213,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		XSTerm term = particle.getTerm();
 		if (term==null) {
 			throw new NullPointerException("particle.term is null");
-		} 
+		}
 		buildTerm(builder,term,attributeUses, particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1);
 	}
 	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring) {
@@ -236,6 +237,8 @@ public class XmlTypeToJsonSchemaConverter  {
 				builder.add("type", "object");
 				builder.add("additionalProperties", false);
 				JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
+				List<String> requiredProperties = new ArrayList<String>();
+
 				if (attributeUses!=null) {
 					for (int i=0; i< attributeUses.getLength(); i++) {
 						XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
@@ -246,12 +249,24 @@ public class XmlTypeToJsonSchemaConverter  {
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
 					if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
+					if(childParticle.getMinOccurs() != 0){
+						XSElementDeclaration elementDeclaration=(XSElementDeclaration)childParticle.getTerm();
+						String elementName=elementDeclaration.getName();
+						requiredProperties.add(elementName);
+					}
 					buildParticle(propertiesBuilder, childParticle, null);
 //					if (!getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle,path,failureReasons)) {
 //						return false;
 //					}
 				}
 				builder.add("properties", propertiesBuilder.build());
+				if(requiredProperties.size() > 0){
+					JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
+					for (String requiredProperty : requiredProperties) {
+						requiredPropertiesBuilder.add(requiredProperty);
+					}
+					builder.add("required", requiredPropertiesBuilder.build());
+				}
 				return;
 			case XSModelGroup.COMPOSITOR_CHOICE:
 				if (DEBUG) log.debug("modelGroup COMPOSITOR_CHOICE");
