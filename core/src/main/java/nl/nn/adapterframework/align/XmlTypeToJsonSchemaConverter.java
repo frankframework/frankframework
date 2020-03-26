@@ -398,7 +398,6 @@ public class XmlTypeToJsonSchemaConverter  {
 			case XSConstants.BOOLEAN_DT:
 				type="boolean";
 				break;
-			case XSConstants.LONG_DT:
 			case XSConstants.SHORT_DT:
 			case XSConstants.INT_DT:
 			case XSConstants.INTEGER_DT:
@@ -406,8 +405,14 @@ public class XmlTypeToJsonSchemaConverter  {
 			case XSConstants.NONNEGATIVEINTEGER_DT:
 			case XSConstants.NONPOSITIVEINTEGER_DT:
 			case XSConstants.POSITIVEINTEGER_DT:
+			case XSConstants.BYTE_DT:
+			case XSConstants.UNSIGNEDBYTE_DT:
+			case XSConstants.UNSIGNEDINT_DT:
+			case XSConstants.UNSIGNEDSHORT_DT:
 				type="integer";
 				break;
+			case XSConstants.UNSIGNEDLONG_DT:
+			case XSConstants.LONG_DT:
 			case XSConstants.DECIMAL_DT:
 			case XSConstants.FLOAT_DT:
 			case XSConstants.DOUBLE_DT:
