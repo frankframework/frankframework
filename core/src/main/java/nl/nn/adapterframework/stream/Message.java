@@ -111,10 +111,7 @@ public class Message implements Serializable {
 		if (request == null) {
 			return false;
 		}
-		if (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[]) {
-			return true;
-		}
-		return false;
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[];
 	}
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
