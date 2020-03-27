@@ -20,7 +20,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" datasourceName="${jdbc.datasource.default}" />
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="ManageDatabaseRLY" styleSheetName="/ManageDatabase/xsl/ManageDatabaseRLY.xsl">
@@ -36,8 +36,7 @@
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="InternalXsdError" styleSheetName="/ManageDatabase/xsl/ErrorMessage.xsl" getInputFromFixedValue="
-			&lt;dummy/&gt;">
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="InternalXsdError" styleSheetName="/ManageDatabase/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="INTERNAL_XSD_ERROR" />
 				<param name="failureReason" value="NOT_WELL_FORMED_XML" />
 				<forward name="success" path="EXIT" />
