@@ -361,17 +361,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	// Contract for testtool state:
-	// - appconstants testtool.enabled stores global state
-	// - when the state changes:
-	//   appconstants testtool.enabled must be updated
-	//   a DebuggerStatusChangedEvent must be fired to notify others
+	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
-		DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
 		if (applicationEventPublisher != null) {
+			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
 			applicationEventPublisher.publishEvent(event);
 		}
 	}

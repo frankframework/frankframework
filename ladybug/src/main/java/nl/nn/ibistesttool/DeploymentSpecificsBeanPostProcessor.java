@@ -39,14 +39,11 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
-			//TestTool testTool = (TestTool)bean;
 			
 			// Contract for testtool state:
-			// - appconstants testtool.enabled stores global state
-			// - when the state changes:
-			//   appconstants testtool.enabled must be updated
-			//   a DebuggerStatusChangedEvent must be fired to notify others
+			// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 			
 			boolean testToolEnabled=true;
 			AppConstants appConstants = AppConstants.getInstance();
@@ -60,7 +57,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				}
 				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
-			// enable/disable testtool via two switches, until one of the switches has become deprecated
+			// notify other components of status of debugger
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
 			if (applicationEventPublisher != null) {
 				applicationEventPublisher.publishEvent(event);
