@@ -303,7 +303,7 @@ public class Message implements Serializable {
 		}
 		return new Message(object);
 	}
-	
+
 	public static Reader asReader(Object object) throws IOException {
 		return asReader(object, null);
 	}
@@ -316,7 +316,7 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asReader(defaultCharset);
 	}
-	
+
 	public static InputStream asInputStream(Object object) throws IOException {
 		return asInputStream(object, null);
 	}
@@ -329,7 +329,7 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asInputStream(defaultCharset);
 	}
-	
+
 	public static InputSource asInputSource(Object object) throws IOException {
 		if (object==null) {
 			return null;
@@ -339,7 +339,7 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asInputSource();
 	}
-	
+
 	public static Source asSource(Object object) throws IOException, SAXException  {
 		if (object==null) {
 			return null;
@@ -349,7 +349,7 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asSource();
 	}
-	
+
 	public static String asString(Object object) throws IOException {
 		return asString(object, null);
 	}
@@ -362,7 +362,7 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asString();
 	}
-	
+
 	public static byte[] asByteArray(Object object) throws IOException {
 		return asByteArray(object, null);
 	}
@@ -375,7 +375,10 @@ public class Message implements Serializable {
 		}
 		return Message.asMessage(object).asByteArray(defaultCharset);
 	}
-	
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		if (isBinary()) {
 			stream.write(asByteArray());
@@ -384,6 +387,9 @@ public class Message implements Serializable {
 		}
 	}
 
+	/*
+	 * this method is used by Serializable, to deserialize objects from a stream.
+	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		log = LogUtil.getLogger(this);
 		request = stream.readObject();
