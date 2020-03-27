@@ -23,7 +23,28 @@
 		password="c##testiaf_user"
 	/>
 	<Resource 
-		name="jdbc/ibis4test-mssql" 
+		name="jdbc/ibis4test-mssql-microsoft" 
+		auth="Container" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+		URL="jdbc:sqlserver://localhost:2500;database=wearefrank_db"
+		user="wearefrank_user"
+		password="wearefrankPass01"
+		sendStringParametersAsUnicode="false"
+		sendTimeAsDatetime="true"
+		selectMethod="direct"
+		responseBuffering="adaptive"
+		packetSize="4096"
+		loginTimeout="10"
+		lockTimeout="2000"
+		lastUpdateCount="false"
+		encrypt="false"
+		disableStatementPooling="true"
+		applicationName="iaf-test on TomCat"
+		applicationIntent="readwrite"
+	/>
+	<Resource 
+		name="jdbc/ibis4test-mssql-jtds" 
 		auth="Container" 
 		type="javax.sql.DataSource"
 		username="wearefrank_user"
@@ -34,6 +55,7 @@
 		maxIdle="10"
 		validationQuery="select 1"
 	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
