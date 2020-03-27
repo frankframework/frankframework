@@ -33,7 +33,10 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.MessagingSource;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.stream.Message;
+
+import nl.nn.adapterframework.extensions.ibm.TestJMSMessage;
 
 public class IMSSenderTest extends SenderTestBase<IMSSender> {
 	
@@ -99,11 +102,10 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 		sender.configure();
 		// sender.open(); // Do not open the sender, no MQ connections are set
 		String input = "TESTMESSAGE1234%éáöî?";
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
-		String response = sender.sendMessage(null, input, prc);
+		Message response = sender.sendMessage(new Message(input), session);
 		
 		// For testing purposes the response BytesMessage is the same as the input BytesMessage
 		// The transaction code is thus part of the response message
-		assertEquals(sender.getTransactionCode() + " " + input, response);
+		assertEquals(sender.getTransactionCode() + " " + input, response.asString());
 	}
 }
