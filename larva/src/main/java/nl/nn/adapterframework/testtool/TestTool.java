@@ -2488,7 +2488,7 @@ public class TestTool {
 			result = RESULT_OK;
 		} catch(TimeOutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(IOException | SenderException e) {
+		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
 		

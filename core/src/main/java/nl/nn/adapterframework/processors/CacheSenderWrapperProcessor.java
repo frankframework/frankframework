@@ -33,13 +33,18 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		
-		String key=cache.transformKey(message.asString(), session);
+		String key;
+		try {
+			key=cache.transformKey(message.asString(), session);
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
@@ -54,13 +59,17 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
 			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-			String cacheValue=cache.transformValue(result.asString(), session);
-			if (cacheValue==null) {
-				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
-				return result;
+			try {
+				String cacheValue=cache.transformValue(result.asString(), session);
+				if (cacheValue==null) {
+					if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
+					return result;
+				}
+				cache.put(key, cacheValue);
+				result = new Message(cacheValue);
+			} catch (IOException e) {
+				throw new SenderException(e);
 			}
-			cache.put(key, cacheValue);
-			result = new Message(cacheValue);
 		}
 		return result;
 	}

@@ -214,7 +214,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return messagingSource;
 	}
 
-
 	/**
 	 * Returns a session on the connection for a topic or a queue
 	 */
@@ -318,32 +317,32 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 	
-    public Destination getDestination() throws NamingException, JMSException, JmsException  {
-	    if (destination == null) {
-	    	String destinationName = getDestinationName();
-	    	if (StringUtils.isEmpty(destinationName)) {
-	    		throw new NamingException("no destinationName specified");
-	    	}
-	    	if (isLookupDestination()) {
-			    if (!useTopicFunctions || getPersistent()) {
-			        destination = getDestination(destinationName);
-			    } else {
+	public Destination getDestination() throws NamingException, JMSException, JmsException {
+		if (destination == null) {
+			String destinationName = getDestinationName();
+			if (StringUtils.isEmpty(destinationName)) {
+				throw new NamingException("no destinationName specified");
+			}
+			if (isLookupDestination()) {
+				if (!useTopicFunctions || getPersistent()) {
+					destination = getDestination(destinationName);
+				} else {
 					TopicSession session = null;
-			    	try {
-						session = (TopicSession)createSession();
+					try {
+						session = (TopicSession) createSession();
 						destination = session.createTopic(destinationName);
-			    	} finally {
+					} finally {
 						closeSession(session);
-			    	}
-			    }
-	    	} else {
-	    		destination = getJmsMessagingSource().createDestination(destinationName);
-	    	}
-		    if (destination==null) {
-		    	throw new NamingException("cannot get Destination from ["+destinationName+"]");
-		    }
-	    }
-	    return destination;
+					}
+				}
+			} else {
+				destination = getJmsMessagingSource().createDestination(destinationName);
+			}
+			if (destination == null) {
+				throw new NamingException("cannot get Destination from [" + destinationName + "]");
+			}
+		}
+		return destination;
 	}
 
 	/**
@@ -448,6 +447,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
@@ -493,8 +493,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	    TopicSubscriber topicSubscriber;
 	    if (subscriberType.equalsIgnoreCase("DURABLE")) {
-	        topicSubscriber =
-	            session.createDurableSubscriber(topic, destinationName, selector, false);
+			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + name  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 
 	    } else {
@@ -912,6 +911,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * relied this specific functionality. New configurations should not use it.
 	 *
 	 */
+	@Deprecated
 	public void setJmsTransacted(boolean jmsTransacted) {
 		this.jmsTransacted = jmsTransacted;
 	}
@@ -968,6 +968,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Indicates whether messages are send under transaction control.
 	 * @see #setTransacted(boolean)
 	 */
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}

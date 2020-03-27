@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -216,6 +217,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	private TransformerPool removeOutputNamespacesTp;
 	private TransformerPool addOutputNamespaceTp;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null)+"The class ["+getClass().getName()+"] has been deprecated. Please change to EsbSoapWrapperPipe (not 1:1)";
@@ -266,8 +268,15 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result;
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
 				String originalBisMessageHeader = (String) session.get(getBisMessageHeaderSessionKey());
@@ -308,9 +317,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				String payload;
 				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
 					if (addOutputNamespaceTp != null) {
-						payload = addOutputNamespaceTp.transform(input.toString(), null, true);
+						payload = addOutputNamespaceTp.transform(input, null, true);
 					} else {
-						payload = input.toString();
+						payload = input;
 					}
 					payload = prepareReply(payload, isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				} else {
@@ -323,25 +332,25 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader);
 			} else {
-				String body = unwrapMessage(input.toString());
+				String body = unwrapMessage(input);
 				if (StringUtils.isEmpty(body)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
-					String messageHeader = bisMessageHeaderTp.transform(input.toString(), null, true);
+					String messageHeader = bisMessageHeaderTp.transform(input, null, true);
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
 						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
 					}
 				}
 				if (bisErrorTp != null) {
-					String bisError = bisErrorTp.transform(input.toString(), null, true);
+					String bisError = bisErrorTp.transform(input, null, true);
 					if (Boolean.valueOf(bisError).booleanValue()) {
 						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
-					result = bodyMessageTp.transform(input.toString(), null, true);
+					result = bodyMessageTp.transform(input, null, true);
 				} else {
 					result = body;
 				}

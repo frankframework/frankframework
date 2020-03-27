@@ -114,29 +114,33 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		if (sessionKeys != null) {
-			List<String> list = new ArrayList<String>();
-			list.add(StringEscapeUtils.escapeCsv(message.asString()));
-			StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
-			while (tokenizer.hasMoreElements()) {
-				String sessionKey = (String)tokenizer.nextElement();
-				list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			if (sessionKeys != null) {
+				List<String> list = new ArrayList<String>();
+				list.add(StringEscapeUtils.escapeCsv(message.asString()));
+				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
+				while (tokenizer.hasMoreElements()) {
+					String sessionKey = (String)tokenizer.nextElement();
+					list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
+				}
+				StrBuilder sb = new StrBuilder();
+				sb.appendWithSeparators(list, ",");
+				message = new Message(sb.toString());
 			}
-			StrBuilder sb = new StrBuilder();
-			sb.appendWithSeparators(list, ",");
-			message = new Message(sb.toString());
-		}
-		String messageId = session.getMessageId();
-		String correlationID = messageId;
-		if (paramList != null && paramList.findParameter("messageId") != null) {
-			try {
-				messageId = (String)paramList.getValues(message, session).getValue("messageId");
-			} catch (ParameterException e) {
-				throw new SenderException("Could not resolve parameter messageId", e);
+			String messageId = session.getMessageId();
+			String correlationID = messageId;
+			if (paramList != null && paramList.findParameter("messageId") != null) {
+				try {
+					messageId = (String)paramList.getValues(message, session).getValue("messageId");
+				} catch (ParameterException e) {
+					throw new SenderException("Could not resolve parameter messageId", e);
+				}
 			}
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, message.asString()));
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
 		}
-		return new Message(storeMessage(messageId, correlationID, new Date(), null, null, message.asString()));
 	}
 
 	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", ""})

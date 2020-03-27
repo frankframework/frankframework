@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -194,6 +194,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
     }
 	 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getNoConversionForwardName())) {
@@ -206,20 +207,24 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		initializeConversionTables();
 	}	
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		Variant v = new Variant(input);
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result;
 	
-		if (DIRECTION_BACKWARD.equalsIgnoreCase(getDirection())) {
-			result = makeAdios(v.asXmlInputSource(),session);
-		} else {
-			String inputstring = v.asString();
-			String firstToken = new StringTokenizer(inputstring).nextToken();
-			if (firstToken.startsWith("<")) {
-				log.info(getLogPrefix(session)+"input is already XML, no conversion performed");
-				return new PipeRunResult(noConversionForward, inputstring);
+		try {
+			if (DIRECTION_BACKWARD.equalsIgnoreCase(getDirection())) {
+				result = makeAdios(message.asInputSource(),session);
+			} else {
+				String inputstring = message.asString();
+				String firstToken = new StringTokenizer(inputstring).nextToken();
+				if (firstToken.startsWith("<")) {
+					log.info(getLogPrefix(session)+"input is already XML, no conversion performed");
+					return new PipeRunResult(noConversionForward, inputstring);
+				}
+				result = makeXml(message.asString(),session);
 			}
-			result = makeXml(v.asString(),session);
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		return new PipeRunResult(getForward(), result);
 	}

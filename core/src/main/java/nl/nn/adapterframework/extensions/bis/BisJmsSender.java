@@ -110,24 +110,23 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		String message = input.asString();
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String payload;
+		String replyMessage;
 		try {
-			payload = bisUtils.prepareReply(message, isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
+			String payload = bisUtils.prepareReply(input.asString(), isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
 			if (StringUtils.isNotEmpty(getRequestNamespace())) {
 				payload = XmlUtils.addRootNamespace(payload, getRequestNamespace());
 			}
+			replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		if (isSynchronous()) {
 			String bisError;
 			String bisErrorList;

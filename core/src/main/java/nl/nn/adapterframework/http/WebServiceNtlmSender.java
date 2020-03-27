@@ -150,20 +150,18 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
 			StringEntity se = new StringEntity(message.asString());
 			httpPost.setEntity(se);
 			if (StringUtils.isNotEmpty(getContentType())) {
-				log.debug(getLogPrefix() + "setting Content-Type header ["
-						+ getContentType() + "]");
+				log.debug(getLogPrefix() + "setting Content-Type header [" + getContentType() + "]");
 				httpPost.addHeader("Content-Type", getContentType());
 			}
 			if (StringUtils.isNotEmpty(getSoapAction())) {
-				log.debug(getLogPrefix() + "setting SOAPAction header ["
-						+ getSoapAction() + "]");
+				log.debug(getLogPrefix() + "setting SOAPAction header [" + getSoapAction() + "]");
 				httpPost.addHeader("SOAPAction", getSoapAction());
 			}
 			log.debug(getLogPrefix() + "executing method");
@@ -176,19 +174,16 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 				int statusCode = statusLine.getStatusCode();
 				String statusMessage = statusLine.getReasonPhrase();
 				if (statusCode == HttpServletResponse.SC_OK) {
-					log.debug(getLogPrefix() + "status code [" + statusCode
-							+ "] message [" + statusMessage + "]");
+					log.debug(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
 				} else {
-					throw new SenderException(getLogPrefix() + "status code [" + statusCode
-							+ "] message [" + statusMessage + "]");
+					throw new SenderException(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
 				}
 			}
 			HttpEntity httpEntity = httpresponse.getEntity();
 			if (httpEntity == null) {
 				log.warn(getLogPrefix() + "no response found");
 			} else {
-				log.debug(getLogPrefix() + "response content length ["
-						+ httpEntity.getContentLength() + "]");
+				log.debug(getLogPrefix() + "response content length [" + httpEntity.getContentLength() + "]");
 				result = EntityUtils.toString(httpEntity);
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
@@ -206,6 +201,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return new Message(result);
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return getUrl();
 	}

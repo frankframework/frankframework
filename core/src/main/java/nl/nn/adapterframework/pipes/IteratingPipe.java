@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -179,25 +178,24 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator<I> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<I> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		return null;
 	}
 
 	protected Message itemToMessage(I item) throws SenderException {
-		return new Message(item);
+		return Message.asMessage(item);
 	}
-	
+
 	/**
-	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
+	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link #getIterator}.
 	 * For each item in the input callback.handleItem(item) is called.
 	 */
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
 	}
 
 	protected class ItemCallback {
 		private IPipeLineSession session;
-		private String correlationID;
 		private ISender sender; 
 		private StringBuffer results = new StringBuffer();
 		int count=0;
@@ -205,9 +203,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private Guard guard;
 		List<ParallelSenderExecutor> executorList;
 
-		public ItemCallback(IPipeLineSession session, String correlationID, ISender sender) {
+		public ItemCallback(IPipeLineSession session, ISender sender) {
 			this.session=session;
-			this.correlationID=correlationID;
 			this.sender=sender;
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
@@ -361,15 +358,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
+	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;
 		try {
-			ItemCallback callback = new ItemCallback(session,correlationID,sender);
-			it = getIterator(input,session, correlationID,threadContext);
+			ItemCallback callback = new ItemCallback(session,sender);
+			it = getIterator(input,session, threadContext);
 			if (it==null) {
-				iterateOverInput(input,session,correlationID, threadContext, callback);
+				iterateOverInput(input,session,threadContext, callback);
 			} else {
 				String nextItemStored = null;
 				while (keepGoing && (it.hasNext() || nextItemStored!=null)) {

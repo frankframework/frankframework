@@ -125,10 +125,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
-				if (message.asString().contains("error")) {
-					throw new SenderException("Exception triggered", e);
+				try {
+					if (message.asString().contains("error")) {
+						throw new SenderException("Exception triggered", e);
+					}
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(),e);
 				}
 				return super.sendMessage(message, session);
 			}
@@ -143,7 +147,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNoNS, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -158,7 +162,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNoNS, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNSBlock, actual);
@@ -172,7 +176,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		try {
-		PipeRunResult prr = pipe.doPipe(messageError, session);
+		PipeRunResult prr = doPipe(pipe, messageError, session);
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
@@ -188,7 +192,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		try {
-		PipeRunResult prr = pipe.doPipe(messageError, session);
+		PipeRunResult prr = doPipe(pipe, messageError, session);
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
@@ -212,7 +216,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNS1, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNS1, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -225,7 +229,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNS2, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNS2, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -239,7 +243,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNS1, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNS1, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -253,7 +257,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe(messageBasicNS2, session);
+		PipeRunResult prr = doPipe(pipe, messageBasicNS2, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS2, actual);
@@ -270,7 +274,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -290,7 +294,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -310,7 +314,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -329,7 +333,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -348,7 +352,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS2, actual);
@@ -367,7 +371,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -385,7 +389,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
@@ -405,7 +409,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String wrappedMessage = "<envelope><x>" + messageBasicNoNS + "</x></envelope>";
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -425,7 +429,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String wrappedMessage = "<envelope><x>" + messageBasicNS1 + "</x></envelope>";
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -446,7 +450,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String wrappedMessage = "<envelope><x>" + messageBasicNS1 + "</x></envelope>";
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -464,7 +468,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -482,7 +486,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
@@ -499,7 +503,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -517,7 +521,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS1, actual);
@@ -535,7 +539,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace2.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNS2, actual);
@@ -551,7 +555,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
@@ -568,7 +572,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
@@ -585,7 +589,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
@@ -604,7 +608,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -623,7 +627,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -642,7 +646,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -661,7 +665,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -680,7 +684,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -699,7 +703,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
-		PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais, sc), session);
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = prr.getResult().toString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
@@ -718,7 +722,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/xdocs.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/ForEachChildElementPipe-Result.txt");
-		PipeRunResult prr = pipe.doPipe(input, session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expected, actual);
@@ -735,7 +739,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2out.xml");
-		PipeRunResult prr = pipe.doPipe(input, session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expected, actual);
@@ -750,7 +754,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseIn.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseOut.xml");
-		PipeRunResult prr = pipe.doPipe(input, session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expected, actual);
@@ -766,7 +770,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/input.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/expected.xml");
-		PipeRunResult prr = pipe.doPipe(input, session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expected, actual);

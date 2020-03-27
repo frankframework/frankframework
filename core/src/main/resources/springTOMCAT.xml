@@ -43,6 +43,8 @@
 		name="jndiDataSource"
 		class="org.springframework.jndi.JndiObjectFactoryBean"
 		>
+		<property name="lookupOnStartup" value="${jdbc.required}"/>
+		<property name="ProxyInterface" value="javax.sql.DataSource"/>
 		<property name="jndiName" value="${jndiContextPrefix}jdbc/${instance.name.lc}"/>
 	</bean>
 

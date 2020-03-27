@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 - 2019 Nationale-Nederlanden
+   Copyright 2013, 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -100,8 +100,6 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 
 	@Override
 	public void open() throws ListenerException {
-		super.open();
-
 		if (StringUtils.isNotEmpty(getAddress())) {
 			Bus cxfBus = BusFactory.getDefaultBus(false);
 			if(cxfBus == null) {
@@ -129,6 +127,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
 		}
+
+		super.open();
 	}
 
 	@Override
@@ -138,8 +138,14 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		if(endpoint != null && endpoint.isPublished())
 			endpoint.stop();
 
-		//TODO maybe unregister oldschool rpc based serviceclients!?
-		//How does this work when reloading a configuration??
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		}
+		else {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+		}
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -35,7 +36,8 @@ import org.apache.log4j.Logger;
 public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult = null;
 
 		IExtendedPipe pe=null;
@@ -65,7 +67,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 				}
 			}
 			if (lir) {
-				sb.append(" current result ["+ message +"] ");
+				sb.append(" current result "+ (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" )+" ");
 			}
 
 			log.debug(sb.toString());

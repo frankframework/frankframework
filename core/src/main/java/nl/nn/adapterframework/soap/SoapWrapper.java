@@ -47,6 +47,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -253,7 +254,7 @@ public class SoapWrapper {
 			AxisClient tmpEngine = new AxisClient(new NullProvider());
 			MessageContext msgContext = new MessageContext(tmpEngine);
 
-			InputStream in = new ByteArrayInputStream(soapMessage.getBytes());
+			InputStream in = new ByteArrayInputStream(soapMessage.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 			Message msg = new Message(in);
 			msg.setMessageContext(msgContext);
 

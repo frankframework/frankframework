@@ -27,14 +27,10 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
@@ -61,10 +57,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  * @author Niels Meijer
  */
 
-public class MqttListener extends MqttFacade implements ReceiverAware, IPushingListener, MqttCallbackExtended {
+public class MqttListener extends MqttFacade implements ReceiverAware, IPushingListener<MqttMessage>, MqttCallbackExtended {
 
 	private ReceiverBase receiver;
-	private IMessageHandler messageHandler;
+	private IMessageHandler<MqttMessage> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
 
 	public void setReceiver(IReceiver receiver) {
@@ -76,7 +72,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 	}
 
 	@Override
-	public void setHandler(IMessageHandler messageHandler) {
+	public void setHandler(IMessageHandler<MqttMessage> messageHandler) {
 		this.messageHandler = messageHandler;
 	}
 
@@ -158,20 +154,20 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 	}
 
 	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		return "" + ((MqttMessage)rawMessage).getId();
+	public String getIdFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+		return "" + rawMessage.getId();
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
+	public String getStringFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
 		try {
-			return new String(((MqttMessage)rawMessage).getPayload(), getCharset());
+			return new String(rawMessage.getPayload(), getCharset());
 		} catch (UnsupportedEncodingException e) {
 			throw new ListenerException("Could not encode message", e);
 		}
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
 	}
 }

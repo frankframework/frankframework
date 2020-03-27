@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 
@@ -40,7 +41,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
            });
     }
 	@Override
-	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
+	protected PipeRunResult doPipe(P pipe, Message input, IPipeLineSession session) throws PipeRunException {
 		PipeRunResult prr;
 		if (provideStreamForInput) {
 			CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
@@ -48,9 +49,11 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 			try (MessageOutputStream target = pipe.provideOutputStream(session, capProvider)) {
 		
 				try (Writer writer = target.asWriter()) {
-					writer.write((String)input); // TODO: proper conversion of non-string classes..
+					writer.write(input.asString()); // TODO: proper conversion of non-string classes..
 				}
 				prr=target.getPipeRunResult();
+			} catch (Exception e) {
+				throw new PipeRunException(pipe,"cannot convert input",e);
 			}
 			if (capProvider!=null) {
 				assertEquals("PipeResult must be equal to result of cap",capProvider.getCap().getPipeRunResult().getResult(),prr.getResult());

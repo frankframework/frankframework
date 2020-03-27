@@ -1,0 +1,1 @@
+"#" : {"type":"object","additionalProperties":false,"properties":{"BIID":{"type":"array","items":{"type":"integer"}},"sprint_id":{"type":"integer"},"cancel":{"type":"string"}},"required":["sprint_id"]}

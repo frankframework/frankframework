@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.testutil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +26,10 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * This class is a 'comparison helper' for file assertions
@@ -112,7 +116,7 @@ public class TestAssertions extends org.junit.Assert {
 
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
-		URL svg = ClassUtils.getResourceURL(this, "test1.xml");
+		URL svg = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "test1.xml");
 		String str1 = Misc.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 

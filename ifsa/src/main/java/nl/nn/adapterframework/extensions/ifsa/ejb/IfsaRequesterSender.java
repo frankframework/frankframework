@@ -101,7 +101,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Map<String, String> params = convertParametersToMap(message, session);
 		return sendMessage(message, params);
 	}
@@ -110,7 +110,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
      * Execute a request to the IFSA service.
      * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
      */
-    public Message sendMessage(Message message, Map<String, String> params) throws SenderException, TimeOutException, IOException {
+    public Message sendMessage(Message message, Map<String, String> params) throws SenderException, TimeOutException {
         Connection conn = null;
         Map<String, String> udzMap = null;
         
@@ -161,7 +161,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
             }
         } catch (com.ing.ifsa.exceptions.TimeoutException toe) {
             throw new TimeOutException(toe);
-        } catch (IFSAException e) {
+        } catch (IFSAException | IOException e) {
             throw new SenderException(e);
         } finally {
             if (conn != null) {

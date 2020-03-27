@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Integration Partners
+   Copyright 2017-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -79,7 +80,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -171,8 +171,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String urlParam = "url";
 	private String methodType = "GET";
 	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType contentType = null;
-	private String mimeType = "text/html";
+	private ContentType fullContentType = null;
+	private String contentType = null;
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -227,7 +227,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected Parameter urlParameter;
 
-	protected URIBuilder staticUri;
+	protected URI staticUri;
 	private CredentialFactory credentials;
 
 	private Set<String> parametersToSkip=new HashSet<String>();
@@ -247,7 +247,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	protected URIBuilder getURI(String url) throws URISyntaxException {
+	protected URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if (uri.getPath()==null) {
@@ -255,14 +255,14 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
-		return uri;
+		return uri.build();
 	}
 
-	protected int getPort(URIBuilder uri) {
+	protected int getPort(URI uri) {
 		int port = uri.getPort();
 		if (port<1) {
 			try {
-				URL url = uri.build().toURL();
+				URL url = uri.toURL();
 				port = url.getDefaultPort();
 				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
@@ -303,10 +303,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		if(StringUtils.isNotEmpty(mimeType)) {
-			contentType = ContentType.parse(mimeType);
-			if(contentType != null && contentType.getCharset() == null) {
-				contentType = contentType.withCharset(getCharSet());
+		if(StringUtils.isNotEmpty(getContentType())) {
+			fullContentType = ContentType.parse(getContentType());
+			if(fullContentType != null && fullContentType.getCharset() == null) {
+				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
 
@@ -550,26 +550,30 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @param uri endpoint to send the message to
 	 * @param message to be sent
 	 * @param parameters ParameterValueList that contains all the senders parameters
-	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
 	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
 	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param session TODO
+	 * @param session {@link IPipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
 	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
-		String message=input.asString();
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
+		String message;
+		try {
+			message = input.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -580,7 +584,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		HttpHost httpTarget;
-		URIBuilder uri;
+		URI uri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
@@ -729,9 +733,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					Message resultMsg = new Message(result);
 					try {
-						result = transformerPool.transform(resultMsg.asSource());
+						result = transformerPool.transform(Message.asSource(result));
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}
@@ -739,7 +742,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		return new Message(result);
+		return Message.asMessage(result);
 	}
 
 	@Override
@@ -775,15 +778,21 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return methodType.toUpperCase();
 	}
 
-	@IbisDoc({"4", "content-type of the request, only for POST and PUT methods", "text/html"})
+	/**
+	 * This is a superset of mimetype + charset + optional payload metadata.
+	 */
+	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
-		mimeType = string;
+		contentType = string;
 	}
-	public ContentType getContentType() {
+	public String getContentType() {
 		return contentType;
 	}
+	public ContentType getFullContentType() {
+		return fullContentType;
+	}
 
-	@IbisDoc({"5", "charset of the request, only for POST and PUT methods", "UTF-8"})
+	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}

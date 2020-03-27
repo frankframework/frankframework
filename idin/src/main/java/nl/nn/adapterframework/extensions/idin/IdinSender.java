@@ -155,7 +155,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		Element queryElement = null;
 		try {
@@ -164,7 +164,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			} else {
 				queryElement = XmlUtils.buildElement("<idin/>");
 			}
-		} catch (DomBuilderException e) {
+		} catch (DomBuilderException | IOException e) {
 			throw new SenderException(e);
 		}
 

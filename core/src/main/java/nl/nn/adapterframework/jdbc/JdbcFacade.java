@@ -92,7 +92,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		credentialsConfigured=true;
 	}
-	
+
 	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
@@ -195,7 +195,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
 		this.dbmsSupport=dbmsSupport;
 	}
-		
+
 	public IDbmsSupport getDbmsSupport() {
 		if (dbmsSupport==null) {
 			Connection conn=null;
@@ -262,7 +262,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * Returns the name and location of the database that this objects operates on.
-	 *  
+	 * 
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
@@ -271,12 +271,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		try (Connection connection = getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			result = metadata.getURL();
-	
+
 			String catalog=null;
 			catalog=connection.getCatalog();
 			result += catalog!=null ? ("/"+catalog):"";
 		} catch (Exception e) {
-			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);		
+			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
 		}
 		return result;
 	}

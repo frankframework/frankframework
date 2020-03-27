@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.processors;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,10 +30,10 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=new Message(session.get(senderWrapperBase.getGetInputFromSessionKey()));
+			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {

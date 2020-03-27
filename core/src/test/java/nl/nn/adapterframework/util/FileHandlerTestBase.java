@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.util;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class FileHandlerTestBase {
@@ -55,10 +56,6 @@ public abstract class FileHandlerTestBase {
 		return FileHandlerTestBase.class.getResource(BASEDIR+file);
 	}
  
-	protected String getTestFile(String file, String charset) throws IOException {
-		return TestFileUtils.getTestFile(BASEDIR+file,charset);
-	}
-
 	public String removeNewlines(String contents) {
 		return contents.replaceAll("[\n\r]", "");
 	}
@@ -95,7 +92,7 @@ public abstract class FileHandlerTestBase {
 		handler.setOutputType(outputType);
 		handler.configure();
 		
-		String expectedContents=getTestFile(compareFile, charset);
+		String expectedContents=TestFileUtils.getTestFile(BASEDIR+compareFile, charset);
 		if (outputType==null || outputType.equalsIgnoreCase("string")) {
 			String actualContents = (String) handler.handle(null,session,null);
 			assertEquals("file contents", removeNewlines(expectedContents), removeNewlines(actualContents));
@@ -162,7 +159,7 @@ public abstract class FileHandlerTestBase {
 		handler.setWriteLineSeparator(writeSeparator);
 		handler.configure();
 
-		String contents=getTestFile(contentFile, charset);
+		Message contents=TestFileUtils.getTestFileMessage(BASEDIR+contentFile, charset);
 		String actFilename=(String)handler.handle(contents,session,paramList);
 		if (filename==null) {
 			assertNotNull(actFilename);
@@ -178,7 +175,7 @@ public abstract class FileHandlerTestBase {
 			expectedContents="";
 		}
 		if (write) {
-			expectedContents+=getTestFile(compareFile, charset);
+			expectedContents+=TestFileUtils.getTestFile(BASEDIR+compareFile, charset);
 			if (writeSeparator) {
 				expectedContents+=System.getProperty("line.separator");
 			}

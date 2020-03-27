@@ -151,7 +151,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
@@ -171,7 +171,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						result = new Message(isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false));
+						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
@@ -181,7 +181,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
-			} catch (ListenerException e) {
+			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
 					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
 				}
@@ -214,7 +214,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
-						result = new Message(isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true));
+						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
 						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
@@ -224,7 +224,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in same Thread");
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
-			} catch (ListenerException e) {
+			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
 					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
 				}

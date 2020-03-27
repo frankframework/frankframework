@@ -16,8 +16,6 @@
 
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.IOException;
-
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -92,7 +90,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message, session, null);
 	}
 

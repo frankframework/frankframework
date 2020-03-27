@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -102,7 +100,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException, IOException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message,null);
 	}
 
