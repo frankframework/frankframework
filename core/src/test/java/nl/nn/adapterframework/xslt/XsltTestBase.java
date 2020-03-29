@@ -134,9 +134,8 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		for (int i=0;i<warnings.size();i++) {
 			System.out.println(i+" "+warnings.get(i));
 		}
-		assertTrue("Expected at least two config warnings",warnings.size()>1);
-		assertThat(warnings.get(0), StringContains.containsString("the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion"));
-		int nextPos=warnings.size()>4?warnings.size()-2:1;
+		assertTrue("Expected at least one config warnings",warnings.size()>0);
+		int nextPos=0;//warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
 		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
 	}

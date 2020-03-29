@@ -80,7 +80,8 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 			rawResult = rawResult.replace(boundary, "BOUNDARY");
 		}
 
-		TestAssertions.assertEqualsIgnoreCRLF(expected, rawResult);
+		//Make sure there is always a newline, otherwise test assertions will fail
+		TestAssertions.assertEqualsIgnoreCRLF(expected, rawResult.replace("/mixed; boundary", "/mixed; \n\tboundary"));
 	}
 
 	private void appendParameters(ISenderWithParameters sender) {
