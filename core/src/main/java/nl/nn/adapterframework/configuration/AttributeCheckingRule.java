@@ -38,7 +38,6 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -74,7 +73,7 @@ public class AttributeCheckingRule extends Rule {
 				if (m==null) {
 					Locator loc = digester.getDocumentLocator();
 					String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(log, msg);
 				} else {
 					ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
 					if(warning != null) {
@@ -88,7 +87,7 @@ public class AttributeCheckingRule extends Rule {
 						if(StringUtils.isNotEmpty(warning.value())) {
 							msg += ": " + warning.value();
 						}
-						configWarnings.add(log, msg);
+						ConfigurationWarnings.add(log, msg);
 					}
 				}
 			}

@@ -1031,14 +1031,11 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
 		} else {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
 	}

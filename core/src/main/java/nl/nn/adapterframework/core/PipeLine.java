@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
+public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, INamedObject {
     private Logger log = LogUtil.getLogger(this);
 
 	private PipeLineProcessor pipeLineProcessor;
@@ -150,6 +150,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter<String,String> cache;
+
+	private String name;
 
 
 	/**
@@ -347,9 +349,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
 				int stt = Integer.parseInt(systemTransactionTimeout);
 				if (getTransactionTimeout()>stt) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = "Pipeline of [" + owner.getName() + "] has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
 				}
 			}
 		}
@@ -550,7 +550,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(getAdapter(), log, "Exit named ["+exit.getPath()+"] already exists");
+			ConfigurationWarnings.add(this, log, "Exit named ["+exit.getPath()+"] already exists");
 		}
 		pipeLineExits.put(exit.getPath(), exit);
 	}
@@ -573,6 +573,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	public void setOwner(INamedObject owner) {
 		this.owner = owner;
+		setName("Pipeline of [" + owner.getName() + "]");
 	}
 	public INamedObject getOwner() {
 		return owner;
@@ -662,14 +663,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	@IbisDoc({"if set to <code>true, messages will be processed under transaction control. (see below)</code>", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=true as transactionAttribute=Required";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=false as transactionAttribute=Supports";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
@@ -859,5 +857,15 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	}
 	public String getAdapterToRunBeforeOnEmptyInput() {
 		return adapterToRunBeforeOnEmptyInput;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
 	}
 }

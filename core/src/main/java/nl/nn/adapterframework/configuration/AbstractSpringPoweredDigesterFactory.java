@@ -178,7 +178,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 			if(StringUtils.isNotEmpty(warning.value())) {
 				msg += ": " + warning.value();
 			}
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(log, msg);
 		}
 	}
 
@@ -266,7 +266,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
 		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
-		if (!configWarnings.containsDefaultValueExceptions(mergedKey)) {
+		if (!configWarnings.containsDefaultValueException(mergedKey)) {
 			addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
 		}
 	}
@@ -274,7 +274,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	private void addConfigWarning(Object currObj, String name, String message) {
 		Locator loc = digester.getDocumentLocator();
 		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(log, msg);
 	}
 
     /**

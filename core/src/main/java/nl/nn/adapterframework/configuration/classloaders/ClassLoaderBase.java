@@ -139,7 +139,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			ConfigurationWarnings.getInstance().add(log, "Invalid reportLevel ["+level+"], using default [ERROR]");
+			ConfigurationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
 
