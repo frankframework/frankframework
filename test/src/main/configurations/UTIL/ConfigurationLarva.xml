@@ -60,6 +60,7 @@
 				<param name="hostname" value="${hostname}" />
 				<param name="message" sessionKey="message" />
 				<param name="mailaddresses" value="${errorreport.mailaddresses}" />
+				<param name="mailaddressesError" value="${errorreport.mailaddresses.error}" />
 				
 				<forward name="success" path="SendMail" />
 			</pipe>

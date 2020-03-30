@@ -5,6 +5,8 @@
 	<xsl:param name="hostname"/>
 	<xsl:param name="message"/>
 	<xsl:param name="mailaddresses"/>
+	<xsl:param name="mailaddressesError"/>
+	
 	<xsl:variable name="from" select="$hostname"/>
 	<xsl:variable name="to" select="tokenize($mailaddresses,',')[1]"/>
 	<xsl:variable name="cc" select="substring-after($mailaddresses,',')"/>
@@ -16,11 +18,18 @@
 		</xsl:choose>
 	</xsl:variable>
 
+	<xsl:variable name="ccList">
+		<xsl:choose>
+			<xsl:when test="contains($message, 'All scenarios passed')"><xsl:value-of select="$cc"/></xsl:when>
+			<xsl:otherwise><xsl:value-of select="concat($cc, ',', $mailaddressesError)"/></xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+
 	<xsl:template match="/">
 		<email>
 			<recipients>
 				<recipient type="to"><xsl:value-of select="$to"/></recipient>
-				<xsl:for-each select="tokenize($cc,',')">
+				<xsl:for-each select="tokenize($ccList,',')">
 					<recipient type="cc"><xsl:value-of select="."/></recipient>
 				</xsl:for-each>
 			</recipients>
