@@ -413,6 +413,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	boolean multiOccurring, boolean shouldCreateReferences) {
 		if (term instanceof XSModelGroup) {
 			buildModelGroup(builder, term, attributeUses, multiOccurring, shouldCreateReferences);
+			return;
 		} 
 		if (term instanceof XSElementDeclaration) {
 			buildElementDecleration(builder, term, multiOccurring, shouldCreateReferences);
