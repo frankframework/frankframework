@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -338,20 +337,16 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			if (getMaxRetries()>0) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
-					String msg = "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit");
 					setRetryMinInterval(MIN_RETRY_INTERVAL);
 				}
 				if (getRetryMaxInterval() > MAX_RETRY_INTERVAL) {
-					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be less than or equal to ["+MAX_RETRY_INTERVAL+"], assuming the upper limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMaxInterval ["+getRetryMaxInterval()+"] should be less than or equal to ["+MAX_RETRY_INTERVAL+"], assuming the upper limit");
 					setRetryMaxInterval(MAX_RETRY_INTERVAL);
 				}
 				if (getRetryMaxInterval() < getRetryMinInterval()) {
-					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be greater than or equal to ["+getRetryMinInterval()+"], assuming the lower limit";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "retryMaxInterval ["+getRetryMaxInterval()+"] should be greater than or equal to ["+getRetryMinInterval()+"], assuming the lower limit");
 					setRetryMaxInterval(getRetryMinInterval());
 				}
 			}
@@ -360,9 +355,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (checkMessageLog) {
 			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) {
 				if (messageLog==null) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
-					configWarnings.add(log, msg, true);
+					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible");
 				}
 			}
 		}
@@ -504,6 +497,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return null;
 	}
 
+	protected void preserve(Message input, IPipeLineSession session) throws PipeRunException {
+		try {
+			input.preserve();
+		} catch (IOException e) {
+			throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message",e);
+		}
+	}
 	
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
@@ -513,11 +513,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		PipeForward forward = getForward();
 
 		if (messageLog!=null) {
-			try {
-				input.preserve();
-			} catch (IOException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve",e);
-			}
+			preserve(input, session);
 			originalMessage=input;
 		}
 		if (getInputWrapper()!=null) {
@@ -530,11 +526,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return wrapResult;
 			} else {
 				input = Message.asMessage(wrapResult.getResult());
+				if (messageLog!=null) {
+					preserve(input, session);
+				}
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
 
 		if (getInputValidator()!=null) {
+			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, input, session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
@@ -688,7 +688,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform(input,null);
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, input);
 
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;

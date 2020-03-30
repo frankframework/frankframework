@@ -220,6 +220,76 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpPostAppendParamsToBody() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setUrl("http://127.0.0.1/something&dummy=true");
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+
+			Parameter param1 = new Parameter();
+			param1.setName("key");
+			param1.setValue("value");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("otherKey");
+			param2.setValue("otherValue");
+			sender.addParameter(param2);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPostAppendParamsToBody.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPostAppendParamsToBodyAndEmptyBody() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setUrl("http://127.0.0.1/something&dummy=true");
+		Message input = new Message("");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+
+			Parameter param1 = new Parameter();
+			param1.setName("key");
+			param1.setValue("value");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("otherKey");
+			param2.setValue("otherValue");
+			sender.addParameter(param2);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpPut() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -268,6 +338,46 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGetWithUrlParamAndPath() throws Throwable {
+		HttpSender sender = getSender();
+		sender.setUrl(null); //unset URL
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			Parameter urlParam = new Parameter();
+			urlParam.setName("url");
+			urlParam.setValue("http://127.0.0.1/value%20value?path=tralala");
+			sender.addParameter(urlParam);
+
+			Parameter param1 = new Parameter();
+			param1.setName("illegalCharacters");
+			param1.setValue("o@t&h=e+r$V,a/lue");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("normalCharacters");
+			param2.setValue("helloWorld");
+			sender.addParameter(param2);
+
+			sender.setMethodType("GET");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetWithUrlParamAndPath.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

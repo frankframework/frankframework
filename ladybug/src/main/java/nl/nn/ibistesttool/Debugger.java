@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -34,7 +36,6 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -45,7 +46,7 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware {
 	private static final String STUB_STRATEY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEY_NEVER = "Never";
 	private static final String STUB_STRATEY_ALWAYS = "Always";
@@ -56,6 +57,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private List<String> rerunRoles;
 
 	protected Set<String> inRerun = new HashSet<String>();
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
@@ -357,13 +359,28 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return name;
 	}
 
+	// Contract for testtool state:
+	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
+	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
+
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
+		if (applicationEventPublisher != null) {
+			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
+			applicationEventPublisher.publishEvent(event);
+		}
 	}
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		testTool.setReportGeneratorEnabled(event.isEnabled());
+		if (event.getSource()!=this) {
+			testTool.setReportGeneratorEnabled(event.isEnabled());
+		}
+	}
+	
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }

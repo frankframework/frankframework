@@ -20,7 +20,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -53,6 +53,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Milan Tomc
  */
 @Deprecated
+@ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
 public class LdapChallengePipe extends AbstractPipe {
 
 	private String ldapProviderURL=null;
@@ -63,8 +64,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		configWarnings.add(log, "LdapChallengePipe is deprecated, please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>");
+
 		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}

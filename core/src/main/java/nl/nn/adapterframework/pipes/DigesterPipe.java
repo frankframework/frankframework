@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayInputStream;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

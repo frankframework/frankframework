@@ -1,0 +1,33 @@
+<family xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:family">
+	<members>
+		<member>
+			<name>Alice</name>
+			<birthDate>1984-11-23</birthDate>
+			<children>
+				<child>
+					<name>Bob</name>
+					<birthDate>2007-03-04</birthDate>
+					<address>
+						<street>String</street>
+						<number>4096</number>
+						<town>String</town>
+					</address>
+				</child>
+				<child>
+					<name>Chris</name>
+					<birthDate>2010-04-09</birthDate>
+					<address>
+						<street>String</street>
+						<number>4096</number>
+						<town>String</town>
+					</address>
+				</child>
+			</children>
+			<address>
+				<street>String</street>
+				<number>4096</number>
+				<town>String</town>
+			</address>
+		</member>
+	</members>
+</family>

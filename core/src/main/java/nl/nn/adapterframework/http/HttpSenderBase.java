@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -226,7 +227,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected Parameter urlParameter;
 
-	protected URIBuilder staticUri;
+	protected URI staticUri;
 	private CredentialFactory credentials;
 
 	private Set<String> parametersToSkip=new HashSet<String>();
@@ -246,7 +247,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	protected URIBuilder getURI(String url) throws URISyntaxException {
+	protected URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if (uri.getPath()==null) {
@@ -254,14 +255,14 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
-		return uri;
+		return uri.build();
 	}
 
-	protected int getPort(URIBuilder uri) {
+	protected int getPort(URI uri) {
 		int port = uri.getPort();
 		if (port<1) {
 			try {
-				URL url = uri.build().toURL();
+				URL url = uri.toURL();
 				port = url.getDefaultPort();
 				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
@@ -553,14 +554,14 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
 	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param session TODO
+	 * @param session {@link IPipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
 	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
@@ -583,7 +584,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		HttpHost httpTarget;
-		URIBuilder uri;
+		URI uri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {

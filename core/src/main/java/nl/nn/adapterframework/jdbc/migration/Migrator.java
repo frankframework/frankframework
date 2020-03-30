@@ -66,7 +66,7 @@ public class Migrator extends JdbcFacade {
 			log.debug(msg);
 		}
 		else {
-			String dataSource = appConstants.getString("jdbc.migrator.dataSource", "jdbc/" + appConstants.getResolvedProperty("instance.name.lc"));
+			String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
 			setDatasourceName(dataSource);
 
 			try {

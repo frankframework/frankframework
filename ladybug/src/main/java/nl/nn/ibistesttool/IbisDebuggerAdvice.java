@@ -52,6 +52,7 @@ import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
@@ -61,6 +62,10 @@ import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
+	// Contract for testtool state:
+	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
+	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
 	
@@ -436,8 +441,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 	}
 
-	public static void setEnabled(boolean enable) {
+	public void setEnabled(boolean enable) {
 		enabled = enable;
+		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
 		return enabled;

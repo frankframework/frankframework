@@ -22,7 +22,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -64,6 +64,8 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
+@Deprecated
+@ConfigurationWarning("Please change to JmsSender combined with BisWrapperPipe")
 public class BisJmsSender extends JmsSender {
 
 	private String responseXPath = null;
@@ -87,9 +89,6 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	public void configure() throws ConfigurationException {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to JmsSender combined with BisWrapperPipe";
-		configWarnings.add(log, msg);
 		super.configure();
 		if (!isSoap()) {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
