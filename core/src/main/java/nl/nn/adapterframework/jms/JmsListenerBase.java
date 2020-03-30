@@ -40,8 +40,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -318,6 +316,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	/**
 	 * return the Parameters
 	 */
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}

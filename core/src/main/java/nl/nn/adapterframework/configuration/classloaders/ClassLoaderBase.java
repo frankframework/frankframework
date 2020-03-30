@@ -235,7 +235,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		String path = name.replace(".", "/")+".class";
 		URL url = null;
 		if(allowCustomClasses) {
-			url = getResource(name);
+			url = getResource(path);
 		} else {
 			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
 		}

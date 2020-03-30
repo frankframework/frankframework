@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;

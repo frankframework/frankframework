@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;

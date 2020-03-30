@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
