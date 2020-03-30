@@ -180,6 +180,11 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	}
 
 	@Override
+	public void duplicateImportErrorAlertsXslt1() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt1();
+	}
+	@Override
 	public void duplicateImportErrorAlertsXslt2() throws Exception {
 		expectExtraParamWarning=true;
 		super.duplicateImportErrorAlertsXslt2();

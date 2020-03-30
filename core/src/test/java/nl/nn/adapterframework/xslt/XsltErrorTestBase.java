@@ -126,12 +126,21 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorOutputStream.toString(), isEmptyString());
 		}
 	}
-	
-	
+
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
 		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
+	}
+
+	// detect duplicate imports in configure()
+	@Test
+	public void duplicateImportErrorAlertsXslt1() throws Exception {
+		// this condition appears to result in a warning only for XSLT 2.0 using Saxon
+		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
+		setXslt2(false);
+		pipe.configure();
+		checkTestAppender(0,null);
 	}
 
 	// detect duplicate imports in configure()
@@ -214,6 +223,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 
+		checkTestAppender(0,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
