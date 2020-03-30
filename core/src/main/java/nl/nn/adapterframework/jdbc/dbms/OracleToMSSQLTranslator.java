@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -203,13 +203,12 @@ public class OracleToMSSQLTranslator {
 		
 		for (int i=0; i<query.size(); i++) {
 			String item = query.get(i);
-//			System.out.print(item+" ");
 			if (item.equalsIgnoreCase("DUAL")) {
-				query.remove(i--); // remove DUAL
-				query.remove(i--); // remove FROM, assuming that DUAL is the only table in the query.
+				String part = query.remove(i--); // remove DUAL
+				String prevPart = query.remove(i--); // remove FROM, assuming that DUAL is the only table in the query.
+				if (log.isDebugEnabled()) log.debug("removed from query ["+prevPart+" "+part+"]");
 			}
 		}
-//		System.out.println();
 		return query;
 	}	
 
