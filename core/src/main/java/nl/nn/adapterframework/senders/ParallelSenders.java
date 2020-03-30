@@ -60,8 +60,7 @@ public class ParallelSenders extends SenderSeries {
 			for (int i=1;i<getParameterList().size();i++) {
 				paramList+=", "+getParameterList().get(i).getName();
 			}
-			String msg = "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders";
-			ConfigurationWarnings.getInstance().add(log, msg, true);
+			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
 		}
 	}
 

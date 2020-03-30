@@ -33,7 +33,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
@@ -93,8 +92,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		}
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
-			ConfigurationWarnings.getInstance().add(log, msg, true);
+			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
+			ConfigurationWarnings.add(this, log, msg);
 		}
 	}
 

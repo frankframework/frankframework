@@ -255,14 +255,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		checkIndices = ac.getBoolean(PROPERTY_CHECK_INDICES, true);
 	}
 
-	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName)
-			throws JdbcException {
+	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName) throws JdbcException {
 		if (StringUtils.isNotEmpty(columnName) && !dbms.isTableColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
-			String msg = "Table [" + getTableName() + "] has no column [" + columnName + "]";
-			ConfigurationWarnings.getInstance().add(getLogPrefix() + msg);
+			ConfigurationWarnings.add(this, log, "table [" + getTableName() + "] has no column [" + columnName + "]");
 		}
 	}
-	
+
 	private void checkTable(Connection connection) throws JdbcException {
 		IDbmsSupport dbms=getDbmsSupport();
 		String schemaOwner=getSchemaOwner4Check();
@@ -282,8 +280,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			checkTableColumnPresent(connection,dbms,getExpiryDateField());
 			checkTableColumnPresent(connection,dbms,getLabelField());
 		} else {
-			String msg="Table ["+getTableName()+"] not present";
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+			ConfigurationWarnings.add(this, log, "table ["+getTableName()+"] not present");
 		}
 	}
 
@@ -309,8 +306,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	private void checkIndexOnColumnPresent(Connection connection, String column) {
 		if (!getDbmsSupport().hasIndexOnColumn(connection, getSchemaOwner4Check(), getTableName(), column)) {
-			String msg="table ["+getTableName()+"] has no index on column ["+column+"]";
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+			ConfigurationWarnings.add(this, log, "table ["+getTableName()+"] has no index on column ["+column+"]");
 		}
 	}
 
@@ -322,7 +318,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					msg+=","+columns.get(i);
 				}
 				msg+="]";
-				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+				ConfigurationWarnings.add(this, log, msg);
 			}
 		}
 	}
@@ -331,8 +327,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
 			//no more checks
 		} else {
-			String msg="Sequence ["+getSequenceName()+"] not present";
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+			ConfigurationWarnings.add(this, log, "sequence ["+getSequenceName()+"] not present");
 		}
 	}
 
@@ -366,13 +361,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 							checkIndices(connection);
 						}
 					} else {
-						ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
+						ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
 					}
 				} else {
 					log.info(getLogPrefix()+"checking of table and indices is not enabled");
 				}
 		} catch (JdbcException e) {
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: "+e.getMessage());
+			ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]"+e.getMessage(), e);
 		} finally {
 			try {
 				if (connection!=null) {

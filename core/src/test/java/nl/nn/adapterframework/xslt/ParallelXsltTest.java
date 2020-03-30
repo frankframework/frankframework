@@ -22,12 +22,11 @@ import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 
 public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
-	
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
 	boolean expectExtraParamWarning=false;
-	
+
 	@Before
 	public void clear() {
 		expectExtraParamWarning=false;

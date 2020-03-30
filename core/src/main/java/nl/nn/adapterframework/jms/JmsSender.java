@@ -375,8 +375,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	public void setDeliveryMode(String deliveryMode) {
 		int newMode = stringToDeliveryMode(deliveryMode);
 		if (newMode==0) {
-			ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
-			cw.add(log,getLogPrefix()+"unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
+			ConfigurationWarnings.add(this, log, "unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
 		} else
 			this.deliveryMode=newMode;
 	}

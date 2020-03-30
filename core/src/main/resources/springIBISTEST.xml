@@ -35,7 +35,7 @@
 	<bean id="proxiedDataSources" class="java.util.HashMap">
 		<constructor-arg>
 			<map>
-				<entry key="jdbc/${instance.name.lc}">
+				<entry key="${jdbc.datasource.default}">
 					<ref bean="ibisTestDataSource"/>
 				</entry>
 			</map>
