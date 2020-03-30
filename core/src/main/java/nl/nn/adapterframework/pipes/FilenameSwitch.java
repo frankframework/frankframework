@@ -49,9 +49,7 @@ public class FilenameSwitch extends AbstractPipe {
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				String msg = getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.";
-				configWarnings.add(log, msg);
+				ConfigurationWarnings.add(this, log, "has notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
 			}
 		}
 	}

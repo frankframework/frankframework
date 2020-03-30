@@ -46,9 +46,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	public void configure(boolean trust) throws ConfigurationException {
 		super.configure();
 		if (!trust) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] for better security";
-			configWarnings.add(log, msg, true);
+			ConfigurationWarnings.add(log, "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] to avoid potential SQL injections!");
 		}
 	}
 

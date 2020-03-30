@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.batch;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
@@ -59,17 +57,6 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 	}
 	public int getFieldNr() {
 		return fieldNr;
-	}
-
-	/** 
-	 * @deprecated typo has been fixed: please use 'separator' instead of 'seperator'
-	 */
-	public void setSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'separator' instead of 'seperator'";
-		configWarnings.add(log, msg);
-
-		separator = string;
 	}
 
 	@IbisDoc({"separator that separates the fields in the record", ""})
