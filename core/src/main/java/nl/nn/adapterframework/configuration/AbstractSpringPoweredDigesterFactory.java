@@ -170,14 +170,14 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		Class<?> clazz = ClassUtils.getUserClass(currObj);
 		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
 		if(warning != null) {
-			Locator loc = digester.getDocumentLocator();
-			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, null);
+			String msg = getObjectName(currObj, null);
 			if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
 				msg += " is deprecated";
 			}
 			if(StringUtils.isNotEmpty(warning.value())) {
 				msg += ": " + warning.value();
 			}
+			//Only print it once per deprecated class
 			ConfigurationWarnings.add(log, msg);
 		}
 	}
@@ -273,8 +273,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	private void addConfigWarning(Object currObj, String name, String message) {
 		Locator loc = digester.getDocumentLocator();
-		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-		ConfigurationWarnings.add(log, msg);
+		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
+		ConfigurationWarnings.add(null, log, msg);
 	}
 
     /**

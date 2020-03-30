@@ -1032,10 +1032,10 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		if (requestReplyLogging) {
-			ConfigurationWarnings.add(log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
 		} else {
-			ConfigurationWarnings.add(log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
 	}

@@ -52,8 +52,8 @@ public class AttributeCheckingRule extends Rule {
 		return result;
 	}
 
+	@Override
 	public void begin(String uri, String elementName, Attributes attributes) throws Exception {
-
 		Object top = digester.peek();
 
 		for (int i = 0; i < attributes.getLength(); i++) {
@@ -73,7 +73,7 @@ public class AttributeCheckingRule extends Rule {
 				if (m==null) {
 					Locator loc = digester.getDocumentLocator();
 					String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
-					ConfigurationWarnings.add(log, msg);
+					ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
 				} else {
 					ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
 					if(warning != null) {
@@ -87,7 +87,7 @@ public class AttributeCheckingRule extends Rule {
 						if(StringUtils.isNotEmpty(warning.value())) {
 							msg += ": " + warning.value();
 						}
-						ConfigurationWarnings.add(log, msg);
+						ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
 					}
 				}
 			}

@@ -40,7 +40,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	 * Add configuration independent warning and log the exception stack
 	 */
 	public static void add(Logger log, String message, Throwable t) {
-		getInstance().add(log, message, t, (t==null));
+		getInstance().addConfigurationIndependentWarning(log, message, t, (t==null));
 	}
 
 	/**
@@ -69,7 +69,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		if (activeConfiguration!=null) {
 			activeConfiguration.getConfigurationWarnings().add(log, msg, t, (t==null));
 		} else {
-			super.add(log, msg, t, (t==null));
+			addConfigurationIndependentWarning(log, msg, t, (t==null));
 		}
 	}
 
@@ -86,11 +86,16 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 			if (activeConfiguration!=null) {
 				return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
 			} else {
-				return super.add(log, msg, t, onlyOnce);
+				return addConfigurationIndependentWarning(log, msg, t, onlyOnce);
 			}
 		}
 	}
 
+	private boolean addConfigurationIndependentWarning(Logger log, String msg, Throwable t, boolean onlyOnce) {
+		return super.add(log, msg, t, onlyOnce);
+	}
+
+	@Override
 	public boolean containsDefaultValueException(String key) {
 		if (activeConfiguration!=null) {
 			return activeConfiguration.getConfigurationWarnings().containsDefaultValueException(key);
