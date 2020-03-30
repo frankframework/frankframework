@@ -335,7 +335,9 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 	}
 
-	private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
+	// Currently commented out because builder param isnt used
+	// private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
+	private void buildWildcard(XSTerm term){
 		XSWildcard wildcard=(XSWildcard)term;
 		String processContents;
 		switch (wildcard.getProcessContents()) {
@@ -360,50 +362,64 @@ public class XmlTypeToJsonSchemaConverter  {
 //			log.warn(msg);
 	}
 
+	private void buildCompositorAllSequence(JsonObjectBuilder builder, XSObjectList particles, 
+	XSObjectList attributeUses, boolean shouldCreateReferences){
+		if (DEBUG) log.debug("modelGroup COMPOSITOR_SEQUENCE or COMPOSITOR_ALL");
+		if (skipArrayElementContainers && particles.getLength()==1) {
+			XSParticle childParticle = (XSParticle)particles.item(0);
+			if (childParticle.getMaxOccursUnbounded() || childParticle.getMaxOccurs()>1) {
+				if (DEBUG) log.debug("skippable array element childParticle ["+ToStringBuilder.reflectionToString(particles.item(0),ToStringStyle.MULTI_LINE_STYLE)+"]");
+				buildSkippableArrayContainer(childParticle, shouldCreateReferences, builder);
+				return;
+			}
+		}
+		buildProperties(builder, particles, attributeUses, shouldCreateReferences);
+	}
+
+	private void buildCompositorChoice(JsonObjectBuilder builder, XSObjectList particles){
+		if (DEBUG) log.debug("modelGroup COMPOSITOR_CHOICE");
+		JsonArrayBuilder oneOfBuilder = Json.createArrayBuilder();
+		for (int i=0;i<particles.getLength();i++) {
+			XSParticle childParticle = (XSParticle)particles.item(i);
+			if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
+			JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
+			buildParticle(typeBuilder,childParticle,null);
+			oneOfBuilder.add(typeBuilder.build());
+		}
+		builder.add("oneOf", oneOfBuilder.build());
+	}
+	
+	private void buildModelGroup(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, 
+	boolean multiOccurring, boolean shouldCreateReferences){
+		XSModelGroup modelGroup = (XSModelGroup)term;
+		short compositor = modelGroup.getCompositor();			
+		XSObjectList particles = modelGroup.getParticles();
+		if (DEBUG) log.debug("modelGroup ["+ToStringBuilder.reflectionToString(modelGroup,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		if (DEBUG) log.debug("modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		switch (compositor) {
+		case XSModelGroup.COMPOSITOR_SEQUENCE:
+		case XSModelGroup.COMPOSITOR_ALL:
+			buildCompositorAllSequence(builder, particles, attributeUses, shouldCreateReferences);
+			return;
+		case XSModelGroup.COMPOSITOR_CHOICE:
+			buildCompositorChoice(builder, particles);	
+			return;
+		default:
+			throw new IllegalStateException("getTerm modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
+		} 
+	}
+
 	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, 
 	boolean multiOccurring, boolean shouldCreateReferences) {
 		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
-			short compositor = modelGroup.getCompositor();			
-			XSObjectList particles = modelGroup.getParticles();
-			if (DEBUG) log.debug("modelGroup ["+ToStringBuilder.reflectionToString(modelGroup,ToStringStyle.MULTI_LINE_STYLE)+"]");
-			if (DEBUG) log.debug("modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
-			switch (compositor) {
-			case XSModelGroup.COMPOSITOR_SEQUENCE:
-			case XSModelGroup.COMPOSITOR_ALL:
-				if (DEBUG) log.debug("modelGroup COMPOSITOR_SEQUENCE or COMPOSITOR_ALL");
-				if (skipArrayElementContainers && particles.getLength()==1) {
-					XSParticle childParticle = (XSParticle)particles.item(0);
-					if (childParticle.getMaxOccursUnbounded() || childParticle.getMaxOccurs()>1) {
-						if (DEBUG) log.debug("skippable array element childParticle ["+ToStringBuilder.reflectionToString(particles.item(0),ToStringStyle.MULTI_LINE_STYLE)+"]");
-						buildSkippableArrayContainer(childParticle, shouldCreateReferences, builder);
-						return;
-					}
-				}
-				buildProperties(builder, particles, attributeUses, shouldCreateReferences);
-				return;
-			case XSModelGroup.COMPOSITOR_CHOICE:
-				if (DEBUG) log.debug("modelGroup COMPOSITOR_CHOICE");
-				JsonArrayBuilder oneOfBuilder = Json.createArrayBuilder();
-				for (int i=0;i<particles.getLength();i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-					JsonObjectBuilder typeBuilder = Json.createObjectBuilder();
-					buildParticle(typeBuilder,childParticle,null);
-					oneOfBuilder.add(typeBuilder.build());
-				}
-				builder.add("oneOf", oneOfBuilder.build());
-				return;
-			default:
-				throw new IllegalStateException("getTerm modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
-			} 
+			buildModelGroup(builder, term, attributeUses, multiOccurring, shouldCreateReferences);
 		} 
 		if (term instanceof XSElementDeclaration) {
 			buildElementDecleration(builder, term, multiOccurring, shouldCreateReferences);
 			return;
 		}
 		if (term instanceof XSWildcard) {
-			buildWildcard(builder, term);
+			buildWildcard(term);
 			return;
 		} 
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
