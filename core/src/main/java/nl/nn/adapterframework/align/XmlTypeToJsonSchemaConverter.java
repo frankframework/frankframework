@@ -393,7 +393,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	}
 	
 	private void buildModelGroup(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, 
-	boolean multiOccurring, boolean shouldCreateReferences){
+	boolean shouldCreateReferences){
 		XSModelGroup modelGroup = (XSModelGroup)term;
 		short compositor = modelGroup.getCompositor();			
 		XSObjectList particles = modelGroup.getParticles();
@@ -415,7 +415,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, 
 	boolean multiOccurring, boolean shouldCreateReferences) {
 		if (term instanceof XSModelGroup) {
-			buildModelGroup(builder, term, attributeUses, multiOccurring, shouldCreateReferences);
+			buildModelGroup(builder, term, attributeUses, shouldCreateReferences);
 			return;
 		} 
 		if (term instanceof XSElementDeclaration) {
