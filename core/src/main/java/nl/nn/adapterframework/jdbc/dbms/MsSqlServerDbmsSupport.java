@@ -19,17 +19,26 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @author  Gerrit van Brakel
  * @since  
  */
 public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
+
+	protected static final String NEXT_VALUE_FOR = "NEXT VALUE FOR ";
+	protected static final String SELECT_CURRENT_VALUE = "SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME = ";
+	protected static final String DEFAULT_BLOB_VALUE = "0x";
+	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
+	protected static final String GET_DATE = "GETDATE()";
+	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
+	
 
 	public int getDatabaseType() {
 		return DbmsSupportFactory.DBMS_MSSQLSERVER;
@@ -75,6 +84,28 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return "VARCHAR";
 	}
 	
+	@Override
+	public void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConversionRequired(sqlDialectFrom)) {
+			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
+				List<String> multipleQueries = splitQuery(queryContext.getQuery());
+				StringBuilder sb = new StringBuilder();
+				for (String singleQuery : multipleQueries) {
+					QueryContext singleQueryContext = new QueryContext(singleQuery, queryContext.getQueryType(), queryContext.getParameterList());
+					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryContext, multipleQueries.size() == 1);
+					if (convertedQuery != null) {
+						sb.append(convertedQuery);
+						if (singleQueryContext.getQueryType()!=null && !singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {
+							queryContext.setQueryType(singleQueryContext.getQueryType());
+						}
+					}
+				}
+				queryContext.setQuery(sb.toString());
+			} else {
+				warnConvertQuery(sqlDialectFrom);
+			}
+		}
+	}
 	
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {

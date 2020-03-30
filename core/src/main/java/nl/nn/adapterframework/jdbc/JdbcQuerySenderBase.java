@@ -703,7 +703,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				Statement resStmt = null;
 				try {
 					resStmt = connection.createStatement();
-
 					if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
 					ResultSet rs = resStmt.executeQuery(convertedResultQuery);
 					return getResult(rs);
