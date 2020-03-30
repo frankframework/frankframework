@@ -276,7 +276,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 		
 			XSTerm childTerm = childParticle.getTerm();
-			if ( !(childTerm instanceof XSModelGroup) ) {
+			if (childTerm instanceof XSElementDeclaration) {
 				XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
 				String elementName = elementDeclaration.getName();
 
@@ -302,19 +302,22 @@ public class XmlTypeToJsonSchemaConverter  {
 		JsonObjectBuilder refBuilder = Json.createObjectBuilder();
 		buildParticle(refBuilder,childParticle,null);
 
-		XSElementDeclaration elementDeclaration=(XSElementDeclaration)childParticle.getTerm();
-		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-		JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
-	
-		builder.add("type", "array");
-		if (elementDeclaration.getNillable()) {
-			definition=nillable(definition);
+		XSTerm childTerm = childParticle.getTerm();
+		if( childTerm instanceof XSElementDeclaration ){
+			XSElementDeclaration elementDeclaration=(XSElementDeclaration) childTerm;
+			XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
+			JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
+		
+			builder.add("type", "array");
+			if (elementDeclaration.getNillable()) {
+				definition=nillable(definition);
+			}
+			builder.add("items", definition);
 		}
-		builder.add("items", definition);
 	}
 
 	private void buildElementDecleration(JsonObjectBuilder builder, XSTerm term,
-	boolean multiOccurring, boolean shouldCreateReferences){
+	boolean multiOccurring, boolean shouldCreateReferences){	
 		XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
 		String elementName=elementDeclaration.getName();
 		//if (DEBUG) log.debug("XSElementDeclaration name ["+elementName+"]");
@@ -336,6 +339,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				builder.add(elementName, definition);
 			}
 		}
+		
 	}
 
 	// Currently commented out because builder param isnt used
