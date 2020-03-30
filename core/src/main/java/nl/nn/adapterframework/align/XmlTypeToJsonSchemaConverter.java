@@ -179,7 +179,7 @@ public class XmlTypeToJsonSchemaConverter  {
 
 				builder.add("$ref", "#/definitions/"+complexTypeDefinitionName);
 				if(!namedJsonObjects.contains(complexTypeDefinitionName)){
-					buildReference((XSTypeDefinition) complexTypeDefinition, complexTypeDefinitionName);
+					buildReference(complexTypeDefinition, complexTypeDefinitionName);
 				}
 				return;
 			}
