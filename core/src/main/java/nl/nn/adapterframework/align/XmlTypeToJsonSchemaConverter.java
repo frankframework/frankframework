@@ -307,6 +307,9 @@ public class XmlTypeToJsonSchemaConverter  {
 		JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
 	
 		builder.add("type", "array");
+		if (elementDeclaration.getNillable()) {
+			definition=nillable(definition);
+		}
 		builder.add("items", definition);
 	}
 

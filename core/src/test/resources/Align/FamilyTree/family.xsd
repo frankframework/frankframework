@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns="urn:family" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:family">
+<xs:schema xmlns="urn:family" xmlns:ns1="urn:family" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:family" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:element name="family">
 		<xs:annotation>
 			<xs:documentation>Comment describing your root element</xs:documentation>
