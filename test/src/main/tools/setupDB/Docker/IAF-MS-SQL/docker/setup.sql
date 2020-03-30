@@ -13,8 +13,5 @@ GO
 ALTER ROLE db_owner ADD MEMBER [wearefrank_user];
 GO
 
-use master
-GO
-
-ALTER ROLE SqlJDBCXAUser ADD MEMBER [wearefrank_user];
+ALTER ROLE SqlJDBCXAUser ADD MEMBER wearefrank_user;
 GO
