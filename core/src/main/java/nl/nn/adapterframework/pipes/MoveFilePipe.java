@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @deprecated Please use LocalFileSystemPipe with action="move"
  */
 @Deprecated
-@ConfigurationWarning("Please use LocalFileSystemPipe with action=\"move\"")
+@ConfigurationWarning("Please replace with LocalFileSystemPipe and action=\"move\"")
 public class MoveFilePipe extends FixedForwardPipe {
 
 	private String directory;

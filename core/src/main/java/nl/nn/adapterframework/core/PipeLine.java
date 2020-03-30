@@ -103,7 +103,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, INamedObject {
+public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
     private Logger log = LogUtil.getLogger(this);
 
 	private PipeLineProcessor pipeLineProcessor;
@@ -150,8 +150,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter<String,String> cache;
-
-	private String name;
 
 
 	/**
@@ -231,14 +229,14 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
-			log.debug("Pipeline of [" + owner.getName() + "] configuring Pipe ["+pipe.getName()+"]");
+			log.debug(getLogPrefix()+"configuring Pipe ["+pipe.getName()+"]");
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
 			// forward is defined, it is not overwritten by the globals
-            for (String gfName : globalForwards.keySet()) {
-                PipeForward pipeForward = globalForwards.get(gfName);
-                pipe.registerForward(pipeForward);
-            }
+			for (String gfName : globalForwards.keySet()) {
+				PipeForward pipeForward = globalForwards.get(gfName);
+				pipe.registerForward(pipeForward);
+			}
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
@@ -263,18 +261,18 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			}
 			configure(pipe);
 		}
-	    if (pipeLineExits.size() < 1) {
-		    throw new ConfigurationException("no PipeLine Exits specified");
-	    }
-	    if (pipes.isEmpty()) {
-		    throw new ConfigurationException("no Pipes in PipeLine");
-	    }
-	    if (this.firstPipe == null) {
-		    firstPipe=pipes.get(0).getName();
-	    }
-	    if (getPipe(firstPipe) == null) {
-		    throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
-	    }
+		if (pipeLineExits.size() < 1) {
+			throw new ConfigurationException("no PipeLine Exits specified");
+		}
+		if (pipes.isEmpty()) {
+			throw new ConfigurationException("no Pipes in PipeLine");
+		}
+		if (this.firstPipe == null) {
+			firstPipe=pipes.get(0).getName();
+		}
+		if (getPipe(firstPipe) == null) {
+			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
+		}
 
 		IPipe inputValidator = getInputValidator();
 		IPipe outputValidator = getOutputValidator();
@@ -283,7 +281,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
-			log.debug("Pipeline of [" + owner.getName() + "] configuring InputValidator");
+			log.debug(getLogPrefix()+"configuring InputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			inputValidator.registerForward(pf);
@@ -291,7 +289,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			configure(inputValidator);
 		}
 		if (outputValidator!=null) {
-			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputValidator");
+			log.debug(getLogPrefix()+"configuring OutputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			outputValidator.registerForward(pf);
@@ -300,7 +298,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 		}
 
 		if (getInputWrapper()!=null) {
-			log.debug("Pipeline of [" + owner.getName() + "] configuring InputWrapper");
+			log.debug(getLogPrefix()+"configuring InputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
@@ -308,13 +306,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			configure(getInputWrapper());
 		}
 		if (getOutputWrapper()!=null) {
-			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputWrapper");
+			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe
-					&& adapter instanceof Adapter) {
-				((AbstractPipe) getOutputWrapper())
-						.setRecoverAdapter(((Adapter) adapter).isRecover());
+			if (getOutputWrapper() instanceof AbstractPipe && adapter instanceof Adapter) {
+				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(((Adapter) adapter).isRecover());
 			}
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
@@ -349,15 +345,15 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
 				int stt = Integer.parseInt(systemTransactionTimeout);
 				if (getTransactionTimeout()>stt) {
-					ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
+					ConfigurationWarnings.add(null, log, getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
 				}
 			}
 		}
-		
+
 		int txOption = this.getTransactionAttributeNum();
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
-		log.debug("Pipeline of [" + owner.getName() + "] successfully configured");
+		log.debug(getLogPrefix()+"successfully configured");
 	}
 
 	public void configure(IPipe pipe) throws ConfigurationException {
@@ -415,26 +411,26 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			throw new ConfigurationException("Exception configuring Pipe ["+pipe.getName()+"]",t);
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Pipeline of [" + owner.getName() + "]: Pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");
+			log.debug(getLogPrefix()+"pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");
 		}
 	}
 
 	public PipeLineExit findExitByState(String state) {
-        for (String exitPath : pipeLineExits.keySet()) {
-            PipeLineExit pe = pipeLineExits.get(exitPath);
-            if (pe.getState().equals(state)) {
-                return pe;
-            }
-        }
+		for (String exitPath : pipeLineExits.keySet()) {
+			PipeLineExit pe = pipeLineExits.get(exitPath);
+			if (pe.getState().equals(state)) {
+				return pe;
+			}
+		}
 		return null;
 	}
 
-    /**
-     * @return the number of pipes in the pipeline
-     */
-    public int getPipeLineSize(){
-        return pipesByName.size();
-    }
+	/**
+	 * @return the number of pipes in the pipeline
+	 */
+	public int getPipeLineSize(){
+		return pipesByName.size();
+	}
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
@@ -541,16 +537,16 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 	}
 
 	/**
-    * Register global forwards.
-    */
-   public void registerForward(PipeForward forward){
-      globalForwards.put(forward.getName(), forward);
-      log.debug("registered global PipeForward "+forward.toString());
-    }
+	 * Register global forwards.
+	 */
+	public void registerForward(PipeForward forward){
+		globalForwards.put(forward.getName(), forward);
+		log.debug("registered global PipeForward "+forward.toString());
+	}
 
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(this, log, "Exit named ["+exit.getPath()+"] already exists");
+			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
 		}
 		pipeLineExits.put(exit.getPath(), exit);
 	}
@@ -559,26 +555,25 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
 
-    /**
-     * Register the adapterName of this Pipelineprocessor.
-     * @param adapter
-     */
-    public void setAdapter(Adapter adapter) {
-        this.adapter = adapter;
-        setOwner(adapter);
-    }
+	/**
+	 * Register the adapterName of this Pipelineprocessor.
+	 * @param adapter
+	 */
+	public void setAdapter(Adapter adapter) {
+		this.adapter = adapter;
+		setOwner(adapter);
+	}
 	public Adapter getAdapter() {
 		return adapter;
 	}
 
 	public void setOwner(INamedObject owner) {
 		this.owner = owner;
-		setName("Pipeline of [" + owner.getName() + "]");
 	}
 	public INamedObject getOwner() {
 		return owner;
 	}
-	
+
 	/**
 	 * set the name of the first pipe to execute when a message is to be processed
 	 * 
@@ -591,10 +586,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 	}
 
 	public void start() throws PipeStartException {
-	    log.info("Pipeline of [" + owner.getName() + "] is starting pipeline");
+		log.info(getLogPrefix()+"is starting pipeline");
 
 		if (cache!=null) {
-		    log.debug("Pipeline of [" + owner.getName() + "] starting cache");
+			log.debug(getLogPrefix()+"starting cache");
 			cache.open();
 		}
 
@@ -602,11 +597,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
 
-			log.debug("Pipeline of [" + owner.getName() + "] starting pipe [" + pipeName+"]");
+			log.debug(getLogPrefix()+"starting pipe [" + pipeName+"]");
 			pipe.start();
-			log.debug("Pipeline of [" + owner.getName() + "] successfully started pipe [" + pipeName + "]");
+			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
 		}
-	    log.info("Pipeline of [" + owner.getName() + "] is successfully started pipeline");
+	log.info(getLogPrefix()+"is successfully started pipeline");
 
 	}
 
@@ -616,21 +611,21 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 	 * @see IPipe#stop
 	 */
 	public void stop() {
-	    log.info("Pipeline of [" + owner.getName() + "] is closing pipeline");
+		log.info(getLogPrefix()+"is closing pipeline");
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
 
-			log.debug("Pipeline of [" + owner.getName() + "] is stopping [" + pipeName+"]");
+			log.debug(getLogPrefix()+"is stopping [" + pipeName+"]");
 			pipe.stop();
-			log.debug("Pipeline of [" + owner.getName() + "] successfully stopped pipe [" + pipeName + "]");
+			log.debug(getLogPrefix()+"successfully stopped pipe [" + pipeName + "]");
 		}
 
 		if (cache!=null) {
-		    log.debug("Pipeline of [" + owner.getName() + "] closing cache");
+			log.debug(getLogPrefix()+"closing cache");
 			cache.close();
 		}
-	    log.debug("Pipeline of [" + owner.getName() + "] successfully closed pipeline");
+		log.debug(getLogPrefix()+"successfully closed pipeline");
 
 	}
 
@@ -664,10 +659,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		if (transacted) {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
+			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
+			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
@@ -859,13 +854,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics, IN
 		return adapterToRunBeforeOnEmptyInput;
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
+	private String getLogPrefix() {
+		String prefix = "PipeLine";
+		if(owner != null) {
+			prefix += " of [" + owner.getName() + "]";
+		}
+		return prefix + " ";
 	}
 }

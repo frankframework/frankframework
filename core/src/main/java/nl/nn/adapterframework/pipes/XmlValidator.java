@@ -778,7 +778,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					}
 				}
 				if (!found) {
-					ConfigurationWarnings.add(this, log, "Element '"+validElement+"' not in list of available root elements "+allRootTags);
+					ConfigurationWarnings.add(this, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
 				}
 			}
 		}

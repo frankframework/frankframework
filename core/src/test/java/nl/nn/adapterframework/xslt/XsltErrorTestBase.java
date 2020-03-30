@@ -35,7 +35,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=0;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
 	
 	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
@@ -134,17 +133,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
-	
-	
-	// detect duplicate imports in configure()
-	@Test
-	public void duplicateImportErrorAlertsXslt1() throws Exception {
-		// this condition appears to result in a warning only for XSLT 2.0 using Saxon
-		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
-		setXslt2(false);
-		pipe.configure();
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING*getMultiplicity(),null);
-	}
 
 	// detect duplicate imports in configure()
 	@Test
@@ -153,7 +141,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		checkTestAppender(getMultiplicity()*(1+EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING),"is included or imported more than once");
+		checkTestAppender(getMultiplicity()*1,"is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
@@ -225,7 +213,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
+
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -246,7 +234,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -261,7 +249,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
