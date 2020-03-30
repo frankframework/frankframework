@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.batch;
 
-import java.util.List;
-
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

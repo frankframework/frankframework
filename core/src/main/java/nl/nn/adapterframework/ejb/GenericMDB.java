@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.ejb;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.MessageDrivenBean;
@@ -27,7 +24,6 @@ import javax.jms.MessageListener;
 
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.receivers.GenericReceiver;
 
 /**
  * @author  Tim van der Leeuw
@@ -37,7 +33,8 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
     
     protected MessageDrivenContext ejbContext;
     
-    public void setMessageDrivenContext(MessageDrivenContext ejbContext) throws EJBException {
+    @Override
+	public void setMessageDrivenContext(MessageDrivenContext ejbContext) throws EJBException {
         log.info("Received EJB-MDB Context");
         this.ejbContext = ejbContext;
     }
@@ -47,12 +44,14 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
         onEjbCreate();
     }
     
-    public void ejbRemove() throws EJBException {
+    @Override
+	public void ejbRemove() throws EJBException {
         log.info("Removing MDB");
         onEjbRemove();
     }
 
-    public void onMessage(Message message) {
+    @Override
+	public void onMessage(Message message) {
         try {
             // Code is not thread-safe but the same instance
             // should be looked up always so there's no point
@@ -73,7 +72,8 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.ejb.AbstractEJBBase#getEJBContext()
      */
-    protected EJBContext getEJBContext() {
+    @Override
+	protected EJBContext getEJBContext() {
         return this.ejbContext;
     }
     

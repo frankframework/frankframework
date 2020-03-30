@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker>{

@@ -22,13 +22,14 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.sql.DataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -67,7 +68,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
-	private Map proxiedDataSources;
+	private Map<String, DataSource> proxiedDataSources;
 	private String jmsRealm;
 
 	@Override
@@ -214,6 +215,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public void start() throws PipeStartException {
 		try {
 			qs.open();
@@ -226,16 +228,17 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			throw pse;
 		}
 	}
+
+	@Override
 	public void stop() {
 		log.info(getLogPrefix(null) + "is closing");
 		qs.close();
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
-	@IbisDoc({"", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
