@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
@@ -55,6 +56,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
 	private String logPrefix = null;
+	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
 	public ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -148,6 +150,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		return reportLevel;
 	}
 
+	public void setAllowCustomClasses(boolean allow) {
+		allowCustomClasses = allow;
+	}
+
 	/**
 	 * Override this method and make it final so nobody can overwrite it.
 	 * Implementations of this class should use {@link ClassLoaderBase#getLocalResource(String)}
@@ -215,6 +221,35 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] retrieved files ["+name+"] found urls " + urls);
 
 		return urls.elements();
+	}
+
+	@Override
+	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		Throwable throwable = null;
+		try {
+			return getParent().loadClass(name); // First try to load the class natively
+		} catch (Throwable t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
+			throwable = t;
+		}
+
+		String path = name.replace(".", "/")+".class";
+		URL url = null;
+		if(allowCustomClasses) {
+			url = getResource(name);
+		} else {
+			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
+		}
+
+		if(url != null) {
+			try {
+				byte[] bytes = Misc.streamToBytes(url.openStream());
+				return defineClass(name, bytes, 0, bytes.length);
+			} catch (Exception e) {
+				throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this.toString()+"]", e);
+			}
+		}
+
+		throw new ClassNotFoundException("class ["+path+"] not found in classloader ["+this.toString()+"]", throwable); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override
