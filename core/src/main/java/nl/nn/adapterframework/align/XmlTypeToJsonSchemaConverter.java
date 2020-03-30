@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.json.Json;
@@ -33,6 +35,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSMultiValueFacet;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -146,13 +149,39 @@ public class XmlTypeToJsonSchemaConverter  {
 		} else {
 			XSSimpleTypeDefinition simpleTypeDefinition = (XSSimpleTypeDefinition)typeDefinition;
 			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");
+			if (DEBUG) log.debug("simpleTypeDefinition.getBuiltInKind ["+simpleTypeDefinition.getBuiltInKind()+"]");
 			if (DEBUG) log.debug(ToStringBuilder.reflectionToString(typeDefinition,ToStringStyle.MULTI_LINE_STYLE));
+
  			JsonObjectBuilder builder = Json.createObjectBuilder();
-			if (simpleTypeDefinition.getNumeric()) {
-				builder.add("type", "number");
-			} else if (simpleTypeDefinition.getBuiltInKind() == XSConstants.BOOLEAN_DT) {
+			short builtInKind = simpleTypeDefinition.getBuiltInKind();
+			String dataType = getJsonDataType(builtInKind);
+			
+			if (dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("number")) {
+				builder.add("type", dataType.toLowerCase());
+
+				applyFacet(simpleTypeDefinition, builder, "maximum", XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "minimum", XSSimpleTypeDefinition.FACET_MININCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "exclusiveMaximum", XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "exclusiveMinimum", XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
+			} else if (dataType.equalsIgnoreCase("boolean")) {
 				builder.add("type", "boolean");
+			} else if (dataType.equalsIgnoreCase("string")) {	
+				builder.add("type", "string");
+			
+				applyFacet(simpleTypeDefinition, builder, "maxLength", XSSimpleTypeDefinition.FACET_MAXLENGTH);
+				applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
+				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
+			} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
+				builder.add("type", "string");
+				
+				builder.add("format", dataType);
+
+				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
 			}
+			
 //			attributeDecl.getTypeDefinition();
 //			String type;
 //			switch(attributeDecl.getType()) {
@@ -184,7 +213,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		XSTerm term = particle.getTerm();
 		if (term==null) {
 			throw new NullPointerException("particle.term is null");
-		} 
+		}
 		buildTerm(builder,term,attributeUses, particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1);
 	}
 	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring) {
@@ -208,6 +237,8 @@ public class XmlTypeToJsonSchemaConverter  {
 				builder.add("type", "object");
 				builder.add("additionalProperties", false);
 				JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
+				List<String> requiredProperties = new ArrayList<String>();
+
 				if (attributeUses!=null) {
 					for (int i=0; i< attributeUses.getLength(); i++) {
 						XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
@@ -218,12 +249,24 @@ public class XmlTypeToJsonSchemaConverter  {
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
 					if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
+					if(childParticle.getMinOccurs() != 0){
+						XSElementDeclaration elementDeclaration=(XSElementDeclaration)childParticle.getTerm();
+						String elementName=elementDeclaration.getName();
+						requiredProperties.add(elementName);
+					}
 					buildParticle(propertiesBuilder, childParticle, null);
 //					if (!getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle,path,failureReasons)) {
 //						return false;
 //					}
 				}
 				builder.add("properties", propertiesBuilder.build());
+				if(requiredProperties.size() > 0){
+					JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
+					for (String requiredProperty : requiredProperties) {
+						requiredPropertiesBuilder.add(requiredProperty);
+					}
+					builder.add("required", requiredPropertiesBuilder.build());
+				}
 				return;
 			case XSModelGroup.COMPOSITOR_CHOICE:
 				if (DEBUG) log.debug("modelGroup COMPOSITOR_CHOICE");
@@ -338,6 +381,133 @@ public class XmlTypeToJsonSchemaConverter  {
 		
 		typeBuilder.add("anyOf", arrayBuilder.build());
 		return typeBuilder.build();
+	}
+
+	private void applyFacet(XSSimpleTypeDefinition simpleTypeDefinition, JsonObjectBuilder builder, String key, short facet){
+		if(simpleTypeDefinition.getFacet(facet) != null){
+			String lexicalFacetValue = simpleTypeDefinition.getLexicalFacetValue(facet);
+			if(lexicalFacetValue != null){
+				switch(facet){
+					case XSSimpleTypeDefinition.FACET_MAXINCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MININCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MINEXCLUSIVE:
+					case XSSimpleTypeDefinition.FACET_MAXLENGTH:
+					case XSSimpleTypeDefinition.FACET_MINLENGTH:
+						/*
+							Not sure about this.. 
+	
+							simpleTypeDefinition.getLexicalFacetValue(facet) returns a numeric value as string
+							if value > MAX_INT, Integer.parseInt(value) will throw NumberFormatException
+	
+							currently this exception is catched and retried as Long.ParseLong(value)
+							but what if this throws NumberFormatException?
+	
+							how to deal with this properly?
+							-----
+							UPDATE:
+							Tried parsing as long and logging the value when couldn't parse, appears to be a 20 digit numeric value
+							which would require to use BigInteger
+
+							What is the best method to do this? Try and catch int, long & then bigint or directly to big int?
+						*/
+						try {
+							builder.add(key, Integer.parseInt(lexicalFacetValue));
+						} catch (NumberFormatException nfe) {
+							log.warn("Couldn't parse value ["+lexicalFacetValue+"] as Integer... retrying as Long");
+	
+							try {
+								builder.add(key, Long.parseLong(lexicalFacetValue));
+							} catch (NumberFormatException nfex) {
+								log.warn("Couldn't parse value ["+lexicalFacetValue+"] as Long... retrying as BigInteger");
+								
+								try {
+									builder.add(key, new BigInteger(lexicalFacetValue));
+								} catch (NumberFormatException nfexx) {
+									log.warn("Couldn't parse value ["+lexicalFacetValue+"] as BigInteger");
+								}
+							}
+						}	
+						break;
+					default:
+						// hmm never reaches this block?
+						log.debug("Setting value ["+lexicalFacetValue+"] as String for facet ["+simpleTypeDefinition.getFacet(facet)+"]");
+						builder.add(key, lexicalFacetValue);
+						break;
+				}
+			} else if (facet == XSSimpleTypeDefinition.FACET_PATTERN || facet == XSSimpleTypeDefinition.FACET_ENUMERATION) {
+				XSObjectList multiValuedFacets = simpleTypeDefinition.getMultiValueFacets();
+
+				for (int i=0; i<multiValuedFacets.getLength(); i++) {
+					XSMultiValueFacet multiValuedFacet = (XSMultiValueFacet) multiValuedFacets.item(i);
+
+					if (DEBUG) log.debug("Inspecting single multi valued facet ["+multiValuedFacet+"] which is named ["+multiValuedFacet.getName()+"] which is of type ["+multiValuedFacet.getType()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getLexicalFacetValues() for ["+multiValuedFacet.getName()+"] which has value of ["+multiValuedFacet.getLexicalFacetValues()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getEnumerationValues() for ["+multiValuedFacet.getName()+"] which has value of ["+multiValuedFacet.getEnumerationValues()+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getFacetKind() == enum for ["+multiValuedFacet.getName()+"] which has value of ["+(multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_ENUMERATION)+"]");
+					if (DEBUG) log.debug("Inspecting multiValuedFacet.getFacetKind() == pattern for ["+multiValuedFacet.getName()+"] which has value of ["+(multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_PATTERN)+"]");
+
+					if(facet == multiValuedFacet.getFacetKind()){
+						StringList lexicalFacetValues = multiValuedFacet.getLexicalFacetValues();
+						JsonArrayBuilder enumBuilder = Json.createArrayBuilder();
+
+						/* 
+							Isn't this strange?
+							This assumes that an enumeration/pattern value is always a string, 
+							
+							don't we need to try and parse?
+						*/
+
+						for (int x=0; x<lexicalFacetValues.getLength(); x++) {
+							lexicalFacetValue = lexicalFacetValues.item(x); 
+							enumBuilder.add(lexicalFacetValue);
+						}
+
+						builder.add(key, enumBuilder.build());
+					}
+				}
+			}
+		}
+		
+	}
+
+	private String getJsonDataType(short builtInKind){
+		String type;
+		switch(builtInKind) {
+			case XSConstants.BOOLEAN_DT:
+				type="boolean";
+				break;
+			case XSConstants.SHORT_DT:
+			case XSConstants.INT_DT:
+			case XSConstants.INTEGER_DT:
+			case XSConstants.NEGATIVEINTEGER_DT:
+			case XSConstants.NONNEGATIVEINTEGER_DT:
+			case XSConstants.NONPOSITIVEINTEGER_DT:
+			case XSConstants.POSITIVEINTEGER_DT:
+			case XSConstants.BYTE_DT:
+			case XSConstants.UNSIGNEDBYTE_DT:
+			case XSConstants.UNSIGNEDINT_DT:
+			case XSConstants.UNSIGNEDSHORT_DT:
+				type="integer";
+				break;
+			case XSConstants.UNSIGNEDLONG_DT:
+			case XSConstants.LONG_DT:
+			case XSConstants.DECIMAL_DT:
+			case XSConstants.FLOAT_DT:
+			case XSConstants.DOUBLE_DT:
+				type="number";
+				break;
+			case XSConstants.DATE_DT:
+				type="date";
+				break;
+			case XSConstants.DATETIME_DT:
+				type="date-time";
+				break;
+			default:
+				type="string";
+				break;
+		}
+		return type;
 	}
 
 }

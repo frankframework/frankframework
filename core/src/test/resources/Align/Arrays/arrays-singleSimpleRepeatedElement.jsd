@@ -1,1 +1,1 @@
-"#" : {"stringElem":{"type":"array","items":{}}}
+"#" : {"stringElem":{"type":"array","items":{"type":"string"}}}

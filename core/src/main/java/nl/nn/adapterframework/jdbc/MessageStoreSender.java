@@ -116,6 +116,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
+			Message messageToStore=message;
 			if (sessionKeys != null) {
 				List<String> list = new ArrayList<String>();
 				list.add(StringEscapeUtils.escapeCsv(message.asString()));
@@ -126,7 +127,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 				}
 				StrBuilder sb = new StrBuilder();
 				sb.appendWithSeparators(list, ",");
-				message = new Message(sb.toString());
+				messageToStore = Message.asMessage(sb.toString());
 			}
 			String messageId = session.getMessageId();
 			String correlationID = messageId;
@@ -137,7 +138,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, message.asString()));
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
