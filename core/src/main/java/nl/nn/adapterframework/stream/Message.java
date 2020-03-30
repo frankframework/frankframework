@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URL;
 
@@ -36,8 +39,11 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message {
-	protected Logger log = LogUtil.getLogger(this);
+public class Message implements Serializable {
+
+	private static final long serialVersionUID = 437863352486501445L;
+
+	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 
@@ -101,6 +107,12 @@ public class Message {
 		return request;
 	}
 
+	public boolean isBinary() {
+		if (request == null) {
+			return false;
+		}
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[];
+	}
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -291,7 +303,7 @@ public class Message {
 		}
 		return new Message(object);
 	}
-	
+
 	public static Reader asReader(Object object) throws IOException {
 		return asReader(object, null);
 	}
@@ -304,7 +316,7 @@ public class Message {
 		}
 		return Message.asMessage(object).asReader(defaultCharset);
 	}
-	
+
 	public static InputStream asInputStream(Object object) throws IOException {
 		return asInputStream(object, null);
 	}
@@ -317,7 +329,7 @@ public class Message {
 		}
 		return Message.asMessage(object).asInputStream(defaultCharset);
 	}
-	
+
 	public static InputSource asInputSource(Object object) throws IOException {
 		if (object==null) {
 			return null;
@@ -327,7 +339,7 @@ public class Message {
 		}
 		return Message.asMessage(object).asInputSource();
 	}
-	
+
 	public static Source asSource(Object object) throws IOException, SAXException  {
 		if (object==null) {
 			return null;
@@ -337,7 +349,7 @@ public class Message {
 		}
 		return Message.asMessage(object).asSource();
 	}
-	
+
 	public static String asString(Object object) throws IOException {
 		return asString(object, null);
 	}
@@ -350,7 +362,7 @@ public class Message {
 		}
 		return Message.asMessage(object).asString();
 	}
-	
+
 	public static byte[] asByteArray(Object object) throws IOException {
 		return asByteArray(object, null);
 	}
@@ -363,5 +375,24 @@ public class Message {
 		}
 		return Message.asMessage(object).asByteArray(defaultCharset);
 	}
-	
+
+	/*
+	 * this method is used by Serializable, to serialize objects to a stream.
+	 */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		if (isBinary()) {
+			stream.write(asByteArray());
+		} else {
+			stream.writeChars(asString());
+		}
+	}
+
+	/*
+	 * this method is used by Serializable, to deserialize objects from a stream.
+	 */
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		log = LogUtil.getLogger(this);
+		request = stream.readObject();
+	}
+
 }
