@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
+	<!-- please make sure number of allowed database connections is at least 50, for iaf-test -->
 	<Resource
 		name="jdbc/ibis4test-h2"
 		type="org.h2.jdbcx.JdbcDataSource"
@@ -8,11 +9,14 @@
 	/>
 	<Resource
 		name="jdbc/ibis4test-oracle"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:1521:xe"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		username="testiaf_user"
 		password="testiaf_user"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:@localhost:1521:xe"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
 	/>
 	<Resource
 		name="jdbc/ibis4test-oracle-docker"
