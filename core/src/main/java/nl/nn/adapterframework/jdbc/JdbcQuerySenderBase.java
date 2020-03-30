@@ -131,6 +131,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private boolean lockRows=false;
 	private int lockWait=-1;
+	
+	private String convertedResultQuery;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -167,6 +169,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
 		return con.prepareStatement(query,columnsReturned);
+	}
+
+	@Override
+	public void open() throws SenderException {
+		super.open();
+		if (StringUtils.isNotEmpty(getResultQuery())) {
+			try (Connection connection = getConnection()) {
+				QueryContext resultContext = new QueryContext(getResultQuery(), "select", null);
+				convertQuery(connection, resultContext);
+				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
+				convertedResultQuery = resultContext.getQuery();
+			} catch (JdbcException | SQLException e) {
+				throw new SenderException("Cannot convert result query",e);
+			}
+		}
 	}
 
 	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
@@ -682,12 +699,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			} 
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
-			if (StringUtils.isNotEmpty(getResultQuery())) {
+			if (convertedResultQuery!=null) {
 				Statement resStmt = null;
 				try {
 					resStmt = connection.createStatement();
-					log.debug("obtaining result from ["	+ getResultQuery() + "]");
-					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
+					ResultSet rs = resStmt.executeQuery(convertedResultQuery);
 					return getResult(rs);
 				} finally {
 					if (resStmt != null) {
@@ -741,12 +758,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				log.debug(getLogPrefix() + "executing a SQL command");
 				numRowsAffected = statement.executeUpdate();
 			}
-			if (StringUtils.isNotEmpty(getResultQuery())) {
+			if (convertedResultQuery!=null) {
 				Statement resStmt = null;
 				try { 
 					resStmt = connection.createStatement();
-					log.debug("obtaining result from ["+getResultQuery()+"]");
-					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
+					ResultSet rs = resStmt.executeQuery(convertedResultQuery);
 					return getResult(rs);
 				} finally {
 					if (resStmt!=null) {
@@ -1151,8 +1168,5 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	public String getStreamCharset() {
 		return streamCharset;
 	}
-
-
-
 
 }
