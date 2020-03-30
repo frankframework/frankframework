@@ -119,7 +119,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			buildTerm(builder,elementDecl,null, false, false);
 		}
 		JsonObject definitionsBuilderResult = definitionsBuilder.build();
-		if(definitionsBuilderResult.isEmpty() == false){
+		if(!definitionsBuilderResult.isEmpty()){
 			builder.add("definitions", definitionsBuilderResult);
 		}
 		return builder.build();
@@ -135,10 +135,12 @@ public class XmlTypeToJsonSchemaConverter  {
 		return getDefinition(typeDefinition, true);
 	}
 
-	public JsonStructure getDefinition(XSTypeDefinition typeDefinition, Boolean shouldCreateReferences) {
+	public JsonStructure getDefinition(XSTypeDefinition typeDefinition, 
+	Boolean shouldCreateReferences) {
+		JsonObjectBuilder builder = Json.createObjectBuilder();
+
 		if (typeDefinition instanceof XSComplexTypeDefinition) {
 			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
-			JsonObjectBuilder builder = Json.createObjectBuilder();
 			switch (complexTypeDefinition.getContentType()) {
 			case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
 				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Empty, no child elements");
@@ -148,37 +150,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Element, complexTypeDefinition ["+ToStringBuilder.reflectionToString(complexTypeDefinition,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				String complexTypeDefinitionName = complexTypeDefinition.getName();
-
-				if(complexTypeDefinitionName == null && complexTypeDefinition.getContext() != null  && complexTypeDefinition.getContext().getNamespaceItem() != null){
-					complexTypeDefinitionName = complexTypeDefinition.getContext().getName();
-				}
-
-				if(complexTypeDefinitionName != null && shouldCreateReferences){
-					if (DEBUG) log.debug("handleElementContents creating ref!");
-
-					builder.add("$ref", "#/definitions/"+complexTypeDefinitionName);
-					if(namedJsonObjects.contains(complexTypeDefinitionName) == false){
-						buildReference(typeDefinition, complexTypeDefinitionName);
-					}
-					break;
-				}
-
-				XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
-				if (attributeUses.getLength()>0) {
-					for (int i=0; i<attributeUses.getLength(); i++) {
-						XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
-						if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Element, attribute ["+ToStringBuilder.reflectionToString(attributeUse.getAttrDeclaration(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-
-						XSAttributeDeclaration attrDeclaration = attributeUse.getAttrDeclaration();
-						if (DEBUG) log.debug("handleElementContents attrDeclaration.getValueConstraintValue ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-						if (DEBUG) log.debug("handleElementContents attrDeclaration.getTypeDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getTypeDefinition(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-						if (DEBUG) log.debug("handleElementContents attrDeclaration.getEnclosingCTDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-					}
-				}
-
-				XSParticle particle = complexTypeDefinition.getParticle();
-				buildParticle(builder, particle, attributeUses);
+				buildComplexTypeDefinition(complexTypeDefinition, shouldCreateReferences, builder);
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
 				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Mixed");
@@ -187,67 +159,89 @@ public class XmlTypeToJsonSchemaConverter  {
 				throw new IllegalStateException("handleElementContents complexTypeDefinition.contentType is not Empty,Simple,Element or Mixed, but ["+complexTypeDefinition.getContentType()+"]");
 			}
 			if (DEBUG) log.debug(ToStringBuilder.reflectionToString(complexTypeDefinition,ToStringStyle.MULTI_LINE_STYLE));
-			return builder.build();
 		} else {
-			XSSimpleTypeDefinition simpleTypeDefinition = (XSSimpleTypeDefinition)typeDefinition;
-			if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");
-			if (DEBUG) log.debug("simpleTypeDefinition.getBuiltInKind ["+simpleTypeDefinition.getBuiltInKind()+"]");
-			if (DEBUG) log.debug(ToStringBuilder.reflectionToString(typeDefinition,ToStringStyle.MULTI_LINE_STYLE));
-
- 			JsonObjectBuilder builder = Json.createObjectBuilder();
-			short builtInKind = simpleTypeDefinition.getBuiltInKind();
-			String dataType = getJsonDataType(builtInKind);
-			
-			if (dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("number")) {
-				builder.add("type", dataType.toLowerCase());
-
-				applyFacet(simpleTypeDefinition, builder, "maximum", XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
-				applyFacet(simpleTypeDefinition, builder, "minimum", XSSimpleTypeDefinition.FACET_MININCLUSIVE);
-				applyFacet(simpleTypeDefinition, builder, "exclusiveMaximum", XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
-				applyFacet(simpleTypeDefinition, builder, "exclusiveMinimum", XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
-				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
-			} else if (dataType.equalsIgnoreCase("boolean")) {
-				builder.add("type", "boolean");
-			} else if (dataType.equalsIgnoreCase("string")) {	
-				builder.add("type", "string");
-			
-				applyFacet(simpleTypeDefinition, builder, "maxLength", XSSimpleTypeDefinition.FACET_MAXLENGTH);
-				applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
-				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
-				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
-			} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
-				builder.add("type", "string");
-				
-				builder.add("format", dataType);
-
-				applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
-				applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
-			}
-			
-//			attributeDecl.getTypeDefinition();
-//			String type;
-//			switch(attributeDecl.getType()) {
-//			case XSConstants.BOOLEAN_DT:
-//				type="boolean";
-//				break;
-//			case XSConstants.LONG_DT:
-//			case XSConstants.SHORT_DT:
-//				type="integer";
-//				break;
-//			case XSConstants.DECIMAL_DT:
-//			case XSConstants.FLOAT_DT:
-//			case XSConstants.DOUBLE_DT:
-//				type="number";
-//				break;
-//			default:
-//				type="string";
-//				break;
-//			}
-			return builder.build();
+			buildSimpleTyeDefinition(typeDefinition, builder);
 		}
-		//return null;
+		return builder.build();
+	}
+
+	private void buildComplexTypeDefinition(XSComplexTypeDefinition complexTypeDefinition,
+	Boolean shouldCreateReferences, JsonObjectBuilder builder){
+		if(shouldCreateReferences){
+			String complexTypeDefinitionName = complexTypeDefinition.getName();
+
+			if(complexTypeDefinitionName == null && complexTypeDefinition.getContext() != null  && complexTypeDefinition.getContext().getNamespaceItem() != null){
+				complexTypeDefinitionName = complexTypeDefinition.getContext().getName();
+			}
+
+			if(complexTypeDefinitionName != null){
+				if (DEBUG) log.debug("handleElementContents creating ref!");
+
+				builder.add("$ref", "#/definitions/"+complexTypeDefinitionName);
+				if(!namedJsonObjects.contains(complexTypeDefinitionName)){
+					buildReference((XSTypeDefinition) complexTypeDefinition, complexTypeDefinitionName);
+				}
+				return;
+			}
+		}
+		
+		XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
+
+		// Currently commented out because block has no effect
+
+		// if (attributeUses.getLength()>0) {
+		// 	for (int i=0; i<attributeUses.getLength(); i++) {
+		// 		XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
+		// 		if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Element, attribute ["+ToStringBuilder.reflectionToString(attributeUse.getAttrDeclaration(),ToStringStyle.MULTI_LINE_STYLE)+"]");
+
+		// 		XSAttributeDeclaration attrDeclaration = attributeUse.getAttrDeclaration();
+		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getValueConstraintValue ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
+		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getTypeDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getTypeDefinition(),ToStringStyle.MULTI_LINE_STYLE)+"]");
+		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getEnclosingCTDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
+		// 	}
+		// }
+
+		XSParticle particle = complexTypeDefinition.getParticle();
+		buildParticle(builder, particle, attributeUses);
 	}
 	
+	private void buildSimpleTyeDefinition(XSTypeDefinition typeDefinition, 
+	JsonObjectBuilder builder){
+		XSSimpleTypeDefinition simpleTypeDefinition = (XSSimpleTypeDefinition)typeDefinition;
+		if (DEBUG) log.debug("typeDefinition.name ["+typeDefinition.getName()+"]");
+		if (DEBUG) log.debug("simpleTypeDefinition.getBuiltInKind ["+simpleTypeDefinition.getBuiltInKind()+"]");
+		if (DEBUG) log.debug(ToStringBuilder.reflectionToString(typeDefinition,ToStringStyle.MULTI_LINE_STYLE));
+
+		short builtInKind = simpleTypeDefinition.getBuiltInKind();
+		String dataType = getJsonDataType(builtInKind);
+		
+		if (dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("number")) {
+			builder.add("type", dataType.toLowerCase());
+
+			applyFacet(simpleTypeDefinition, builder, "maximum", XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
+			applyFacet(simpleTypeDefinition, builder, "minimum", XSSimpleTypeDefinition.FACET_MININCLUSIVE);
+			applyFacet(simpleTypeDefinition, builder, "exclusiveMaximum", XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
+			applyFacet(simpleTypeDefinition, builder, "exclusiveMinimum", XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
+			applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
+		} else if (dataType.equalsIgnoreCase("boolean")) {
+			builder.add("type", "boolean");
+		} else if (dataType.equalsIgnoreCase("string")) {	
+			builder.add("type", "string");
+		
+			applyFacet(simpleTypeDefinition, builder, "maxLength", XSSimpleTypeDefinition.FACET_MAXLENGTH);
+			applyFacet(simpleTypeDefinition, builder, "minLength", XSSimpleTypeDefinition.FACET_MINLENGTH);
+			applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+			applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
+		} else if (dataType.equalsIgnoreCase("date") || dataType.equalsIgnoreCase("date-time") || dataType.equalsIgnoreCase("time")) {		
+			builder.add("type", "string");
+			
+			builder.add("format", dataType);
+
+			applyFacet(simpleTypeDefinition, builder, "pattern", XSSimpleTypeDefinition.FACET_PATTERN);
+			applyFacet(simpleTypeDefinition, builder, "enum", XSSimpleTypeDefinition.FACET_ENUMERATION);
+		}
+	}
+
 	public void buildParticle(JsonObjectBuilder builder, XSParticle particle, XSObjectList attributeUses) {
 		if (particle==null) {
 			throw new NullPointerException("particle is null");
@@ -258,11 +252,116 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 		buildTerm(builder,term,attributeUses, particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1);
 	}
+
 	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring) {
 		buildTerm(builder, term, attributeUses, multiOccurring, true);
 	}
 
-	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, boolean multiOccurring, boolean shouldCreateReferences) {
+	private void buildProperties(JsonObjectBuilder builder, XSObjectList particles, 
+	XSObjectList attributeUses, boolean shouldCreateReferences){
+		builder.add("type", "object");
+		builder.add("additionalProperties", false);
+		JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
+		List<String> requiredProperties = new ArrayList<String>();
+
+		if (attributeUses!=null) {
+			for (int i=0; i< attributeUses.getLength(); i++) {
+				XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
+				XSAttributeDeclaration attributeDecl = attributeUse.getAttrDeclaration();
+				propertiesBuilder.add("@"+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), shouldCreateReferences));
+			}
+		}
+		for (int i=0;i<particles.getLength();i++) {
+			XSParticle childParticle = (XSParticle)particles.item(i);
+			if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		
+			XSTerm childTerm = childParticle.getTerm();
+			if ( !(childTerm instanceof XSModelGroup) ) {
+				XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
+				String elementName = elementDeclaration.getName();
+
+				if(elementName != null && childParticle.getMinOccurs() != 0){
+					requiredProperties.add(elementName);
+				}
+			}
+			
+			buildParticle(propertiesBuilder, childParticle, null);
+		}
+		builder.add("properties", propertiesBuilder.build());
+		if(requiredProperties.size() > 0){
+			JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
+			for (String requiredProperty : requiredProperties) {
+				requiredPropertiesBuilder.add(requiredProperty);
+			}
+			builder.add("required", requiredPropertiesBuilder.build());
+		}
+	}
+
+	private void buildSkippableArrayContainer(XSParticle childParticle, boolean shouldCreateReferences,
+	JsonObjectBuilder builder){
+		JsonObjectBuilder refBuilder = Json.createObjectBuilder();
+		buildParticle(refBuilder,childParticle,null);
+
+		XSElementDeclaration elementDeclaration=(XSElementDeclaration)childParticle.getTerm();
+		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
+		JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
+	
+		builder.add("type", "array");
+		builder.add("items", definition);
+	}
+
+	private void buildElementDecleration(JsonObjectBuilder builder, XSTerm term,
+	boolean multiOccurring, boolean shouldCreateReferences){
+		XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+		String elementName=elementDeclaration.getName();
+		//if (DEBUG) log.debug("XSElementDeclaration name ["+elementName+"]");
+		if (DEBUG) log.debug("XSElementDeclaration element ["+elementName+"]["+ToStringBuilder.reflectionToString(elementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
+
+		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
+		JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
+		if (elementDeclaration.getNillable()) {
+			definition=nillable(definition);
+		}
+		if (multiOccurring) {
+			JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
+			arrayBuilder.add("type", "array");
+			arrayBuilder.add("items", definition);
+
+			builder.add(elementName, arrayBuilder.build());
+		} else {
+			if (definition!=null) {
+				builder.add(elementName, definition);
+			}
+		}
+	}
+
+	private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
+		XSWildcard wildcard=(XSWildcard)term;
+		String processContents;
+		switch (wildcard.getProcessContents()) {
+		case XSWildcard.PC_LAX: processContents="LAX"; break;
+		case XSWildcard.PC_SKIP: processContents="SKIP"; break;
+		case XSWildcard.PC_STRICT: processContents="STRICT"; break;
+		default: 
+				throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
+		}
+		String namespaceConstraint;
+		switch (wildcard.getConstraintType()) {
+		case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
+		case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
+		case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
+		default: 
+				throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
+		}
+//			String msg="term for element ["+baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
+//			if (isFailOnWildcards()) {
+//				throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
+//			}
+//			log.warn(msg);
+	}
+
+	public void buildTerm(JsonObjectBuilder builder, XSTerm term, XSObjectList attributeUses, 
+	boolean multiOccurring, boolean shouldCreateReferences) {
 		if (term instanceof XSModelGroup) {
 			XSModelGroup modelGroup = (XSModelGroup)term;
 			short compositor = modelGroup.getCompositor();			
@@ -277,59 +376,11 @@ public class XmlTypeToJsonSchemaConverter  {
 					XSParticle childParticle = (XSParticle)particles.item(0);
 					if (childParticle.getMaxOccursUnbounded() || childParticle.getMaxOccurs()>1) {
 						if (DEBUG) log.debug("skippable array element childParticle ["+ToStringBuilder.reflectionToString(particles.item(0),ToStringStyle.MULTI_LINE_STYLE)+"]");
-					
-						JsonObjectBuilder refBuilder = Json.createObjectBuilder();
-						buildParticle(refBuilder,childParticle,null);
-
-						XSElementDeclaration elementDeclaration=(XSElementDeclaration)childParticle.getTerm();
-						XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-						JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
-					
-						builder.add("type", "array");
-						builder.add("items", definition);
+						buildSkippableArrayContainer(childParticle, shouldCreateReferences, builder);
 						return;
 					}
 				}
-				builder.add("type", "object");
-				builder.add("additionalProperties", false);
-				JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
-				List<String> requiredProperties = new ArrayList<String>();
-
-				if (attributeUses!=null) {
-					for (int i=0; i< attributeUses.getLength(); i++) {
-						XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
-						XSAttributeDeclaration attributeDecl = attributeUse.getAttrDeclaration();
-						propertiesBuilder.add("@"+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), shouldCreateReferences));
-					}
-				}
-				for (int i=0;i<particles.getLength();i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				
-					XSTerm childTerm = childParticle.getTerm();
-					if ( (childTerm instanceof XSModelGroup) == false) {
-						XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
-						String elementName = elementDeclaration.getName();
-	
-						if(elementName != null && childParticle.getMinOccurs() != 0){
-							requiredProperties.add(elementName);
-						}
-					}
-					
-					//if(childParticle.getName())
-					buildParticle(propertiesBuilder, childParticle, null);
-//					if (!getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle,path,failureReasons)) {
-//						return false;
-//					}
-				}
-				builder.add("properties", propertiesBuilder.build());
-				if(requiredProperties.size() > 0){
-					JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
-					for (String requiredProperty : requiredProperties) {
-						requiredPropertiesBuilder.add(requiredProperty);
-					}
-					builder.add("required", requiredPropertiesBuilder.build());
-				}
+				buildProperties(builder, particles, attributeUses, shouldCreateReferences);
 				return;
 			case XSModelGroup.COMPOSITOR_CHOICE:
 				if (DEBUG) log.debug("modelGroup COMPOSITOR_CHOICE");
@@ -348,94 +399,14 @@ public class XmlTypeToJsonSchemaConverter  {
 			} 
 		} 
 		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
-			String elementName=elementDeclaration.getName();
-			//if (DEBUG) log.debug("XSElementDeclaration name ["+elementName+"]");
-			if (DEBUG) log.debug("XSElementDeclaration element ["+elementName+"]["+ToStringBuilder.reflectionToString(elementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
-
-			XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-			JsonStructure definition =getDefinition(elementTypeDefinition, shouldCreateReferences);
-			if (elementDeclaration.getNillable()) {
-				definition=nillable(definition);
-			}
-			if (multiOccurring) {
-				JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
-				arrayBuilder.add("type", "array");
-				arrayBuilder.add("items", definition);
-
-				builder.add(elementName, arrayBuilder.build());
-			} else {
-				if (definition!=null) {
-					builder.add(elementName, definition);
-				}
-			}
-//			if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
-//				if (isDeepSearch()) {
-//					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, perform deep search");
-//					try {
-//						List<XSParticle> subList=getBestChildElementPath(elementDeclaration,baseNode, true);
-//						if (subList!=null && !subList.isEmpty()) {
-//							path.add(particle);
-//							if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
-//							return true;
-//						}
-//						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search");
-//					} catch (Exception e) {
-//						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search: "+e.getMessage());
-//						return false;
-//					}
-//				}
-//				if (particle.getMinOccurs()>0) {
-////					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
-////					if (isAutoInsertMandatory()) {
-////						path.add(particle);
-////						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
-////						return true;
-////					}
-//					failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
-//					return false;
-//				}
-//				if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration optional element ["+elementName+"] not found, path continues");
-//				return true;
-//			}
-//			for (XSParticle resultParticle:path) {
-//				if (elementName.equals(resultParticle.getTerm().getName())) {
-//					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
-//					failureReasons.add("element ["+elementName+"] required multiple times");
-//					return false;
-//				}
-//			}
-//			if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found");
-//			path.add(particle);
+			buildElementDecleration(builder, term, multiOccurring, shouldCreateReferences);
 			return;
 		}
 		if (term instanceof XSWildcard) {
-			XSWildcard wildcard=(XSWildcard)term;
-			String processContents;
-			switch (wildcard.getProcessContents()) {
-			case XSWildcard.PC_LAX: processContents="LAX"; break;
-			case XSWildcard.PC_SKIP: processContents="SKIP"; break;
-			case XSWildcard.PC_STRICT: processContents="STRICT"; break;
-			default: 
-					throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
-			}
-			String namespaceConstraint;
-			switch (wildcard.getConstraintType()) {
-			case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
-			case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
-			case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
-			default: 
-					throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
-			}
-//			String msg="term for element ["+baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
-//			if (isFailOnWildcards()) {
-//				throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
-//			}
-//			log.warn(msg);
+			buildWildcard(builder, term);
 			return;
 		} 
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
-		
 	}
 
 	public JsonStructure nillable(JsonStructure type) {
