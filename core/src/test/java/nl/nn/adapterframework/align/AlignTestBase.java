@@ -160,4 +160,9 @@ public abstract class AlignTestBase {
 		testFiles("OptionalArray/hbp.xsd","urn:pim","Root","OptionalArray/hbp",true);
 	}
 
+	@Test
+	public void testFamilyTree() throws Exception {
+		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
+	}
+
 }
