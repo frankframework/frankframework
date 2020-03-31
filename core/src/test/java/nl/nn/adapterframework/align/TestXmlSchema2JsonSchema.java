@@ -19,7 +19,6 @@ import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -260,7 +260,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			return;
 		} 
 		if (term instanceof XSElementDeclaration) {
-			handleElementDecleration(builder, (XSElementDeclaration)term, multiOccurring, shouldCreateReferences);
+			handleElementDeclaration(builder, (XSElementDeclaration)term, multiOccurring, shouldCreateReferences);
 			return;
 		}
 		if (term instanceof XSWildcard) {
@@ -327,7 +327,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 	}
 
-	private void handleElementDecleration(JsonObjectBuilder builder, XSElementDeclaration elementDeclaration, boolean multiOccurring, boolean shouldCreateReferences){	
+	private void handleElementDeclaration(JsonObjectBuilder builder, XSElementDeclaration elementDeclaration, boolean multiOccurring, boolean shouldCreateReferences){	
 		String elementName=elementDeclaration.getName();
 		//if (DEBUG) log.debug("XSElementDeclaration name ["+elementName+"]");
 		if (DEBUG) log.debug("XSElementDeclaration element ["+elementName+"]["+ToStringBuilder.reflectionToString(elementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
