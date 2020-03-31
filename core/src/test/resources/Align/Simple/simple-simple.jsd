@@ -1,1 +1,29 @@
-"#" : {"type":"object","additionalProperties":false,"properties":{"Name":{},"Address":{"type":"object","additionalProperties":false,"properties":{"Street":{},"Town":{}},"required":["Street","Town"]},"Age":{}},"required":["Name","Address","Age"]}
+"#":{
+        "type":"object",
+        "additionalProperties":false,
+        "properties":{
+            "Name":{
+            },
+            "Address":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "Street":{
+                    },
+                    "Town":{
+                    }
+                },
+                "required":[
+                    "Street",
+                    "Town"
+                ]
+            },
+            "Age":{
+            }
+        },
+        "required":[
+            "Name",
+            "Address",
+            "Age"
+        ]
+    }
