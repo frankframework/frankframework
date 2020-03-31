@@ -507,9 +507,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
+		String correlationID = session==null?null:session.getMessageId();
  		Message originalMessage = null;
 		Object result = null;
-		String correlationID = session.getMessageId();
 		PipeForward forward = getForward();
 
 		if (messageLog!=null) {
@@ -518,7 +518,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
-			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, correlationID, input, session);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, input, session);
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
@@ -536,7 +536,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (getInputValidator()!=null) {
 			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
-			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, input, session);
+			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
@@ -636,7 +636,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				} else {
 					messageID = Message.asString(sendResult.getResult());
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
@@ -767,14 +767,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (outputValidator!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
-			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, Message.asMessage(result),session);
+			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
 		}
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
-			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, Message.asMessage(result), session);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, Message.asMessage(result), session);
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}

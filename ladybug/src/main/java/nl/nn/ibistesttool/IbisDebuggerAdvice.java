@@ -108,7 +108,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link InputOutputPipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)}
 	 */
-	public PipeRunResult debugPipeInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public PipeRunResult debugPipeInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeRunResult)proceedingJoinPoint.proceed();
 		}
@@ -118,11 +118,12 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			message.preserve();
 			preservedInput = message;
 		}
+		String messageId = pipeLineSession.getMessageId();
 		message = ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
 		PipeRunResult pipeRunResult = null;
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[3] = message;
+			args[2] = message;
 			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, messageId, throwable);
@@ -137,19 +138,20 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link CheckSemaphorePipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)}
 	 */
-	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
 		if (pipe instanceof IExtendedPipe) {
 			IExtendedPipe pe = (IExtendedPipe)pipe;
+			String messageId = pipeLineSession.getMessageId();
 			message = (Message)debugGetInputFrom(pipeLineSession, messageId, message,
 					pe.getGetInputFromSessionKey(),
 					pe.getGetInputFromFixedValue(),
 					pe.getEmptyInputReplacement());
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
-		args[3] = message;
+		args[2] = message;
 		return proceedingJoinPoint.proceed(args);
 	}
 
