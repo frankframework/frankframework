@@ -38,9 +38,9 @@ public interface IbisDebugger {
 
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
-	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Object input);
+	public Message pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Message input);
 	
-	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Object output);
+	public Message pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Message output);
 
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
@@ -74,7 +74,7 @@ public interface IbisDebugger {
 	
 	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result);
 
-	public Object preserveInput(String correlationId, Object input);
+	public Message preserveInput(String correlationId, Message input);
 	
 	public boolean stubSender(ISender sender, String correlationId);
 	

@@ -138,7 +138,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore.asString()));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
