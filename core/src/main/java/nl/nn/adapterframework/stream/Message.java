@@ -88,6 +88,9 @@ public class Message implements Serializable {
 	 * @throws IOException
 	 */
 	public void preserve() throws IOException {
+		preserve(false);
+	}
+	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
 			return;
 		}
@@ -99,6 +102,13 @@ public class Message implements Serializable {
 		if (request instanceof InputStream) {
 			log.debug("preserving InputStream as byte[]");
 			request = StreamUtil.streamToByteArray((InputStream) request, false);
+			return;
+		}
+		// if deepPreserve=true, File and URL are also preserved as byte array
+		// otherwise we rely on that File and URL can be repeatedly read
+		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
+			log.debug("deep preserving as byte[]");
+			request = StreamUtil.streamToByteArray(asInputStream(), false);
 			return;
 		}
 	}
@@ -380,11 +390,8 @@ public class Message implements Serializable {
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		if (isBinary()) {
-			stream.write(asByteArray());
-		} else {
-			stream.writeChars(asString());
-		}
+		preserve(true);
+		stream.defaultWriteObject();
 	}
 
 	/*
@@ -392,7 +399,7 @@ public class Message implements Serializable {
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		log = LogUtil.getLogger(this);
-		request = stream.readObject();
+		stream.defaultReadObject();
 	}
 
 }
