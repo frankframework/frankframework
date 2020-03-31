@@ -498,7 +498,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
-	@IbisDoc({"6", "when set, the original input (which will be replaced) is stored under this session key", ""})
+	@IbisDoc({"6", "when set, the original input is stored under this session key in case it is replaced using getInputFromSessionKey or getInputFromFixedValue", ""})
 	@Override
 	public void setStoreReplacedInputInSessionKey(String string) {
 		storeReplacedInputInSessionKey = string;
