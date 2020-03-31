@@ -3,10 +3,20 @@ package nl.nn.adapterframework.align;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonStructure;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -93,11 +103,32 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase{
 
 	    	if (skipJsonRootElements && compactArrays) {
 		    	String expectedJsonSchema = jsonSchemaUrl==null?null:StreamUtil.streamToString(jsonSchemaUrl.openStream(), "\n", "utf-8");
+		    	
+		    	
+		    	String schemaPretty = jsonPrettyPrint("{"+schema.toString()+"}");
+		    	schemaPretty=schemaPretty.substring(1,schemaPretty.length()-1).trim();
+		    	
 		    	System.out.println("expected ["+expectedJsonSchema+"]");
-		    	System.out.println("actual   ["+schema.toString()+"]");
-		    	assertEquals("generated does not match ["+jsonSchemaFile+"]", expectedJsonSchema, schema.toString());
+		    	System.out.println("actual   ["+schemaPretty+"]");
+		    	assertEquals("generated does not match ["+jsonSchemaFile+"]", expectedJsonSchema, schemaPretty);
 	    	}
 	    	
+	}
+	
+	private String jsonPrettyPrint(String json) {
+		StringWriter sw = new StringWriter();
+		JsonReader jr = Json.createReader(new StringReader(json));
+		JsonObject jobj = jr.readObject();
+
+		Map<String, Object> properties = new HashMap<>(1);
+		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+		try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+			jsonWriter.writeObject(jobj);
+		}
+
+		return sw.toString().trim();
 	}
 
 }
