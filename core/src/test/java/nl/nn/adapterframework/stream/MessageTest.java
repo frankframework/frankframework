@@ -23,11 +23,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.net.URL;
 
 import org.junit.Test;
@@ -398,7 +400,7 @@ public class MessageTest {
 	}
 	
 	private void writeContentsToFile(File file, String contents) throws IOException {
-		FileWriter fw = new FileWriter(file);
+		Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8");
 		fw.write(contents);
 		fw.close();
 	}
