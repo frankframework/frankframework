@@ -104,6 +104,8 @@ public class Message implements Serializable {
 			request = StreamUtil.streamToByteArray((InputStream) request, false);
 			return;
 		}
+		// if deepPreserve=true, File and URL are also preserved as byte array
+		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
 			log.debug("deep preserving as byte[]");
 			request = StreamUtil.streamToByteArray(asInputStream(), false);
