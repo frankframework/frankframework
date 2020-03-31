@@ -97,8 +97,13 @@ public class JmsRealmFactory {
 	 * Register a Realm
 	 */
 	public void registerJmsRealm(JmsRealm jmsRealm) {
-		jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);
-		log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
+		String realmName = jmsRealm.getRealmName();
+		if(jmsRealms.containsKey(realmName)) {
+			log.warn("Unable to register JmsRealm [" + jmsRealm.toString() + "] realmName ["+realmName+"] already exists");
+		} else {
+			jmsRealms.put(realmName, jmsRealm);
+			log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
+		}
 	}
 
 	@Override
