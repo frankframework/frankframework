@@ -5,38 +5,24 @@
 	<xsl:param name="hostname"/>
 	<xsl:param name="message"/>
 	<xsl:param name="mailaddresses"/>
-	<xsl:param name="mailaddressesError"/>
+	<xsl:param name="result" />
 	
 	<xsl:variable name="from" select="$hostname"/>
 	<xsl:variable name="to" select="tokenize($mailaddresses,',')[1]"/>
 	<xsl:variable name="cc" select="substring-after($mailaddresses,',')"/>
-
-	<xsl:variable name="passed">
-		<xsl:choose>
-			<xsl:when test="contains($message, 'All scenarios passed')"></xsl:when>
-			<xsl:otherwise>FAILED </xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-
-	<xsl:variable name="ccList">
-		<xsl:choose>
-			<xsl:when test="contains($message, 'All scenarios passed')"><xsl:value-of select="$cc"/></xsl:when>
-			<xsl:otherwise><xsl:value-of select="concat($cc, ',', $mailaddressesError)"/></xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-
+	
 	<xsl:template match="/">
 		<email>
 			<recipients>
 				<recipient type="to"><xsl:value-of select="$to"/></recipient>
-				<xsl:for-each select="tokenize($ccList,',')">
+				<xsl:for-each select="tokenize($cc,',')">
 					<recipient type="cc"><xsl:value-of select="."/></recipient>
 				</xsl:for-each>
 			</recipients>
 			<from><xsl:value-of select="$from"/></from>
 			<subject>
-				<xsl:value-of select="$passed"/>
-				<xsl:value-of select="concat('Larva run results on ', $hostname, ' (')"/>
+				<xsl:value-of select="$result"/>
+				<xsl:value-of select="concat(' Larva run results on ', $hostname, ' (')"/>
 				<xsl:value-of select="tokenize($message, '\n')[last() - 1]"/>
 				<xsl:value-of select="')'"/>
 			</subject>
