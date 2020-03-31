@@ -18,10 +18,12 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -33,8 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -81,24 +83,19 @@ public final class TestServiceListener extends Base {
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postServiceListeners(MultipartFormDataInput input) throws ApiException {
+	public Response postServiceListeners(MultipartBody input) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		String message = null, serviceName = null, dispatchResult = null;
-		InputStream file = null;
-
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		List<Attachment> inputDataMap = input.getAllAttachments();
 		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("service") != null) {
-				serviceName = inputDataMap.get("service").get(0).getBodyAsString();
-			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			message = this.getAttributeValue("message", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
+			serviceName = this.getAttributeValue("service", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
+			String fileName = this.getFileName("file", inputDataMap).orElse(null);
+			if(fileName != null) {
+				InputStream file = this.getFile(fileName, inputDataMap).get();
 				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 				message = Misc.streamToString(file, "\n", fileEncoding, false);
-
 				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);
 			}
 			else {
@@ -125,4 +122,36 @@ public final class TestServiceListener extends Base {
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
+	
+	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return this.getFile(name, attachmentList).map(v -> {
+			return Optional.ofNullable(v.toString());
+		}).orElse(Optional.empty());
+	}
+	
+	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			InputStream ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder sb = new StringBuilder();
+		attachmentList.forEach(s -> {
+			s.getHeaders().forEach((k,v) -> {
+				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
+					List<String> list = Arrays.asList(f.split(";")); 
+					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
+					sb.append(description[1].substring(1, description[1].length() -1));
+				});
+			});
+		});
+		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
+	}
+
 }

@@ -18,9 +18,11 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,12 +32,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
@@ -57,55 +58,34 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
+	public Response putJmsMessage(MultipartBody input) throws ApiException {
 
 		String jmsRealm = null, destinationName = null, destinationType = null, replyTo = null, message = null, fileName = null;
 		InputStream file = null;
 		boolean persistent = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		List<Attachment> inputDataMap = input.getAllAttachments();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
 		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
-			else
-				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.get("destination") != null)
-				destinationName = inputDataMap.get("destination").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.get("type") != null) 
-				destinationType = inputDataMap.get("type").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.get("replyTo") != null)
-				replyTo = inputDataMap.get("replyTo").get(0).getBodyAsString();
-			else
-				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.get("message") != null) 
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("persistent") != null)
-				persistent = inputDataMap.get("persistent").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			jmsRealm = this.getAttributeValue("realm", inputDataMap).orElseThrow(() -> new ApiException("JMS realm not defined", 400)); //inputDataMap.get("message").get(0).getBodyAsString();
+			destinationName = this.getAttributeValue("destination", inputDataMap).orElseThrow(() -> new ApiException("Destination name not defined", 400));
+			destinationType = this.getAttributeValue("type", inputDataMap).orElseThrow(() -> new ApiException("Destination type not defined", 400));
+			replyTo = this.getAttributeValue("replyTo", inputDataMap).orElseThrow(() -> new ApiException("ReplyTo not defined", 400));
+			message = this.getAttributeValue("message", inputDataMap).orElse(null);
+			persistent = this.getAttributeBooleanValue("persistent", inputDataMap);
+			fileName = this.getFileName("file", inputDataMap).orElse(null);
+			if(fileName != null)
+				file = this.getFile(fileName, inputDataMap).get();
+			
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
 		try {
 			if (file != null) {
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
-
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					processZipFile(file, jmsBuilder(jmsRealm, destinationName, persistent, destinationType), replyTo);
 					message = null;
@@ -212,4 +192,51 @@ public final class SendJmsMessage extends Base {
 			throw new ApiException("Error occured on closing connection", e);
 		}
 	}
+	
+	
+	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return this.getFile(name, attachmentList).map(v -> {
+			return Optional.ofNullable(v.toString());
+		}).orElse(Optional.empty());
+	}
+	
+	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			InputStream ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder sb = new StringBuilder();
+		attachmentList.forEach(s -> {
+			s.getHeaders().forEach((k,v) -> {
+				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
+					List<String> list = Arrays.asList(f.split(";")); 
+					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
+					sb.append(description[1].substring(1, description[1].length() -1));
+				});
+			});
+		});
+		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
+	}
+	
+	private Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
+		return this.getAttributeValue(name, attachmentList).map(value -> {
+			Boolean resp = Boolean.FALSE;
+			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
+				 resp = Boolean.parseBoolean(value);
+			 }
+			 return resp;
+		}).orElse(Boolean.FALSE); 
+	}
+	
+	
+	
+	
+	
 }

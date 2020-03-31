@@ -17,11 +17,13 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -33,13 +35,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -71,69 +72,84 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
+	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return this.getFile(name, attachmentList).map(v -> {
+			return Optional.ofNullable(v.toString());
+		}).orElse(Optional.empty());
+	}
+	
+	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			InputStream ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+
+	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder sb = new StringBuilder();
+		attachmentList.forEach(s -> {
+			s.getHeaders().forEach((k,v) -> {
+				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
+					List<String> list = Arrays.asList(f.split(";")); 
+					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
+					sb.append(description[1].substring(1, description[1].length() -1));
+				});
+			});
+		});
+		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
+	}
+	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {
+	public Response postTestPipeLine(MultipartBody input) throws ApiException, PipeRunException, IOException {
 		Map<String, Object> result = new HashMap<String, Object>();
-
 		IbisManager ibisManager = getIbisManager();
+		input.getAttachmentObject("message", String.class);
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-		
-		String message = null, fileEncoding = null, fileName = null;
-		InputStream file = null;
-		IAdapter adapter = null;
-		
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("encoding") != null)
-				fileEncoding = inputDataMap.get("encoding").get(0).getBodyAsString();
-			if(inputDataMap.get("adapter") != null) {
-				String adapterName = inputDataMap.get("adapter").get(0).getBodyAsString();
-				adapter = ibisManager.getRegisteredAdapter(adapterName);
-			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
+		String fileEncoding = this.getAttributeValue("encoding", input.getAllAttachments()).orElse(Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		Optional<String> adapterName = this.getAttributeValue("adapter", input.getAllAttachments());
+		Optional<String> fileName = this.getFileName("file", input.getAllAttachments());
 
-				if(fileEncoding == null || fileEncoding.isEmpty())
-					fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-
-				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
-					try {
-						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
-					} catch (Exception e) {
-						throw new PipeRunException(this, getLogPrefix(null) + "exception on processing zip file", e);
-					}
-				} else {
-					message = Misc.streamToString(file, "\n", fileEncoding, false);
-				}
-			}
-		} catch (IOException e) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
-		}
-
-		if(fileEncoding == null || StringUtils.isEmpty(fileEncoding))
-			fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-
-		if(adapter == null && ( message == null && file == null )) {
+		if(!adapterName.isPresent() && !fileName.isPresent()) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 		
+		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName.get());
+		Optional<InputStream> file = this.getFile(fileName.get(), input.getAllAttachments());
+
+		String message = fileName.filter(fn -> StringUtils.endsWithIgnoreCase(fn, ".zip")).map(fn -> {
+			if (file.isPresent()) {
+				try {
+					processZipFile(result, file.get(), fileEncoding, adapter, secLogMessage);
+				} catch (IOException e) {
+					throw new RuntimeException(
+							new PipeRunException(this, getLogPrefix(null) + "exception on processing zip file", e));
+				}
+			}
+			return this.getAttributeValue("message", input.getAllAttachments());
+
+		}).orElseGet(() -> {
+			String m = null;
+			try {
+				m = Misc.streamToString(file.get(), "\n", fileEncoding, false);
+			} catch (IOException e) {
+				log.error("There was a problem processing ERROR: " + e.getMessage());
+			}
+			return Optional.ofNullable(m);
+			
+		}).orElseThrow(() -> new PipeRunException(this, getLogPrefix(null) + "exception on sending message"));
+	
 		if (StringUtils.isNotEmpty(message)) {
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);

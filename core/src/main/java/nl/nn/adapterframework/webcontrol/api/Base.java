@@ -15,18 +15,29 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,15 +49,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -171,11 +173,11 @@ public abstract class Base {
 		return resultList;
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {
+	protected String resolveStringFromMap(List<Attachment> inputDataMap, String key) throws ApiException {
 		return resolveStringFromMap(inputDataMap, key, null);
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key, String defaultValue) throws ApiException {
+	protected String resolveStringFromMap(List<Attachment> inputDataMap, String key, String defaultValue) throws ApiException {
 		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
 		if(StringUtils.isEmpty(result)) {
 			if(defaultValue != null) {
@@ -186,10 +188,12 @@ public abstract class Base {
 		return result;
 	}
 
-	protected <T> T resolveTypeFromMap(Map<String, List<InputPart>> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+	@SuppressWarnings("unchecked")
+	protected <T> T resolveTypeFromMap(List<Attachment> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.get(key) != null) {
-				return inputDataMap.get(key).get(0).getBody(clazz, null);
+			String att = this.getAttributeValue(key, inputDataMap).orElse(null);
+			if (null != att) {
+				return (T) att;
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
@@ -199,4 +203,17 @@ public abstract class Base {
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
+	
+	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			String ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream().toString();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+
 }

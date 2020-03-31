@@ -24,11 +24,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -41,13 +44,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -263,42 +265,28 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
+	public Response uploadConfiguration(MultipartBody input) throws ApiException {
 
 		String datasource = null, fileName = null;
 		InputStream file = null;
-		boolean multiple_configs = false, activate_config = true, automatic_reload = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		Boolean multiple_configs = Boolean.FALSE, activate_config = Boolean.FALSE, automatic_reload = Boolean.FALSE;
+		List<Attachment> inputDataMap = input.getAllAttachments();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
 		try {
-			if(inputDataMap.get("datasource") != null)
-				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
-			else
-				throw new ApiException("Datasource not defined", 400);
-			if(inputDataMap.get("multiple_configs") != null)
-				multiple_configs = inputDataMap.get("multiple_configs").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("activate_config") != null)
-				activate_config = inputDataMap.get("activate_config").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("automatic_reload") != null)
-				automatic_reload = inputDataMap.get("automatic_reload").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			datasource = getAttributeValue("datasource", inputDataMap).orElseThrow(() -> new ApiException("Datasource not defined", 400));
+			multiple_configs = this.getAttributeBooleanValue("multiple_configs", inputDataMap);
+			activate_config = getAttributeBooleanValue("activate_config", inputDataMap);
+			automatic_reload = getAttributeBooleanValue("automatic_reload", inputDataMap);
+			fileName = this.getFileName("file", inputDataMap).orElse(null);
+			if(fileName != null)
+				file = this.getFile(fileName, inputDataMap).get();
 			else
 				throw new ApiException("No file specified", 400);
-
-			MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-			String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-			for (String fName : contentDispositionHeader) {
-				if ((fName.trim().startsWith("filename"))) {
-					String[] tmp = fName.split("=");
-					fileName = tmp[1].trim().replaceAll("\"","");
-				}
-			}
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
@@ -406,4 +394,53 @@ public final class ShowConfiguration extends Base {
 		}
 		return returnMap;
 	}
+	
+	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			InputStream ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+	
+	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
+			String ie = null;
+			try {
+				ie = m.getDataHandler().getDataSource().getInputStream().toString();
+			} catch (IOException e) {
+				log.error("The attribute " + name + " does not exist");
+			}
+			return Optional.of(ie);
+		}).orElse(Optional.empty());
+	}
+	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder sb = new StringBuilder();
+		attachmentList.forEach(s -> {
+			s.getHeaders().forEach((k,v) -> {
+				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
+					List<String> list = Arrays.asList(f.split(";")); 
+					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
+					sb.append(description[1].substring(1, description[1].length() -1));
+				});
+			});
+		});
+		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
+	}
+
+	private Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
+		return this.getAttributeValue(name, attachmentList).map(value -> {
+			Boolean resp = Boolean.FALSE;
+			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
+				 resp = Boolean.parseBoolean(value);
+			 }
+			 return resp;
+		}).orElse(Boolean.FALSE); 
+	}
+
+
 }
