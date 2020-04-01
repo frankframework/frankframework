@@ -188,8 +188,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String hideMethod = "all";
 	
 	private String order;
-	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","");
-	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","");
+	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","DESC");
+	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","ASC");
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCIDLEN=256;		
@@ -1631,14 +1631,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (StringUtils.isNotEmpty(order)) {
 			return order;
 		} else {
-			if (type.equalsIgnoreCase(TYPE_MESSAGELOG_PIPE) || type.equalsIgnoreCase(TYPE_MESSAGELOG_RECEIVER)) {
-				return messagesOrder; //Defaults to DESC
+			if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
+				return errorsOrder; //Defaults to ASC
 			} else {
-				if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
-					return errorsOrder; //Defaults to ASC
-				} else {
-					return order;
-				}
+				return messagesOrder; //Defaults to DESC
 			}
 		}
 	}
