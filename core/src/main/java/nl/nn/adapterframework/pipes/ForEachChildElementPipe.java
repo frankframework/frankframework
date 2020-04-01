@@ -165,6 +165,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			this.callback=callback;
 		}
 
+		/*
+		 * Nodes are the elements that are iterated over.
+		 */
 		@Override
 		public void startNode(String uri, String localName, String qName) throws SAXException {
 			if (itemCounter==0) {
