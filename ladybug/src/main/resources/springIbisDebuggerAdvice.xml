@@ -42,16 +42,15 @@
 						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
 							nl.nn.adapterframework.core.IPipe, 
-							String, 
 							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeInputOutputAbort"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=
@@ -61,16 +60,15 @@
 						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
 							nl.nn.adapterframework.core.IPipe, 
-							String, 
 							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeGetInputFrom"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
 	 			<aop:around
 	 				pointcut=

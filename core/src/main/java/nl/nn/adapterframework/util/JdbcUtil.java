@@ -61,6 +61,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database-oriented utility functions.
@@ -393,7 +394,7 @@ public class JdbcUtil {
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {
-					rawMessage = (String)result;
+					rawMessage = Message.asString(result);
 				}
 			} else {
 				rawMessage = new String(buf,charset);

@@ -84,15 +84,13 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			elements.add(localName);
 			if ((getElementName() != null && localName.equals(getElementName()))
-					|| (getElementChain() != null && elementsToString().equals(
-							getElementChain()))) {
+					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				sElem = true;
 			}
 			if (sElem) {
 				elementBuffer.append("<" + localName);
 				for (int i = 0; i < attributes.getLength(); i++) {
-					elementBuffer.append(" " + attributes.getLocalName(i)
-							+ "=\"" + attributes.getValue(i) + "\"");
+					elementBuffer.append(" " + attributes.getLocalName(i) + "=\"" + attributes.getValue(i) + "\"");
 				}
 				elementBuffer.append(">");
 			}
@@ -103,18 +101,15 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			int lastIndex = elements.size() - 1;
 			String lastElement = (String) elements.get(lastIndex);
 			if (!lastElement.equals(localName)) {
-				throw new SAXException("expected end element [" + lastElement
-						+ "] but got end element [" + localName + "]");
+				throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 			}
 			if (sElem) {
 				elementBuffer.append("</" + localName + ">");
 			}
 			if ((getElementName() != null && localName.equals(getElementName()))
-					|| (getElementChain() != null && elementsToString().equals(
-							getElementChain()))) {
+					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				try {
-					stopRequested = !callback.handleItem(elementBuffer
-							.toString());
+					stopRequested = !callback.handleItem(elementBuffer.toString());
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
