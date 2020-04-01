@@ -35,12 +35,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -67,43 +70,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 @Path("/")
 public final class TestPipeline extends TimeoutGuardPipe {
 	@Context ServletConfig servletConfig;
-
+	
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return this.getFile(name, attachmentList).map(v -> {
-			return Optional.ofNullable(v.toString());
-		}).orElse(Optional.empty());
-	}
-	
-	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			InputStream ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-
-	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
-		StringBuilder sb = new StringBuilder();
-		attachmentList.forEach(s -> {
-			s.getHeaders().forEach((k,v) -> {
-				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
-					List<String> list = Arrays.asList(f.split(";")); 
-					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
-					sb.append(description[1].substring(1, description[1].length() -1));
-				});
-			});
-		});
-		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
-	}
-	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
@@ -238,4 +209,64 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		}
 		return null;
 	}
+	
+	public Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return this.getFile(name, attachmentList).map(inputStream -> {
+			String inputString = null;
+			try {
+				inputString = IOUtils.toString(inputStream);
+			}catch(Exception e) {
+				log.error("there was an error getting adapter name: " + e.getMessage());
+			}
+			return Optional.ofNullable(inputString);
+		}).orElse(Optional.empty());
+	}
+
+	public Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream()
+				.filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName()))
+				.findAny()
+				.map(m -> {
+					InputStream ie = null;
+					try {
+						ie = m.getDataHandler().getDataSource().getInputStream();
+					} catch (IOException e) {
+						log.error("The attribute " + name + " does not exist");
+					}
+					return Optional.of(ie);
+				}).orElse(Optional.empty());
+	}
+
+	public Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder fileName = new StringBuilder();
+		attachmentList.forEach(attachment -> {
+			MultivaluedMap<String, String> headers = attachment.getHeaders();
+			String val = null;
+			for(String key : headers.keySet()) {
+				val = headers.getFirst(key);
+				if (val.contains(attr)) {
+					List<String> list = Arrays.asList(val.split(";"));
+					for (String att : list) {
+						if (att.contains("filename")) {
+							String[] a = att.split("=");
+							fileName.append(a[1].replace("\"", ""));
+							break;
+						}
+					}
+				}
+			}
+		});
+		return Optional.ofNullable(fileName.length() >= 1? fileName.toString() : null);
+	}
+	
+	public Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
+		return this.getAttributeValue(name, attachmentList).map(value -> {
+			Boolean resp = Boolean.FALSE;
+			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
+				 resp = Boolean.parseBoolean(value);
+			 }
+			 return resp;
+		}).orElse(Boolean.FALSE); 
+	}
+	
 }

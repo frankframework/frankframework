@@ -69,13 +69,13 @@ public final class SendJmsMessage extends Base {
 		}
 
 		try {
-			jmsRealm = this.getAttributeValue("realm", inputDataMap).orElseThrow(() -> new ApiException("JMS realm not defined", 400)); //inputDataMap.get("message").get(0).getBodyAsString();
-			destinationName = this.getAttributeValue("destination", inputDataMap).orElseThrow(() -> new ApiException("Destination name not defined", 400));
-			destinationType = this.getAttributeValue("type", inputDataMap).orElseThrow(() -> new ApiException("Destination type not defined", 400));
-			replyTo = this.getAttributeValue("replyTo", inputDataMap).orElseThrow(() -> new ApiException("ReplyTo not defined", 400));
-			message = this.getAttributeValue("message", inputDataMap).orElse(null);
-			persistent = this.getAttributeBooleanValue("persistent", inputDataMap);
-			fileName = this.getFileName("file", inputDataMap).orElse(null);
+			jmsRealm = super.getAttributeValue("realm", inputDataMap).orElseThrow(() -> new ApiException("JMS realm not defined", 400)); //inputDataMap.get("message").get(0).getBodyAsString();
+			destinationName = super.getAttributeValue("destination", inputDataMap).orElseThrow(() -> new ApiException("Destination name not defined", 400));
+			destinationType = super.getAttributeValue("type", inputDataMap).orElseThrow(() -> new ApiException("Destination type not defined", 400));
+			replyTo = super.getAttributeValue("replyTo", inputDataMap).orElseThrow(() -> new ApiException("ReplyTo not defined", 400));
+			message = super.getAttributeValue("message", inputDataMap).orElse(null);
+			persistent = super.getAttributeBooleanValue("persistent", inputDataMap);
+			fileName = super.getFileName("file", inputDataMap).orElse(null);
 			if(fileName != null)
 				file = this.getFile(fileName, inputDataMap).get();
 			
@@ -192,51 +192,5 @@ public final class SendJmsMessage extends Base {
 			throw new ApiException("Error occured on closing connection", e);
 		}
 	}
-	
-	
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return this.getFile(name, attachmentList).map(v -> {
-			return Optional.ofNullable(v.toString());
-		}).orElse(Optional.empty());
-	}
-	
-	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			InputStream ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
-		StringBuilder sb = new StringBuilder();
-		attachmentList.forEach(s -> {
-			s.getHeaders().forEach((k,v) -> {
-				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
-					List<String> list = Arrays.asList(f.split(";")); 
-					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
-					sb.append(description[1].substring(1, description[1].length() -1));
-				});
-			});
-		});
-		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
-	}
-	
-	private Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
-		return this.getAttributeValue(name, attachmentList).map(value -> {
-			Boolean resp = Boolean.FALSE;
-			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
-				 resp = Boolean.parseBoolean(value);
-			 }
-			 return resp;
-		}).orElse(Boolean.FALSE); 
-	}
-	
-	
-	
-	
-	
+		
 }

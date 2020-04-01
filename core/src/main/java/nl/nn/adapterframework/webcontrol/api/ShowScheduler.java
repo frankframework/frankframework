@@ -488,6 +488,7 @@ public final class ShowScheduler extends Base {
 			name = resolveStringFromMap(inputDataMap, "name");
 
 		String cronExpression = resolveTypeFromMap(inputDataMap, "cron", String.class, "");
+		
 		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1);
 		//Either one of the two has to be set
 		if(interval == -1 && StringUtils.isEmpty(cronExpression)) {

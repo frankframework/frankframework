@@ -446,21 +446,9 @@ public class TransactionalStorage extends Base {
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
 
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			String ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream().toString();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-	
 	private String[] getMessages(MultipartBody input) {
 		List<Attachment> inputDataMap = input.getAllAttachments();
-		return this.getAttributeValue("messageIds", inputDataMap).map(s -> {
+		return super.getAttributeValue("messageIds", inputDataMap).map(s -> {
 			return s.split(",");
 		}).orElse(null);
 	}

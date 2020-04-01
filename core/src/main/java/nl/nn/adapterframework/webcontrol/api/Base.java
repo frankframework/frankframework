@@ -16,9 +16,11 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +28,13 @@ import java.util.Optional;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -204,16 +208,63 @@ public abstract class Base {
 		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 	
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			String ie = null;
+	public Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
+		return this.getFile(name, attachmentList).map(inputStream -> {
+			String inputString = null;
 			try {
-				ie = m.getDataHandler().getDataSource().getInputStream().toString();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
+				inputString = IOUtils.toString(inputStream);
+			}catch(Exception e) {
+				log.error("there was an error getting adapter name: " + e.getMessage());
 			}
-			return Optional.of(ie);
+			return Optional.ofNullable(inputString);
 		}).orElse(Optional.empty());
+	}
+
+	public Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
+		return attachmentList.stream()
+				.filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName()))
+				.findAny()
+				.map(m -> {
+					InputStream ie = null;
+					try {
+						ie = m.getDataHandler().getDataSource().getInputStream();
+					} catch (IOException e) {
+						log.error("The attribute " + name + " does not exist");
+					}
+					return Optional.of(ie);
+				}).orElse(Optional.empty());
+	}
+
+	public Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
+		StringBuilder fileName = new StringBuilder();
+		attachmentList.forEach(attachment -> {
+			MultivaluedMap<String, String> headers = attachment.getHeaders();
+			String val = null;
+			for(String key : headers.keySet()) {
+				val = headers.getFirst(key);
+				if (val.contains(attr)) {
+					List<String> list = Arrays.asList(val.split(";"));
+					for (String att : list) {
+						if (att.contains("filename")) {
+							String[] a = att.split("=");
+							fileName.append(a[1].replace("\"", ""));
+							break;
+						}
+					}
+				}
+			}
+		});
+		return Optional.ofNullable(fileName.length() >= 1? fileName.toString() : null);
+	}
+	
+	public Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
+		return this.getAttributeValue(name, attachmentList).map(value -> {
+			Boolean resp = Boolean.FALSE;
+			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
+				 resp = Boolean.parseBoolean(value);
+			 }
+			 return resp;
+		}).orElse(Boolean.FALSE); 
 	}
 
 }

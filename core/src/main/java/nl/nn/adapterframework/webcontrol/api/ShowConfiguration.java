@@ -276,11 +276,11 @@ public final class ShowConfiguration extends Base {
 		}
 
 		try {
-			datasource = getAttributeValue("datasource", inputDataMap).orElseThrow(() -> new ApiException("Datasource not defined", 400));
-			multiple_configs = this.getAttributeBooleanValue("multiple_configs", inputDataMap);
-			activate_config = getAttributeBooleanValue("activate_config", inputDataMap);
-			automatic_reload = getAttributeBooleanValue("automatic_reload", inputDataMap);
-			fileName = this.getFileName("file", inputDataMap).orElse(null);
+			datasource = super.getAttributeValue("datasource", inputDataMap).orElseThrow(() -> new ApiException("Datasource not defined", 400));
+			multiple_configs = super.getAttributeBooleanValue("multiple_configs", inputDataMap);
+			activate_config = super.getAttributeBooleanValue("activate_config", inputDataMap);
+			automatic_reload = super.getAttributeBooleanValue("automatic_reload", inputDataMap);
+			fileName = super.getFileName("file", inputDataMap).orElse(null);
 			if(fileName != null)
 				file = this.getFile(fileName, inputDataMap).get();
 			else
@@ -395,52 +395,4 @@ public final class ShowConfiguration extends Base {
 		return returnMap;
 	}
 	
-	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			InputStream ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-	
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			String ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream().toString();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
-		StringBuilder sb = new StringBuilder();
-		attachmentList.forEach(s -> {
-			s.getHeaders().forEach((k,v) -> {
-				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
-					List<String> list = Arrays.asList(f.split(";")); 
-					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
-					sb.append(description[1].substring(1, description[1].length() -1));
-				});
-			});
-		});
-		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
-	}
-
-	private Boolean getAttributeBooleanValue(String name, List<Attachment> attachmentList) {
-		return this.getAttributeValue(name, attachmentList).map(value -> {
-			Boolean resp = Boolean.FALSE;
-			 if (Arrays.stream(new String[]{"true", "false", "1", "0"}).anyMatch(b -> b.equalsIgnoreCase(value))) {
-				 resp = Boolean.parseBoolean(value);
-			 }
-			 return resp;
-		}).orElse(Boolean.FALSE); 
-	}
-
-
 }

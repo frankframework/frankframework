@@ -89,9 +89,9 @@ public final class TestServiceListener extends Base {
 		String message = null, serviceName = null, dispatchResult = null;
 		List<Attachment> inputDataMap = input.getAllAttachments();
 		try {
-			message = this.getAttributeValue("message", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
-			serviceName = this.getAttributeValue("service", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
-			String fileName = this.getFileName("file", inputDataMap).orElse(null);
+			message = super.getAttributeValue("message", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
+			serviceName = super.getAttributeValue("service", inputDataMap).orElse(null); //inputDataMap.get("message").get(0).getBodyAsString();
+			String fileName = super.getFileName("file", inputDataMap).orElse(null);
 			if(fileName != null) {
 				InputStream file = this.getFile(fileName, inputDataMap).get();
 				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
@@ -121,37 +121,6 @@ public final class TestServiceListener extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
-	}
-	
-	private Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
-		return this.getFile(name, attachmentList).map(v -> {
-			return Optional.ofNullable(v.toString());
-		}).orElse(Optional.empty());
-	}
-	
-	private Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
-		return attachmentList.stream().filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName())).findAny().map(m -> {
-			InputStream ie = null;
-			try {
-				ie = m.getDataHandler().getDataSource().getInputStream();
-			} catch (IOException e) {
-				log.error("The attribute " + name + " does not exist");
-			}
-			return Optional.of(ie);
-		}).orElse(Optional.empty());
-	}
-	private Optional<String> getFileName(String attr, List<Attachment> attachmentList) {
-		StringBuilder sb = new StringBuilder();
-		attachmentList.forEach(s -> {
-			s.getHeaders().forEach((k,v) -> {
-				v.stream().filter(v1 -> v1.contains(attr)).findAny().ifPresent(f -> {
-					List<String> list = Arrays.asList(f.split(";")); 
-					String[] description = list.stream().filter(f1 -> f1.contains("filename")).findFirst().get().split("=");
-					sb.append(description[1].substring(1, description[1].length() -1));
-				});
-			});
-		});
-		return Optional.ofNullable(sb.length() >= 1? sb.toString() : null);
 	}
 
 }

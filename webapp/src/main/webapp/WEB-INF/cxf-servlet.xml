@@ -50,6 +50,7 @@
     
   	<jaxrs:server id="executeJdbcQuery_rs" address="/">
   		<jaxrs:serviceBeans>
+  			<ref bean="initService"/>
   			<ref bean="executeJdbcQuery"/>
   			<ref bean="serverStatistics"/>
   			<ref bean="serverStatistics"/>
