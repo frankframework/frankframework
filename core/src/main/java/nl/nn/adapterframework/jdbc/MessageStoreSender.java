@@ -90,7 +90,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		if (paramList != null) {
 			paramList.configure();
 		}
-		setType(JdbcTransactionalStorage.TYPE_MESSAGESTORAGE);
+		setType(TYPE_MESSAGESTORAGE);
 		setOnlyStoreWhenMessageIdUnique(isOnlyStoreWhenMessageIdUnique());
 		super.configure();
 	}
@@ -129,10 +129,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 				sb.appendWithSeparators(list, ",");
 				messageToStore = Message.asMessage(sb.toString());
 			}
-			String messageId = session.getMessageId();
+			// the messageId to be inserted in the messageStore defaults to the messageId of the session
+			String messageId = session.getMessageId(); 
 			String correlationID = messageId;
 			if (paramList != null && paramList.findParameter("messageId") != null) {
 				try {
+					// the messageId to be inserted can also be specified via the parameter messageId
 					messageId = (String)paramList.getValues(message, session).getValue("messageId");
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);

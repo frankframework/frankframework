@@ -54,7 +54,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -1008,7 +1007,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				messageLog.setSlotId(getName());
 			}
 			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE);
+				messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_PIPE);
 			}
 		}
 	}
