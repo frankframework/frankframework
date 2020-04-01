@@ -78,7 +78,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				}
 			return null;
 		}
-		return createJsonSchema(elementName, elementDecl, namespace);
+		return createJsonSchema(elementName, elementDecl);
 	}
 
 	public XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
@@ -109,11 +109,10 @@ public class XmlTypeToJsonSchemaConverter  {
 		return null;
 	}
 	
-	public JsonStructure createJsonSchema(String elementName, XSElementDeclaration elementDecl, String namespace) {
+	public JsonStructure createJsonSchema(String elementName, XSElementDeclaration elementDecl) {
 		JsonObjectBuilder builder = Json.createObjectBuilder();
 		definitionsBuilder = Json.createObjectBuilder();
 		builder.add("$schema", JSON_SCHEMA);
-		// builder.add("$id", namespace);
 		if (skipRootElement) {
 			JsonObject result = (JsonObject)getDefinition(elementDecl.getTypeDefinition(), false);
 			result.entrySet().
