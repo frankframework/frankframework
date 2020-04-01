@@ -100,11 +100,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
-					String resultString = (String)result;
+				Message result = Message.asMessage(pipeRunResult.getResult());
+				if (result!=null && !result.isEmpty()) {
 					try {
-						InputStream xmlInput = IOUtils.toInputStream(resultString, "UTF-8");
+						String resultString = result.asString();
+						InputStream xmlInput = result.asInputStream();
 						CompactSaxHandler handler = new CompactSaxHandler();
 						handler.setChompCharSize(pe.getChompCharSize());
 						handler.setElementToMove(pe.getElementToMove());
@@ -122,10 +122,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 							log.warn("Pipeline of adapter ["+owner.getName()+"] could not compact received message: " + e.getMessage());
 						}
 						handler = null;
+						pipeRunResult.setResult(resultString);
 					} catch (Exception e) {
 						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
 					}
-					pipeRunResult.setResult(resultString);
 				}
 			}
 			
