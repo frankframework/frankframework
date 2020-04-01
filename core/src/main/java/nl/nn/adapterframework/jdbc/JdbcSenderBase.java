@@ -51,7 +51,6 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 		super();
 	}
 
-
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
@@ -63,9 +62,6 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	@Override
 	public ParameterList getParameterList() {
 		return paramList;
-	}
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		configure();
 	}
 
 	@Override

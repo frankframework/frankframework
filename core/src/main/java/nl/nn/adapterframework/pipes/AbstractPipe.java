@@ -170,9 +170,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (pipeForwards.isEmpty()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix(null)+"has no forwards defined.";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
 				String forwardName = it.next();
@@ -183,9 +181,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 						PipeLineExit plExit= pipeline.getPipeLineExits().get(path);
 						if (plExit==null){
 							if (pipeline.getPipe(path)==null){
-								ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-								String msg = getLogPrefix(null)+"has a forward of which the pipe to execute ["+path+"] is not defined.";
-								configWarnings.add(log, msg);
+								ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
 							}
 						}
 					}
@@ -289,9 +285,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		} else {
 			if (!isRecoverAdapter()) {
 				if (forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
 				} else {
 					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 				}

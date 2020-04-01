@@ -600,13 +600,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	@Override
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		super.configure(parameterList);
-		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
-		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
-	}
-
 	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;

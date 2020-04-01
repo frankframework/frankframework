@@ -18,12 +18,13 @@ package nl.nn.adapterframework.extensions.bis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -172,6 +173,8 @@ import org.xml.sax.SAXException;
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */
+@Deprecated
+@ConfigurationWarning("Please change to EsbSoapWrapperPipe")
 public class BisWrapperPipe extends SoapWrapperPipe {
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
 	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
@@ -219,9 +222,6 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null)+"The class ["+getClass().getName()+"] has been deprecated. Please change to EsbSoapWrapperPipe (not 1:1)";
-		configWarnings.add(log, msg);
 		super.configure();
 		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 			throw new ConfigurationException(getLogPrefix(null) + "soapHeaderSessionKey is not allowed");
@@ -462,7 +462,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private String prepareReply(String rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
-		ArrayList messages = new ArrayList();
+		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {
 			messages.add(messageHeader);
 		}

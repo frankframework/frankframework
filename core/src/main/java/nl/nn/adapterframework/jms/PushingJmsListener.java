@@ -119,9 +119,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			setPollGuardInterval(getTimeOut() * 10);
 		}
 		if (getPollGuardInterval() <= getTimeOut()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "The pollGuardInterval [" + getPollGuardInterval()
-					+ "] should be larger than the receive timeout [" + getTimeOut() + "]");
+			ConfigurationWarnings.add(this, log, "The pollGuardInterval ["+getPollGuardInterval()+"] should be larger than the receive timeout ["+getTimeOut()+"]");
 		}
 		CredentialFactory credentialFactory=null;
 		if (StringUtils.isNotEmpty(getAuthAlias())) {

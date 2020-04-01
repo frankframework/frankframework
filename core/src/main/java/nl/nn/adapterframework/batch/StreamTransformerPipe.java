@@ -216,9 +216,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IRecordHandlerManager manager) throws Exception {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "configuration using element 'child' is deprecated. Please use element 'manager'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'");
 		registerManager(manager);
 	}
 	/**
@@ -244,9 +242,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'");
 		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
 			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
@@ -261,9 +257,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IRecordHandler handler) throws Exception {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "configuration using element 'child' is deprecated. Please use element 'recordHandler'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'");
 		registerRecordHandler(handler);
 	}
 	/**
@@ -284,9 +278,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IResultHandler handler) throws Exception {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "configuration using element 'child' is deprecated. Please use element 'resultHandler'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'");
 		registerResultHandler(handler);
 	}
 	/**

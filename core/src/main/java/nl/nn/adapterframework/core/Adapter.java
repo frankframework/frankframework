@@ -425,7 +425,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter cache=pipeline.getCache();
+			ICacheAdapter<String,String> cache=pipeline.getCache();
 			if (cache!=null && cache instanceof HasStatistics) {
 				((HasStatistics)cache).iterateOverStatistics(hski, recsData, action);
 			}
@@ -505,7 +505,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class listenerClass) {
+	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
@@ -1031,14 +1031,11 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
 		} else {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
 	}

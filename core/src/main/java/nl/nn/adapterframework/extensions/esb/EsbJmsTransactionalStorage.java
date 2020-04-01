@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
@@ -156,7 +157,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 						true);
 			}
 			session = createSession();
-			TextMessage msg = createTextMessage(session, null, logRequest);
+			Message msg = createMessage(session, null, logRequest);
 			String returnMessage = send(session, getDestination(), msg);
 			log.debug(getLogPrefix() + "sent message [" + logRequest + "] "
 					+ "to [" + getDestination() + "] " + "msgID ["

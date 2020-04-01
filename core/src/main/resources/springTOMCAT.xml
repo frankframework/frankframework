@@ -45,14 +45,14 @@
 		>
 		<property name="lookupOnStartup" value="${jdbc.required}"/>
 		<property name="ProxyInterface" value="javax.sql.DataSource"/>
-		<property name="jndiName" value="${jndiContextPrefix}jdbc/${instance.name.lc}"/>
+		<property name="jndiName" value="${jndiContextPrefix}${jdbc.datasource.default}"/>
 	</bean>
 
 	<!-- Make the proxied data source available to the JdbcFacade -->
 	<bean id="proxiedDataSources" class="java.util.HashMap">
 		<constructor-arg>
 			<map>
-				<entry key="jdbc/${instance.name.lc}">
+				<entry key="${jdbc.datasource.default}">
 					<ref bean="defaultDataSource"/>
 				</entry>
 			</map>

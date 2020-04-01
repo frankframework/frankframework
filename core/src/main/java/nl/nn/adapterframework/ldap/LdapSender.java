@@ -349,18 +349,15 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 		Parameter credentials = paramList.findParameter("credentials");
 		if (credentials != null && !credentials.isHidden()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter credentials.");
+			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter credentials.");
 		}
 		Parameter oldPassword = paramList.findParameter("oldPassword");
 		if (oldPassword != null && !oldPassword.isHidden()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter oldPassword.");
+			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter oldPassword.");
 		}
 		Parameter newPassword = paramList.findParameter("newPassword");
 		if (newPassword != null && !newPassword.isHidden()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter newPassword.");
+			ConfigurationWarnings.add(this, log, "It's advised to set attribute hidden to true for parameter newPassword.");
 		}
 		if (paramList.findParameter("principal") != null) {
 			if (paramList.findParameter("credentials") == null) {
