@@ -203,9 +203,7 @@
             },
             "PatternString":{
                 "type":"string",
-                "pattern":[
-                    "J|N"
-                ]
+                "pattern":"J|N"
             }
         }
     }
