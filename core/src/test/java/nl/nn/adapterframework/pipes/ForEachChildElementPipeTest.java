@@ -160,7 +160,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
-				String actual = Message.asString(prr.getResult());;
+		String actual = Message.asString(prr.getResult());;
 
 		assertEquals(expectedBasicNoNSBlock, actual);
 	}
