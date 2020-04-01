@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
 public class CorePipeProcessor implements PipeProcessor {
 	
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		return pipe.doPipe(message, pipeLineSession);
 	}
 

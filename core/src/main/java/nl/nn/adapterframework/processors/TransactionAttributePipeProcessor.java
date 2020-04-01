@@ -39,7 +39,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private PlatformTransactionManager txManager;
 	
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		int txOption;
 		int txTimeout=0;
@@ -58,7 +58,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 			Throwable tCaught=null;
 			try {
 				tg.activateGuard(txTimeout);
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 			} catch (Throwable t) {
 				tCaught=t;
 				throw tCaught;

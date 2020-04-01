@@ -27,6 +27,6 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface PipeProcessor {
 
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException;
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException;
 
 }

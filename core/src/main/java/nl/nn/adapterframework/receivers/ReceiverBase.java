@@ -537,7 +537,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (this.errorSender == null && this.errorStorage == null) {
 					this.errorStorage = this.tmpInProcessStorage;
 					info(getLogPrefix()+"has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-					errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
+					errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
 				} else {
 					info(getLogPrefix()+"has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
 				}
@@ -1734,7 +1734,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
 				errorStorage.setSlotId(getName());
 			}
-			errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
+			errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
 		}
 	}
 	
@@ -1748,7 +1748,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
+			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {

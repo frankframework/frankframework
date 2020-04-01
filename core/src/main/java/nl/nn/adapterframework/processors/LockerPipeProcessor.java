@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.Locker;
 public class LockerPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		IExtendedPipe extendedPipe = null;
 		Locker locker = null;
@@ -48,7 +48,7 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 		}
 		if (objectId != null) {
 			try {
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 			} finally {
 				try {
 					locker.unlock(objectId);
@@ -57,7 +57,7 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 				}
 			}
 		} else {
-			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		}
 		return pipeRunResult;
 	}
