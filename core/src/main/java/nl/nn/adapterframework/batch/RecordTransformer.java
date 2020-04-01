@@ -676,14 +676,6 @@ public class RecordTransformer extends AbstractRecordHandler {
 			return null;
 		}
 	}
-	
-
-	public void setOutputSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'";
-		configWarnings.add(log, msg);
-		setOutputSeparator(string);
-	}
 
 	@IbisDoc({"optional separator to add between the fields", ""})
 	public void setOutputSeparator(String string) {

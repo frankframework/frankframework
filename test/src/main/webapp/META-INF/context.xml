@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
+	<!-- please make sure number of allowed database connections is at least 50, for iaf-test -->
 	<Resource
-		name="jdbc/ibis4test"
+		name="jdbc/ibis4test-h2"
+		type="org.h2.jdbcx.JdbcDataSource"
+		factory="org.apache.naming.factory.BeanFactory" 
+		URL="jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE"
+	/>
+	<Resource
+		name="jdbc/ibis4test-oracle"
 		type="javax.sql.DataSource"
 		username="testiaf_user"
 		password="testiaf_user"
@@ -11,6 +18,69 @@
 		maxIdle="2"
 		maxWait="30000"
 	/>
+	<Resource
+		name="jdbc/ibis4test-oracle-docker"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="oracle.jdbc.xa.client.OracleXADataSource"
+		URL="jdbc:oracle:thin:@localhost:9000:ORCLCDB"
+		user="c##testiaf_user"
+		password="c##testiaf_user"
+	/>
+	<Resource 
+		name="jdbc/ibis4test-mssql-microsoft" 
+		auth="Container" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource"
+		URL="jdbc:sqlserver://localhost:2500;database=wearefrank_db"
+		user="wearefrank_user"
+		password="wearefrankPass01"
+		sendStringParametersAsUnicode="false"
+		sendTimeAsDatetime="true"
+		selectMethod="direct"
+		responseBuffering="adaptive"
+		packetSize="4096"
+		loginTimeout="10"
+		lockTimeout="2000"
+		lastUpdateCount="false"
+		encrypt="false"
+		disableStatementPooling="true"
+		applicationName="iaf-test on TomCat"
+		applicationIntent="readwrite"
+	/>
+	<Resource 
+		name="jdbc/ibis4test-mssql-microsoft-xa" 
+		auth="Container" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+		URL="jdbc:sqlserver://localhost:2500;database=wearefrank_db"
+		user="wearefrank_user"
+		password="wearefrankPass01"
+		sendStringParametersAsUnicode="false"
+		sendTimeAsDatetime="true"
+		selectMethod="direct"
+		responseBuffering="adaptive"
+		packetSize="4096"
+		loginTimeout="10"
+		lockTimeout="2000"
+		lastUpdateCount="false"
+		encrypt="false"
+		disableStatementPooling="true"
+		applicationName="iaf-test on TomCat"
+		applicationIntent="readwrite"
+	/>
+	<Resource 
+		name="jdbc/ibis4test-mssql-jtds" 
+		auth="Container" 
+		type="javax.sql.DataSource"
+		username="wearefrank_user"
+		password="wearefrankPass01"
+		driverClassName="net.sourceforge.jtds.jdbc.Driver"
+		url="jdbc:jtds:sqlserver://localhost:2500/wearefrank_db"
+		maxTotal="25"
+		maxIdle="10"
+		validationQuery="select 1"
+	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"

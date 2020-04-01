@@ -37,13 +37,12 @@ import microsoft.exchange.webservices.data.property.complex.InternetMessageHeade
 import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.MimeContent;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -250,18 +249,15 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		emailXml.addSubElement(dateTimeReceivedXml);
 	}
 
-
+	@Deprecated
+	@ConfigurationWarning("attribute 'outputFolder' has been replaced by 'processedFolder'")
 	public void setOutputFolder(String outputFolder) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'outputFolder' has been replaced by 'processedFolder'";
-		configWarnings.add(log, msg);
 		setProcessedFolder(outputFolder);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'tempFolder' has been replaced by 'inProcessFolder'")
 	public void setTempFolder(String tempFolder) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'tempFolder' has been replaced by 'inProcessFolder'";
-		configWarnings.add(log, msg);
 		setInProcessFolder(tempFolder);
 	}
 

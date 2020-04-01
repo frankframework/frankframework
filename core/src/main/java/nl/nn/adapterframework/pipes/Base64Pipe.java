@@ -24,13 +24,12 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -79,9 +78,6 @@ public class Base64Pipe extends FixedForwardPipe {
 		}
 
 		if(!convertToString) {
-			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute convert2String is deprecated. Please specify an outputType instead";
-			ConfigurationWarnings.getInstance().add(log, msg, true);
-
 			//Allow this for backwards compatibility
 			if(getDirection().equals("decode"))
 				setOutputType("bytes");
@@ -142,6 +138,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	 * @param b convert result to string or outputStream depending on the direction used
 	 */
 	@Deprecated
+	@ConfigurationWarning("please specify outputType instead")
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}

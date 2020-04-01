@@ -45,6 +45,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -590,8 +591,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (getListener() instanceof ITransactionRequirements) {
 				ITransactionRequirements tr=(ITransactionRequirements)getListener();
 				if (tr.transactionalRequired() && !isTransacted()) {
-					String msg=getLogPrefix()+"listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing";
-					ConfigurationWarnings.getInstance().add(msg);
+					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing");
 					//throw new ConfigurationException(msg);
 				}
 			}
@@ -641,9 +641,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
@@ -658,9 +656,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
 						int stt = Integer.parseInt(systemTransactionTimeout);
 						if (getTransactionTimeout()>stt) {
-							ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-							String msg = getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]";
-							configWarnings.add(log, msg);
+							ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
 						}
 					}
 				}
@@ -1694,15 +1690,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
 	}
+
 	/**
 	 * Sets the inProcessStorage.
 	 * @param inProcessStorage The inProcessStorage to set
 	 * @deprecated
 	 */
+	@Deprecated
+	@ConfigurationWarning("In-Process Storage no longer exists")
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"In-Process Storage is not used anymore. Please remove from configuration.";
-		configWarnings.add(log, msg);
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1821,14 +1817,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}

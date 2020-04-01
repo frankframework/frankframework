@@ -16,21 +16,30 @@
 package nl.nn.adapterframework.stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.net.URL;
 
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static org.hamcrest.core.StringStartsWith.startsWith;
 
+import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -44,6 +53,7 @@ public class MessageTest {
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub><data attr=\"één €\">één €</data></root>";
 	protected String testStringFile="/Message/testString.txt";
 	
+	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 	
 	protected void testAsStream(Message adapter) throws IOException {
 		InputStream result = adapter.asInputStream();
@@ -300,4 +310,99 @@ public class MessageTest {
 		testToString(adapter,URL.class);
 	}
 
+	@Test
+	public void testSerializeWithString() throws Exception {
+		String source = testString;
+		Message in = new Message(source);
+		
+		byte[] wire = serializationTester.serialize(in);
+		
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		
+		assertFalse(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	@Test
+	public void testSerializeWithByteArray() throws Exception {
+		byte[] source = testString.getBytes("utf-8");
+		Message in = new Message(source);
+		
+		byte[] wire = serializationTester.serialize(in);
+		
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		
+		assertTrue(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	@Test
+	public void testSerializeWithReader() throws Exception {
+		Reader source = new StringReader(testString);
+		Message in = new Message(source);
+		
+		byte[] wire = serializationTester.serialize(in);
+		
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		
+		assertFalse(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	@Test
+	public void testSerializeWithInputStream() throws Exception {
+		InputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
+		Message in = new Message(source);
+		
+		byte[] wire = serializationTester.serialize(in);
+		
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		
+		assertTrue(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	@Test
+	public void testSerializeWithFile() throws Exception {
+		TemporaryFolder folder = new TemporaryFolder();
+		folder.create();
+		File source = folder.newFile();
+		writeContentsToFile(source, testString);
+		
+		Message in = new Message(source);
+		byte[] wire = serializationTester.serialize(in);
+		writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
+		Message out = serializationTester.deserialize(wire);
+		
+		assertTrue(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	@Test
+	public void testSerializeWithURL() throws Exception {
+		TemporaryFolder folder = new TemporaryFolder();
+		folder.create();
+		File file = folder.newFile();
+		writeContentsToFile(file, testString);
+		URL source = file.toURL();
+
+		Message in = new Message(source);
+		byte[] wire = serializationTester.serialize(in);
+		writeContentsToFile(file, "fakeContentAsReplacementOfThePrevious");
+		Message out = serializationTester.deserialize(wire);
+		
+		assertTrue(out.isBinary());
+		assertEquals(testString,out.asString());
+	}
+	
+	private void writeContentsToFile(File file, String contents) throws IOException {
+		Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8");
+		fw.write(contents);
+		fw.close();
+	}
+	
 }

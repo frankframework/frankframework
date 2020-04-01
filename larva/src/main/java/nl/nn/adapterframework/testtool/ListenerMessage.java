@@ -2,8 +2,6 @@ package nl.nn.adapterframework.testtool;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IListener;
-
 /**
  * @author Jaco de Groot
  */
