@@ -96,8 +96,9 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		Message message= new Message(filename);
 		PipeRunResult prr = pipe.doPipe(message, session);
 		assertNotNull(prr);
-		System.out.println(prr.getResult());
-		assertEquals(expected, prr.getResult());
+		String actual = Message.asString(prr.getResult());
+		System.out.println(actual);
+		assertEquals(expected, actual);
 	}
 
 
