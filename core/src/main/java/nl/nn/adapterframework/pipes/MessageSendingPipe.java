@@ -701,7 +701,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					} else {
 					result = Message.asMessage(sendResult.getResult()); // is this correct? result was already set at line 635!
 				}
-				if (result == null) {
+				if (result == null || result.asObject()==null) {
 					result = new Message("");
 				}
 				if (timeoutPending) {
@@ -854,13 +854,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				exitState = INTERRUPT_FORWARD;
 				throw new InterruptedException();
 			}
-			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult.getResult().toString())) { // TODO must be asString()!
-				exitState = TIMEOUT_FORWARD;
-				throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
-			}
-			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult.getResult().toString())) { // TODO must be asString()!
-				exitState = EXCEPTION_FORWARD;
-				throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+			Message sendResultMessage = Message.asMessage(sendResult.getResult());
+			if (sendResultMessage.asObject() instanceof String) {
+				String result = (String)sendResultMessage.asObject();
+				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
+					exitState = TIMEOUT_FORWARD;
+					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+				}
+				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
+					exitState = EXCEPTION_FORWARD;
+					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+				}
 			}
 		} finally {
 			if (exitState==null) {
