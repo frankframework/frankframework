@@ -15,7 +15,6 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 
 	@Override
 	protected void startRow() {
-		super.startRow();
 		output.append("\n");
 	}
 
@@ -23,19 +22,16 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 	protected void endRow() {
 		// Delete last comma
 		output.deleteCharAt(output.length() - 1);
-		super.endRow();
 	}
 
 	@Override
 	protected void addFieldDefinition(Attributes atts) {
 		output.append("\"").append(atts.getValue("name")).append("\",");
-		super.addFieldDefinition(atts);
 	}
 
 	@Override
 	protected void addField(String fieldName, String value) {
 		output.append("\"").append(value).append("\",");
-		super.addField(fieldName, value);
 	}
 
 	@Override
@@ -44,4 +40,16 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 		output.deleteCharAt(output.length() - 1);
 		super.endDefinitions();
 	}
+
+	@Override
+	protected void startOut() {}
+
+	@Override
+	protected void endOut() {}
+
+	@Override
+	protected void startRowSet() {}
+
+	@Override
+	protected void endRowSet() {}
 }

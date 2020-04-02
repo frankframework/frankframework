@@ -9,9 +9,10 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.IOException;
 
-public class AbstractQueryOutputTransformer extends XMLFilterImpl {
+public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	private boolean parsingDefinitions = false;
-	protected StringBuilder output, currentField;
+	private String currentField;
+	protected StringBuilder output, currentBuilder;
 
 	public AbstractQueryOutputTransformer() throws SAXException {
 		super(XMLReaderFactory.createXMLReader());
@@ -47,12 +48,15 @@ public class AbstractQueryOutputTransformer extends XMLFilterImpl {
 			} else if ("true".equalsIgnoreCase(atts.getValue("null"))) {
 				addField(atts.getValue("name"), "");
 			} else {
-				currentField = new StringBuilder();
+				currentBuilder = new StringBuilder();
+				currentField = atts.getValue("name");
 			}
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {
 			startDefinitions();
-		} else if(localName.equalsIgnoreCase("row")) {
+		} else if (localName.equalsIgnoreCase("row")) {
 			startRow();
+		} else if (localName.equalsIgnoreCase("rowset")) {
+			startRowSet();
 		}
 		super.startElement(uri, localName, qName, atts);
 	}
@@ -60,52 +64,50 @@ public class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (localName.equalsIgnoreCase("field")) {
-			if (currentField != null)
-				addField("lol", currentField.toString());
+			if (currentBuilder != null)
+				addField(currentField, currentBuilder.toString());
+			currentBuilder = null;
 			currentField = null;
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {
 			endDefinitions();
-		}else if(localName.equalsIgnoreCase("row")) {
+		} else if (localName.equalsIgnoreCase("row")) {
 			endRow();
+		} else if (localName.equalsIgnoreCase("rowset")) {
+			endRowSet();
 		}
 		super.endElement(uri, localName, qName);
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		if (currentField != null) {
+		if (currentBuilder != null) {
 			String value = new String(ch).substring(start, start + length);
-			currentField.append(value);
+			currentBuilder.append(value);
 		}
 		super.characters(ch, start, length);
 	}
 
-	protected void startOut() {
-		System.err.println("Startout");
-	};
-	protected void endOut() {
-		System.err.println("Endout");
-	}
-	protected void startRow() {
-		System.err.println(" ------------ Start ROW");
-	}
-	protected void endRow() {
-		System.err.println("End ROW");
-	}
 	protected void startDefinitions() {
 		parsingDefinitions = true;
-		System.err.println(" ------------ Start Definitions");
 	}
+
 	protected void endDefinitions() {
 		parsingDefinitions = false;
-		System.err.println("End Definitions");
 	}
-	protected void addFieldDefinition(Attributes atts) {
-		for(int i = 0; i < atts.getLength(); i++) {
-			System.err.println("-- " + atts.getLocalName(i) + " : " + atts.getValue(i));
-		}
-	}
-	protected void addField(String fieldName, String value) {
-		System.err.println(fieldName + " : " + value);
-	}
+
+	protected abstract void startOut();
+
+	protected abstract void endOut();
+
+	protected abstract void startRow();
+
+	protected abstract void endRow();
+
+	protected abstract void startRowSet();
+
+	protected abstract void endRowSet();
+
+	protected abstract void addFieldDefinition(Attributes atts);
+
+	protected abstract void addField(String fieldName, String value);
 }
