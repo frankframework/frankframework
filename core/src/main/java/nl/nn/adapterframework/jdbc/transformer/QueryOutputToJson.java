@@ -5,6 +5,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 public class QueryOutputToJson extends AbstractQueryOutputTransformer {
+	private boolean rowsExist = false;
+
 	public QueryOutputToJson() throws SAXException {
 		super();
 	}
@@ -24,6 +26,7 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 
 	@Override
 	protected void startRow() {
+		rowsExist = true;
 		output.append("\t\t{\n");
 	}
 
@@ -56,7 +59,8 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	@Override
 	protected void endRowSet() {
 		// Delete last comma
-		output.deleteCharAt(output.length() - 2);
+		if (rowsExist)
+			output.deleteCharAt(output.length() - (2));
 		output.append("\t]\n");
 	}
 
@@ -72,7 +76,9 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 					.append("\",\n");
 		}
 		// Delete last comma
-		output.deleteCharAt(output.length() - 2);
+		if (atts.getLength() > 0)
+			output.deleteCharAt(output.length() - 2);
+
 		output.append("\t\t},\n");
 	}
 
