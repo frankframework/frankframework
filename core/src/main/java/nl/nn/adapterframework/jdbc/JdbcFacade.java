@@ -119,7 +119,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				}
 				try {
 					datasource =(DataSource) getContext().lookup( prefixedDsName );
-				} catch (NamingException e) {
+				} catch (Exception e) {
 					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
 				}
 			}

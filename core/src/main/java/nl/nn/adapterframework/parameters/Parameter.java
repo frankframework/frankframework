@@ -294,7 +294,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				Object transformResult=null;
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
-					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
+					source = XmlUtils.stringToSourceForSingleUse(getValue(), true);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					String sourceString;
 					Object sourceObject = prc.getSession().get(requestedSessionKey);
@@ -324,7 +324,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
-						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, true);
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
 					}
@@ -332,7 +332,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					String sourceString = format(alreadyResolvedParameters, prc);
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
-						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, true);
 					} else {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
