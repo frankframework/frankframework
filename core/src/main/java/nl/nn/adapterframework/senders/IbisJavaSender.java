@@ -22,7 +22,6 @@ import java.util.HashMap;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -172,11 +171,14 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@IbisDoc({"set to 'dll' to make the dispatcher communicate with a dll set on the classpath", ""})
-	public void setDispatchType(String type) {
-		if(type.equalsIgnoreCase("DLL"))
-			dispatchType = type;
-		else
-			ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'setDispatchType' only supports the value 'DLL'");
+	public void setDispatchType(String type) throws ConfigurationException {
+		if(StringUtils.isNotEmpty(type)) {
+			if(type.equalsIgnoreCase("DLL")) {
+				dispatchType = type;
+			} else {
+				throw new ConfigurationException(getLogPrefix()+"the attribute 'setDispatchType' only supports the value 'DLL'");
+			}
+		}
 	}
 
 	public String getDispatchType() {

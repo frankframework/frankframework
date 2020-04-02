@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -308,20 +307,17 @@ public class ClassUtils {
         return path;
     }
 
- 	/**
- 	 * returns the classname of the object, without the pacakge name.
- 	 */
+	/**
+	 * returns the className of the object, without the package name.
+	 */
 	public static String nameOf(Object o) {
 		if (o==null) {
 			return "<null>";
 		}
-		String name=o.getClass().getName();
-		int pos=name.lastIndexOf('.');
-		if (pos<0) {
-			return name;
-		} else {
-			return name.substring(pos+1);
+		if(o instanceof Class) {
+			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
 		}
+		return org.springframework.util.ClassUtils.getUserClass(o).getSimpleName();
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

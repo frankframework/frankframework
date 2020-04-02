@@ -117,7 +117,7 @@ public class ClassLoaderManager {
 						ibisContext.log(configurationName, null, msg, MessageKeeperMessage.INFO_LEVEL, ce);
 						break;
 					case WARN:
-						ConfigurationWarnings.getInstance().add(LOG, msg, ce);
+						ConfigurationWarnings.add(LOG, msg, ce);
 						break;
 					case ERROR:
 					default:
@@ -184,7 +184,7 @@ public class ClassLoaderManager {
 		classLoaders.put(configurationName, classLoader);
 		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
 			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
-			ConfigurationWarnings.getInstance().add(LOG, msg, true);
+			ConfigurationWarnings.add(LOG, msg);
 		}
 		return classLoader;
 	}

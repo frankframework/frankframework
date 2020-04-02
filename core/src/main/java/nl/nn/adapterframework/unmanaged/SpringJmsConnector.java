@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -71,20 +72,21 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
+public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector<Message>, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener<Message> {
 
  	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
 	private DefaultMessageListenerContainer jmsContainer;
 	private String messageListenerClassName;
-    
-    public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
+
+	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
 	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 	
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
 
+	private CredentialFactory credentialFactory;
 	private String cacheMode;
 	private int acknowledgeMode;
 	private boolean sessionTransacted;
@@ -107,15 +109,17 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			throw new ConfigurationException(getLogPrefix()+"error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
 		}
 	}
-    
+
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureEndpointConnection(final IPortConnectedListener jmsListener,
-			ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener,
-			String cacheMode, int acknowledgeMode, boolean sessionTransacted, String messageSelector,
-			long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
+	@Override
+	public void configureEndpointConnection(final IPortConnectedListener<Message> jmsListener,
+			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
+			IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted,
+			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
+		this.credentialFactory = credentialFactory;
 		this.cacheMode = cacheMode;
 		this.acknowledgeMode = acknowledgeMode;
 		this.sessionTransacted = sessionTransacted;
@@ -132,6 +136,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// that all required properties are set before we get a chance
 		// to insert our dynamic values from the config. file.
 		jmsContainer = createMessageListenerContainer();
+
+		if (jmsContainer instanceof IbisMessageListenerContainer) {
+			IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
+			ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
+		}
 
 		if (getReceiver().isTransacted()) {
 			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
@@ -189,7 +198,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		} catch (BeansException e) {
 			throw new ConfigurationException(getLogPrefix()+"Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
 		}
-        
+
 		// Finally, set bean name to something we can make sense of
 		if (getListener().getName() != null) {
 			jmsContainer.setBeanName(getListener().getName());
@@ -198,6 +207,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 	}
 
+	@Override
 	public void start() throws ListenerException {
 		log.debug(getLogPrefix()+"starting");
 		if (jmsContainer == null) {
@@ -224,6 +234,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 	}
 
+	@Override
 	public void stop() throws ListenerException {
 		log.debug(getLogPrefix()+"stopping");
 		if (jmsContainer!=null) {
@@ -245,9 +256,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 
 
+	@Override
 	public void onMessage(Message message, Session session)	throws JMSException {
 		TransactionStatus txStatus=null;
-               
+
 		long onMessageStart= System.currentTimeMillis();
 		long jmsTimestamp= message.getJMSTimestamp();
 		threadsProcessing.increase();
@@ -257,10 +269,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (TX!=null) {
 				txStatus = txManager.getTransaction(TX);
 			}
-                
-			Map threadContext = new HashMap();
+
+			Map<String,Session> threadContext = new HashMap<>();
 			try {
-				IPortConnectedListener listener = getListener();
+				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
 //				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 				getReceiver().processRawMessage(listener, message, threadContext);
@@ -302,6 +314,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 //	private boolean toggle=true;
 
+	@Override
 	public void onException(JMSException e) {
 		IbisExceptionListener ibisExceptionListener = getExceptionListener();
 		if (ibisExceptionListener!= null) {
@@ -312,13 +325,16 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 
 
+	@Override
 	public boolean isThreadCountReadable() {
 		return jmsContainer!=null;
 	}
+	@Override
 	public boolean isThreadCountControllable() {
 		return jmsContainer!=null;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		if (jmsContainer!=null) {
 			return jmsContainer.getActiveConsumerCount();
@@ -326,6 +342,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		return 0;
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		if (jmsContainer!=null) {
 			return jmsContainer.getMaxConcurrentConsumers();
@@ -333,12 +350,14 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		return 0;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		if (jmsContainer!=null) {
 			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);	
 		}
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (jmsContainer!=null) {
 			int current=getMaxThreadCount();
@@ -360,6 +379,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
 	 */
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
@@ -407,6 +427,7 @@ class PollGuard extends TimerTask {
 		this.springJmsConnector = springJmsConnector;
 	}
 
+	@Override
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {

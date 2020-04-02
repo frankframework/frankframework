@@ -151,6 +151,13 @@ public class TestMap2Xml extends AlignTestBase {
 	@Ignore("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
-    }
+	}
+	
+    @Override
+	@Test
+	@Ignore("Generates stackoverflow, known issue")
+	public void testFamilyTree() throws Exception {
+		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
+	}
 
 }

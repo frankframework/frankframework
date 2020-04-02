@@ -87,7 +87,7 @@ public class ApiMemcached implements IApiCache {
 			Future<Object> future = client.asyncGet("test-connection");
 			future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			ConfigurationWarnings.getInstance().add(log, "Unable to connect to one or more memcached servers.", null, true);
+			ConfigurationWarnings.add(log, "Unable to connect to one or more memcached servers.");
 		}
 	}
 

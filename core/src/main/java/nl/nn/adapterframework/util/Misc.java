@@ -17,7 +17,6 @@ package nl.nn.adapterframework.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 

@@ -36,36 +36,37 @@ public class SenderThread extends Thread {
 		log.debug("Request: " + request);
 	}
 
-    public void run() {
-        try {
-        	if (session==null) {
-        		session = new PipeLineSessionBase();
-        	}
-        	session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+	@Override
+	public void run() {
+		try {
+			if (session==null) {
+				session = new PipeLineSessionBase();
+			}
+			session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 			response = sender.sendMessage(new Message(request), session).asString();
-        } catch(SenderException e) {
-        	if (convertExceptionToMessage) {
-        		response = Util.throwableToXml(e);
-        	} else {
+		} catch(SenderException e) {
+			if (convertExceptionToMessage) {
+				response = Util.throwableToXml(e);
+			} else {
 				log.error("SenderException for ISender '" + name + "'", e);
 				senderException = e;
-        	}
-        } catch(IOException e) {
+			}
+		} catch(IOException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
-        } catch(TimeOutException e) {
+		} catch(TimeOutException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
 				log.error("timeOutException for ISender '" + name + "'", e);
 				timeOutException = e;
 			}
-        }
-    }
+		}
+	}
 
     public String getResponse() {
     	log.debug("Getting response for Sender: " + name);

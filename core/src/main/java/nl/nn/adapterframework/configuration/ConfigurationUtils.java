@@ -569,7 +569,7 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (Exception e) {
-				ConfigurationWarnings.getInstance().add(log, "failed to autoload configurations", e);
+				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperMessage.WARN_LEVEL, e);
 			}
 		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {

@@ -132,7 +132,7 @@ public class ConfigurationDigester {
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+		URL digesterRulesURL = ClassUtils.getResourceURL(configuration.getClassLoader(), getDigesterRules());
 		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 		digester.addRuleSet(ruleSet);
 
@@ -199,7 +199,7 @@ public class ConfigurationDigester {
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
-			URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+			URL digesterRulesURL = ClassUtils.getResourceURL(classLoader, getDigesterRules());
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
@@ -258,7 +258,7 @@ public class ConfigurationDigester {
 	}
 	
 	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
-		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
+		URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
 		}

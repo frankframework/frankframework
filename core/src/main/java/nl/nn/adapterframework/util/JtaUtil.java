@@ -28,10 +28,9 @@ import javax.transaction.UserTransaction;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jms.connection.JmsResourceHolder;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
@@ -125,12 +124,12 @@ public class JtaUtil {
 		boolean syncActive=TransactionSynchronizationManager.isSynchronizationActive();
 		result+=" synchronization active ["+syncActive+"]";
 		result+="\n";
-		Map resources = TransactionSynchronizationManager.getResourceMap();
+		Map<Object, Object> resources = TransactionSynchronizationManager.getResourceMap();
 		result += "resources:\n";
 		if (resources==null) {
 			result+="  map is null\n";
 		} else {
-			for (Iterator it=resources.keySet().iterator(); it.hasNext();) {
+			for (Iterator<Object> it=resources.keySet().iterator(); it.hasNext();) {
 				Object key = it.next();
 				Object resource = resources.get(key);
 				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
@@ -141,10 +140,10 @@ public class JtaUtil {
 			}
 		}
 		if (syncActive) {
-			List synchronizations = TransactionSynchronizationManager.getSynchronizations();
+			List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
 			result += "synchronizations:\n";
 			for (int i=0; i<synchronizations.size(); i++) {
-				Object synchronization = synchronizations.get(i);
+				TransactionSynchronization synchronization = synchronizations.get(i);
 				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n"; 
 			}
 		}

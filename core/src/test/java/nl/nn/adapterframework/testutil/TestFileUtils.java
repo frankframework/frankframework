@@ -23,7 +23,7 @@ public class TestFileUtils {
 	}
 
 	public static String getTestFile(String file, String charset) throws IOException {
-		URL url = TestFileUtils.class.getResource(file);
+		URL url = getTestFileURL(file);
 		if (url == null) {
 			System.out.println("file [" + file + "] not found");
 			return null;
@@ -31,6 +31,10 @@ public class TestFileUtils {
 		return getTestFile(url, charset);
 	}
 
+	public static URL getTestFileURL(String file) throws IOException {
+		return TestFileUtils.class.getResource(file);
+	}
+	
 	public static String getTestFile(URL url, String charset) throws IOException {
 		if (url == null) {
 			return null;

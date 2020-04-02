@@ -131,8 +131,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				cache.configure("XercesXmlValidator");
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ConfigurationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 			cache.open();
 		}
@@ -461,7 +460,7 @@ class MyErrorHandler implements XMLErrorHandler {
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
@@ -469,19 +468,18 @@ class MyErrorHandler implements XMLErrorHandler {
 	public void error(String domain, String key, XMLParseException e) throws XNIException {
 		// In case the XSD doesn't exist throw an exception to prevent the
 		// the adapter from starting.
-		if (e.getMessage() != null
-				&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

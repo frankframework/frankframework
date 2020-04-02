@@ -90,7 +90,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		if (paramList != null) {
 			paramList.configure();
 		}
-		setType(JdbcTransactionalStorage.TYPE_MESSAGESTORAGE);
+		setType(TYPE_MESSAGESTORAGE);
 		setOnlyStoreWhenMessageIdUnique(isOnlyStoreWhenMessageIdUnique());
 		super.configure();
 	}
@@ -116,6 +116,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
+			Message messageToStore=message;
 			if (sessionKeys != null) {
 				List<String> list = new ArrayList<String>();
 				list.add(StringEscapeUtils.escapeCsv(message.asString()));
@@ -126,18 +127,20 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 				}
 				StrBuilder sb = new StrBuilder();
 				sb.appendWithSeparators(list, ",");
-				message = new Message(sb.toString());
+				messageToStore = Message.asMessage(sb.toString());
 			}
-			String messageId = session.getMessageId();
+			// the messageId to be inserted in the messageStore defaults to the messageId of the session
+			String messageId = session.getMessageId(); 
 			String correlationID = messageId;
 			if (paramList != null && paramList.findParameter("messageId") != null) {
 				try {
+					// the messageId to be inserted can also be specified via the parameter messageId
 					messageId = (String)paramList.getValues(message, session).getValue("messageId");
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
 			}
-			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, message.asString()));
+			return new Message(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore.asString()));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}

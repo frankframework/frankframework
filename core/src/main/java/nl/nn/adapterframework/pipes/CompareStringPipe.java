@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -250,10 +250,9 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "The attribute sessionKey1 has been deprecated. Please use the parameter operand1";
-		configWarnings.add(log, msg);
 		sessionKey1 = string;
 	}
 	public String getSessionKey1() {
@@ -261,10 +260,9 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "The attribute sessionKey2 has been deprecated. Please use the parameter operand2";
-		configWarnings.add(log, msg);
 		sessionKey2 = string;
 	}
 	public String getSessionKey2() {

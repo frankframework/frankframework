@@ -19,10 +19,14 @@ import java.util.Set;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.Message;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import com.ibm.websphere.management.AdminService;
+import com.ibm.websphere.management.AdminServiceFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -31,16 +35,14 @@ import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
-
-import com.ibm.websphere.management.AdminService;
-import com.ibm.websphere.management.AdminServiceFactory;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class EjbListenerPortConnector implements IListenerConnector {
+public class EjbListenerPortConnector implements IListenerConnector<Message> {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";
     
     private IPortConnectedListener listener;
@@ -55,7 +57,8 @@ public class EjbListenerPortConnector implements IListenerConnector {
         return destination;
     }
 
-    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory,
+    @Override
+	public void configureEndpointConnection(IPortConnectedListener<Message> listener, ConnectionFactory connectionFactory, CredentialFactory credentialFactory,
             Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode,
             boolean sessionTransacted, String selector, long timeOut, long pollGuardInterval)
             throws ConfigurationException {

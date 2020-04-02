@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.wsdl.WSDLException;
 
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -17,6 +16,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -239,6 +239,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
+		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 		IAdapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
@@ -266,7 +267,8 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.registerAdapter(adapter);
 
 		assertEquals(1, configuration.getConfigurationWarnings().size());
-		assertEquals("Pipe [dummy] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", configuration.getConfigurationWarnings().getFirst());
+		assertEquals("WsdlXmlValidator [dummy] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", configuration.getConfigurationWarnings().getFirst());
+		ConfigurationWarnings.getInstance().setActiveConfiguration(null);
 	}
 
 	@Test
@@ -278,6 +280,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
+		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 		IAdapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
@@ -305,7 +308,8 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.registerAdapter(adapter);
 
 		assertEquals(1, configuration.getConfigurationWarnings().size());
-		assertEquals("Pipe [dummy] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", configuration.getConfigurationWarnings().getFirst());
+		assertEquals("WsdlXmlValidator [dummy] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", configuration.getConfigurationWarnings().getFirst());
+		ConfigurationWarnings.getInstance().setActiveConfiguration(null);
 	}
 }
 

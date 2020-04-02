@@ -35,7 +35,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	private Map<IPipe,Semaphore> pipeThreadCounts=new Hashtable<>();
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);
 		if (s != null) {
@@ -47,14 +47,14 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				waitingDuration = System.currentTimeMillis() - startWaiting;
 				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
 			} finally { 
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		}
 		return pipeRunResult;
 	}

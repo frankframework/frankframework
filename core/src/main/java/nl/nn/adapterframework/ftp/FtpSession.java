@@ -240,6 +240,7 @@ public class FtpSession {
 				kbiAuthenticationClient.setUsername(credentialFactory.getUsername());
 				kbiAuthenticationClient.setKBIRequestHandler(
 					new KBIRequestHandler() {
+						@Override
 						public void showPrompts(String name, String instruction, KBIPrompt[] prompts) {
 							//deze 3 regels in x.zip naar Zenz gemaild, hielp ook niet
 							if(prompts==null) {

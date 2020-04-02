@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database-oriented utility functions.
@@ -395,7 +395,7 @@ public class JdbcUtil {
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {
-					rawMessage = (String)result;
+					rawMessage = Message.asString(result);
 				}
 			} else {
 				rawMessage = new String(buf,charset);

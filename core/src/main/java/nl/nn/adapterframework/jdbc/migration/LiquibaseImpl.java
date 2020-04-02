@@ -87,10 +87,9 @@ public class LiquibaseImpl {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
+			String errorMsg = "Error running LiquiBase update for configuration ["+configurationName+"]. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.getInstance().add(log, errorMsg, e);
+			ConfigurationWarnings.add(log, errorMsg, e);
 		}
 	}
 

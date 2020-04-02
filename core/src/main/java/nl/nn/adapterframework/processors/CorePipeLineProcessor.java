@@ -92,7 +92,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		IPipe inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
-			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, message, pipeLineSession);
+			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
 			if (validationResult!=null) {
 				if (!validationResult.getPipeForward().getName().equals("success")) {
 					PipeForward validationForward=validationResult.getPipeForward();
@@ -117,7 +117,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			IPipe inputWrapper = pipeLine.getInputWrapper();
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
-				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, messageId, message, pipeLineSession);
+				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
 				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 					PipeForward wrapForward=wrapResult.getPipeForward();
 					if (wrapForward.getPath()==null) {
@@ -170,7 +170,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 				Object resultObject=pipeRunResult.getResult();
 				message = Message.asMessage(resultObject);
 
@@ -202,7 +202,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
 					if (outputWrapper !=null) {
 						log.debug("wrapping PipeLineResult");
-						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, messageId, message, pipeLineSession);
+						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
 						if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 							PipeForward wrapForward=wrapResult.getPipeForward();
 							if (wrapForward.getPath()==null) {
@@ -228,7 +228,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, message, pipeLineSession);
+							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {

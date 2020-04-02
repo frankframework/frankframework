@@ -19,7 +19,10 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -153,8 +156,29 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		}
 
 		Object currObj = createBeanFromClassName(className);
+
+		checkDeprecation(currObj);
 		checkAttributes(currObj, attrs);
 		return currObj;
+	}
+
+	/**
+	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
+	 */
+	private void checkDeprecation(Object currObj) {
+		Class<?> clazz = ClassUtils.getUserClass(currObj);
+		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+		if(warning != null) {
+			String msg = getObjectName(currObj, null);
+			if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
+				msg += " is deprecated";
+			}
+			if(StringUtils.isNotEmpty(warning.value())) {
+				msg += ": " + warning.value();
+			}
+			//Only print it once per deprecated class
+			ConfigurationWarnings.add(log, msg);
+		}
 	}
 
 	protected void checkAttributes(Object currObj, Map<String, String> attrs) throws Exception {
@@ -223,8 +247,13 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		}
 	}
 
+	/**
+	 * Returns the name of the object. In case a Spring proxy is being used, 
+	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
+	 * ClassUtils.getUserClass() makes sure the original class will be returned.
+	 */
 	private String getObjectName(Object o, String name) {
-		String result=o.getClass().getName();
+		String result = ClassUtils.getUserClass(o).getSimpleName();
 		if (name==null && o instanceof INamedObject) {
 			name=((INamedObject)o).getName();
 		}
@@ -236,15 +265,15 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
 		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
-		if (!configWarnings.containsDefaultValueExceptions(mergedKey)) {
+		if (!configWarnings.containsDefaultValueException(mergedKey)) {
 			addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
 		}
 	}
 
 	private void addConfigWarning(Object currObj, String name, String message) {
 		Locator loc = digester.getDocumentLocator();
-		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-		configWarnings.add(log, msg);
+		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
+		ConfigurationWarnings.add(null, log, msg);
 	}
 
     /**

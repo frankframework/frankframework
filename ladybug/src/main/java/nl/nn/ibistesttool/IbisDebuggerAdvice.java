@@ -52,6 +52,7 @@ import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
@@ -61,6 +62,10 @@ import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
+	// Contract for testtool state:
+	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
+	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
 	
@@ -101,48 +106,52 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	/**
-	 * Provides advice for {@link InputOutputPipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession)}
+	 * Provides advice for {@link InputOutputPipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)}
 	 */
-	public Object debugPipeInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public PipeRunResult debugPipeInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (PipeRunResult)proceedingJoinPoint.proceed();
 		}
-		Object preservedObject = message;
-		message = (Message)ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
+		boolean preserveInput = pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput();
+		Message preservedInput=null;
+		if (preserveInput) {
+			message.preserve();
+			preservedInput = message;
+		}
+		String messageId = pipeLineSession.getMessageId();
+		message = ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
 		PipeRunResult pipeRunResult = null;
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[3] = message;
+			args[2] = message;
 			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, messageId, throwable);
 		}
-		if (pipe instanceof IExtendedPipe) {
-			IExtendedPipe pe = (IExtendedPipe)pipe;
-			if (pe.isPreserveInput()) {
-				pipeRunResult.setResult(ibisDebugger.preserveInput(messageId, preservedObject));
-			}
+		if (preserveInput) {
+			pipeRunResult.setResult(ibisDebugger.preserveInput(messageId, preservedInput));
 		}
-		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, pipe, messageId, pipeRunResult.getResult()));
+		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, pipe, messageId, Message.asMessage(pipeRunResult.getResult())));
 		return pipeRunResult;
 	}
 
 	/**
-	 * Provides advice for {@link CheckSemaphorePipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession)}
+	 * Provides advice for {@link CheckSemaphorePipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)}
 	 */
-	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
 		if (pipe instanceof IExtendedPipe) {
 			IExtendedPipe pe = (IExtendedPipe)pipe;
+			String messageId = pipeLineSession.getMessageId();
 			message = (Message)debugGetInputFrom(pipeLineSession, messageId, message,
 					pe.getGetInputFromSessionKey(),
 					pe.getGetInputFromFixedValue(),
 					pe.getEmptyInputReplacement());
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
-		args[3] = message;
+		args[2] = message;
 		return proceedingJoinPoint.proceed(args);
 	}
 
@@ -160,7 +169,12 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			// ParameterResolutionContext) within Receivers.
 			return proceedingJoinPoint.proceed();
 		} 
-		Object preservedObject = message;
+		boolean preserveInput = sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput();
+		Message preservedInput=null;
+		if (preserveInput) {
+			message.preserve();
+			preservedInput = message;
+		}
 		Message result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
 		if (sender instanceof ISenderWithParameters && ibisDebugger.stubSender(sender, correlationId)) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
@@ -171,11 +185,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				parameterList.getValues(message, session);
 			}
 		}
-		if (sender instanceof SenderWrapperBase) {
-			SenderWrapperBase senderWrapperBase = (SenderWrapperBase)sender;
-			if (senderWrapperBase.isPreserveInput()) {
-				result = (Message)ibisDebugger.preserveInput(correlationId, preservedObject);
-			}
+		if (preserveInput) {
+			result = ibisDebugger.preserveInput(correlationId, preservedInput);
 		}
 		return ibisDebugger.senderOutput(sender, correlationId, result);
 	}
@@ -217,9 +228,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	 */
 //	@Pointcut("execution( * nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport)) " +
 //				"and args(correlationId, session, nextProvider)")
-	public Object debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws Throwable {
+	public PipeRunResult debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (PipeRunResult)proceedingJoinPoint.proceed();
 		}
 		String correlationId = session == null ? null : session.getMessageId();
 		if (log.isDebugEnabled()) log.debug("debugProvideOutputStream thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
@@ -228,7 +239,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			ISender sender = (ISender)proceedingJoinPoint.getTarget();
 			ibisDebugger.senderInput(sender, correlationId, new Message("--> provide outputstream"));
 			//System.out.println("--> provide outputstream of sender ["+sender.getName()+"]");
-			Object result = proceedingJoinPoint.proceed();
+			PipeRunResult result = (PipeRunResult)proceedingJoinPoint.proceed();
 			//System.out.println("<-- provide outputstream of sender ["+sender.getName()+"]: ["+result+"]");
 			ibisDebugger.senderOutput(sender, correlationId, new Message(result==null?null:result.toString()));
 			return result;
@@ -237,15 +248,15 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
 				//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
 				PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
-				ibisDebugger.pipeInput(pipeLine, pipe, correlationId, "--> provide outputstream");
-				Object result = proceedingJoinPoint.proceed();
+				ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new Message("--> provide outputstream"));
+				PipeRunResult result = (PipeRunResult)proceedingJoinPoint.proceed();
 				//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
-				ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, result);
+				ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, new Message(result==null?null:result.toString()));
 				return result;
 			}
 		}
 		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
-		return proceedingJoinPoint.proceed();
+		return (PipeRunResult)proceedingJoinPoint.proceed();
 	}
 
 	/**
@@ -436,8 +447,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 	}
 
-	public static void setEnabled(boolean enable) {
+	public void setEnabled(boolean enable) {
 		enabled = enable;
+		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
 		return enabled;
