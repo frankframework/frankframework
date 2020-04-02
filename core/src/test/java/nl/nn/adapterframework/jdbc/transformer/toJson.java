@@ -16,11 +16,11 @@ import java.util.Collection;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class toCsv {
+public class toJson {
 	private final static String FOLDER = "src/test/resources/Jdbc.transformer";
 	private File xmlFile, expectedFile;
 
-	public toCsv(File xmlFile, File expectedFile) {
+	public toJson(File xmlFile, File expectedFile) {
 		this.xmlFile = xmlFile;
 		this.expectedFile = expectedFile;
 	}
@@ -30,7 +30,7 @@ public class toCsv {
 		List<Object[]> files = new ArrayList<>();
 		int i = 0;
 		File xml = new File(FOLDER, i + ".xml");
-		File csv = new File(FOLDER, i + ".csv");
+		File csv = new File(FOLDER, i + ".json");
 		System.out.println(xml.getAbsolutePath());
 		while (xml.exists() && csv.exists()) {
 			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), csv.getName()));
@@ -47,7 +47,7 @@ public class toCsv {
 	public void doTest() throws IOException, SAXException {
 		String expected = new String(Files.readAllBytes(Paths.get(expectedFile.getAbsolutePath())));
 
-		QueryOutputToCSV transformer = new QueryOutputToCSV();
+		QueryOutputToJson transformer = new QueryOutputToJson();
 		String output = transformer.parse(new Message(xmlFile));
 
 		Assert.assertEquals(expected, output);
