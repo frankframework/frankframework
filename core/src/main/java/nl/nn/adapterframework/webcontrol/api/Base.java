@@ -192,21 +192,23 @@ public abstract class Base {
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected <T> T resolveTypeFromMap(List<Attachment> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+		T obj = defaultValue;
 		try {
-			String att = this.getAttributeValue(key, inputDataMap).orElse(null);
-			if (null != att) {
-				return (T) att;
-			}
+			obj = this.getAttributeValue(key, inputDataMap).map(a -> {
+				return this.castAttribute(a, clazz);
+			}).orElseGet(() -> {
+				return defaultValue;
+			});
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
 		}
-		if(defaultValue != null) {
-			return defaultValue;
+		if (obj == null) {
+			throw new ApiException("Key ["+key+"] not defined", 400);
 		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
-	}
+		return obj;
+	}	
+	
 	
 	public Optional<String> getAttributeValue(String name, List<Attachment> attachmentList) {
 		return this.getFile(name, attachmentList).map(inputStream -> {
@@ -265,6 +267,12 @@ public abstract class Base {
 			 }
 			 return resp;
 		}).orElse(Boolean.FALSE); 
+	}
+
+	private <T> T castAttribute(String input, Class<T> clazz) throws ApiException {
+		Atributte<T> att = new Atributte<T>(clazz);
+		att.setValue(input);
+		return att.getValue();
 	}
 
 }
