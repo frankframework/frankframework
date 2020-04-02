@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
 import nl.nn.adapterframework.stream.Message;
-import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -11,9 +10,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.IOException;
 
 public class AbstractQueryOutputTransformer extends XMLFilterImpl {
-	private String currentField;
 	private boolean parsingDefinitions = false;
-	protected StringBuilder output;
+	protected StringBuilder output, currentField;
 
 	public AbstractQueryOutputTransformer() throws SAXException {
 		super(XMLReaderFactory.createXMLReader());
@@ -49,7 +47,7 @@ public class AbstractQueryOutputTransformer extends XMLFilterImpl {
 			} else if ("true".equalsIgnoreCase(atts.getValue("null"))) {
 				addField(atts.getValue("name"), "");
 			} else {
-				currentField = atts.getValue("name");
+				currentField = new StringBuilder();
 			}
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {
 			startDefinitions();
@@ -62,6 +60,8 @@ public class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (localName.equalsIgnoreCase("field")) {
+			if (currentField != null)
+				addField("lol", currentField.toString());
 			currentField = null;
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {
 			endDefinitions();
@@ -73,9 +73,9 @@ public class AbstractQueryOutputTransformer extends XMLFilterImpl {
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		if (StringUtils.isNotEmpty(currentField)) {
+		if (currentField != null) {
 			String value = new String(ch).substring(start, start + length);
-			addField(currentField, value);
+			currentField.append(value);
 		}
 		super.characters(ch, start, length);
 	}
