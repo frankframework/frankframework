@@ -48,6 +48,8 @@
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
+	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
+	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -100,4 +102,6 @@
 	&CreateLargeFile;
 	&MemoryLeak; 
 	&Javascript;
+	&Parameters;
+	&MessageStore;
 </configuration>
