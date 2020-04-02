@@ -75,7 +75,7 @@ public final class SendJmsMessage extends Base {
 			persistent = super.getAttributeBooleanValue("persistent", inputDataMap);
 			fileName = super.getFileName("file", inputDataMap).orElse(null);
 			if(fileName != null)
-				file = this.getFile(fileName, inputDataMap).get();
+				file = this.getFile(fileName, inputDataMap).orElse(null);
 			
 		}
 		catch (Exception e) {

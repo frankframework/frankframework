@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.activation.DataHandler;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
@@ -224,12 +225,14 @@ public abstract class Base {
 
 	public Optional<InputStream> getFile(String name, List<Attachment> attachmentList) {
 		return attachmentList.stream()
-				.filter(att -> name.equalsIgnoreCase(att.getDataHandler().getDataSource().getName()))
+				.map(Attachment::getDataHandler)
+				.map(DataHandler::getDataSource)
+				.filter(att -> name.equalsIgnoreCase(att.getName()))
 				.findAny()
-				.map(m -> {
+				.map(att -> {
 					InputStream ie = null;
 					try {
-						ie = m.getDataHandler().getDataSource().getInputStream();
+						ie = att.getInputStream();
 					} catch (IOException e) {
 						log.error("The attribute " + name + " does not exist");
 					}

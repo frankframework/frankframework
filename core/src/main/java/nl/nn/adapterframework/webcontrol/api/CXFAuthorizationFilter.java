@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2020-2021 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Manages authorization per resource/collection.
+ * Manages authorization per resource/collection. / it was based on nl.nn.adapterframework.webcontrol.api.AuthorizationFilter
  * 
  * @since	7.0-B1
- * @author	Niels Meijer
+ * @author	Carlo Camiletti
  */
 
 @Provider
