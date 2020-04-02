@@ -305,10 +305,7 @@ public class Message implements Serializable {
 	}
 
 	public static Message asMessage(Object object) {
-		if (object==null) {
-			return null;
-		}
-		if (object instanceof Message) {
+		if (object!=null && object instanceof Message) {
 			return (Message)object;
 		}
 		return new Message(object);

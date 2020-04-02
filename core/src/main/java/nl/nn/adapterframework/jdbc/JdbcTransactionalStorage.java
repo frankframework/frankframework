@@ -148,11 +148,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
 
-	public static final String TYPE_ERRORSTORAGE="E";
-	public static final String TYPE_MESSAGESTORAGE="M";
-	public static final String TYPE_MESSAGELOG_PIPE="L";
-	public static final String TYPE_MESSAGELOG_RECEIVER="A";
-
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
 	boolean checkIfTableExists=true;
@@ -188,8 +183,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String hideMethod = "all";
 	
 	private String order;
-	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","");
-	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","");
+	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","DESC");
+	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","ASC");
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCIDLEN=256;		
@@ -641,7 +636,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 * Retrieves the value of the primary key for the record just inserted. 
 	 */
-	protected String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
+	private String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
 		PreparedStatement stmt=null;
 		
 		try {			
@@ -662,7 +657,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				if (!rs.next()) {
 					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
 				}
-				return rs.getString(1);
+				return "<id>" + rs.getString(1) + "</id>";
 			} finally {
 				if (rs!=null) {
 					rs.close();
@@ -750,7 +745,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				ResultSet rs = stmt.getGeneratedKeys();
 				boolean messageIdExists = false;
 				if (rs.next() && rs.getString(1) != null) {
-					return "<results><result>" + rs.getString(1) + "</result></results>";
+					return "<id>" + rs.getString(1) + "</id>";
 				} else {
 					messageIdExists = true;
 				}
@@ -816,7 +811,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					}
 					out.close();
 					dbmsSupport.updateBlob(rs, 1, blobHandle);
-					return newKey;
+					return "<id>" + newKey+ "</id>";
 				
 				} finally {
 					if (rs!=null) {
@@ -825,7 +820,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				}
 			} else {
 				if (isOnlyStoreWhenMessageIdUnique()) {
-					return "already there";
+					boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+					String resultString = createResultString(isMessageDifferent);
+					log.warn("MessageID [" + messageId + "] already exists");
+					if (isMessageDifferent) {
+						log.warn("Message with MessageID [" + messageId + "] is not equal");
+					}
+					return resultString;
 				} else {
 					throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
 				}
@@ -1626,14 +1627,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (StringUtils.isNotEmpty(order)) {
 			return order;
 		} else {
-			if (type.equalsIgnoreCase(TYPE_MESSAGELOG_PIPE) || type.equalsIgnoreCase(TYPE_MESSAGELOG_RECEIVER)) {
-				return messagesOrder; //Defaults to DESC
+			if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
+				return errorsOrder; //Defaults to ASC
 			} else {
-				if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
-					return errorsOrder; //Defaults to ASC
-				} else {
-					return order;
-				}
+				return messagesOrder; //Defaults to DESC
 			}
 		}
 	}

@@ -57,6 +57,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -505,7 +506,11 @@ public class TransactionalStorage extends Base {
 			msg = msgsgs.getText();
 		} else {
 			try {
-				msg = listener.getStringFromRawMessage(rawmsg, null);
+				if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg, null);
+				} else {
+					msg = Message.asString(rawmsg);
+				}
 			} catch (Exception e) {
 				log.warn("Exception reading value raw message", e);
 				msg = (String) rawmsg;

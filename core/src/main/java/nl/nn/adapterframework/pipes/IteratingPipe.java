@@ -551,7 +551,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@IbisDoc({"7", "Expression evaluated on each result if set. "
 	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
 	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
-	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected.", ""})
+	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead", ""})
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
 	}
@@ -626,7 +626,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return blockSize;
 	}
 
-	@IbisDoc({"15", "When <code>blocksize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
+	@IbisDoc({"15", "When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
@@ -634,7 +634,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return blockPrefix;
 	}
 
-	@IbisDoc({"16", "When <code>blocksize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
+	@IbisDoc({"16", "When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
@@ -658,7 +658,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return lineSuffix;
 	}
 
-	@IbisDoc({"19", "When <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
+	@IbisDoc({"19", "When <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
+					"A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
@@ -666,7 +667,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return startPosition;
 	}
 
-	@IbisDoc({"20", "When <code>endposition &gt;= startposition</code>, this field contains the end position of the key in the current record", "-1"})
+	@IbisDoc({"20", "When <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
