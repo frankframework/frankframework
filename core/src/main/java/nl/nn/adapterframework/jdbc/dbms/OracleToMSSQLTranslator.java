@@ -15,19 +15,18 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryContext;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Class to translate Oracle queries to MS SQL Server.
