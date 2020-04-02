@@ -30,14 +30,14 @@ public class toJson {
 		List<Object[]> files = new ArrayList<>();
 		int i = 0;
 		File xml = new File(FOLDER, i + ".xml");
-		File csv = new File(FOLDER, i + ".json");
+		File json = new File(FOLDER, i + ".json");
 		System.out.println(xml.getAbsolutePath());
-		while (xml.exists() && csv.exists()) {
-			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), csv.getName()));
-			files.add(new File[] {xml, csv});
+		while (xml.exists() && json.exists()) {
+			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), json.getName()));
+			files.add(new File[] {xml, json});
 			i++;
 			xml = new File(FOLDER, i + ".xml");
-			csv = new File(FOLDER, i + ".csv");
+			json = new File(FOLDER, i + ".json");
 		}
 
 		return files;
@@ -49,7 +49,7 @@ public class toJson {
 
 		QueryOutputToJson transformer = new QueryOutputToJson();
 		String output = transformer.parse(new Message(xmlFile));
-
+		System.out.println(output);
 		Assert.assertEquals(expected, output);
 	}
 }
