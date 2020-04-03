@@ -259,7 +259,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
 		for(NameValuePair pair : uri.getQueryParams()) {
 			String encoded = URLEncoder.encode(pair.getValue(), getCharSet());
-			System.err.println(String.format("encoded [%s] as [%s]", pair.getValue(), encoded));
 			pairs.add(new BasicNameValuePair(pair.getName(), encoded));
 		}
 		if(pairs.size() > 0) {
