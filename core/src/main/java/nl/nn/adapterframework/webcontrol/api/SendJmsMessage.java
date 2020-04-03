@@ -19,7 +19,6 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -30,12 +29,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
@@ -57,55 +54,47 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
 
 		String jmsRealm = null, destinationName = null, destinationType = null, replyTo = null, message = null, fileName = null;
 		InputStream file = null;
 		boolean persistent = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
 		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("real", String.class) != null)
+				jmsRealm = inputDataMap.getAttachmentObject("real", String.class);
 			else
 				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.get("destination") != null)
-				destinationName = inputDataMap.get("destination").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("destination", String.class) != null)
+				destinationName = inputDataMap.getAttachmentObject("destination", String.class);
 			else
 				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.get("type") != null) 
-				destinationType = inputDataMap.get("type").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("type", String.class) != null) 
+				destinationType = inputDataMap.getAttachmentObject("type", String.class);
 			else
 				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.get("replyTo") != null)
-				replyTo = inputDataMap.get("replyTo").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("replyTo", String.class) != null)
+				replyTo = inputDataMap.getAttachmentObject("replyTo", String.class);
 			else
 				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.get("message") != null) 
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("persistent") != null)
-				persistent = inputDataMap.get("persistent").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			if(inputDataMap.getAttachmentObject("message", String.class) != null) 
+				message = inputDataMap.getAttachmentObject("message", String.class);
+			if(inputDataMap.getAttachmentObject("message", Boolean.class))
+				persistent = inputDataMap.getAttachmentObject("message", Boolean.class);
+			if(inputDataMap.getAttachment( "file" ) != null)
+				file = inputDataMap.getAttachmentObject("file", InputStream.class);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
 		try {
 			if (file != null) {
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
-
+				fileName = inputDataMap.getAttachment( "file" ).getContentDisposition().getParameter( "filename" );
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					processZipFile(file, jmsBuilder(jmsRealm, destinationName, persistent, destinationType), replyTo);
 					message = null;

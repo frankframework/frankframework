@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -33,13 +32,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.helpers.IOUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -71,13 +70,28 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
+	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+		try {
+			if(inputDataMap.getAttachmentObject(key, String.class) != null) {
+				return inputDataMap.getAttachmentObject(key, clazz);
+			}
+		} catch (Exception e) {
+			log.debug("Failed to parse parameter ["+key+"]", e);
+		}
+		if(defaultValue != null) {
+			return defaultValue;
+		}
+		throw new ApiException("Key ["+key+"] not defined", 400);
+	}
+
+	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {
+	public Response postTestPipeLine(MultipartBody input) throws ApiException, PipeRunException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		IbisManager ibisManager = getIbisManager();
@@ -89,27 +103,19 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		InputStream file = null;
 		IAdapter adapter = null;
 		
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("encoding") != null)
-				fileEncoding = inputDataMap.get("encoding").get(0).getBodyAsString();
-			if(inputDataMap.get("adapter") != null) {
-				String adapterName = inputDataMap.get("adapter").get(0).getBodyAsString();
+			if(input.getAttachmentObject("message", String.class) != null)
+				message = input.getAttachmentObject("message", String.class);
+			if(input.getAttachmentObject("encoding", String.class) != null)
+				fileEncoding = input.getAttachmentObject("encoding", String.class);
+			if(input.getAttachment("adapter").getDataHandler().getDataSource().getName() != null) {
+				String adapterName = IOUtils.toString(input.getAttachment("adapter").getDataHandler().getDataSource().getInputStream());
 				adapter = ibisManager.getRegisteredAdapter(adapterName);
 			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
-
+			Attachment attFile = input.getAttachment( "file" );
+			if(attFile != null) {
+				fileName = attFile.getContentDisposition().getParameter( "filename" );
+				file = input.getAttachmentObject("file", InputStream.class);
 				if(fileEncoding == null || fileEncoding.isEmpty())
 					fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 

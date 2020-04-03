@@ -176,7 +176,7 @@
 	<servlet>
 		<display-name>IAF API</display-name>
 		<servlet-name>IAFAPI</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.api.ServletDispatcher</servlet-class>
+		<servlet-class>nl.nn.adapterframework.webcontrol.api.CXFServletDispatcher</servlet-class>
 		<init-param>
 			<param-name>resteasy.servlet.mapping.prefix</param-name>
 			<param-value>/iaf/api</param-value>

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,8 +37,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -48,11 +46,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -232,7 +230,7 @@ public class TransactionalStorage extends Base {
 	public Response resendReceiverMessages(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			MultipartFormDataInput input
+			MultipartBody input
 		) throws ApiException {
 
 		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
@@ -305,7 +303,7 @@ public class TransactionalStorage extends Base {
 	public Response deleteReceiverMessages(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			MultipartFormDataInput input
+			MultipartBody input
 		) throws ApiException {
 
 		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
@@ -446,14 +444,14 @@ public class TransactionalStorage extends Base {
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
 
-	private String[] getMessages(MultipartFormDataInput input) {
+	private String[] getMessages(MultipartBody inputDataMap) {
 		try {
-			Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-			if(inputDataMap.get("messageIds") != null) {
-				String messageIds = inputDataMap.get("messageIds").get(0).getBodyAsString();
+			
+			if(inputDataMap.getAttachmentObject("messageIds", String.class) != null) {
+				String messageIds = inputDataMap.getAttachmentObject("messageIds", String.class);
 				return messageIds.split(",");
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new ApiException(e);
 		}
 		return null;

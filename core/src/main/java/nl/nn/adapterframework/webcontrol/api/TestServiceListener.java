@@ -33,8 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -81,24 +81,23 @@ public final class TestServiceListener extends Base {
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postServiceListeners(MultipartFormDataInput input) throws ApiException {
+	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		String message = null, serviceName = null, dispatchResult = null;
 		InputStream file = null;
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("service") != null) {
-				serviceName = inputDataMap.get("service").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("message", String.class) != null)
+				message = inputDataMap.getAttachmentObject("message", String.class);
+			if(inputDataMap.getAttachmentObject("service", String.class) != null) {
+				serviceName = inputDataMap.getAttachmentObject("service", String.class);
 			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			Attachment attFile = inputDataMap.getAttachment( "file" );
+			if(attFile != null) {
+				file = inputDataMap.getAttachmentObject("file", InputStream.class);
 				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 				message = Misc.streamToString(file, "\n", fileEncoding, false);
-
 				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);
 			}
 			else {

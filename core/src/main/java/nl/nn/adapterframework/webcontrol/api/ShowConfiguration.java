@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -41,13 +42,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -263,42 +263,36 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
+	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
 
 		String datasource = null, fileName = null;
 		InputStream file = null;
 		boolean multiple_configs = false, activate_config = true, automatic_reload = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
 		try {
-			if(inputDataMap.get("datasource") != null)
-				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
+			if(inputDataMap.getAttachmentObject("datasource", String.class) != null)
+				datasource = inputDataMap.getAttachmentObject("datasource", String.class);
 			else
 				throw new ApiException("Datasource not defined", 400);
-			if(inputDataMap.get("multiple_configs") != null)
-				multiple_configs = inputDataMap.get("multiple_configs").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("activate_config") != null)
-				activate_config = inputDataMap.get("activate_config").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("automatic_reload") != null)
-				automatic_reload = inputDataMap.get("automatic_reload").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
+			if(inputDataMap.getAttachmentObject("multiple_configs", Boolean.class) != null)
+				multiple_configs = inputDataMap.getAttachmentObject("multiple_configs", Boolean.class);
+			if(inputDataMap.getAttachmentObject("activate_config", Boolean.class) != null)
+				activate_config = inputDataMap.getAttachmentObject("activate_config", Boolean.class);
+			if(inputDataMap.getAttachmentObject("automatic_reload", Boolean.class) != null)
+				automatic_reload = inputDataMap.getAttachmentObject("automatic_reload", Boolean.class);
+			
+			Attachment attFile = inputDataMap.getAttachment( "file" );
+			if(attFile != null)
+				file = inputDataMap.getAttachmentObject("file", InputStream.class);
 			else
 				throw new ApiException("No file specified", 400);
 
-			MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-			String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-			for (String fName : contentDispositionHeader) {
-				if ((fName.trim().startsWith("filename"))) {
-					String[] tmp = fName.split("=");
-					fileName = tmp[1].trim().replaceAll("\"","");
-				}
-			}
+			fileName = attFile.getContentDisposition().getParameter( "filename" );;
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
