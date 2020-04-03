@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -26,12 +27,18 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 
 	@Override
 	protected void addFieldDefinition(Attributes atts) {
-		output.append("\"").append(atts.getValue("name")).append("\",");
+		output
+				.append("\"")
+				.append(StringEscapeUtils.escapeCsv(atts.getValue("name")))
+				.append("\",");
 	}
 
 	@Override
 	protected void addField(String fieldName, String value) {
-		output.append("\"").append(value).append("\",");
+		output
+				.append("\"")
+				.append(StringEscapeUtils.escapeCsv(value))
+				.append("\",");
 	}
 
 	@Override
@@ -42,14 +49,18 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 	}
 
 	@Override
-	protected void startOut() {}
+	protected void startOut() {
+	}
 
 	@Override
-	protected void endOut() {}
+	protected void endOut() {
+	}
 
 	@Override
-	protected void startRowSet() {}
+	protected void startRowSet() {
+	}
 
 	@Override
-	protected void endRowSet() {}
+	protected void endRowSet() {
+	}
 }
