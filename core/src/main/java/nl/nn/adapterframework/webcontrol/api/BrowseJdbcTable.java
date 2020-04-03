@@ -15,14 +15,16 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.net.URL;
-import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToMap;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
@@ -34,16 +36,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
-
-import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.ResultSet;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Path("/")
 public final class BrowseJdbcTable extends Base {
@@ -57,7 +58,7 @@ public final class BrowseJdbcTable extends Base {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException, SAXException, IOException {
 		String datasource = null, tableName = null, where = "", order = "";
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
@@ -190,7 +191,7 @@ public final class BrowseJdbcTable extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = XmlQueryResult2Map(result);
+			resultMap = new QueryOutputToMap().parseString(result);;
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result [null].", 400);
