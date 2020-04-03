@@ -15,18 +15,17 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import java.io.ByteArrayInputStream;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
@@ -638,6 +637,41 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("parametersToSkip.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+
+	@Test
+	public void specialCharactersInURLParam() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("hallo");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			Parameter param1 = new Parameter();
+			param1.setName("url");
+			param1.setValue("http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("otherKey");
+			param2.setValue("otherValue");
+			sender.addParameter(param2);
+
+			sender.setMethodType("GET");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("specialCharactersInURLParam.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
