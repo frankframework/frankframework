@@ -25,16 +25,18 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.receivers.ReceiverAware;
 
 /**
  * 
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
@@ -48,6 +50,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private MediaTypes consumes = MediaTypes.ANY;
 	private MediaTypes produces = MediaTypes.ANY;
 	private String multipartBodyName = null;
+
+	private IReceiver receiver;
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -237,5 +241,15 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public String toString() {
 		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
 				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+	}
+
+	@Override
+	public void setReceiver(IReceiver receiver) {
+		this.receiver = receiver;
+	}
+
+	@Override
+	public IReceiver getReceiver() {
+		return receiver;
 	}
 }

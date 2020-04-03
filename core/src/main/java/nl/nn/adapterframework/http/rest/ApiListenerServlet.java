@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2019 Integration Partners B.V.
+Copyright 2017-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +16,17 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +44,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -78,6 +84,36 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+		String uri = request.getPathInfo();
+		String method = request.getMethod().toUpperCase();
+		log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
+
+		if (uri==null) {
+			response.setStatus(400);
+			log.warn("Aborting request with status [400], empty uri");
+			return;
+		}
+		if(uri.startsWith("/"))
+			uri = uri.substring(1);
+		if(uri.endsWith("/"))
+			uri = uri.substring(0, uri.length()-1);
+
+		/**
+		 * Generate an OpenApi json file
+		 */
+		if(uri.equalsIgnoreCase("openapi.json")) {
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
+			response.setStatus(200);
+
+			Map<String, Boolean> config = new HashMap<>();
+			config.put(JsonGenerator.PRETTY_PRINTING, true);
+			JsonWriterFactory factory = Json.createWriterFactory(config);
+			JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
+			jsonWriter.write(jsonSchema);
+			jsonWriter.close();
+			return;
+		}
+
 		/**
 		 * Initiate and populate messageContext
 		 */
@@ -88,25 +124,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 
 		try {
-			String uri = request.getPathInfo();
-			String method = request.getMethod().toUpperCase();
-			log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
-
-			if (uri==null) {
-				response.setStatus(400);
-				log.warn("Aborting request with status [400], empty uri");
-				return;
-			}
-
-			if(uri.startsWith("/"))
-				uri = uri.substring(1);
-			if(uri.endsWith("/"))
-				uri = uri.substring(0, uri.length()-1);
-
 			ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 			if(config == null) {
 				response.setStatus(404);
-				log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
+				if(log.isTraceEnabled()) log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
 				return;
 			}
 
@@ -132,7 +153,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				//Only cut off OPTIONS (aka preflight) requests
 				if(method.equals("OPTIONS")) {
 					response.setStatus(200);
-					log.trace("Aborting preflight request with status [200], method ["+method+"]");
+					if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method ["+method+"]");
 					return;
 				}
 			}
@@ -143,11 +164,11 @@ public class ApiListenerServlet extends HttpServletBase {
 			ApiListener listener = config.getApiListener(method);
 			if(listener == null) {
 				response.setStatus(405);
-				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
+				if(log.isTraceEnabled()) log.trace("Aborting request with status [405], method ["+method+"] not allowed");
 				return;
 			}
 
-			log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
+			if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 
 			/**
 			 * Check authentication
@@ -200,7 +221,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 
 					response.setStatus(401);
-					log.trace("Aborting request with status [401], no (valid) credentials supplied");
+					if(log.isTraceEnabled()) log.trace("Aborting request with status [401], no (valid) credentials supplied");
 					return;
 				}
 
@@ -230,14 +251,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!listener.getProduces().equals("ANY") && !accept.contains(listener.getContentType())) {
 					response.setStatus(406);
 					response.getWriter().print("It appears you expected the MediaType ["+accept+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-					log.trace("Aborting request with status [406], client expects ["+accept+"] got ["+listener.getContentType()+"] instead");
+					if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+accept+"] got ["+listener.getContentType()+"] instead");
 					return;
 				}
 			}
 
 			if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 				response.setStatus(415);
-				log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+				if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 				return;
 			}
 
@@ -251,7 +272,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					String ifNoneMatch = request.getHeader("If-None-Match");
 					if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 						response.setStatus(304);
-						log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
+						if(log.isTraceEnabled()) log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
 						return;
 					}
 				}
@@ -259,7 +280,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					String ifMatch = request.getHeader("If-Match");
 					if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 						response.setStatus(412);
-						log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
+						if(log.isTraceEnabled()) log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
 						return;
 					}
 				}
@@ -290,7 +311,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if(name != null) {
 					uriIdentifier++;
-					log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
+					if(log.isTraceEnabled()) log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
 					messageContext.put(name, uriSegments[i]);
 				}
 			}
@@ -303,7 +324,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 
-				log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
+				if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
 			}
 
@@ -355,7 +376,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					if (item.isFormField()) {
 						// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 						String fieldValue = item.getString();
-						log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
+						if(log.isTraceEnabled()) log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
 						messageContext.put(fieldName, fieldValue);
 						attachment.addAttribute("type", "text");
 						attachment.addAttribute("value", fieldValue);
@@ -363,9 +384,9 @@ public class ApiListenerServlet extends HttpServletBase {
 						// Process form file field (input type="file").
 						String fieldNameName = fieldName + "Name";
 						String fileName = FilenameUtils.getName(item.getName());
-						log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+						if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
 						messageContext.put(fieldNameName, fileName);
-						log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+						if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
 						messageContext.put(fieldName, item.getInputStream());
 
 						attachment.addAttribute("type", "file");
@@ -464,7 +485,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			if(result != null)
 				response.getWriter().print(result);
-			log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
+			if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 		}
 		catch (Exception e) {
 			log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
