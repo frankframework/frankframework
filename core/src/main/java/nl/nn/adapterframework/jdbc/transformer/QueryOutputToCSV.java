@@ -28,17 +28,15 @@ public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
 	@Override
 	protected void addFieldDefinition(Attributes atts) {
 		output
-				.append("\"")
 				.append(StringEscapeUtils.escapeCsv(atts.getValue("name")))
-				.append("\",");
+				.append(",");
 	}
 
 	@Override
 	protected void addField(String fieldName, String value) {
 		output
-				.append("\"")
 				.append(StringEscapeUtils.escapeCsv(value))
-				.append("\",");
+				.append(",");
 	}
 
 	@Override

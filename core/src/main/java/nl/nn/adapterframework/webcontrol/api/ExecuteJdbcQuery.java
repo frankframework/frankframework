@@ -89,7 +89,6 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
-		Object returnEntity = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -130,16 +129,17 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.configure(true);
 			qs.open();
 			Message message = qs.sendMessage(new Message(query), null);
-			result = message.asString();
+
 			if (resultType.equalsIgnoreCase("csv")) {
 				AbstractQueryOutputTransformer filter = new QueryOutputToCSV();
 				result = filter.parse(message);
-			}
-
-			if (resultType.equalsIgnoreCase("json")) {
+			} else if (resultType.equalsIgnoreCase("json")) {
 				AbstractQueryOutputTransformer filter = new QueryOutputToJson();
 				result = filter.parse(message);
+			} else {
+				result = message.asString();
 			}
+
 		} catch (Throwable t) {
 			throw new ApiException("Error executing query", t);
 		} finally {

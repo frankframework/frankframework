@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -65,7 +66,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (localName.equalsIgnoreCase("field")) {
 			if (currentBuilder != null)
-				addField(currentField, currentBuilder.toString());
+				addField(currentField, XmlUtils.decodeChars(currentBuilder.toString()));
 			currentBuilder = null;
 			currentField = null;
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {
