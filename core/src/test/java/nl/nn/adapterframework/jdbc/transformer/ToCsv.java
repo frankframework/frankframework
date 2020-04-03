@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,18 +10,17 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class toCsv {
-	private final static String FOLDER = "src/test/resources/Jdbc.transformer";
+public class ToCsv {
+	private final static String FOLDER = "/Jdbc.transformer/";
+	private final static String SRC = "src/test/resources" + FOLDER;
 	private File xmlFile, expectedFile;
 
-	public toCsv(File xmlFile, File expectedFile) {
+	public ToCsv(File xmlFile, File expectedFile) {
 		this.xmlFile = xmlFile;
 		this.expectedFile = expectedFile;
 	}
@@ -29,15 +29,15 @@ public class toCsv {
 	public static Collection<Object[]> data() {
 		List<Object[]> files = new ArrayList<>();
 		int i = 0;
-		File xml = new File(FOLDER, i + ".xml");
-		File csv = new File(FOLDER, i + ".csv");
+		File xml = new File(SRC, i + ".xml");
+		File csv = new File(SRC, i + ".csv");
 		System.out.println(xml.getAbsolutePath());
 		while (xml.exists() && csv.exists()) {
 			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), csv.getName()));
 			files.add(new File[] {xml, csv});
 			i++;
-			xml = new File(FOLDER, i + ".xml");
-			csv = new File(FOLDER, i + ".csv");
+			xml = new File(SRC, i + ".xml");
+			csv = new File(SRC, i + ".csv");
 		}
 
 		return files;
@@ -45,7 +45,7 @@ public class toCsv {
 
 	@Test
 	public void doTest() throws IOException, SAXException {
-		String expected = new String(Files.readAllBytes(Paths.get(expectedFile.getAbsolutePath())));
+		String expected = TestFileUtils.getTestFile(FOLDER + expectedFile.getName());
 
 		QueryOutputToCSV transformer = new QueryOutputToCSV();
 		String output = transformer.parse(new Message(xmlFile));

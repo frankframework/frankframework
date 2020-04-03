@@ -1,5 +1,5 @@
 {
-	"fields": [
+	"fielddefinition": [
 		{
 			"name":"ID",
 			"type":"VARCHAR",
