@@ -57,7 +57,7 @@ public final class ShowIbisstoreSummary extends Base {
 	@Path("/jdbc/summary")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException, SAXException, IOException {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
@@ -101,7 +101,11 @@ public final class ShowIbisstoreSummary extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = new QueryOutputToMap().parseString(result);
+			try {
+				resultMap = new QueryOutputToMap().parseString(result);
+			} catch (IOException | SAXException e) {
+				throw new ApiException("Query result could not be parsed.", e);
+			}
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result.");

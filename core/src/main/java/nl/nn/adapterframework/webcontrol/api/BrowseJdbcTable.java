@@ -58,7 +58,7 @@ public final class BrowseJdbcTable extends Base {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException, SAXException, IOException {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		String datasource = null, tableName = null, where = "", order = "";
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
@@ -191,7 +191,11 @@ public final class BrowseJdbcTable extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = new QueryOutputToMap().parseString(result);;
+			try {
+				resultMap = new QueryOutputToMap().parseString(result);
+			} catch (IOException | SAXException e) {
+				throw new ApiException("Query result could not be parsed.", e);
+			}
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result [null].", 400);
