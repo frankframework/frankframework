@@ -70,21 +70,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
-	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
-		try {
-			if(inputDataMap.getAttachmentObject(key, String.class) != null) {
-				return inputDataMap.getAttachmentObject(key, clazz);
-			}
-		} catch (Exception e) {
-			log.debug("Failed to parse parameter ["+key+"]", e);
-		}
-		if(defaultValue != null) {
-			return defaultValue;
-		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
-	}
-
-	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
