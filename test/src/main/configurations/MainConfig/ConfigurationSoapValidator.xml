@@ -15,13 +15,13 @@
 		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true">
 			<forward name="failure" path="OutputValidatorFailure" />
 		</outputValidator>
-		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromSessionKey="xmlFailureReason" storeReplacedInputInSessionKey="replacedInput">
+		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6003" />
 			<param name="errorReason" value="Invalid Request" />
-			<param name="errorRootTag" value="HelloWorld_Response" />
-			<param name="originalMessage" sessionKey="replacedInput" />
-			<param name="addErrorsFromInputMessage" value="true" />
+			<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+			<param name="addErrorsDetailsXml" value="true" />
+			<param name="originalMessage" sessionKey="originalMessage" />
 			<param name="operationName" value="Test/SoapValidator" />
 			<param name="paradigm" value="Response" />
 			<forward name="success" path="EXIT" />

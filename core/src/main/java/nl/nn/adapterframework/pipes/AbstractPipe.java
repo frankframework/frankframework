@@ -104,7 +104,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String name;
 	private String getInputFromSessionKey=null;
 	private String getInputFromFixedValue=null;
-	private String storeReplacedInputInSessionKey=null;
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
 
@@ -496,16 +495,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public boolean isPreserveInput() {
 		return preserveInput;
-	}
-
-	@IbisDoc({"6", "when set, the original input is stored under this session key in case it is replaced using getInputFromSessionKey or getInputFromFixedValue", ""})
-	@Override
-	public void setStoreReplacedInputInSessionKey(String string) {
-		storeReplacedInputInSessionKey = string;
-	}
-	@Override
-	public String getStoreReplacedInputInSessionKey() {
-		return storeReplacedInputInSessionKey;
 	}
 
 	/**

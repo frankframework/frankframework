@@ -8,9 +8,9 @@
 	<xsl:param name="errorReason"/>
 	<xsl:param name="errorDetailCode"/>
 	<xsl:param name="errorDetailText"/>
-	<xsl:param name="errorRootTag"/>
+	<xsl:param name="errorDetailsXml"/>
+	<xsl:param name="addErrorsDetailsXml">false</xsl:param>
 	<xsl:param name="originalMessage"/>
-	<xsl:param name="addErrorsFromInputMessage">false</xsl:param>
 	<xsl:param name="serviceName"/>
 	<xsl:param name="serviceContext"/>
 	<xsl:param name="operationName"/>
@@ -22,16 +22,13 @@
 		 - the complete input message is copied
 		 - a result tag is added as last child of the root tag if it doesn't exist and $paradigm equals 'Response'
 		 - if the result tag exists and $fixResultNamespace equals true, the namespace of the result tag is changed to $namespace
-		else if $errorRootTag is empty (this implies that the input message is an error message) then
+		else
 		 - the root tag of the input message is copied
 		 - a result tag is wrapped in this copied root tag
-		 - if the root of the input message equals 'errorMessage', this error is copied with Detail/Code=ERROR_1
-		 - if the root of the input message equals 'reasons', all errors are copied with Detail/Code=ERROR_# (# starting with 1 and increment by 1 for each error). Also $originalMessage will be copied as error with Detail/Code=ORIGINAL_MESSAGE
-		else then
-		 - $errorRootTag is copied as root tag
-		 - a result tag is wrapped in this root tag
+		 - if $addErrorsDetailsXml equals true, $errorDetailsXml is not empty and the root of $errorDetailsXml equals
+		    > 'errorMessage': this error is copied with Detail/Code=ERROR
+		    > 'reasons': all errors are copied with Detail/Code=ERROR. Also $originalMessage will be copied as error with Detail/Code=ORIGINAL_MESSAGE
 	-->
-	<xsl:variable name="rootTag" select="local-name(*)"/>
 	<xsl:variable name="ns">
 		<xsl:choose>
 			<xsl:when test="string-length($namespace)=0">
@@ -56,13 +53,8 @@
 			<xsl:when test="string-length($errorCode)=0">
 				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="ok"/>
 			</xsl:when>
-			<xsl:when test="string-length($errorRootTag)=0">
-				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error"/>
-			</xsl:when>
 			<xsl:otherwise>
-				<xsl:element name="{$errorRootTag}">
-					<xsl:call-template name="Result"/>
-				</xsl:element>
+				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
@@ -156,19 +148,19 @@
 								</xsl:element>
 							</xsl:element>
 							<xsl:choose>
-								<xsl:when test="$addErrorsFromInputMessage='true' and string-length($errorRootTag)&gt;0 and $rootTag='errorMessage'">
+								<xsl:when test="$addErrorsDetailsXml='true' and string-length($errorDetailsXml)&gt;0 and local-name($errorDetailsXml/*)='errorMessage'">
 									<xsl:element name="DetailList" namespace="{$ns}">
 										<xsl:element name="Detail" namespace="{$ns}">
 											<xsl:element name="Code" namespace="{$ns}">
-												<xsl:text>ERROR_1</xsl:text>
+												<xsl:text>ERROR</xsl:text>
 											</xsl:element>
 											<xsl:element name="Text" namespace="{$ns}">
-												<xsl:value-of select="errorMessage/@message"/>
+												<xsl:value-of select="$errorDetailsXml/errorMessage/@message"/>
 											</xsl:element>
 										</xsl:element>
 									</xsl:element>
 								</xsl:when>
-								<xsl:when test="$addErrorsFromInputMessage='true' and string-length($errorRootTag)&gt;0 and $rootTag='reasons'">
+								<xsl:when test="$addErrorsDetailsXml='true' and string-length($errorDetailsXml)&gt;0 and local-name($errorDetailsXml/*)='reasons'">
 									<xsl:element name="DetailList" namespace="{$ns}">
 										<xsl:if test="string-length($originalMessage)&gt;0">
 											<xsl:element name="Detail" namespace="{$ns}">
@@ -180,10 +172,10 @@
 												</xsl:element>
 											</xsl:element>
 										</xsl:if>
-										<xsl:for-each select="reasons/reason">
+										<xsl:for-each select="$errorDetailsXml/reasons/reason">
 											<xsl:element name="Detail" namespace="{$ns}">
 												<xsl:element name="Code" namespace="{$ns}">
-													<xsl:value-of select="concat('ERROR_',position())"/>
+													<xsl:text>ERROR</xsl:text>
 												</xsl:element>
 												<xsl:element name="Text" namespace="{$ns}">
 													<xsl:value-of select="string-join((xpath,location,message)[string-length(.)&gt;0],': ')"/>
