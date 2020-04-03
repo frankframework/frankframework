@@ -76,8 +76,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input) {
-		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input);
+	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input) {
+		return Message.asMessage(testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input.asObject()));
 	}
 
 	@Override
