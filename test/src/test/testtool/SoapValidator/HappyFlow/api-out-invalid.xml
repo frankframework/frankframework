@@ -19,11 +19,11 @@
 						<Text>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt; &lt;soapenv:Body&gt; &lt;HelloWorld2_Request xmlns="http://api.nn.nl/HelloWorld"&gt; &lt;Text&gt;hello_to_all&lt;/Text&gt; &lt;/HelloWorld2_Request&gt; &lt;/soapenv:Body&gt; &lt;/soapenv:Envelope&gt;</Text>
 					</Detail>
 					<Detail>
-						<Code>ERROR_1</Code>
+						<Code>ERROR</Code>
 						<Text>/Envelope/Body: Illegal element 'HelloWorld2_Request'. Element(s) 'HelloWorld_Request' expected.</Text>
 					</Detail>
 					<Detail>
-						<Code>ERROR_2</Code>
+						<Code>ERROR</Code>
 						<Text>/Envelope/Body: Element(s) 'HelloWorld_Request' not found</Text>
 					</Detail>
 				</DetailList>
