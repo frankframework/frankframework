@@ -62,9 +62,21 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.configure();
 	}
 
-	@Test(expected = PipeRunException.class)
+	@Test(expected = ConfigurationException.class)
 	public void wrongAction() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setAction("test123");
+		pipe.configure();
+	}
+
+	@Test(expected = ConfigurationException.class)
+	public void noLicense() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setLicense("");
+		pipe.configure();
+	}
+
+	@Test(expected = ConfigurationException.class)
+	public void wrongLicense() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setLicense("test123");
 		pipe.configure();
 	}
 
