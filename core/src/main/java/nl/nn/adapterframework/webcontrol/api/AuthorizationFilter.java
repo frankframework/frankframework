@@ -27,12 +27,13 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.cxf.jaxrs.impl.ResourceInfoImpl;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -48,6 +49,9 @@ import nl.nn.adapterframework.util.LogUtil;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthorizationFilter implements ContainerRequestFilter {
 
+	@Context
+	ResourceInfo info;
+	
 	protected Logger log = LogUtil.getLogger(this);
 
 	public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -58,19 +62,17 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		}
 		
 		SecurityContext securityContext = requestContext.getSecurityContext();
-		
 		if(securityContext.getUserPrincipal() == null) {
 			//Not logged in. Auth restriction should be done via web.xml, if no userPrincipal is set it uses anonymous login
 			return;
 		}
 
-		ResourceInfoImpl methodInvoker = (ResourceInfoImpl) requestContext.getProperty("javax.ws.rs.container.ResourceInfo");
+		Method method = info.getResourceMethod();
 
-		if(methodInvoker == null) {
+		if(method == null) {
 			log.error("Unable to fetch method from ResourceMethodInvoker");
 			requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
 		}
-		Method method = methodInvoker.getResourceMethod();
 
 		if(method.isAnnotationPresent(DenyAll.class)) {
 			//Functionality has been disallowed.
