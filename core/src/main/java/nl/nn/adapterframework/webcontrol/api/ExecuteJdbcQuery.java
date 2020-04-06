@@ -15,13 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -31,18 +31,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Executes a query.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -60,7 +58,7 @@ public final class ExecuteJdbcQuery extends Base {
 
 		Map<String, Object> result = new HashMap<String, Object>();
 		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
-		
+
 		List<String> jmsRealms = realmFactory.getRegisteredDatasourceRealmNamesAsList();
 		List<String> datasources = new ArrayList<>();
 		if (jmsRealms.size() == 0) {
@@ -71,12 +69,13 @@ public final class ExecuteJdbcQuery extends Base {
 				datasources.add(realm.getDatasourceName());
 			}
 		}
-		
+
 		result.put("datasources", datasources);
 
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
+		resultTypes.add("json");
 		result.put("resultTypes", resultTypes);
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
@@ -90,7 +89,6 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
-		Object returnEntity = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -130,30 +128,24 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
-			result = qs.sendMessage(new Message(query), null).asString();
+			Message message = qs.sendMessage(new Message(query), null);
+
 			if (resultType.equalsIgnoreCase("csv")) {
-				URL url = ClassUtils.getResourceURL(getClassLoader(), DBXML2CSV_XSLT);
-				if (url!=null) {
-					Transformer t = XmlUtils.createTransformer(url);
-					result = XmlUtils.transformXml(t,result);
-				}
+				AbstractQueryOutputTransformer filter = new QueryOutputToCSV();
+				result = filter.parse(message);
+			} else if (resultType.equalsIgnoreCase("json")) {
+				AbstractQueryOutputTransformer filter = new QueryOutputToJson();
+				result = filter.parse(message);
+			} else {
+				result = message.asString();
 			}
+
 		} catch (Throwable t) {
 			throw new ApiException("Error executing query", t);
 		} finally {
 			qs.close();
 		}
 
-		if(resultType.equalsIgnoreCase("json")) {
-			if(XmlUtils.isWellFormed(result)) {
-				returnEntity = XmlQueryResult2Map(result);
-			}
-			if(returnEntity == null)
-				throw new ApiException("Invalid query result", 400);
-		}
-		else
-			returnEntity = result;
-
-		return Response.status(Response.Status.CREATED).type(returnType).entity(returnEntity).build();
+		return Response.status(Response.Status.CREATED).type(returnType).entity(result).build();
 	}
 }
