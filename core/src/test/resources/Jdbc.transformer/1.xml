@@ -1,0 +1,19 @@
+<result>
+    <fielddefinition>
+        <field name="ID" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="AUTHOR" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="FILENAME" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="DATEEXECUTED" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp" />
+        <field name="ORDEREXECUTED" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer" />
+        <field name="EXECTYPE" type="VARCHAR" columnDisplaySize="10" precision="10" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="MD5SUM" type="VARCHAR" columnDisplaySize="35" precision="35" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="DESCRIPTION" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="COMMENTS" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="TAG" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="LIQUIBASE" type="VARCHAR" columnDisplaySize="20" precision="20" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="CONTEXTS" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="LABELS" type="VARCHAR" columnDisplaySize="255" precision="255" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+        <field name="DEPLOYMENT_ID" type="VARCHAR" columnDisplaySize="10" precision="10" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
+    </fielddefinition>
+    <rowset />
+</result>

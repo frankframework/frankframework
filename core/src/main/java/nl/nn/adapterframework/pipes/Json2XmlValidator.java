@@ -66,7 +66,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	
 	public final String FORMAT_XML="xml";
 	public final String FORMAT_JSON="json";
-	public final String FORMAT_AUTO="auto";
 	
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
@@ -115,9 +114,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	
 	/**
-	 * Validate the XML or JSON string. The format is automatically detected.
-	 * @param input   a String
-	 * @param session a {@link IPipeLineSession Pipelinesession}
+	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML-Schema. 
+	 * The format of the input message (XML or JSON) is automatically detected.
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
@@ -138,7 +136,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			if (firstChar=='<') {
 				// message is XML
 				if (isAcceptNamespaceLessXml()) {
-					messageToValidate=addNamespace(messageToValidate);
+					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
 					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
@@ -261,7 +259,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	
 	public JsonStructure createRequestJsonSchema() {
 		return createJsonSchema(getRoot());
- 	}
+	}
 	public JsonStructure createResponseJsonSchema() {
 		return createJsonSchema(getResponseRoot());
  	}
@@ -271,7 +269,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements());
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), schemaLocation);
 		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
 		return jsonschema;
 	}
@@ -298,58 +296,31 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 
-	@IbisDoc({"ony for json input: namespace of the resulting xml. need only be specified when the namespace of root name is ambiguous in the schema", ""})
+	@IbisDoc({"1", "Only for json input: namespace of the resulting xml. Need only be specified when the namespace of root name is ambiguous in the schema", ""})
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
 	public String getTargetNamespace() {
 		return targetNamespace;
 	}
-	
 
-	@IbisDoc({"default format of the result. either 'xml' or 'json'", "xml"})
+	@IbisDoc({"2", "Default format of the result. Either 'xml' or 'json'", "xml"})
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
 	}
 	public String getOutputFormat() {
 		return outputFormat;
 	}
-	
+
+	@IbisDoc({"3", "Session key to retrieve outputformat from.", "outputformat"})
+	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
+		this.outputFormatSessionKey = outputFormatSessionKey;
+	}
 	public String getOutputFormatSessionKey() {
 		return outputFormatSessionKey;
 	}
 
-	@IbisDoc({"session key to retrieve outputformat from.", "outputformat"})
-	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
-		this.outputFormatSessionKey = outputFormatSessionKey;
-	}
-	
-
-	@IbisDoc({"when true assume arrays in json do not have the element containers like in xml", "true"})
-	public void setCompactJsonArrays(boolean compactJsonArrays) {
-		this.compactJsonArrays = compactJsonArrays;
-	}
-	public boolean isCompactJsonArrays() {
-		return compactJsonArrays;
-	}
-
-	@IbisDoc({"when true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
-	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
-		this.strictJsonArraySyntax = strictJsonArraySyntax;
-	}
-	public boolean isStrictJsonArraySyntax() {
-		return strictJsonArraySyntax;
-	}
-
-	@IbisDoc({"when true, assume that json contains/must contain a root element", "false"})
-	public void setJsonWithRootElements(boolean jsonWithRootElements) {
-		this.jsonWithRootElements = jsonWithRootElements;
-	}
-	public boolean isJsonWithRootElements() {
-		return jsonWithRootElements;
-	}
-
-	@IbisDoc({"when true, the format on 'output' is set to the same as the format of the input message on 'input'", "true"})
+	@IbisDoc({"4", "If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey", "true"})
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
@@ -357,6 +328,31 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return autoFormat;
 	}
 
+	@IbisDoc({"5", "If true assume arrays in json do not have the element containers like in xml", "true"})
+	public void setCompactJsonArrays(boolean compactJsonArrays) {
+		this.compactJsonArrays = compactJsonArrays;
+	}
+	public boolean isCompactJsonArrays() {
+		return compactJsonArrays;
+	}
+
+	@IbisDoc({"6", "If true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
+	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
+		this.strictJsonArraySyntax = strictJsonArraySyntax;
+	}
+	public boolean isStrictJsonArraySyntax() {
+		return strictJsonArraySyntax;
+	}
+
+	@IbisDoc({"7", "If true, assume that json contains/must contain a root element", "false"})
+	public void setJsonWithRootElements(boolean jsonWithRootElements) {
+		this.jsonWithRootElements = jsonWithRootElements;
+	}
+	public boolean isJsonWithRootElements() {
+		return jsonWithRootElements;
+	}
+
+	@IbisDoc({"8", "If true, and converting from json to xml, parameter substitutions are searched for in optional sub elements too. By default, only mandatory elements are searched for parameter substitutions", "false"})
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
 	}
@@ -364,7 +360,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return deepSearch;
 	}
 
-	@IbisDoc({"when true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. this often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
+	@IbisDoc({"9", "If true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. This often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
@@ -372,7 +368,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return failOnWildcards;
 	}
 
-	@IbisDoc({"when true, all xml is allowed to be without namespaces. when no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
+	@IbisDoc({"10", "If true, all xml is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
 	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
 		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
 	}
@@ -380,7 +376,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return acceptNamespaceLessXml;
 	}
 
-	@IbisDoc({"when true, all xml that is generated is without a namespace set", "false"})
+	@IbisDoc({"11", "If true, all xml that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}

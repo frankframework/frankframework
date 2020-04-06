@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface IbisDebugger {
 
-	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input);
+	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
 	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output);
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
