@@ -32,6 +32,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -44,6 +45,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
+@Deprecated
+@ConfigurationWarning("Please replace with ForEachChildElementPipe")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
