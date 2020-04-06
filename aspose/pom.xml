@@ -30,6 +30,13 @@
 			<version>7.6-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+			<version>3.0.1</version>
+		</dependency>
 		
 		<!-- Libraries -->
 		<dependency>
