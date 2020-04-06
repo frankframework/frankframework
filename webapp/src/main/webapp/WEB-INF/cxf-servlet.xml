@@ -42,7 +42,7 @@
     
 	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 	
-	<bean id="authorizationFilter" class="nl.nn.adapterframework.webcontrol.api.CXFAuthorizationFilter">
+	<bean id="authorizationFilter" class="nl.nn.adapterframework.webcontrol.api.AuthorizationFilter">
             <!-- authorization bean properties -->
     </bean>  	
 	<bean id="apiExceptionHandler" class="nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler" />
