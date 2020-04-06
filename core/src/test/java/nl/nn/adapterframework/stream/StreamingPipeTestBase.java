@@ -2,11 +2,13 @@ package nl.nn.adapterframework.stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeNotNull;
 
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -47,11 +49,13 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 			CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
 			//Object result;
 			try (MessageOutputStream target = pipe.provideOutputStream(session, capProvider)) {
-		
+				assumeNotNull(target);
 				try (Writer writer = target.asWriter()) {
 					writer.write(input.asString()); // TODO: proper conversion of non-string classes..
 				}
 				prr=target.getPipeRunResult();
+			} catch (AssumptionViolatedException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new PipeRunException(pipe,"cannot convert input",e);
 			}
