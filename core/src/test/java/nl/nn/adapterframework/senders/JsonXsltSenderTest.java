@@ -26,7 +26,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
 
 	@Test
-	public void basic() throws ConfigurationException, IOException, SenderException {
+	public void basic() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.configure();
 		sender.open();
@@ -40,7 +40,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	}
 
 	@Test
-	public void xmlOut() throws ConfigurationException, IOException, SenderException {
+	public void xmlOut() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.setJsonResult(false);
 		sender.configure();
@@ -55,7 +55,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	}
 
 	@Test
-	public void testXPath() throws ConfigurationException, IOException, SenderException {
+	public void testXPath() throws Exception {
 		sender.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
 		sender.setOutputType("text");
 		sender.setJsonResult(false);

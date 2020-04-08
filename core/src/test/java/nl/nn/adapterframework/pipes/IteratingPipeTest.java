@@ -23,29 +23,12 @@ public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 
 	private final class TestIteratingPipe extends IteratingPipe<String> {
 
-		public boolean useIterator=true;
-		
 		@Override
 		protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 			try {
-				return useIterator ? new ReaderLineIterator(input.asReader()) : null;
+				return new ReaderLineIterator(input.asReader());
 			} catch (IOException e) {
 				throw new SenderException(e);
-			}
-		}
-
-		@Override
-		protected void iterateOverInput(Message input, IPipeLineSession session, Map<String, Object> threadContext, IteratingPipe<String>.ItemCallback callback) throws SenderException, TimeOutException {
-			if (useIterator) {
-				super.iterateOverInput(input, session, threadContext, callback);
-			} else {
-				try {
-					for (IDataIterator<String> iterator = new ReaderLineIterator(input.asReader()); iterator.hasNext();) {
-						callback.handleItem(iterator.next());
-					}
-				} catch (IOException e) {
-					throw new SenderException(e);
-				}
 			}
 		}
 
@@ -115,132 +98,88 @@ public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 	}
 	
 
-	public void testTenLines(boolean noIterator, String expectedFile) throws Exception {
+	public void testTenLines(String expectedFile) throws Exception {
 		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile(expectedFile);
 
-		((TestIteratingPipe)pipe).useIterator=!noIterator;
-		
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}
 
-	public void testTenLines(boolean noIterator) throws Exception {
-		testTenLines(noIterator, "/IteratingPipe/TenLinesResult.xml");
+	public void testTenLines() throws Exception {
+		testTenLines("/IteratingPipe/TenLinesResult.xml");
 	}
-	public void testTenLinesToSeven(boolean noIterator) throws Exception {
-		testTenLines(noIterator, "/IteratingPipe/SevenLinesResult.xml");
+	public void testTenLinesToSeven() throws Exception {
+		testTenLines("/IteratingPipe/SevenLinesResult.xml");
 	}
 	
-	public void testBasic(boolean blockEnabled, boolean noIterator) throws Exception {
+	public void testBasic(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		configurePipe();
 		pipe.start();
-		testTenLines(noIterator);
-	}
-
-	public void testBasic(boolean noIterator) throws Exception {
-		testBasic(false, noIterator);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogPlain.txt");
-		assertEquals(expectedRenderResult, resultLog.toString().trim());
-	}
-	public void testBasicBlockEnabled(boolean noIterator) throws Exception {
-		testBasic(true, noIterator);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogSingleBlock.txt");
-		assertEquals(expectedRenderResult, resultLog.toString().trim());
+		testTenLines();
 	}
 
 	@Test
 	public void testBasic() throws Exception {
 		testBasic(false);
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogPlain.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
 	public void testBasicBlockEnabled() throws Exception {
-		testBasic(false);
-	}
-	@Test
-	public void testBasicNoIterator() throws Exception {
 		testBasic(true);
-	}
-	@Test
-	public void testBasicBlockEnabledNoIterator() throws Exception {
-		testBasic(true);
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogSingleBlock.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
-	public void testBasicMaxItems(boolean blockEnabled, boolean noIterator) throws Exception {
+
+	public void testBasicMaxItems(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setMaxItems(7);
 		configurePipe();
 		pipe.start();
-		testTenLinesToSeven(noIterator);
+		testTenLinesToSeven();
 	}
 	
-	public void testBasicMaxItems(boolean noIterator) throws Exception {
-		testBasicMaxItems(false, noIterator);
+	@Test
+	public void testBasicMaxItems() throws Exception {
+		testBasicMaxItems(false);
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultLogPlain.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
-	public void testBasicMaxItemsBlockEnabled(boolean noIterator) throws Exception {
-		testBasicMaxItems(true, noIterator);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenResultLogSingleBlock.txt");
+	@Test
+	public void testBasicMaxItemsBlockEnabled() throws Exception {
+		testBasicMaxItems(true);
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultLogSingleBlock.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
-	@Test
-	public void testBasicMaxItems() throws Exception {
-		testBasic(false);
-	}
-	@Test
-	public void testBasicMaxItemsBlockEnabled() throws Exception {
-		testBasic(false);
-	}
-	@Test
-	public void testBasicMaxItemsNoIterator() throws Exception {
-		testBasic(true);
-	}
-	@Test
-	public void testBasicMaxItemsBlockEnabledNoIterator() throws Exception {
-		testBasic(true);
-	}
 
 
-	public void testFullBlocks(boolean blockEnabled, boolean noIterator) throws Exception {
+	public void testFullBlocks(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(5);
 		configurePipe();
 		pipe.start();
-		testTenLines(noIterator);
-	}
-
-	public void testFullBlocks(boolean noIterator) throws Exception {
-		testFullBlocks(false, noIterator);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogPlain.txt");
-		assertEquals(expectedRenderResult, resultLog.toString().trim());
-	}
-	public void testFullBlocksBlockEnabled(boolean noIterator) throws Exception {
-		testFullBlocks(true, noIterator);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogBlocksOfFive.txt");
-		assertEquals(expectedRenderResult, resultLog.toString().trim());
+		testTenLines();
 	}
 
 	@Test
 	public void testFullBlocks() throws Exception {
 		testFullBlocks(false);
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogPlain.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
 	public void testFullBlocksBlockEnabled() throws Exception {
-		testFullBlocksBlockEnabled(false);
-	}
-	@Test
-	public void testFullBlocksNoIterator() throws Exception {
 		testFullBlocks(true);
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultLogBlocksOfFive.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
-	@Test
-	public void testFullBlocksBlockEnabledNoIterator() throws Exception {
-		testFullBlocksBlockEnabled(true);
-	}
+
 	
 	
 	public void testPartialFinalBlock(boolean blockEnabled) throws Exception {
@@ -248,7 +187,7 @@ public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 		pipe.setBlockSize(4);
 		configurePipe();
 		pipe.start();
-		testTenLines(false);
+		testTenLines();
 	}
 
 	@Test
@@ -270,7 +209,7 @@ public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 		pipe.setMaxItems(7);
 		configurePipe();
 		pipe.start();
-		testTenLinesToSeven(false);
+		testTenLinesToSeven();
 	}
 
 	@Test
