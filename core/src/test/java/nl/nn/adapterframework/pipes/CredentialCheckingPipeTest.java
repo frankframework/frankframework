@@ -117,7 +117,7 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         pipe.setTargetUserid(targetId);
         pipe.setDefaultUserid(defaultId);
 
-        return pipe.doPipe(input, session).getResult().toString();
+        return doPipe(pipe, input, session).getResult().toString();
     }
 
 

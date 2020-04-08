@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,9 +52,11 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -186,7 +189,9 @@ public class TransactionalStorage extends Base {
 		filter.setEndDateMask(endDateStr);
 	
 		if("desc".equalsIgnoreCase(sort))
-			filter.setSortDescending();
+			filter.setSortOrder(SortOrder.DESC);
+		if("asc".equalsIgnoreCase(sort))
+			filter.setSortOrder(SortOrder.ASC);
 
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
@@ -434,7 +439,9 @@ public class TransactionalStorage extends Base {
 		filter.setEndDateMask(endDateStr);
 
 		if("desc".equalsIgnoreCase(sort))
-				filter.setSortDescending();
+			filter.setSortOrder(SortOrder.DESC);
+		if("asc".equalsIgnoreCase(sort))
+			filter.setSortOrder(SortOrder.ASC);
 
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
@@ -498,27 +505,29 @@ public class TransactionalStorage extends Base {
 			throw new ApiException(e, 404);
 		}
 
-		try {
-			String msg = null;
-			if(rawmsg instanceof MessageWrapper) {
-				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-				msg = msgsgs.getText();
-			} else if (listener != null) {
-				msg = listener.getStringFromRawMessage(rawmsg, null);
-			} else {
+		String msg = null;
+		if(rawmsg instanceof MessageWrapper) {
+			MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+			msg = msgsgs.getText();
+		} else {
+			try {
+				if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg, null);
+				} else {
+					msg = Message.asString(rawmsg);
+				}
+			} catch (Exception e) {
+				log.warn("Exception reading value raw message", e);
 				msg = (String) rawmsg;
 			}
-			if (StringUtils.isEmpty(msg)) {
-				msg = "<no message found/>";
-			} else {
-				msg=Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
-			}
-	
-			return msg;
 		}
-		catch(ListenerException e) {
-			throw new ApiException(e);
+		if (StringUtils.isEmpty(msg)) {
+			msg = "<no message found/>";
+		} else {
+			msg=Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
 		}
+
+		return msg;
 	}
 
 	private Response buildResponse(String msg, String fileName) {
@@ -562,10 +571,10 @@ public class TransactionalStorage extends Base {
 		try {
 			IMessageBrowsingIterator iterator = null;
 			try {
-				iterator = transactionalStorage.getIterator(startDate, endDate, filter.isSortDescending());
+				iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder());
 	
 				int count;
-				ArrayList<Object> messages = new ArrayList<Object>();
+				List<Object> messages = new LinkedList<Object>();
 				for (count=0; iterator.hasNext(); ) {
 					IMessageBrowsingIteratorItem iterItem = iterator.next();
 					try {
@@ -575,7 +584,7 @@ public class TransactionalStorage extends Base {
 						count++;
 						if (count > filter.skipMessages()) { 
 							Map<String, Object> message = new HashMap<String, Object>(3);
-	
+
 							message.put("id", iterItem.getId());
 							message.put("pos", count);
 							message.put("originalId", iterItem.getOriginalId());
@@ -626,7 +635,7 @@ public class TransactionalStorage extends Base {
 		private int maxMessages = 0;
 		private int skipMessages = 0;
 
-		private boolean sortDescending = false;
+		private SortOrder sortOrder = SortOrder.NONE;
 		private IMessageBrowser storage = null;
 		private IListener listener = null;
 
@@ -639,11 +648,11 @@ public class TransactionalStorage extends Base {
 			this.skipMessages = skipMessages;
 		}
 
-		public void setSortDescending() {
-			sortDescending = true;
+		public void setSortOrder(SortOrder order) {
+			sortOrder = order;
 		}
-		public boolean isSortDescending() {
-			return sortDescending;
+		public SortOrder getSortOrder() {
+			return sortOrder;
 		}
 
 		public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException {

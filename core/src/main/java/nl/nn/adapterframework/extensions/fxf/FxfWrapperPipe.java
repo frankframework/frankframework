@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -158,7 +160,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());
@@ -170,12 +172,15 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			XmlBuilder xmlRecipientApplication = new XmlBuilder("RecipientApplication");
 			xmlTransferDetails.addSubElement(xmlRecipientApplication);
 			XmlBuilder xmlFilename = new XmlBuilder("Filename");
-			if (input != null) {
-				String filename = input.toString();
+			if (message != null) {
+				String filename;
+				try {
+					filename = message.asString();
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				if (isTransformFilename()) {
-					String filenameOnIufState = "/opt/data/FXF/"
-							+ instanceNameLowerCase + "/" + getFlowId()
-							+ "/out/" + new File(filename).getName();
+					String filenameOnIufState = "/opt/data/FXF/" + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
 					xmlFilename.setValue(filenameOnIufState);
 				} else {
 					xmlFilename.setValue(filename);
@@ -187,9 +192,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 					+ getFlowId().substring(3);
 			xmlTransferFlowId.setValue(transferFlowId);
 			xmlTransferDetails.addSubElement(xmlTransferFlowId);
-			return super.doPipe(xmlStartTransfer_Action.toXML(), session);
+			return super.doPipe(new Message(xmlStartTransfer_Action.toXML()), session);
 		} else {
-			String soapBody = (String)super.doPipe(input, session).getResult();
+			String soapBody = (String)super.doPipe(message, session).getResult();
 			session.put(getSoapBodySessionKey(), soapBody);
 			String transferFlowId;
 			String clientFilename;

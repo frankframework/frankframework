@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -36,7 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 
@@ -46,8 +46,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 public class CmisHttpSender extends HttpSenderBase {
 
@@ -55,7 +55,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		String methodType = (String) session.get("method");
@@ -64,10 +64,10 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		try {
 			if(methodType.equals("GET")) {
-				method = new HttpGet(uri.build());
+				method = new HttpGet(uri);
 			}
 			else if (methodType.equals("POST")) {
-				HttpPost httpPost = new HttpPost(uri.build());
+				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -90,7 +90,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				}
 			}
 			else if (methodType.equals("PUT")) {
-				HttpPut httpPut = new HttpPut(uri.build());
+				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -113,7 +113,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				}
 			}
 			else if (methodType.equals("DELETE")) {
-				method = new HttpDelete(uri.build());
+				method = new HttpDelete(uri);
 			}
 			else {
 				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
@@ -124,10 +124,11 @@ public class CmisHttpSender extends HttpSenderBase {
 		}
 
 		if (session.get("headers") != null) {
+			@SuppressWarnings("unchecked")
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+				if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}
@@ -138,7 +139,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
@@ -154,7 +155,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				errorStream = responseHandler.getResponse();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
-			prc.getSession().put("response", response);
+			session.put("response", response);
 		}
 		catch(Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
@@ -174,9 +175,9 @@ public class CmisHttpSender extends HttpSenderBase {
 		pls.put("method", method);
 		pls.put("headers", headers);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {
-			sendMessage(null, null, prc);
+			// Message is unused, we use 'Output writer' instead
+			sendMessage(new Message(""), pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

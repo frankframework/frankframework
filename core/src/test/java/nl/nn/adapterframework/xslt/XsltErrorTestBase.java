@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -34,7 +35,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=1;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
 	
 	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
@@ -126,15 +126,13 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorOutputStream.toString(), isEmptyString());
 		}
 	}
-	
-	
+
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
 		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
-	
-	
+
 	// detect duplicate imports in configure()
 	@Test
 	public void duplicateImportErrorAlertsXslt1() throws Exception {
@@ -142,7 +140,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		setXslt2(false);
 		pipe.configure();
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING*getMultiplicity(),null);
+		checkTestAppender(0,null);
 	}
 
 	// detect duplicate imports in configure()
@@ -152,7 +150,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		checkTestAppender(getMultiplicity()*(1+EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING),"is included or imported more than once");
+		checkTestAppender(getMultiplicity()*1,"is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
@@ -167,8 +165,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		PipeRunResult prr=doPipe(pipe, input, session);
+		String result = Message.asString(prr.getResult());
 
-		assertResultsAreCorrect(expected, prr.getResult().toString(),session);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	
@@ -223,7 +222,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
+
+		checkTestAppender(0,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -244,7 +244,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -275,7 +275,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
-		assertThat(testAppender.getNumberOfAlerts(),is(getMultiplicity()+1+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
+		assertThat(testAppender.getNumberOfAlerts(),is(1+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 
 	}
 
@@ -292,7 +292,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("Cannot compare xs:integer to xs:string"));
 		}
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
+		checkTestAppender(1,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -315,7 +315,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
 			assertThat(errorMessage,containsString("A location path was expected, but the following token was encountered:  <"));
 		}
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity()+1,null);
+		checkTestAppender(2,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -338,7 +338,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
 			assertThat(errorMessage,containsString("Unexpected token \"<\" in path expression"));
 		}
-		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
+		checkTestAppender(1,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());

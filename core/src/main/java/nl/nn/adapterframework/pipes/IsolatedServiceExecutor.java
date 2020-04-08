@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,7 +33,7 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	boolean targetIsJavaListener;
 	Guard guard;
 	
-	public IsolatedServiceExecutor(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, Guard guard) {
+	public IsolatedServiceExecutor(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener, Guard guard) {
 		super();
 		this.serviceName=serviceName;
 		this.correlationID=correlationID;
@@ -42,12 +43,13 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 		this.guard=guard;
 	}
 
+	@Override
 	public void run() {
 		try {
 			if (targetIsJavaListener) {
-				reply = JavaListener.getListener(serviceName).processRequest(correlationID, request, context);
+				reply = new Message(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), context));
 			} else {
-				reply = ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request, context);
+				reply = new Message(ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request.asString(), context));
 			}
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);

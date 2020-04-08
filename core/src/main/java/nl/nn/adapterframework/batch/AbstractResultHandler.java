@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.batch;
 
-import java.util.List;
-
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -28,9 +26,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 
@@ -58,8 +54,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 			paramList.configure();
 		}
 		if (StringUtils.isNotEmpty(getPrefix()) || StringUtils.isNotEmpty(getSuffix())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively");	 
+			ConfigurationWarnings.add(this, log, "the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively");	 
 		}
 	}
 	@Override
@@ -70,10 +65,10 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
 	}
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
+	public void closeDocument(IPipeLineSession session, String streamId) {
 	}
 
 	@Override

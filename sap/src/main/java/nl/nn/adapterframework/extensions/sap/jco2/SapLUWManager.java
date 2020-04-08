@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -112,7 +113,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();
 		} else
@@ -135,7 +136,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 		} 
-		return new PipeRunResult(getForward(),input);
+		return new PipeRunResult(getForward(),message);
 	}
 
 

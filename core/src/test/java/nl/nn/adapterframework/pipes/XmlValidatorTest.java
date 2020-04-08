@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -95,7 +96,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
   		IPipeLineSession session=new PipeLineSessionBase();
        try {
-      		PipeRunResult result=validator.doPipe(testXml, session);
+      		PipeRunResult result=validator.doPipe(new Message(testXml), session);
       		PipeForward forward=result.getPipeForward();
 	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
        } catch (Exception e) {

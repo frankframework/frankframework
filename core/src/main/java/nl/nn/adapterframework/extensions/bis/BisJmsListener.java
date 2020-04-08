@@ -22,7 +22,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -145,6 +145,8 @@ import org.xml.sax.SAXException;
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsListener combined with BisWrapperPipe
  */
+@Deprecated
+@ConfigurationWarning("Please change to JmsListener combined with BisWrapperPipe")
 public class BisJmsListener extends JmsListener {
 
 	private static final String MESSAGETEXT_KEY = "messageText";
@@ -172,9 +174,6 @@ public class BisJmsListener extends JmsListener {
 	}
 
 	public void configure() throws ConfigurationException {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to JmsListener combined with BisWrapperPipe";
-		configWarnings.add(log, msg);
 		super.configure();
 		if (!isSoap()) {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
@@ -233,7 +232,7 @@ public class BisJmsListener extends JmsListener {
 		return super.prepareReply(payload, threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 	}
 
-	public String prepareResult(String errorCode, Map threadContext) throws DomBuilderException, IOException, TransformerException {
+	public String prepareResult(String errorCode, Map<String,Object> threadContext) throws DomBuilderException, IOException, TransformerException {
 		String errorText = null;
 		String serviceName = null;
 		String actionName = null;

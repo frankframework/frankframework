@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -54,15 +55,13 @@ import org.apache.commons.lang.StringUtils;
 
 public class Webservices extends TimeoutGuardPipe {
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);
 		} else {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "illegal value for method [" + method
-					+ "], must be 'GET'");
+			throw new PipeRunException(this, getLogPrefix(session) + "illegal value for method [" + method + "], must be 'GET'");
 		}
 	}
 

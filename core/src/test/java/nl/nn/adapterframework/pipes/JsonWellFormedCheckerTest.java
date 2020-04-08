@@ -4,51 +4,41 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 
-public class JsonWellFormedCheckerTest {
+public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker>{
 
-	private IPipeLineSession session = new PipeLineSessionBase();
+	@Override
+	public JsonWellFormedChecker createPipe() {
+		return new JsonWellFormedChecker();
+	}
 
 	@Test
 	public void doFailureEmptyInputTest() throws Exception {
-		JsonWellFormedChecker jsonWellFormedChecker = new JsonWellFormedChecker();
-		jsonWellFormedChecker.registerForward(createPipeSuccessForward());
-		jsonWellFormedChecker.registerForward(createPipeFailureForward());
-		jsonWellFormedChecker.configure();
-		PipeRunResult pipeRunResult = jsonWellFormedChecker.doPipe("", session);
+		pipe.registerForward(createPipeFailureForward());
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
 		assertEquals("failure", pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	public void doSuccessTest() throws Exception {
-		JsonWellFormedChecker jsonWellFormedChecker = new JsonWellFormedChecker();
-		jsonWellFormedChecker.registerForward(createPipeSuccessForward());
-		jsonWellFormedChecker.registerForward(createPipeFailureForward());
-		jsonWellFormedChecker.configure();
-		PipeRunResult pipeRunResult = jsonWellFormedChecker
-				.doPipe("{\"input\":\"ok\"}", session);
+		pipe.registerForward(createPipeFailureForward());
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "{\"input\":\"ok\"}", session);
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	public void doFailureNonWellFormedInputTest() throws Exception {
-		JsonWellFormedChecker jsonWellFormedChecker = new JsonWellFormedChecker();
-		jsonWellFormedChecker.registerForward(createPipeSuccessForward());
-		jsonWellFormedChecker.registerForward(createPipeFailureForward());
-		jsonWellFormedChecker.configure();
-		PipeRunResult pipeRunResult = jsonWellFormedChecker.doPipe("input=ok",
-				session);
+		pipe.registerForward(createPipeFailureForward());
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "input=ok", session);
 		assertEquals("failure", pipeRunResult.getPipeForward().getName());
-	}
-
-	private PipeForward createPipeSuccessForward() {
-		PipeForward pipeForward = new PipeForward();
-		pipeForward.setName("success");
-		return pipeForward;
 	}
 
 	private PipeForward createPipeFailureForward() {
@@ -56,4 +46,5 @@ public class JsonWellFormedCheckerTest {
 		pipeForward.setName("failure");
 		return pipeForward;
 	}
+
 }

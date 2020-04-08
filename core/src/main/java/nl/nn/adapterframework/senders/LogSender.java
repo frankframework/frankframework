@@ -15,18 +15,19 @@
 */
 package nl.nn.adapterframework.senders;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.IParameterHandler;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
 
 /**
  * Sender that just logs its message.
@@ -40,21 +41,27 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	protected Level level;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		log=LogUtil.getLogger(getLogCategory());
 		level=Level.toLevel(getLogLevel());
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		log.log(level,message);
-		if (prc != null) {
+		if (getParameterList() != null) {
 			try {
-				prc.forAllParameters(paramList, this);
+				ParameterValueList pvl = getParameterList().getValues(message, session);
+				if (pvl != null) {
+					pvl.forAllParameters(this);
+				}
 			} catch (ParameterException e) {
 				throw new SenderException("exception determining value of parameters", e);
 			}
@@ -62,6 +69,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return message;
 	}
 
+	@Override
 	public void handleParam(String paramName, Object value) {
 		log.log(level,"parameter [" + paramName + "] value [" + value + "]");
 	}
@@ -90,6 +98,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		logLevel = string;
 	}
 
+	@Override
 	public String toString() {
 		return "LogSender ["+getName()+"] logLevel ["+getLogLevel()+"] logCategory ["+logCategory+"]";
 	}

@@ -48,7 +48,7 @@ public interface IOutputStreamingSupport {
 	 * If the class cannot provide an outputstream, it must return null.
 	 * If the provider of an outputstream is a pipe itself, it must provide a proper pipeforward in the provided outputstream
 	 */
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
 	
 	
 }

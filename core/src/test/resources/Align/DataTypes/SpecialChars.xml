@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:datatypes">
 	<Strings>
 		<String>Quote ["]</String>
 		<String>Ampersand [&amp;]</String>

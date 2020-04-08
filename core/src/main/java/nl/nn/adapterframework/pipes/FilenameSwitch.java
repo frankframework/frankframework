@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -22,6 +24,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -41,20 +44,25 @@ public class FilenameSwitch extends AbstractPipe {
     private String notFoundForwardName=null;
     private boolean toLowercase=true;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				String msg = getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.";
-				configWarnings.add(log, msg);
+				ConfigurationWarnings.add(this, log, "has notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
 			}
 		}
 	}
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String forward="";
-	    String sInput=(String) input;
+		String sInput;
+		try {
+			sInput = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 	    PipeForward pipeForward=null;
 
 		int slashPos=sInput.lastIndexOf('/');
@@ -81,7 +89,7 @@ public class FilenameSwitch extends AbstractPipe {
 		if (pipeForward==null) {
 			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
-		return new PipeRunResult(pipeForward, input);
+		return new PipeRunResult(pipeForward, message);
 	}
 	
 	

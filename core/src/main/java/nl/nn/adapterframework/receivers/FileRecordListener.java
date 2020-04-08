@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -33,14 +38,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
 
 /**
  * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
@@ -64,13 +65,13 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	private ISender sender;
 	private Iterator recordIterator = null;
 
-	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext)
-		throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
 		String tcid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		if (sender != null) {
 			if (processResult.getState().equalsIgnoreCase("success")) {
 				try {
-					sender.sendMessage(tcid, processResult.getResult());
+					sender.sendMessage(new Message(processResult.getResult()), null);
 				} catch (Exception e) {
 					throw new ListenerException(
 						"error sending message with technical correlationId [" + tcid
@@ -162,6 +163,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	}
 	
+	@Override
 	public void close() throws ListenerException {
 		try {
 			if (sender != null)
@@ -172,6 +174,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 				e);
 		}
 	}
+	@Override
 	public void closeThread(Map threadContext) throws ListenerException {
 		// nothing special
 	}
@@ -180,6 +183,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
 	 *
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getInputDirectory()))
 			throw new ConfigurationException("no value specified for [inputDirectory]");
@@ -236,6 +240,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
 	 */
+	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
 		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
@@ -245,6 +250,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
+	@Override
 	public synchronized Object getRawMessage(Map threadContext)
 		throws ListenerException {
 		String fullInputFileName = null;
@@ -301,10 +307,12 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	/**
 	 * Returns a string of the rawMessage
 	 */
+	@Override
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			if (sender != null)
@@ -317,6 +325,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return;
 	}
 
+	@Override
 	public Map openThread() throws ListenerException {
 		return null;
 	}
@@ -341,6 +350,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return sender;
 	}
 	
+	@Override
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -352,10 +362,12 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	}
 	
+	@Override
 	@IbisDoc({"name of the listener as known to the adapter.", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
