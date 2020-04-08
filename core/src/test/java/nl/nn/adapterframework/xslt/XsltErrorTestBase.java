@@ -70,8 +70,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	protected class TestAppender extends AbstractAppender {
 		public List<String> alerts = new ArrayList<String>();
 
-		protected TestAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions, Property[] properties) {
-			super(name, filter, layout, ignoreExceptions, properties);
+		public TestAppender() {
+			super("Test", null, null, false, null);
 		}
 
 		@Override
@@ -103,7 +103,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@Before
 	public void init() {
-		testAppender = new TestAppender("Test", null, null, false, null);
+		testAppender = new TestAppender();
 		((org.apache.logging.log4j.core.Logger)LogUtil.getRootLogger()).addAppender(testAppender);
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();

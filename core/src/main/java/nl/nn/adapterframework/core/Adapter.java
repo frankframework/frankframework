@@ -15,6 +15,23 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -28,23 +45,17 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CounterStatistic;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.XmlUtils;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -78,7 +89,6 @@ import java.util.StringTokenizer;
 public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
-	private Level msgLogLevel = Level.toLevel(System.getProperty("msg.log.level.default", "BASIC"));
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
@@ -125,10 +135,11 @@ public class Adapter implements IAdapter, NamedBean {
 	private String description;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
-	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("adapters.autoStart", true);
+	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private boolean recover = false;
 	private boolean replaceNullMessage = false;
-	private boolean msgLogHumanReadable = AppConstants.getInstance(configurationClassLoader).getBoolean("msg.log.humanReadable", false);
+	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -136,6 +147,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private TaskExecutor taskExecutor;
 	
 	private String composedHideRegex;
+
+	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
 
 	/**
 	 * Indicates whether the configuration succeeded.
@@ -603,7 +616,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		incNumOfMessagesInProcess(startTime);
 		String lastNDC= ThreadContext.peek();
-		String newNDC="cid [" + messageId + "]";
+		String newNDC="mid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
@@ -986,12 +999,10 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		if (requestReplyLogging) {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
-			ConfigurationWarnings.add(this, log, msg);
+			ConfigurationWarnings.add(this, log, "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
 			msgLogLevel = Level.toLevel("TERSE");
 		} else {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
-			ConfigurationWarnings.add(this, log, msg);
+			ConfigurationWarnings.add(this, log, "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			msgLogLevel = Level.toLevel("OFF");
 		}
 	}

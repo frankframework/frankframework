@@ -17,7 +17,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	public static final String DEBUG_LOG_PREFIX = "Ibis LogUtil class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
-	private static String[] logDirHierarchy = new String[] {
+	private static String[] logDirectoryHierarchy = new String[] {
 			"site.logdir",
 			"user.dir/logs",
 			"user.dir/log",
@@ -100,7 +100,7 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 */
 	private static void setLogDir() {
 		if (System.getProperty("log.dir") == null) {
-			File logDir = findLogDir(logDirHierarchy);
+			File logDir = findLogDir();
 			if (logDir != null) {
 				// Replace backslashes because log.dir is used in log4j2.xml
 				// on which substVars is done (see below) which will replace
@@ -140,8 +140,8 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 *                  and after split will be the subdirectory.
 	 * @return File object that is a directory. Or null, if no directories were found.
 	 */
-	private static File findLogDir(String[] hierarchy) {
-		for(String option : hierarchy) {
+	private static File findLogDir() {
+		for(String option : logDirectoryHierarchy) {
 			int splitIndex = option.indexOf('/');
 
 			String property = System.getProperty(
