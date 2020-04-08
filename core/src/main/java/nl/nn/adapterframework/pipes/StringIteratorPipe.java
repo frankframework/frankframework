@@ -104,10 +104,8 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			
 			@Override
 			public boolean handleItem(String item) throws SenderException, TimeOutException, IOException {
-				if (processInBlocksBySize) {
-					if (itemCounter==0) {
-						startBlock();
-					}
+				if (processInBlocksBySize && itemCounter==0) {
+					startBlock();
 				} 
 				if (processInBlocksByKey) {
 					String key = getKey(item);
@@ -115,7 +113,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 						if (previousKey!=null) {
 							if (!endBlock()) {
 								return false;
-							};
+							}
 						}
 						startBlock();
 						previousKey=key;

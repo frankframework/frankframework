@@ -21,6 +21,8 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
 
 public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 
+	protected StringBuffer resultLog;
+
 	private final class TestIteratingPipe extends IteratingPipe<String> {
 
 		@Override
@@ -39,9 +41,6 @@ public class IteratingPipeTest extends PipeTestBase<IteratingPipe<String>> {
 		return new TestIteratingPipe();
 	}
 	
-	protected StringBuffer resultLog;
-
-
 	protected ISender getElementRenderer(boolean blockEnabled) {
 		resultLog = new StringBuffer();
 		if (blockEnabled) {

@@ -35,12 +35,13 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
 
 /**
  * JMS sender which will add an IMS header to the message and call the MQ specific logic.
  *
- * <p>See {@link JMSSender} for configuration</p>
+ * <p>See {@link JmsSender} for configuration</p>
  *
  * @author Ricardo van Holst
  */

@@ -251,13 +251,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return connection;
 	}
 	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
-		if (isConnectionsArePooled()) {
-			if (connection!=null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
-				}
+		if (isConnectionsArePooled() && connection!=null) {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 			}
 		}
 	}
