@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase<H> extends JdbcFacade implements IStreamingSender<H> {
+public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H>, IStreamingSender {
 
 	private int timeout = 0;
 
@@ -112,26 +113,18 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IStreaming
 	// implements ISender.sendMessage()
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		PipeRunResult result;
 		H blockHandle = openBlock(session);
 		try {
-			result = sendMessage(blockHandle, message, session, null);
+			return sendMessage(blockHandle, message, session);
 		} finally {
 			closeBlock(blockHandle, session);
 		}
-		return Message.asMessage(result.getResult());
 	}
 
 	@Override
-	// implements non block enabled convenience method IStreamingSender.sendMessage()
-	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
+	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
 	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
-		H blockHandle = openBlock(session);
-		try {
-			return sendMessage(blockHandle, message, session, next);
-		} finally {
-			closeBlock(blockHandle, session);
-		}
+		return new PipeRunResult(null, sendMessage(message, session));
 	}
 
 	@Override

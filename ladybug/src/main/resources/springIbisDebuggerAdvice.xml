@@ -91,8 +91,8 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.core.IBlockEnabledSender.sendMessage(
-							Object,
+						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
+							*,
 							nl.nn.adapterframework.stream.Message, 
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
@@ -109,14 +109,13 @@
 					execution(
 						*
 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-							Object,
 							nl.nn.adapterframework.stream.Message, 
 							nl.nn.adapterframework.core.IPipeLineSession, 
 							nl.nn.adapterframework.stream.IOutputStreamingSupport
 						)
 					)
 					and
-					args(blockHandle, message, session, next)
+					args(message, session, next)
 					"
 				method="debugStreamingSenderInputOutputAbort"
 				arg-names="blockHandle, message, session, next"

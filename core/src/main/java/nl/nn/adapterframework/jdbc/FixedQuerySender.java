@@ -125,12 +125,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 	@Override
 	public Message sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return Message.asMessage(executeStatementSet(blockHandle, message, session));
-	}
-
-	@Override
-	public PipeRunResult sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
-		return new PipeRunResult(null, executeStatementSet(blockHandle, message, session));
+		return new Message(executeStatementSet(blockHandle, message, session));
 	}
 
 	@Override

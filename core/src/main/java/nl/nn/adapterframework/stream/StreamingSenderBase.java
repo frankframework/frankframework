@@ -19,48 +19,24 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.senders.BlockEnabledSenderBase;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
-public abstract class StreamingSenderBase<H> extends BlockEnabledSenderBase<H> implements IStreamingSender<H> {
+public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
-	@Override
-	public abstract PipeRunResult sendMessage(H blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
 
 	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
-	public final Message sendMessage(H blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(blockHandle, message, session, null);
+	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		PipeRunResult result = sendMessage(message, session, null);
 		return Message.asMessage(result.getResult());
 	}
 
-	@Override
-	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
-		H blockHandle = openBlock(session);
-		try {
-			return sendMessage(blockHandle, message, session, next);
-		} finally {
-			closeBlock(blockHandle, session);
-		}
-	}
-
-	
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
 	
-	@Override
-	public H openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
-		// provide default implementation of openBlock()
-		return null;
-	}
-	@Override
-	public void closeBlock(H blockHandle, IPipeLineSession session) throws SenderException {
-		// provide default implementation of closeBlock()
-	}
-	
-
 }

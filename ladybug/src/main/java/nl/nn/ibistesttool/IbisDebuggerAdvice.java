@@ -254,9 +254,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	/**
-	 * Provides advice for {@link IStreamingSender#sendMessage(Object blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next)}
+	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next)}
 	 */
-	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws Throwable {
+	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws Throwable {
 		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
 	}
 	 

@@ -68,7 +68,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	public PipeRunResult sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public Message sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)session.get(getFileNameSessionKey());
@@ -135,7 +135,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset", e));
 			}
 		}
-		return new PipeRunResult(null,"<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
+		return new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {

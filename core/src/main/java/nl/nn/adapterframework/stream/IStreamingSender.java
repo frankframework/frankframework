@@ -15,19 +15,14 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
-public interface IStreamingSender<H> extends IBlockEnabledSender<H>, IOutputStreamingSupport {
+public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
 
-	public PipeRunResult sendMessage(H blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
-	
-	/*
-	 * required convenience method for cases where block support is not necessary
-	 */
 	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
 
 }
