@@ -110,10 +110,8 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						if (previousKey!=null) {
-							if (!endBlock()) {
-								return false;
-							}
+						if (previousKey!=null && !endBlock()) {
+							return false;
 						}
 						startBlock();
 						previousKey=key;
