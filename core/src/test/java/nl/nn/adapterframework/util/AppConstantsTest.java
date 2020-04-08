@@ -1,19 +1,18 @@
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AppConstantsTest {
 	private Logger log = LogUtil.getLogger(this);

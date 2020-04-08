@@ -15,6 +15,17 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -23,7 +34,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -34,17 +44,7 @@ import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.storage.file.TestStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.regex.Pattern;
+import nl.nn.testtool.util.LogUtil;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)

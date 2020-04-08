@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,33 @@
 */
 package nl.nn.adapterframework.align;
 
-import nl.nn.adapterframework.xml.SaxException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+
+import javax.xml.validation.ValidatorHandler;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.xs.*;
+import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.PSVIProvider;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSTerm;
+import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import javax.xml.validation.ValidatorHandler;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * XMLFilter with option to get schema information about child elements to be parsed.

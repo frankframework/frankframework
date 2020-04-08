@@ -15,31 +15,33 @@
 */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.ResultSet;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
-import java.io.IOException;
-import java.net.URL;
-import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
 public class BrowseJdbcTableExecute extends ActionBase {
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
