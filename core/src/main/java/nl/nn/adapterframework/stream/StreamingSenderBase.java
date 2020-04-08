@@ -24,11 +24,7 @@ import nl.nn.adapterframework.senders.SenderWithParametersBase;
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
-
-	
-	@Override
-	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
+	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		PipeRunResult result = sendMessage(message, session, null);
 		return Message.asMessage(result.getResult());
