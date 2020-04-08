@@ -91,25 +91,17 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 	@Override
 	public void closeBlock(QueryContext blockHandle, IPipeLineSession session) throws SenderException {
-		Connection connection=null;
 		try {
-			connection = blockHandle.getStatement().getConnection();
 			super.closeStatementSet(blockHandle, session);
-		} catch (SQLException e) {
-			throw new SenderException("cannot close StatementSet",e);
 		} finally {
 			try {
-				closeConnectionForSendMessage(connection, session);
+				closeConnectionForSendMessage(blockHandle.getConnection(), session);
 			} catch (JdbcException | TimeOutException e) {
 				throw new SenderException("cannot close connection", e);
 			}
 		}
 	}
 
-	@Override
-	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
-		// postpone close to closeBlock()
-	}
 
 	@Override
 	protected QueryContext prepareStatementSet(QueryContext blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
