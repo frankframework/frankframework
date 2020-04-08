@@ -16,10 +16,16 @@
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.net.URISyntaxException;
 
 import org.junit.Test;
 import org.mockito.Mock;
@@ -52,7 +58,9 @@ import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe;
  */
 
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
-
+	public final String PATH_REGEX_IGNORE = "(?<=convertedDocument=\").*(?=\")";
+	public final String PATH_REGEX_EXTRACT = "convertedDocument=\"(.*)\"";
+	
 	@Mock
 	private IPipeLineSession session;
 
@@ -61,35 +69,104 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return new PdfPipe();
 	}
 
-	public void expectSuccessfullConversion(String name, String inputFile, String expectedFile) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		String actualXml = executeConversion(name, inputFile);
-		String expected = TestFileUtils.getTestFile(expectedFile).replaceAll("(?<=convertedDocument)(.*)(?=>)", "IGNORE");
-		MatchUtils.assertXmlEquals("Conversion XML does not match", expected, actualXml, true);
+	public void expectSuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml, String fileContaingExpectedConversion) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		String actualXml = executeConversion(name, fileToConvert);
+		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
+
+		//MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(actualXml), true);
+
+		Pattern pattern = Pattern.compile(PATH_REGEX_IGNORE);
+		Matcher matcher = pattern.matcher(actualXml);
+		
+		if(matcher.find()){
+			try {
+				String convertedFilePath = matcher.group();
+		
+				byte[] fileContaingExpectedXmlBytes = Files.readAllBytes(new File(convertedFilePath).toPath());
+				byte[] actualFileBytes = Files.readAllBytes(new File(TestFileUtils.getTestFileURL(fileContaingExpectedConversion).toURI()).toPath());
+				System.out.println("Comparing files. Converted File: ["+convertedFilePath+"], Expected File: ["+fileContaingExpectedConversion+"]");
+				
+				int maxDiff = 5;
+				int maxDiffCount = 100;
+				System.out.println("Performing size comparison. Max Difference: ["+maxDiff+"]");
+				int diff = fileContaingExpectedXmlBytes.length - actualFileBytes.length;
+				if (diff > 0 && diff < maxDiff) {
+					if (diff >= maxDiff) {
+						fail("Difference in size is more than " + maxDiff 
+								+ " (Expected length: " + fileContaingExpectedXmlBytes.length + " actual length: " + actualFileBytes.length + ")");
+					} else {
+						// LOGGER.warn("There is a length difference: " + diff + " bytes (but less than: " + maxDiff 
+						// 		+ " Expected length: " + fileContaingExpectedXmlBytes.length + " actual length: " + actualFileBytes.length + ")");
+					}
+				}
+		
+				// Check only the first part which are in common and allow max 10 difference
+				int minLength = Math.min(fileContaingExpectedXmlBytes.length, actualFileBytes.length);
+				int diffCount = 0;
+				System.out.println("Performing byte comparison. Max Difference: ["+maxDiffCount+"], Min Length: ["+minLength+"]");
+				for (int i=0; i < minLength; i++) {
+					if (fileContaingExpectedXmlBytes[i] != actualFileBytes[i]) {
+						diffCount++;
+					}
+				}
+				if (diffCount > 0) {
+					if (diffCount > maxDiffCount) {
+						fail("Difference count more than " + maxDiffCount 
+								+ " (Number of bytes different: " + diffCount + ")");
+					} else {
+						//LOGGER.warn("There are more than " + diffCount + " bytes different");
+					}
+				} 
+			} catch (URISyntaxException e) {
+				fail("Failed to do byte comparison.");
+			}
+		}
+		else {
+			fail("Failed to extract converted file path.");
+		}
+		
+	
 	}
 
-	public String executeConversion(String name, String inputFile) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void expectUnsuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		String actualXml = executeConversion(name, fileToConvert);
+		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
+
+		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(actualXml), true);
+	}
+
+	public String executeConversion(String name, String fileToConvert) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setName(name);
 		pipe.setAction("convert");
 		pipe.configure();
 		pipe.start();
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
-		String input = TestFileUtils.getTestFile(inputFile);
+		String input = TestFileUtils.getTestFile(fileToConvert);
 
 		PipeRunResult prr = pipe.doPipe(Message.asMessage(input),session);
-		String actualXml = session.get("documents").toString().replaceAll("(?<=convertedDocument)(.*)(?=>)", "IGNORE");
+		String actualXml = session.get("documents").toString();
 
 		return actualXml;
 	}
 
+	public String applyIgnores(String input){
+		return input.replaceAll(PATH_REGEX_IGNORE, "IGNORE");
+	}
+
 	@Test()
 	public void Txt2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/txt-out.xml");
+		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/txt-out.xml", "/PdfPipe/txt.pdf");
 	}
 
 	@Test()
 	public void Xml2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		expectSuccessfullConversion("Xml2Pdf", "/PdfPipe/txt-out.xml", "/PdfPipe/xml-out.xml");
+		expectSuccessfullConversion("Xml2Pdf", "/PdfPipe/txt-out.xml", "/PdfPipe/xml-out.xml", "/PdfPipe/xml.pdf");
+	}
+
+	@Test()
+	public void Zip2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		expectUnsuccessfullConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/zip-out.xml");
 	}
 
 	@Test(expected = ConfigurationException.class)
