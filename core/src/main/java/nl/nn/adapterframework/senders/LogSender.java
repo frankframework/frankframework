@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -27,11 +26,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Level;
 import nl.nn.adapterframework.util.LogUtil;
 
-import java.io.IOException;
 /**
  * Sender that just logs its message.
  * 

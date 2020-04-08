@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.core.net.Priority;
 
 /**
  * Enables the use of programmatically adding servlets to the given ServletContext<br/>

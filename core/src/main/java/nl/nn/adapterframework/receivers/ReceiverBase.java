@@ -74,7 +74,6 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;

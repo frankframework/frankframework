@@ -15,6 +15,31 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -50,35 +75,11 @@ import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Definition / configuration of scheduler jobs.

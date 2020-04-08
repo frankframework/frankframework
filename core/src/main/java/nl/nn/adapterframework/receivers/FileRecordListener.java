@@ -15,6 +15,19 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -26,21 +39,9 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
@@ -62,7 +63,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	private long recordNo = 0; // the current record number;
 	private String inputFileName; // the name of the file currently in process
 	private ISender sender;
-	private Iterator recordIterator = null;
+	private Iterator<String> recordIterator = null;
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
@@ -333,9 +334,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * currently uses the end-of-line character ("\n") as a seperator. 
 	 * This method is easy to extend to satisfy your project needs.
 	 */
-	protected Iterator parseToRecords(String input) {
+	protected Iterator<String> parseToRecords(String input) {
 		StringTokenizer t = new StringTokenizer(input, "\n");
-		List array = new ArrayList();
+		List<String> array = new ArrayList<String>();
 		while (t.hasMoreTokens()) {
 			array.add(t.nextToken());
 		}

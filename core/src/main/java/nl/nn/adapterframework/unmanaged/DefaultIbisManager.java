@@ -15,6 +15,18 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+import org.quartz.SchedulerException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -38,17 +50,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import org.apache.logging.log4j.Logger;
-import org.quartz.SchedulerException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Implementation of IbisManager which does not use EJB for

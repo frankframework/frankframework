@@ -22,7 +22,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
