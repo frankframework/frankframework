@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.context.ApplicationListener;
 
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -190,37 +192,72 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 		return ibisDebugger.senderOutput(sender, correlationId, result);
 	}
+	
+	private Message debugSenderInputAbort(ProceedingJoinPoint proceedingJoinPoint, ISender sender, String correlationId, Message message) throws Throwable {
+		message = ibisDebugger.senderInput(sender, correlationId, message);
+		Message result = null;
+		// For SenderWrapperBase continue even when it needs to be stubbed
+		// because for SenderWrapperBase this will be checked when it calls
+		// sendMessage on his senderWrapperProcessor, hence
+		// debugSenderGetInputFrom will be called.
+		if (!ibisDebugger.stubSender(sender, correlationId) || sender instanceof SenderWrapperBase) {
+			try {
+				Object[] args = proceedingJoinPoint.getArgs();
+				args[0] = message;
+				result = (Message)proceedingJoinPoint.proceed(args);
+			} catch(Throwable throwable) {
+				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
+			}
+		}
+		return result;
+	}
 
-	/**
-	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next)}
-	 */
-//	@Pointcut("execution( * nl.nn.adapterframework.stream.IStreamingSender.sendMessage(String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.IOutputStreamingSupport)) " +
-//				"and args(correlationId, message, prc, next)" )
-	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws Throwable {
+
+	public Object debugSimpleSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
 		String correlationId = session == null ? null : session.getMessageId();
-		IStreamingSender sender = (IStreamingSender)proceedingJoinPoint.getTarget();
+		ISender sender = (ISender)proceedingJoinPoint.getTarget();
 		message = ibisDebugger.senderInput(sender, correlationId, message); 
 
-		PipeRunResult result = null;
+		Object result = null;
 		if (!ibisDebugger.stubSender(sender, correlationId)) {
 			try {
-				result = (PipeRunResult)proceedingJoinPoint.proceed();
+				result = proceedingJoinPoint.proceed();
 			} catch(Throwable throwable) {
 				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
 			}
 		} else {
 			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
 			// resolve parameters itself
-			ParameterList parameterList = sender.getParameterList();
-			if (parameterList!=null) {
-				parameterList.getValues(message, session);
+			if (sender instanceof IWithParameters) {
+				ParameterList parameterList = ((IWithParameters)sender).getParameterList();
+				if (parameterList!=null) {
+					parameterList.getValues(message, session);
+				}
 			}
 		}
-		ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result==null?null:result.getResult()));
-		return result;
+		if (result!=null && result instanceof PipeRunResult) {
+			PipeRunResult prr = (PipeRunResult)result;
+			prr.setResult(ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(prr.getResult())));
+			return result;
+		}
+		return ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
+	}
+	
+	/**
+	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, IPipeLineSession session)}
+	 */
+	public Object debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, IPipeLineSession session) throws Throwable {
+		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
+	}
+
+	/**
+	 * Provides advice for {@link IStreamingSender#sendMessage(Object blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next)}
+	 */
+	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws Throwable {
+		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
 	}
 	 
 	/**
@@ -398,25 +435,6 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		return input;
 	}
 	
-
-	private Message debugSenderInputAbort(ProceedingJoinPoint proceedingJoinPoint, ISender sender, String correlationId, Message message) throws Throwable {
-		message = ibisDebugger.senderInput(sender, correlationId, message);
-		Message result = null;
-		// For SenderWrapperBase continue even when it needs to be stubbed
-		// because for SenderWrapperBase this will be checked when it calls
-		// sendMessage on his senderWrapperProcessor, hence
-		// debugSenderGetInputFrom will be called.
-		if (!ibisDebugger.stubSender(sender, correlationId) || sender instanceof SenderWrapperBase) {
-			try {
-				Object[] args = proceedingJoinPoint.getArgs();
-				args[0] = message;
-				result = (Message)proceedingJoinPoint.proceed(args);
-			} catch(Throwable throwable) {
-				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
-			}
-		}
-		return result;
-	}
 
 	public class Executor implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
