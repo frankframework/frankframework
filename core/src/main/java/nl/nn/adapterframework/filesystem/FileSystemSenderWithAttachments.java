@@ -54,9 +54,9 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 	
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Object dummyblockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
-			return super.sendMessage(message, session, next);
+			return super.sendMessage(dummyblockHandle, message, session, next);
 		} else {
 
 			IBasicFileSystem<F> ifs = getFileSystem();

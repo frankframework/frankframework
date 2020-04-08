@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends StreamingSenderBase implements IThreadCreator {
+public class XsltSender extends StreamingSenderBase<Object> implements IThreadCreator {
 
 	public final String DEFAULT_OUTPUT_METHOD="xml";
 	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false 
@@ -284,7 +284,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
+	public PipeRunResult sendMessage(Object dummyBlockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}

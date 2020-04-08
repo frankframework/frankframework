@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -364,6 +364,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				// For improved diagnosability of error situations, rethrow the original exception, where applicable.
 				rethrowTransformerException(transformerErrorListener, errorMessage);
 				throw new SenderException(errorMessage,e);
+			}
+			try {
+				itemHandler.endDocument();
+			} catch (SAXException e1) {
+				throw new SenderException(errorMessage,e1);
 			}
 		}
 		rethrowTransformerException(transformerErrorListener, errorMessage);

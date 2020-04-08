@@ -17,7 +17,11 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.stream.Message;
 
-public interface IBlockEnabledSender<H> extends ISender {
+/**
+ * Allows to leverage sending messages in blocks. 
+ * @param <H> something shared for sending messages in a block, like a connection.
+ */
+public interface IBlockEnabledSender<H> extends ISenderWithParameters {
 	
 	public H openBlock(IPipeLineSession session) throws SenderException, TimeOutException;
 	public void closeBlock(H blockHandle, IPipeLineSession session) throws SenderException;

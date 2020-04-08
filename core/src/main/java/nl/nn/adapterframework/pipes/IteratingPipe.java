@@ -45,7 +45,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -181,12 +181,37 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return Message.asMessage(item);
 	}
 
-	/**
-	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link #getIterator}.
-	 * For each item in the input callback.handleItem(item) is called.
-	 */
-	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
-		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
+		IDataIterator<I> it=null;
+		try {
+			it = getIterator(input,session, threadContext);
+			if (it==null) {
+				 throw new SenderException("Could not obtain iterator");
+			} else {
+				callback.startIterating();
+				try {
+					boolean keepGoing = true;
+					while (keepGoing && (it.hasNext())) {
+						if (Thread.currentThread().isInterrupted()) {
+							throw new TimeOutException("Thread has been interrupted");
+						}
+ 						keepGoing = callback.handleItem(getItem(it));
+					}
+				} finally {
+					callback.endIterating();
+				}
+			}
+		} finally {
+			if (it!=null) {
+				try {
+					if (isCloseIteratorOnExit()) {
+						it.close();
+					}
+				} catch (Exception e) {
+					log.warn("Exception closing iterator", e);
+				} 
+			}
+		}
 	}
 
 	protected class ItemCallback {
@@ -212,6 +237,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		
 		public void startIterating() throws SenderException, TimeOutException, IOException {
+			if (isCollectResults()) {
+				results.append("<results>\n");
+			}
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
 				blockOpen=true;
@@ -221,7 +249,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 			}
-			
+			if (isCollectResults()) {
+				waitForResults();
+				results.append("</results>");
+			} else {
+				results.append("<results count=\""+getCount()+"\"/>");
+			}
 		}
 		public void startBlock() throws SenderException, TimeOutException, IOException {
 			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
@@ -403,52 +436,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		IDataIterator<I> it=null;
 		try {
-			Writer resultWriter = null;
-			try (MessageOutputStream target=isCollectResults()?MessageOutputStream.getTargetStream(this, session, nextProvider):null) {
-				if (isCollectResults()) {
-					resultWriter = target.asWriter();
-					resultWriter.append("<results>\n");
-				}
-				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
-				it = getIterator(input,session, threadContext);
-				if (it==null) {
+			try (MessageOutputStream target=isCollectResults()?MessageOutputStream.getTargetStream(this, session, nextProvider):new MessageOutputStreamCap(this, nextProvider)) { 
+				try (Writer resultWriter = target.asWriter()) {
+					ItemCallback callback = createItemCallBack(session,sender, resultWriter);
 					iterateOverInput(input,session,threadContext, callback);
-				} else {
-					callback.startIterating();
-					try {
-						boolean keepGoing = true;
-						while (keepGoing && (it.hasNext())) {
-							if (Thread.currentThread().isInterrupted()) {
-								throw new TimeOutException("Thread has been interrupted");
-							}
-	 						keepGoing = callback.handleItem(getItem(it));
-						}
-					} finally {
-						callback.endIterating();
-					}
 				}
-				PipeRunResult prr;
-				if (isCollectResults()) {
-					callback.waitForResults();
-					resultWriter.append("</results>");
-					prr = target.getPipeRunResult();
-				} else {
-					String result = "<results count=\""+callback.getCount()+"\"/>";
-					prr = new PipeRunResult(getForward(), result);
-				}
-				return prr;
-			} finally {
-				if (it!=null) {
-					try {
-						if (isCloseIteratorOnExit()) {
-							it.close();
-						}
-					} catch (Exception e) {
-						log.warn("Exception closing iterator", e);
-					} 
-				}
+				return target.getPipeRunResult();
 			}
 		} catch (SenderException | TimeOutException | IOException e) {
 			throw e;

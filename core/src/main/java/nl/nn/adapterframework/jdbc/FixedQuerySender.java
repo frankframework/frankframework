@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,18 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -36,7 +44,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class FixedQuerySender extends JdbcQuerySenderBase {
+public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 	private String query=null;
 
@@ -71,5 +79,63 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 				"updateBlob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getBlobSessionKey());
 	}
 
+
+	@Override
+	public QueryContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			Connection connection = getConnectionForSendMessage(null);
+			return super.prepareStatementSet(null, connection, null, session);
+		} catch (JdbcException e) {
+			throw new SenderException("cannot get StatementSet",e);
+		}
+	}
+
+
+	@Override
+	public void closeBlock(QueryContext blockHandle, IPipeLineSession session) throws SenderException {
+		Connection connection=null;
+		try {
+			connection = blockHandle.getStatement().getConnection();
+			super.closeStatementSet(blockHandle, session);
+		} catch (SQLException e) {
+			throw new SenderException("cannot close StatementSet",e);
+		} finally {
+			try {
+				closeConnectionForSendMessage(connection, session);
+			} catch (JdbcException | TimeOutException e) {
+				throw new SenderException("cannot close connection", e);
+			}
+		}
+	}
+
+	@Override
+	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
+		// postpone close to closeBlock()
+	}
+
+	@Override
+	protected QueryContext prepareStatementSet(QueryContext blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+		return blockHandle;
+	}
+
+	@Override
+	protected void closeStatementSet(QueryContext statementSet, IPipeLineSession session) {
+		// postpone close to closeBlock()
+	}
+
+	@Override
+	public Message sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		return Message.asMessage(executeStatementSet(blockHandle, message, session));
+	}
+
+	@Override
+	public PipeRunResult sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+		return new PipeRunResult(null, executeStatementSet(blockHandle, message, session));
+	}
+
+	@Override
+	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryContext,...)");
+	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
@@ -46,7 +48,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with ForEachChildElementPipe")
+@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with containerElement or targetElement")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
@@ -81,6 +83,27 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			this.callback = callback;
 			elementBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			startLength = elementBuffer.length();
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			try {
+				callback.startIterating();
+			} catch (SenderException | TimeOutException | IOException e) {
+				throw new SaxException(e);
+			}
+			super.startDocument();
+			
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			super.endDocument();
+			try {
+				callback.endIterating();
+			} catch (SenderException | TimeOutException | IOException e) {
+				throw new SaxException(e);
+			}
 		}
 
 		@Override
@@ -191,6 +214,11 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			}
 			if (!handler.isStopRequested()) {
 				throw new SenderException("Could not extract list of elements [" + getElementName() + "] using sax parser", e);
+			}
+			try {
+				handler.endDocument();
+			} catch (SAXException e1) {
+				throw new SenderException("could not endDocument after stop was requested",e1);
 			}
 		}
 	}

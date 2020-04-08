@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,10 +31,13 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -65,7 +68,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)session.get(getFileNameSessionKey());
@@ -77,8 +80,9 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = getQueryExecutionContext(connection, message, session);
+			QueryContext queryContext = blockHandle;
 			PreparedStatement statement=queryContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryContext.getParameterList(), message, session);
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {
@@ -131,7 +135,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset", e));
 			}
 		}
-		return "<result><rowsprocessed>" + counter + "</rowsprocessed></result>";
+		return new PipeRunResult(null,"<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {

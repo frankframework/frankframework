@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlQuerySender extends JdbcQuerySenderBase {
+public class XmlQuerySender extends DirectQuerySender {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -234,12 +234,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String getQuery(Message message) {
-		return message.toString();
-	}
-
-	@Override
-	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
@@ -367,7 +362,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			QueryContext queryContext = new QueryContext(query, "delete", null);
 			PreparedStatement statement = getStatement(connection, queryContext);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
@@ -416,12 +411,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, statement, q, null, null, null));
+						result.append(executeOtherQuery(connection, statement, q, null, null, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(connection, statement, query, null, null, null);
+				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
@@ -467,7 +462,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			PreparedStatement statement = getStatement(connection, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}

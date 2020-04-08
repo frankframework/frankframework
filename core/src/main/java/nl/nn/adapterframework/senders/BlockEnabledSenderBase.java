@@ -24,7 +24,7 @@ import nl.nn.adapterframework.stream.Message;
 public abstract class BlockEnabledSenderBase<H> extends SenderWithParametersBase implements IBlockEnabledSender<H> {
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		H blockHandle = null;
 		try {
 			blockHandle = openBlock(session);

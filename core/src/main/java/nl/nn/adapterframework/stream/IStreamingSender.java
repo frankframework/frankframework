@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 Integration Partners, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
 */
 package nl.nn.adapterframework.stream;
 
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
-public interface IStreamingSender extends ISenderWithParameters, IOutputStreamingSupport {
+public interface IStreamingSender<H> extends IBlockEnabledSender<H>, IOutputStreamingSupport {
 
+	public PipeRunResult sendMessage(H blockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
+	
+	/*
+	 * required convenience method for cases where block support is not necessary
+	 */
 	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException;
 
 }

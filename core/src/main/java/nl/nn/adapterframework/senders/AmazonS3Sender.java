@@ -90,9 +90,9 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Object dummyBlockHandle, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
-			return super.sendMessage(message, session, next);
+			return super.sendMessage(dummyBlockHandle, message, session, next);
 		}
 
 		String result = null;
