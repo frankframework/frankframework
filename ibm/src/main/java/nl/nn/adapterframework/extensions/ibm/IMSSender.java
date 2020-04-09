@@ -80,11 +80,11 @@ public class IMSSender extends MQSender {
 	 * The transaction code that should be added in the header, must be 8 characters
 	 */
 	@IbisDoc({"transaction code that should be added to the header, must be 8 characters", ""})
-	public String getTransactionCode() {
-		return transactionCode;
-	}
 	public void setTransactionCode(String transactionCode) {
 		this.transactionCode = transactionCode;
+	}
+	public String getTransactionCode() {
+		return transactionCode;
 	}
 
 	@Override
