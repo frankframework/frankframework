@@ -5,6 +5,10 @@ public class MysqlTranslator extends ITranslator {
 		super(target);
 	}
 
+	public MysqlTranslator() {
+		super();
+	}
+
 	@Override
 	protected void populateMaps() {
 		replacements.put("NEXTVAL", "NULL");

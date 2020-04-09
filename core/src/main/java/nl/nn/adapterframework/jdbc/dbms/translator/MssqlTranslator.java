@@ -5,16 +5,20 @@ public class MssqlTranslator extends ITranslator {
 		super(target);
 	}
 
+	public MssqlTranslator() {
+		super();
+	}
+
 	@Override
 	protected void populateMaps() {
-		regexes.put("NEXTVAL", toPattern("NEXT VALUE FOR ([a-z,A-Z]+)"));
+		regexes.put("NEXTVAL", toPattern("NEXT VALUE FOR (\\w+)"));
 		replacements.put("NEXTVAL", "(NEXT VALUE FOR $1)");
 
-		regexes.put("CURRVAL", toPattern("SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME\\s+=\\s+([a-z,A-Z]+)"));
-		replacements.put("CURRVAL", "(SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME = $1)");
+		regexes.put("CURRVAL", toPattern("SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME\\s+=\\s+'(\\w+)'"));
+		replacements.put("CURRVAL", "(SELECT current_value FROM sys.sequences WHERE name = '$1')");
 
-		replacements.put("EMPTY_BLOB", "null");
-		replacements.put("EMPTY_CLOB", "null");
+		replacements.put("EMPTY_BLOB", "NULL");
+		replacements.put("EMPTY_CLOB", "NULL");
 
 		regexes.put("SYSDATE", toPattern("GETDATE()"));
 		replacements.put("SYSDATE", "GETDATE()");

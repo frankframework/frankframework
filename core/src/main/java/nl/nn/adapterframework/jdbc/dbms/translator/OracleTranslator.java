@@ -6,12 +6,16 @@ public class OracleTranslator extends ITranslator {
 		super(target);
 	}
 
+	public OracleTranslator() {
+		super();
+	}
+
 	@Override
 	protected void populateMaps() {
-		regexes.put("NEXTVAL", toPattern("([A-Z,a-z]+)\\.NEXTVAL"));
+		regexes.put("NEXTVAL", toPattern("(\\w+)\\.NEXTVAL"));
 		replacements.put("NEXTVAL", "$1.NEXTVAL");
 
-		regexes.put("CURRVAL", toPattern("([A-Z,a-z]+)\\.CURRVAL"));
+		regexes.put("CURRVAL", toPattern("(\\w+)\\.CURRVAL"));
 		replacements.put("CURRVAL", "$1.CURRVAL");
 
 		regexes.put("EMPTY_BLOB", toPattern("EMPTY_BLOB\\(\\)"));

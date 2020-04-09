@@ -5,6 +5,10 @@ public class PostgresqlTranslator extends ITranslator {
 		super(target);
 	}
 
+	public PostgresqlTranslator() {
+		super();
+	}
+
 	@Override
 	protected void populateMaps() {
 		regexes.put("NEXTVAL", toPattern("NEXTVAL\\\\('(.*)'\\\\)"));

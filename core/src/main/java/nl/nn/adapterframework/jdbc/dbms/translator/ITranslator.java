@@ -13,9 +13,13 @@ public abstract class ITranslator {
 	ITranslator target;
 
 	public ITranslator(ITranslator target) {
+		this();
+		setTarget(target);
+	}
+
+	public ITranslator() {
 		replacements = new HashMap<>();
 		regexes = new HashMap<>();
-		setTarget(target);
 		populateMaps();
 	}
 
@@ -26,7 +30,7 @@ public abstract class ITranslator {
 	 * @param query Query to be translated.
 	 * @return Translated query.
 	 */
-	public String translate(String query) {
+	public String translate(String query) throws NullPointerException {
 		for (String key : regexes.keySet()) {
 			Matcher matcher = regexes.get(key).matcher(query);
 			if (matcher.find()) {

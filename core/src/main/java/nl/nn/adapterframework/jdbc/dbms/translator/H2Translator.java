@@ -5,6 +5,10 @@ public class H2Translator extends ITranslator {
 		super(target);
 	}
 
+	public H2Translator() {
+		super();
+	}
+
 	@Override
 	protected void populateMaps() {
 		regexes.put("NEXTVAL", toPattern("NEXT VALUE FOR ([a-z,A-Z]+)"));
