@@ -111,32 +111,32 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	
 	@Test
 	public void fileListenerTestCreateInputFolder() throws Exception {
-		fileSystemListener.setInputFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setInputFolder(fileAndFolderPrefix+"xxx1");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
 	
 	@Test
 	public void fileListenerTestCreateInProcessFolder() throws Exception {
-		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+"xxx2");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
 	
 	@Test
 	public void fileListenerTestCreateProcessedFolder() throws Exception {
-		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+"xxx3");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
 
 	@Test
 	public void fileListenerTestCreateLogFolder() throws Exception {
-		fileSystemListener.setLogFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+"xxx4");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
@@ -186,7 +186,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
-		fileListenerTestGetRawMessage(null,"inProcessFolder");
+		String folderName = "inProcessFolder";
+		_createFolder(folderName);
+		fileListenerTestGetRawMessage(null,folderName);
 	}
 
 
@@ -212,10 +214,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetStringFromRawMessageLogFile() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		String logFolder="log";
+		String logFolder="logFolder";
 		
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setLogFolder(logFolder);
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+logFolder);
 		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
