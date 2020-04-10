@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Writer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
@@ -50,6 +52,9 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		super.configure();
 		processInBlocksBySize = getBlockSize()>0;
 		processInBlocksByKey = getStartPosition()>=0 && getEndPosition()>getStartPosition();
+		if ((processInBlocksBySize || processInBlocksByKey) && !isCombineBlocks() && !(getSender() instanceof IBlockEnabledSender)) {
+			ConfigurationWarnings.add(this, log, "configured to process in blocks, but combineBlocks=false, and sender is not Block Enabled. There will be no block behaviour effectively");
+		}
 	}
 
 	
@@ -88,17 +93,19 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 						boolean result=false;
 						try {
 							result = super.handleItem(items.toString());
+							blockOpen=false; // must not be set before super.handleItem(), because that calls open if blockSize>0 and it has not seen items yet
 						} finally {
 							result &= super.endBlock();
 						}
 						items.setLength(0);
 						itemCounter=0;
-						blockOpen=false;
 						return result;
 					} else {
+						blockOpen=false;
 						return super.endBlock();
 					}
 				}
+				blockOpen=false;
 				return true;
 			}
 			
