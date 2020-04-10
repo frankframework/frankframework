@@ -78,35 +78,7 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
 
     }
 
-    /**
-* 
-* Method: doPipe(Object input, IPipeLineSession session) 
-* 
-*/ 
-@Test
-public void testDoPipe() throws Exception { 
-//TODO: Test goes here... 
-} 
 
-/** 
-* 
-* Method: setSessionKey(String newSessionKey) 
-* 
-*/ 
-@Test
-public void testSetSessionKey() throws Exception { 
-//TODO: Test goes here... 
-} 
-
-/** 
-* 
-* Method: getSessionKey() 
-* 
-*/ 
-@Test
-public void testGetSessionKey() throws Exception { 
-//TODO: Test goes here... 
-}
 
 
 

@@ -3,6 +3,9 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -11,9 +14,11 @@ import org.junit.After;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
 
@@ -31,9 +36,11 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 
     private static String sourceFolderPath;
 
-    private static InputStream inputStream;
     @Mock
     private IPipeLineSession session1 = new PipeLineSessionBase();
+
+    private byte[] var = "Some String you want".getBytes();
+    private ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(var);
 
     @Override
     public FilePipe createPipe() {
@@ -45,21 +52,41 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     public static void before() throws Exception {
         testFolderSource.newFile("1.txt");
         sourceFolderPath = testFolderSource.getRoot().getPath();
-        inputStream = new FileInputStream(sourceFolderPath+"/1.txt");
 
     }
 
-    @After
-    public void after() throws Exception {
+
+    @Test
+    public void doTestSuccess() throws Exception {
+        Parameter p = new Parameter();
+        p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType("int"); p.configure();
+        session1.put("key", p);
+        PipeForward fw = new PipeForward();
+        fw.setName("test"); pipe.registerForward(fw); pipe.addParameter(p);
+        pipe.setCharset("/"); pipe.setDirectory(sourceFolderPath);
+        pipe.setOutputType("stream"); pipe.setActions("read");
+        pipe.setFileName("1.txt"); pipe.setFileSource("filesystem");
+        pipe.setActions("create");
+        pipe.configure();
+        PipeRunResult res = pipe.doPipe(var, session1);
+        assertEquals(res.getPipeForward().getName(), "success");
     }
 
     @Test
-    public void doTest() throws Exception {
-        //pipe.registerForward(new PipeForward());
-        pipe.setCharset("/*"); pipe.setDirectory(sourceFolderPath);
-        pipe.setOutputType("String"); pipe.setActions("read");
+    public void doTestFailAsEncodingNotSupportedBase64() throws Exception {
+        exception.expect(PipeRunException.class);
+        exception.expectMessage("Pipe [FilePipe under test] msgId [null] Error while executing file action(s): (UnsupportedEncodingException) /");
+        Parameter p = new Parameter();
+        p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType("int"); p.configure();
+        session1.put("key", p);
+        PipeForward fw = new PipeForward();
+        fw.setName("test"); pipe.registerForward(fw); pipe.addParameter(p);
+        pipe.setCharset("/"); pipe.setDirectory(sourceFolderPath);
+        pipe.setOutputType("base64"); pipe.setActions("read");
         pipe.setFileName("1.txt"); pipe.setFileSource("filesystem");
-        pipe.configure(); pipe.doPipe(inputStream, session1);
+        pipe.setActions("create");
+        pipe.configure();
+        pipe.doPipe(var, session1);
     }
 
 } 

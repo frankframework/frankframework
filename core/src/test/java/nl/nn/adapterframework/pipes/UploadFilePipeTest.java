@@ -172,20 +172,5 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     }
 
 
-    /**
-     * Method: doPipe(Object input, IPipeLineSession session)
-     */
-    /*
-    @Test
-    public void testDoPipeFailAsFileNameNotSpecified() throws Exception {
-        exception.expect(IOException.class);
-        exception.expectMessage("ds");
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
-        session1.put("key", zis); session1.put("fileName", "2.zip"); session1.put("key2", "no/such/directory");
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
-        assertNotEquals(sourceFolderPath+"/no/such/directory", res.getResult().toString());
-    }
-    */
-
 
 }

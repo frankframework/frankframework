@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Text2XmlPipe Tester.
  *
- * @author <Authors name>
+ * @author <Sina Sen>
  * @version 1.0
  * @since <pre>Mar 6, 2020</pre>
  */
@@ -20,22 +20,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
     @Override
     public Text2XmlPipe createPipe() {
         return new Text2XmlPipe();
-    }
-
-    @Before
-    public void before() throws Exception {
-    }
-
-    @After
-    public void after() throws Exception {
-    }
-
-    /**
-     * Method: configure()
-     */
-    @Test
-    public void testConfigure() throws Exception {
-//TODO: Test goes here... 
     }
 
     /**
