@@ -132,6 +132,15 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
+
+	@Test
+	public void fileListenerTestCreateLogFolder() throws Exception {
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+"xxx");
+		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
 	/*
 	 * vary this on: 
 	 *   inputFolder
@@ -197,6 +206,32 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		
 		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
 		assertThat(message,CoreMatchers.containsString(filename));
+	}
+
+	@Test
+	public void fileListenerTestGetStringFromRawMessageLogFile() throws Exception {
+		String filename="rawMessageFile";
+		String contents="Test Message Contents";
+		String logFolder="log";
+		
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setLogFolder(logFolder);
+		fileSystemListener.setCreateFolders(true);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+		
+		createFile(null, filename, contents);
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		
+		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
+		assertThat(message,CoreMatchers.containsString(filename));
+
+		
+		assertThat(message,CoreMatchers.containsString(filename));
+		assertTrue("Log folder must exist",_folderExists(logFolder));
+		assertTrue("File must exist in log folder",_fileExists(logFolder, filename));
 	}
 
 	@Test

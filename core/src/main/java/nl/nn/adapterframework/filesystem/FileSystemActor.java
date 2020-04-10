@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_READ1="read";
 	public final String ACTION_READ2="download";
 	public final String ACTION_MOVE="move";
+	public final String ACTION_COPY="copy";
 	public final String ACTION_DELETE="delete";
 	public final String ACTION_MKDIR="mkdir";
 	public final String ACTION_RMDIR="rmdir";
@@ -105,7 +106,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String BASE64_ENCODE="encode";
 	public final String BASE64_DECODE="decode";
 	
-	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
+	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
 
 	private String action;
@@ -159,7 +160,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		
 		//Check if necessarily parameters are available
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresParameter(owner, parameterList, ACTION_MOVE, PARAMETER_DESTINATION);
+		actionRequiresParameter(owner, parameterList, ACTION_MOVE, PARAMETER_DESTINATION);    // TODO: allow attribute destination too
+		actionRequiresParameter(owner, parameterList, ACTION_COPY, PARAMETER_DESTINATION);    // TODO: allow attribute destination too
 		actionRequiresParameter(owner, parameterList, ACTION_RENAME, PARAMETER_DESTINATION);
 		
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
@@ -344,6 +346,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				F moved=fileSystem.moveFile(file, destinationFolder, isCreateFolder());
 				return fileSystem.getName(moved);
+			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
+				F file=getFile(input, pvl);
+				String destinationFolder = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
+				if (destinationFolder == null) {
+					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
+				}
+				if (!isCreateFolder() && !fileSystem.folderExists(destinationFolder)) {
+					throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
+				}
+				F copied=fileSystem.copyFile(file, destinationFolder, isCreateFolder());
+				return fileSystem.getName(copied);
 			}
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
