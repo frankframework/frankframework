@@ -89,11 +89,12 @@ public final class TestServiceListener extends Base {
 
 		try {
 			if(inputDataMap.getAttachmentObject("message", String.class) != null)
-				message = inputDataMap.getAttachmentObject("message", String.class);
-			if(inputDataMap.getAttachmentObject("service", String.class) != null) {
-				serviceName = inputDataMap.getAttachmentObject("service", String.class);
-			}
-			Attachment attFile = inputDataMap.getAttachment( "file" );
+				message = resolveStringFromMap(inputDataMap, "message");
+			
+			if(inputDataMap.getAttachmentObject("service", String.class) != null)
+				serviceName = resolveStringFromMap(inputDataMap, "service");
+			
+			Attachment attFile = inputDataMap.getAttachment("file");
 			if(attFile != null) {
 				file = inputDataMap.getAttachmentObject("file", InputStream.class);
 				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;

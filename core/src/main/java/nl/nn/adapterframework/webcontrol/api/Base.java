@@ -188,8 +188,9 @@ public abstract class Base {
 
 	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.getAttachmentObject(key, String.class) != null) {
-				return inputDataMap.getAttachmentObject(key, clazz);
+			T value = inputDataMap.getAttachmentObject(key, clazz);
+			if(value != null) {
+				return value;
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);

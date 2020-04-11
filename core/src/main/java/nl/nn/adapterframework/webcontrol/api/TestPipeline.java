@@ -84,13 +84,14 @@ public final class TestPipeline extends TimeoutGuardPipe {
 			throw new ApiException("Config not found!");
 		}
 		
-		String message = null, fileEncoding = null, fileName = null;
+		String message = null, fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING, fileName = null;
 		InputStream file = null;
 		IAdapter adapter = null;
 		
-		try {
+		try {			
 			if(input.getAttachmentObject("message", String.class) != null)
 				message = input.getAttachmentObject("message", String.class);
+			
 			if(input.getAttachmentObject("encoding", String.class) != null)
 				fileEncoding = input.getAttachmentObject("encoding", String.class);
 			if(input.getAttachment("adapter").getDataHandler().getDataSource().getName() != null) {
@@ -101,9 +102,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 			if(attFile != null) {
 				fileName = attFile.getContentDisposition().getParameter( "filename" );
 				file = input.getAttachmentObject("file", InputStream.class);
-				if(fileEncoding == null || fileEncoding.isEmpty())
-					fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
 						processZipFile(result, file, fileEncoding, adapter, secLogMessage);

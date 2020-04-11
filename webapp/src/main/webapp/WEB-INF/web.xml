@@ -79,7 +79,6 @@
 	<listener>
 		<listener-class>nl.nn.adapterframework.lifecycle.IbisApplicationInitializer</listener-class>
 	</listener>
-		
 	<servlet>
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
@@ -313,7 +312,7 @@
 	make Tomcat behave the same as WebSphere.
 	-->
 
-	<security-constraint>
+	<!-- security-constraint>
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
@@ -340,7 +339,9 @@
 			<role-name>IbisTester</role-name>
 			<role-name>IbisWebService</role-name>
 		</auth-constraint>
-		
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 
 	<security-constraint>
@@ -350,7 +351,9 @@
 			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
 			<url-pattern>/*</url-pattern>
 		</web-resource-collection>
-		
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 	<security-constraint>
 		<display-name>ObserverAccess</display-name>
@@ -386,7 +389,9 @@
 			<role-name>IbisDataAdmin</role-name>
 			<role-name>IbisTester</role-name>
 		</auth-constraint>
-
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 	<security-constraint>
 		<display-name>AdminAccess</display-name>
@@ -400,7 +405,9 @@
 			<role-name>IbisAdmin</role-name>
 			<role-name>IbisTester</role-name>
 		</auth-constraint>
-		
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 	<security-constraint>
 		<display-name>DataAdminAccess</display-name>
@@ -421,7 +428,9 @@
 			<role-name>IbisDataAdmin</role-name>
 			<role-name>IbisTester</role-name>
 		</auth-constraint>
-		
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 	<security-constraint>
 		<display-name>TesterAccess</display-name>
@@ -440,7 +449,9 @@
 			<description></description>
 			<role-name>IbisTester</role-name>
 		</auth-constraint>
-		
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 
 	<security-constraint>
@@ -460,7 +471,9 @@
 			<role-name>IbisWebService</role-name>
 			<role-name>IbisTester</role-name>
 		</auth-constraint>
-		
+		<user-data-constraint>
+			<transport-guarantee>NONE</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 
 	<security-role>
@@ -482,6 +495,6 @@
 	<security-role>
 		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
 		<role-name>IbisTester</role-name>
-	</security-role>
+	</security-role -->
 
 </web-app>

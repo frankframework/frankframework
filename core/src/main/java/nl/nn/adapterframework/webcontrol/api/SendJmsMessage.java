@@ -65,8 +65,8 @@ public final class SendJmsMessage extends Base {
 		}
 
 		try {
-			if(inputDataMap.getAttachmentObject("real", String.class) != null)
-				jmsRealm = inputDataMap.getAttachmentObject("real", String.class);
+			if(inputDataMap.getAttachmentObject("realm", String.class) != null)
+				jmsRealm = inputDataMap.getAttachmentObject("realm", String.class);
 			else
 				throw new ApiException("JMS realm not defined", 400);
 			if(inputDataMap.getAttachmentObject("destination", String.class) != null)
