@@ -12,6 +12,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
+/**
+ * An extension of {@link XmlConfiguration} for log4j2.
+ * It makes sure that properties set for Ibis are available
+ * to log4j2 as a context map. So any property set can be used
+ * for configuration.
+ */
 public class IbisLoggerConfiguration extends XmlConfiguration{
 
 	public static final String DEBUG_LOG_PREFIX = "Ibis LogUtil class ";

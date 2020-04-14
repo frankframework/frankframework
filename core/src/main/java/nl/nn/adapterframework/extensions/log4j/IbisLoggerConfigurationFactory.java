@@ -7,6 +7,10 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Order;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 
+/**
+ * 	Allows log4j2 to search for configuration files suitable
+ * 	for {@link IbisLoggerConfiguration}.
+ */
 @Plugin(name = "IbisLoggerConfigurationFactory", category = "ConfigurationFactory")
 @Order(10)
 public class IbisLoggerConfigurationFactory extends ConfigurationFactory {

@@ -12,6 +12,11 @@ import org.apache.logging.log4j.core.pattern.RegexReplacement;
 
 import java.nio.charset.Charset;
 
+/**
+ * One implementation of {@link IbisMaskingLayout},
+ * which uses {@link PatternLayout} as abstract string layout
+ * to serialize the given log events.
+ */
 @Plugin(name = "IbisPatternLayout", category = "Core", elementType = "layout", printObject = true)
 public class IbisPatternLayout extends IbisMaskingLayout {
 
