@@ -9,13 +9,21 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Sql syntax translator to translate queries
+ * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
+ */
 public class SqlTranslator {
-	private static final String SOURCE_CSV = "";
-	private static final String TARGET_CSV = "";
+	private static final String SOURCE_CSV = "dbms/source.csv";
+	private static final String TARGET_CSV = "dbms/target.csv";
 	public Map<String, String> target;
 	public Map<String, Pattern> source;
 
 	public SqlTranslator(String source, String target) throws Exception {
+		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
+			throw new Exception("Can not translate from [" + source + "] to [" + target + "]");
+		if (!source.equalsIgnoreCase(target))
+			return;
 		readSource(source);
 		readTarget(target);
 	}
@@ -28,6 +36,9 @@ public class SqlTranslator {
 	 * @return Translated query.
 	 */
 	public String translate(String query) throws NullPointerException {
+		if (source == null || target == null || StringUtils.isEmpty(query))
+			return query;
+
 		for (String key : source.keySet()) {
 			Matcher matcher = source.get(key).matcher(query);
 			if (matcher.find()) {
