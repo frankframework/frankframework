@@ -122,8 +122,11 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToThreadLocalReplace(Collection<String> collection) {
+		if(collection == null) return;
+
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
+
 		threadLocalReplace.get().addAll(collection);
 	}
 
@@ -132,6 +135,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
 	 */
 	public static void addToThreadLocalReplace(String regex) {
+		if(StringUtils.isEmpty(regex)) return;
+
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
 		threadLocalReplace.get().add(regex);
@@ -142,6 +147,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * When the last item is removed the Set will be removed as well.
 	 */
 	public static void removeFromThreadLocalReplace(String regex) {
+		if(StringUtils.isEmpty(regex)) return;
+
 		threadLocalReplace.get().remove(regex);
 
 		if(threadLocalReplace.get().isEmpty())

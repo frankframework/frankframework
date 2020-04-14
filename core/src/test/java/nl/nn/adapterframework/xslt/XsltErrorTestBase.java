@@ -106,6 +106,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public void init() {
 		testAppender = new TestAppender();
 		((org.apache.logging.log4j.core.Logger)LogUtil.getRootLogger()).addAppender(testAppender);
+
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr=System.err;
