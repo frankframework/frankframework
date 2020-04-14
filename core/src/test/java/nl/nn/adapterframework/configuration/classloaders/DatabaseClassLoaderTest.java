@@ -15,30 +15,8 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.Property;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,7 +24,24 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
+import org.junit.Test;
+
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
 	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
@@ -140,7 +135,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		TestAppender appender = new TestAppender();
 		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
@@ -175,7 +170,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		TestAppender appender = new TestAppender();
 		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
@@ -210,7 +205,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingWARN() throws Exception {
-		TestAppender appender = new TestAppender("Test", null, null, false, null);
+		TestAppender appender = new TestAppender();
 		Logger logger = getLoggerImplementation();
 		logger.setLevel(Level.DEBUG);
 		logger.addAppender(appender);
@@ -246,15 +241,15 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	class TestAppender extends AbstractAppender {
 		private final List<LogEvent> log = new ArrayList<LogEvent>();
 
-		protected TestAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions, Property[] properties) {
-			super(name, filter, layout, ignoreExceptions, properties);
+		public TestAppender() {
+			super("Test", null, null, false, null);
+			start();
 		}
 
 		@Override
 		public void append(LogEvent LogEvent) {
 			log.add(LogEvent);
 		}
-
 
 		public List<LogEvent> getLog() {
 			return new ArrayList<LogEvent>(log);

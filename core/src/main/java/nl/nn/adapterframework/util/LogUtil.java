@@ -16,7 +16,11 @@
 package nl.nn.adapterframework.util;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.extensions.log4j.IbisLoggerConfiguration;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,5 +57,27 @@ public class LogUtil {
 
 	public static Logger getLogger(Object owner) {
 		return LogManager.getLogger(owner);
+	}
+
+	/**
+	 * Must be called during configure after setName has been set!
+	 */
+	public static Logger getMsgLogger(IAdapter adapter) {
+		if(StringUtils.isEmpty(adapter.getName())) {
+			return getLogger("MSG");
+		}
+
+		return LogManager.getLogger(String.format("MSG.%S", adapter.getName()));
+	}
+
+	/**
+	 * Must be called during configure after setName has been set!
+	 */
+	public static Logger getMsgLogger(IAdapter adapter, INamedObject object) {
+		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
+			return getLogger("MSG");
+		}
+
+		return LogManager.getLogger(String.format("MSG.%S.%S", adapter.getName(), object.getName()));
 	}
 }

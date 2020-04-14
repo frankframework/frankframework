@@ -261,7 +261,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgLog = LogUtil.getLogger("MSG." + getAdapter().getName() + "." + getName());
+		msgLog = LogUtil.getMsgLogger(getAdapter(), this);
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			URL stubUrl;
 			try {

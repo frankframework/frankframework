@@ -72,6 +72,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 		public TestAppender() {
 			super("Test", null, null, false, null);
+			start();
 		}
 
 		@Override

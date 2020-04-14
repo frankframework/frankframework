@@ -156,7 +156,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		msgLog = LogUtil.getLogger("MSG." + getName().toUpperCase());
+		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
