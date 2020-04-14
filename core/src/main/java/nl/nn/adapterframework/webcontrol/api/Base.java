@@ -173,6 +173,9 @@ public abstract class Base {
 	}
 
 
+	/**
+	 * Method that return a string from MultipartBody, if it does not exist, an Optional empty will be returned
+	 */
 	protected Optional<String> resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
 		Optional<String> result = Optional.empty();
 		try {
@@ -183,7 +186,10 @@ public abstract class Base {
 		return result;
 	}
 
-	protected <T> Optional<T> resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz) throws ApiException {
+	/**
+	 * Method that return a T type value (the type depends on the clazz parameter) from MultipartBody, if it does not exist, an Optional empty will be returned
+	 */
+	protected <T> Optional<T> resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz) {
 		Optional<T> value = Optional.empty();
 		try {
 			value = Optional.ofNullable(inputDataMap.getAttachmentObject(key, clazz));
@@ -193,6 +199,9 @@ public abstract class Base {
 		return value;
 	}
 
+	/**
+	 * Method that return a string from MultipartBody, if it does not exist, an exception will be thrown
+	 */
 	protected String resolveStringFromMapMandatory(MultipartBody inputDataMap, String key) throws ApiException {
 		String result = null;
 		try {
@@ -204,6 +213,9 @@ public abstract class Base {
 		return result;
 	}
 
+	/**
+	 * Method that return a T type value (the type depends on the clazz parameter) from MultipartBody, if it does not exist, an exception will be thrown
+	 */
 	protected <T> Optional<T> resolveTypeFromMapMandatory(MultipartBody inputDataMap, String key, Class<T> clazz) throws ApiException {
 		Optional<T> value = Optional.empty();
 		try {
