@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
@@ -36,7 +35,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlUtils;
-import sun.security.krb5.Config;
 
 public class IbisTester {
 	private AppConstants appConstants;
@@ -346,11 +344,11 @@ public class IbisTester {
 			ScenarioRunner scenarioRunner = new ScenarioRunner(
 					scenariosRootDir, scenario);
 			ExecutorService service = Executors.newSingleThreadExecutor();
-			Future future = service.submit(scenarioRunner);
+			Future<String> future = service.submit(scenarioRunner);
 			long timeout = 60;
 			try {
 				try {
-					resultString = (String) future.get(timeout, TimeUnit.SECONDS);
+					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
 				} catch (Exception e) {

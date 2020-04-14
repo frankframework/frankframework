@@ -886,7 +886,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					} else {
 						duration = Misc.getDurationInMs(startTime);
 					}
-					msgLog.log(Level.toLevel("TERSE"), String.format("Sender [%s] class [%s] duration [%s] got exit state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+					msgLog.log(Level.toLevel("TERSE"), String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
 				}
 			}
 		}
