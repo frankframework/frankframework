@@ -15,23 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
-
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -45,16 +28,23 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CounterStatistic;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
@@ -166,7 +156,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		msgLog = LogUtil.getLogger("MSG." + getName());
+		msgLog = LogUtil.getLogger("MSG." + getName().toUpperCase());
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
