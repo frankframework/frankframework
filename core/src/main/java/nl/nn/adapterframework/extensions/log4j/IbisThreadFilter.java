@@ -67,9 +67,11 @@ public class IbisThreadFilter extends AbstractFilter {
 	 * @param regex Regular expression to match.
 	 */
 	public void setRegex(String regex) {
-		if (StringUtils.isEmpty(regex))
-			regex = "a^";
-		this.regex = Pattern.compile(regex);
+		if (StringUtils.isEmpty(regex)) {
+			this.regex = null;
+		} else {
+			this.regex = Pattern.compile(regex);
+		}
 	}
 
 	public void setlevel(Level level) {
