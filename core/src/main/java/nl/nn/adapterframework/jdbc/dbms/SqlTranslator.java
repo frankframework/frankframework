@@ -1,10 +1,11 @@
-package nl.nn.adapterframework.jdbc.dbms.translator;
+package nl.nn.adapterframework.jdbc.dbms;
 
 import com.opencsv.CSVReader;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,15 +15,15 @@ import java.util.regex.Pattern;
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
 public class SqlTranslator {
-	private static final String SOURCE_CSV = "dbms/source.csv";
-	private static final String TARGET_CSV = "dbms/target.csv";
+	private static final String SOURCE_CSV = "src/main/resources/dbms/source.csv";
+	private static final String TARGET_CSV = "src/main/resources/dbms/target.csv";
 	public Map<String, String> target;
 	public Map<String, Pattern> source;
 
 	public SqlTranslator(String source, String target) throws Exception {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new Exception("Can not translate from [" + source + "] to [" + target + "]");
-		if (!source.equalsIgnoreCase(target))
+		if (source.equalsIgnoreCase(target))
 			return;
 		readSource(source);
 		readTarget(target);
@@ -38,7 +39,6 @@ public class SqlTranslator {
 	public String translate(String query) throws NullPointerException {
 		if (source == null || target == null || StringUtils.isEmpty(query))
 			return query;
-
 		for (String key : source.keySet()) {
 			Matcher matcher = source.get(key).matcher(query);
 			if (matcher.find()) {
@@ -71,10 +71,11 @@ public class SqlTranslator {
 	 * @throws Exception If database name can not be found or file can not be read.
 	 */
 	private void readSource(String name) throws Exception {
+		source = new HashMap<>();
 		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(SOURCE_CSV)));
 		int index = getIndex(reader, name);
 		String[] values;
-		while ((values = reader.readNext()) != null) {
+		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
 			source.put(values[0], toPattern(values[index]));
 		}
 	}
@@ -86,11 +87,12 @@ public class SqlTranslator {
 	 * @throws Exception If database name can not be found or file can not be read.
 	 */
 	private void readTarget(String name) throws Exception {
+		target = new HashMap<>();
 		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(TARGET_CSV)));
 		int index = getIndex(reader, name);
 		String[] values;
-		while ((values = reader.readNext()) != null) {
-			target.put(values[0], values[index]);
+		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
+				target.put(values[0], values[index]);
 		}
 	}
 
