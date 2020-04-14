@@ -65,28 +65,13 @@ public final class SendJmsMessage extends Base {
 		}
 
 		try {
-			if(inputDataMap.getAttachmentObject("realm", String.class) != null)
-				jmsRealm = inputDataMap.getAttachmentObject("realm", String.class);
-			else
-				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.getAttachmentObject("destination", String.class) != null)
-				destinationName = inputDataMap.getAttachmentObject("destination", String.class);
-			else
-				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.getAttachmentObject("type", String.class) != null) 
-				destinationType = inputDataMap.getAttachmentObject("type", String.class);
-			else
-				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.getAttachmentObject("replyTo", String.class) != null)
-				replyTo = inputDataMap.getAttachmentObject("replyTo", String.class);
-			else
-				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.getAttachmentObject("message", String.class) != null) 
-				message = inputDataMap.getAttachmentObject("message", String.class);
-			if(inputDataMap.getAttachmentObject("message", Boolean.class))
-				persistent = inputDataMap.getAttachmentObject("message", Boolean.class);
-			if(inputDataMap.getAttachment( "file" ) != null)
-				file = inputDataMap.getAttachmentObject("file", InputStream.class);
+			jmsRealm = resolveStringFromMapMandatory(inputDataMap, "realm");
+			destinationName = resolveStringFromMapMandatory(inputDataMap, "destination");
+			destinationType = resolveStringFromMapMandatory(inputDataMap, "type");
+			replyTo = resolveStringFromMapMandatory(inputDataMap, "replyTo");
+			message = resolveStringFromMap(inputDataMap, "message").orElse(null);
+			persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class).orElse(Boolean.FALSE);
+			file = resolveTypeFromMap(inputDataMap, "file", InputStream.class).orElse(null);
 		}
 		catch (Exception e) {
 			throw new ApiException("Failed to parse one or more parameters", e);
@@ -183,7 +168,6 @@ public final class SendJmsMessage extends Base {
 				log.debug(contextDump);
 			}
 		}
-
 		try {
 			qms.open();
 			/*

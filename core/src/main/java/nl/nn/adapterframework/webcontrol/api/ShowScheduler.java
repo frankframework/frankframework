@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
@@ -481,18 +482,18 @@ public final class ShowScheduler extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String name = jobName;
-		if(name == null) //If name is not explicitly set, try to deduct it from inputmap
-			name = resolveStringFromMap(inputDataMap, "name");
-
-		String cronExpression = resolveTypeFromMap(inputDataMap, "cron", String.class, "");
-		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1);
+		String name = Optional.ofNullable(jobName).orElse(super.resolveStringFromMap(inputDataMap, "name").get());
+		
+		String cronExpression = resolveTypeFromMap(inputDataMap, "cron", String.class).orElse("");
+		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class).orElse(-1);
+		
 		//Either one of the two has to be set
 		if(interval == -1 && StringUtils.isEmpty(cronExpression)) {
 			throw new ApiException("Either 'cron' or 'interval' has to be set");
 		}
 
-		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
+		String adapterName = super.getAdapterName(inputDataMap, "adapter");
+		
 		//Make sure the adapter exists!
 		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
 		IAdapter adapter = manager.getRegisteredAdapter(adapterName);
@@ -501,11 +502,9 @@ public final class ShowScheduler extends Base {
 		}
 
 		//Make sure the receiver exists!
-		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
+		String receiverName = resolveStringFromMapMandatory(inputDataMap, "receiver");
 		IReceiver receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found");
-		}
+		
 		String listenerName = null;
 		if (receiver instanceof ReceiverBase) {
 			ReceiverBase rb = (ReceiverBase) receiver;
@@ -523,11 +522,11 @@ public final class ShowScheduler extends Base {
 			jobGroup = adapter.getConfiguration().getName();
 		}
 
-		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
-		boolean hasLocker = resolveTypeFromMap(inputDataMap, "locker", boolean.class, false);
-		String lockKey = resolveTypeFromMap(inputDataMap, "lockkey", String.class, "lock4["+name+"]");
+		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class).orElse(Boolean.FALSE);
+		boolean hasLocker = resolveTypeFromMap(inputDataMap, "locker", boolean.class).orElse(Boolean.FALSE);
+		String lockKey = resolveTypeFromMap(inputDataMap, "lockkey", String.class).orElse("lock4["+name+"]");
 
-		String message = resolveStringFromMap(inputDataMap, "message");
+		String message = resolveStringFromMap(inputDataMap, "message").orElse(null);
 
 		SchedulerHelper sh = manager.getSchedulerHelper();
 

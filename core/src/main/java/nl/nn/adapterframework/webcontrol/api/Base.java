@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
@@ -28,7 +29,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -171,35 +172,63 @@ public abstract class Base {
 		return resultList;
 	}
 
-	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
-		return resolveStringFromMap(inputDataMap, key, null);
-	}
 
-	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
-		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
-		if(StringUtils.isEmpty(result)) {
-			if(defaultValue != null) {
-				return defaultValue;
-			}
-			throw new ApiException("Key ["+key+"] may not be empty");
+	protected Optional<String> resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
+		Optional<String> result = Optional.empty();
+		try {
+			result = Optional.ofNullable(inputDataMap.getAttachmentObject(key, String.class));
+		}catch(Exception e) {
+			log.error("Failed to parse parameter ["+key+"]", e);
 		}
 		return result;
 	}
 
-	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+	protected <T> Optional<T> resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz) throws ApiException {
+		Optional<T> value = Optional.empty();
 		try {
-			T value = inputDataMap.getAttachmentObject(key, clazz);
-			if(value != null) {
-				return value;
-			}
+			value = Optional.ofNullable(inputDataMap.getAttachmentObject(key, clazz));
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);
 		}
-		if(defaultValue != null) {
-			return defaultValue;
-		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
+		return value;
 	}
+
+	protected String resolveStringFromMapMandatory(MultipartBody inputDataMap, String key) throws ApiException {
+		String result = null;
+		try {
+			result = this.resolveTypeFromMapMandatory(inputDataMap, key, String.class).get();
+		}catch(Exception e) {
+			log.error("Failed to parse parameter ["+key+"]", e);
+			throw e;
+		}
+		return result;
+	}
+
+	protected <T> Optional<T> resolveTypeFromMapMandatory(MultipartBody inputDataMap, String key, Class<T> clazz) throws ApiException {
+		Optional<T> value = Optional.empty();
+		try {
+			value = Optional.ofNullable(inputDataMap.getAttachmentObject(key, clazz));
+			if (!value.isPresent()) {
+				throw new Exception();
+			}
+		} catch (Exception e) {
+			log.debug("Failed to parse parameter ["+key+"]", e);
+			throw new ApiException("Key ["+key+"] not defined", 400);
+		}
+		return value;
+	}	
+	
+	protected String getAdapterName(MultipartBody inputDataMap, String adapter) {
+		String adapterName = null;
+		try {
+			adapterName = IOUtils.toString(inputDataMap.getAttachment("adapter").getDataHandler().getDataSource().getInputStream());
+		}catch(Exception e) {
+			log.debug("Failed to parse parameter ["+adapter+"]", e);
+			throw new ApiException("Key ["+adapter+"] not defined", 400);
+		}
+		return adapterName;
+	}
+	
 	
 	
 }

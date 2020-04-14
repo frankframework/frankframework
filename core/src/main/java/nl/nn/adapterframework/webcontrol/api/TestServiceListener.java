@@ -33,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
@@ -76,6 +75,14 @@ public final class TestServiceListener extends Base {
 		return Response.status(Response.Status.CREATED).entity(returnData).build();
 	}
 
+	private void checkMessageAndFile(MultipartBody inputDataMap) throws ApiException {
+		String message = resolveStringFromMap(inputDataMap, "message").orElse(null);
+		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class).orElse(null);
+		if (message == null && file == null) {
+			throw new ApiException();
+		}
+	}
+	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-servicelistener")
@@ -83,20 +90,14 @@ public final class TestServiceListener extends Base {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
-
-		String message = null, serviceName = null, dispatchResult = null;
+		String dispatchResult = null;
 		InputStream file = null;
-
 		try {
-			if(inputDataMap.getAttachmentObject("message", String.class) != null)
-				message = resolveStringFromMap(inputDataMap, "message");
-			
-			if(inputDataMap.getAttachmentObject("service", String.class) != null)
-				serviceName = resolveStringFromMap(inputDataMap, "service");
-			
-			Attachment attFile = inputDataMap.getAttachment("file");
-			if(attFile != null) {
-				file = inputDataMap.getAttachmentObject("file", InputStream.class);
+			this.checkMessageAndFile(inputDataMap);
+			String message = resolveStringFromMap(inputDataMap, "message").orElse(null);
+			String serviceName = resolveStringFromMap(inputDataMap, "service").orElse(null);
+			file = resolveTypeFromMap(inputDataMap, "file", InputStream.class).orElse(null);
+			if(file != null) {
 				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 				message = Misc.streamToString(file, "\n", fileEncoding, false);
 				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);
@@ -104,11 +105,10 @@ public final class TestServiceListener extends Base {
 			else {
 				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
 			}
-			
+
 			if(!ServiceDispatcher.getInstance().isRegisteredServiceListener(serviceName)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-
 			try {
 				@SuppressWarnings("rawtypes")
 				Map context = new HashMap();
@@ -116,13 +116,11 @@ public final class TestServiceListener extends Base {
 			} catch (ListenerException e) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-
 			result.put("state", "success");
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 }

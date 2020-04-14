@@ -445,16 +445,16 @@ public class TransactionalStorage extends Base {
 	}
 
 	private String[] getMessages(MultipartBody inputDataMap) {
+		String[] msgArr = null; 
 		try {
-			
-			if(inputDataMap.getAttachmentObject("messageIds", String.class) != null) {
-				String messageIds = inputDataMap.getAttachmentObject("messageIds", String.class);
+			msgArr = resolveStringFromMap(inputDataMap, "message").map(messageIds -> {
 				return messageIds.split(",");
-			}
+			}).orElse(null);
+			
 		} catch (Exception e) {
 			throw new ApiException(e);
 		}
-		return null;
+		return msgArr;
 	}
 
 	private void deleteMessage(IMessageBrowser storage, String messageId) {

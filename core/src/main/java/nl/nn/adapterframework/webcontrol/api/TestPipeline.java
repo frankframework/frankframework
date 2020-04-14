@@ -94,6 +94,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 			
 			if(input.getAttachmentObject("encoding", String.class) != null)
 				fileEncoding = input.getAttachmentObject("encoding", String.class);
+			
 			if(input.getAttachment("adapter").getDataHandler().getDataSource().getName() != null) {
 				String adapterName = IOUtils.toString(input.getAttachment("adapter").getDataHandler().getDataSource().getInputStream());
 				adapter = ibisManager.getRegisteredAdapter(adapterName);
