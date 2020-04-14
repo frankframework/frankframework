@@ -35,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -88,6 +90,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
+	private ClientConfiguration proxyConfig = null;
+	
 	@Override
 	public void configure() throws ConfigurationException {
 
@@ -110,7 +114,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
 				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled()).withRegion(getClientRegion())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+				.withClientConfiguration(this.getProxyConfig());
 		s3Client = s3ClientBuilder.build();
 	}
 
@@ -603,5 +608,19 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	public boolean isBucketExistsThrowException() {
 		return bucketExistsThrowException;
 	}
+
+	public ClientConfiguration getProxyConfig() {
+		return proxyConfig;
+	}
+
+	public void setProxyConfig(String proxyHost, Integer proxyPort) {
+		if (proxyHost != null && proxyPort != null) {
+			proxyConfig = new ClientConfiguration();
+			proxyConfig.setProtocol(Protocol.HTTPS);
+			proxyConfig.setProxyHost(proxyHost);
+			proxyConfig.setProxyPort(proxyPort);
+		}
+	}
+
 	
 }

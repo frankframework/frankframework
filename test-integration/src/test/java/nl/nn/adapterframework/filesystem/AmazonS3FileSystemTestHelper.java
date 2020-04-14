@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -27,23 +29,32 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	private String accessKey;
 	private String secretKey;
-
+	private ClientConfiguration config = null; 
 	private boolean chunkedEncodingDisabled;
 	private boolean accelerateModeEnabled; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled;
-
 	private String bucketName;
 	private Regions clientRegion;
-	
 	private AmazonS3 s3Client;
-	
+
+	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
+			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
+			Regions clientRegion, String proxyHost, Integer proxyPort) {
+		
+		this(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
+		if (proxyHost != null && proxyPort != null) {
+			config = new ClientConfiguration();
+			config.setProtocol(Protocol.HTTPS);
+			config.setProxyHost(proxyHost);
+			config.setProxyPort(proxyPort);
+		}
+	}
+
 	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
 			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
 			Regions clientRegion) {
@@ -96,13 +107,14 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	}
 	
 	private void open() {
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
-
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);		
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(chunkedEncodingDisabled).withAccelerateModeEnabled(accelerateModeEnabled)
+				.withChunkedEncodingDisabled(chunkedEncodingDisabled)
+				.withAccelerateModeEnabled(accelerateModeEnabled)
 				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
-				.withRegion(clientRegion.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
-
+				.withRegion(clientRegion.getName())
+				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+				.withClientConfiguration(config);
 		s3Client = s3ClientBuilder.build();
 	}
 	

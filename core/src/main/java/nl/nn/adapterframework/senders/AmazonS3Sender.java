@@ -203,4 +203,10 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
 	}
 	
+	@IbisDoc({ "setting proxy configuration (hostIP and port)", "" })
+	public void setProxyConfig(String proxyHost, Integer proxyPort) {
+		getFileSystem().setProxyConfig(proxyHost, proxyPort);
+	}
+
+	
 }
