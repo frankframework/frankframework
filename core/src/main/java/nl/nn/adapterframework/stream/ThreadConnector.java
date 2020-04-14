@@ -66,7 +66,7 @@ public class ThreadConnector {
 			}
 			return response;
 		} finally {
-			IbisMaskingLayout.cleanThreadLocalReplace();
+			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 
@@ -82,7 +82,7 @@ public class ThreadConnector {
 			}
 			return t;
 		} finally {
-			IbisMaskingLayout.cleanThreadLocalReplace();
+			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 	

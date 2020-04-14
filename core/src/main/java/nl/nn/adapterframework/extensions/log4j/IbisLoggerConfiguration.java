@@ -1,3 +1,18 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.log4j;
 
 import org.apache.logging.log4j.Level;
@@ -20,7 +35,7 @@ import java.util.Properties;
  */
 public class IbisLoggerConfiguration extends XmlConfiguration{
 
-	public static final String DEBUG_LOG_PREFIX = "Ibis LogUtil class ";
+	public static final String DEBUG_LOG_PREFIX = "IbisLoggerConfiguration class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 	private static String[] logDirectoryHierarchy = new String[] {
@@ -39,10 +54,10 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	@Override
 	protected void doConfigure() {
 		try {
-			setThreadContextMap(LOG4J_PROPS_FILE);
-			setThreadContextMap(DS_PROPERTIES_FILE);
+			addPropertiesToLog4jContext(LOG4J_PROPS_FILE);
+			addPropertiesToLog4jContext(DS_PROPERTIES_FILE);
 			init();
-			setThreadContextMap(System.getProperties());
+			addPropertiesToLog4jContext(System.getProperties());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -50,13 +65,13 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	}
 
 	/**
-	 * Adds the properties from the given file  to
+	 * Adds the properties from the given file to
 	 * {@link ThreadContext} for Log4j2 to lookup strings.
 	 * @param filename Name of file that contains properties to be added.
 	 * @throws IOException If properties can not be read.
 	 */
-	private void setThreadContextMap(String filename) throws IOException {
-		setThreadContextMap(getProperties(filename));
+	private void addPropertiesToLog4jContext(String filename) throws IOException {
+		addPropertiesToLog4jContext(getProperties(filename));
 	}
 
 	/**
@@ -65,10 +80,9 @@ public class IbisLoggerConfiguration extends XmlConfiguration{
 	 * @param properties Properties to be added.
 	 * @see <a href="https://logging.apache.org/log4j/2.x/manual/lookups.html">Log4j2 Lookups</a>
 	 */
-	private void setThreadContextMap(Properties properties) {
+	private void addPropertiesToLog4jContext(Properties properties) {
 		for(String key : properties.stringPropertyNames()) {
 			String value = properties.getProperty(key);
-			System.out.println("Adding key: " + key + " - value: " + value);
 			if(!ThreadContext.containsKey(key))
 				ThreadContext.put(key, value);
 		}

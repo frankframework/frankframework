@@ -15,14 +15,15 @@
 */
 package nl.nn.ibistesttool;
 
+import java.util.Properties;
+
 import nl.nn.testtool.util.LogUtil;
+
 import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.RootLogger;
-
-import java.util.Properties;
 
 /**
  * @author Jaco de Groot

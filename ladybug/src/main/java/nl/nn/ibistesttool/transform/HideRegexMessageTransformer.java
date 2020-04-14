@@ -34,6 +34,7 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 		hideRegex = IbisMaskingLayout.getGlobalReplace();
 	}
 
+	@Override
 	public String transform(String message) {
 		if (message != null) {
 			message = Misc.hideAll(message, hideRegex);

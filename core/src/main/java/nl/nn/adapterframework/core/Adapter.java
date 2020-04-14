@@ -679,7 +679,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
-			IbisMaskingLayout.cleanThreadLocalReplace();
+			IbisMaskingLayout.removeThreadLocalReplace();
 			if (ndcChanged) {
 				ThreadContext.pop();
 			}

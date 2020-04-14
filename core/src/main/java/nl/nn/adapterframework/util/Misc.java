@@ -948,19 +948,27 @@ public class Misc {
 		return hideAll(inputString, regex, 1);
 	}
 
-	public static String hideAll(String inputString, Collection<String> collection) {
-		return hideAll(inputString, collection, 0);
+	/**
+	 * Hide all characters matching the given Regular Expression.
+	 * If the set of expressions is null or empty it will return the raw message
+	 */
+	public static String hideAll(String message, Collection<String> collection) {
+		return hideAll(message, collection, 0);
 	}
 
-	public static String hideAll(String string, Collection<String> collection, int mode) {
-		if(collection == null || StringUtils.isEmpty(string))
-			return string;
+	/**
+	 * Hide all characters matching the given Regular Expression.
+	 * If the set of expressions is null or empty it will return the raw message
+	 */
+	public static String hideAll(String message, Collection<String> collection, int mode) {
+		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
+			return message; //Nothing to do!
 
 		for (String regex : collection) {
 			if (StringUtils.isNotEmpty(regex))
-				string = hideAll(string, regex, mode);
+				message = hideAll(message, regex, mode);
 		}
-		return string;
+		return message;
 	}
 
 	public static String hideAll(String inputString, String regex) {
