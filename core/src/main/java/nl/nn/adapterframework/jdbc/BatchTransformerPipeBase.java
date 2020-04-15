@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,8 +97,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, message, session);
-			PreparedStatement statement=queryContext.getStatement();
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			PreparedStatement statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");

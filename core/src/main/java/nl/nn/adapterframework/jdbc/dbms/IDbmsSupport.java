@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -93,7 +93,7 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws JdbcException;
 	
-	void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException;
+	void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException;
 	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;

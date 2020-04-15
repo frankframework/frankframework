@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,11 +54,14 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -1139,6 +1142,12 @@ public class JdbcUtil {
 			sb.append(parameterValues.getParameterValue(i).getValue() + "]");
 		}
 		return sb.toString();
+	}
+
+	public static void applyParameters(PreparedStatement statement, ParameterList parameters, Message message, IPipeLineSession session) throws SQLException, JdbcException, ParameterException {
+		if (parameters != null) {
+			applyParameters(statement,parameters.getValues(message, session));
+		}
 	}
 
 	public static void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
