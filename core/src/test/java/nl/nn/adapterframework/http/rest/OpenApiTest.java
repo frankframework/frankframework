@@ -12,7 +12,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	public void simpleEndpointTest() throws Exception {
-		AdapterBuilder.create("myAdapterName", "description4simple-get").setListener("users", "get").setValidator("simple.xsd", "user").build(true);
+		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "get").setValidator("simple.xsd", null, "user").build(true);
 
 		String result = callOpenApi();
 
@@ -22,10 +22,10 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	public void petStore() throws Exception {
-		Adapter getPets = AdapterBuilder.create("listPets", "List all pets").setListener("pets", "get").setValidator("get-pets.xsd", "Pets").build();
-		Adapter postPet = AdapterBuilder.create("createPets", "Create a pet").setListener("pets", "post").setValidator("post-pet.xsd", "Pet").build();
-		Adapter getPet  = AdapterBuilder.create("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("get-pet.xsd", "Pet").build();
-		AdapterBuilder.start(getPets, postPet, getPet); //Async start
+		Adapter getPets = new AdapterBuilder("listPets", "List all pets").setListener("pets", "get").setValidator("petstore.xsd", null, "Pets").build(true);
+		Adapter postPet = new AdapterBuilder("createPets", "Create a pet").setListener("pets", "post").setValidator("petstore.xsd", "Pet", "Pet").build(true);
+		Adapter getPet  = new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
+		//getPets.start(getPets, postPet, getPet); //Async start
 
 		//Make sure all adapters have been registered on the dispatcher
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();

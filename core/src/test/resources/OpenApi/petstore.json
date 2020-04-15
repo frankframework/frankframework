@@ -64,7 +64,15 @@
     "components":{
         "schemas":{
             "Pet":{
-                "$schema":"http://json-schema.org/draft-04/schema#",
+                "$ref":"#/components/schemas/petType"
+            },
+            "Pets":{
+                "type":"array",
+                "items":{
+                    "$ref":"#/components/schemas/petType"
+                }
+            },
+            "petType":{
                 "type":"object",
                 "additionalProperties":false,
                 "properties":{
@@ -81,27 +89,6 @@
                 "required":[
                     "id",
                     "name"
-                ]
-            },
-            "Pets":{
-                "type":"array",
-                "items":{
-                    "$ref":"#/components/schemas/Pet"
-                }
-            },
-            "Error":{
-                "type":"object",
-                "properties":{
-                    "code":{
-                        "type":"integer"
-                    },
-                    "message":{
-                        "type":"string"
-                    }
-                },
-                "required": [
-                    "code",
-                    "message"
                 ]
             }
         }

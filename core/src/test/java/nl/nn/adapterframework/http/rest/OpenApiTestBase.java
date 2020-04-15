@@ -24,8 +24,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -34,19 +36,21 @@ import nl.nn.adapterframework.util.RunStateEnum;
 public class OpenApiTestBase extends Mockito {
 
 	private static TaskExecutor taskExecutor;
-	private static Configuration configuration = mock(Configuration.class);
+	private Configuration configuration;
 	private ApiListenerServlet servlet;
 
 	@Before
 	public void setUp() throws ServletException {
 		servlet = new ApiListenerServlet();
 		servlet.init();
+		configuration = mock(Configuration.class);
 	}
 
 	@After
 	public void tearDown() {
 		servlet.destroy();
 		servlet = null;
+		configuration = null;
 	}
 
 	/**
@@ -79,16 +83,16 @@ public class OpenApiTestBase extends Mockito {
 		return response.getContentAsString();
 	}
 
-	public static class AdapterBuilder {
+	public class AdapterBuilder {
 		private ApiListener listener;
-		private Json2XmlValidator pipe;
+		private Json2XmlValidator validator;
 		private Adapter adapter;
 		private List<Integer> exits = new ArrayList<Integer>();
 
-		public static AdapterBuilder create(String name, String description) {
-			return new AdapterBuilder(name, description);
-		}
-		private AdapterBuilder(String name, String description) {
+//		public static AdapterBuilder create(String name, String description) {
+//			return new AdapterBuilder(name, description);
+//		}
+		public AdapterBuilder(String name, String description) {
 			adapter = spy(Adapter.class);
 			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
 			adapter.setName(name);
@@ -113,16 +117,19 @@ public class OpenApiTestBase extends Mockito {
 
 			return this;
 		}
-		public AdapterBuilder setValidator(String xsdSchema, String root) {
-			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+root;
-			pipe = new Json2XmlValidator();
-			pipe.setName(ref);
+		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot) {
+			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
+			validator = new Json2XmlValidator();
+			validator.setName(ref);
 			String xsd = "/OpenApi/"+xsdSchema;
 			URL url = this.getClass().getResource(xsd);
 			assertNotNull("xsd ["+xsdSchema+"] not found", url);
-			pipe.setSchema(xsd);
-			pipe.setRoot(root);
-			pipe.setThrowException(true);
+			validator.setSchema(xsd);
+			if (requestRoot!=null) {
+				validator.setRoot(requestRoot);
+			}
+			validator.setResponseRoot(responseRoot);
+			validator.setThrowException(true);
 
 			return this;
 		}
@@ -142,7 +149,7 @@ public class OpenApiTestBase extends Mockito {
 			GenericReceiver receiver = new GenericReceiver();
 			receiver.setName("receiver");
 			receiver.setListener(listener);
-			pipeline.addPipe(pipe);
+			pipeline.setInputValidator(validator);
 			for (Integer exit : exits) {
 				PipeLineExit ple = new PipeLineExit();
 				ple.setPath("success"+exit);
@@ -165,6 +172,10 @@ public class OpenApiTestBase extends Mockito {
 				}
 				pipeline.registerPipeLineExit(ple);
 			}
+			IPipe pipe = new EchoPipe();
+			pipe.setName("echo");
+			pipeline.addPipe(pipe);
+			
 			adapter.registerPipeLine(pipeline);
 			adapter.registerReceiver(receiver);
 
@@ -179,7 +190,7 @@ public class OpenApiTestBase extends Mockito {
 			return adapter;
 		}
 
-		public static void start(Adapter... adapters) {
+		public void start(Adapter... adapters) {
 			for (Adapter adapter : adapters) {
 				System.out.println("attempting to start adapter "+ adapter.getName());
 				adapter.startRunning();

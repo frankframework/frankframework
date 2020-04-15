@@ -73,11 +73,7 @@ public class ApiListenerServletTest extends Mockito {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		for(String pattern : dispatcher.getPatternClients().keySet()) {
 			ApiDispatchConfig dispatchConfig = dispatcher.getPatternClients().get(pattern);
-			Set<String> methods = dispatchConfig.getMethods();
-			for(String method : methods) {
-				log.info("remove ["+pattern+"] method " + method);
-				dispatchConfig.destroy(method);
-			}
+			dispatchConfig.clear();
 		}
 		session = null;
 	}

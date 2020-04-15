@@ -16,10 +16,13 @@
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"simple-user-user"
+                                    "$ref":"#/components/schemas/user"
                                 }
                             }
                         }
+                    },
+                    "500":{
+                        "description":"Internal Server Error"
                     }
                 }
             }
@@ -27,8 +30,7 @@
     },
     "components":{
         "schemas":{
-            "simple-user-user":{
-                "$schema":"http://json-schema.org/draft-04/schema#",
+            "user":{
                 "type":"object",
                 "additionalProperties":false,
                 "properties":{

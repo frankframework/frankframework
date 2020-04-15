@@ -17,15 +17,17 @@ package nl.nn.adapterframework.http.rest;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import javax.ws.rs.core.Response.Status;
+
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
@@ -35,8 +37,6 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -182,10 +182,12 @@ public class ApiServiceDispatcher {
 		Json2XmlValidator validator = getJsonValidator(pipeline);
 		JsonObjectBuilder schema = null;
 		if(validator != null) {
-			JsonStructure jsonSchema = validator.createRequestJsonSchema();
+			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
 			if(jsonSchema != null) {
-				String ref = validator.getRoot();//TODO $ref has to be unique!
-				schemas.add(ref, jsonSchema);
+				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
+					schemas.add(entry.getKey(), entry.getValue());
+				}
+				String ref = validator.getMessageRoot(true);
 				schema = Json.createObjectBuilder();
 				schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 			}
