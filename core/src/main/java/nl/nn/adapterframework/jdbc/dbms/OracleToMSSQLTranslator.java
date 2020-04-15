@@ -38,7 +38,7 @@ public class OracleToMSSQLTranslator {
 	
 	private static Logger log = LogUtil.getLogger(OracleToMSSQLTranslator.class);
 
-	public static String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyqueryExecutionContext) throws JdbcException, SQLException {
+	public static String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {
 		if (StringUtils.isEmpty(queryExecutionContext.getQuery()))
 			return null;
 

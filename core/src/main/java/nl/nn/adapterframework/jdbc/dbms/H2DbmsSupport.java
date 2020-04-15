@@ -70,12 +70,12 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
 				StringBuilder sb = new StringBuilder();
 				for (String singleQuery : multipleQueries) {
-					QueryExecutionContext singlequeryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-					String convertedQuery = OracleToH2Translator.convertQuery(singlequeryExecutionContext, multipleQueries.size() == 1);
+					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
+					String convertedQuery = OracleToH2Translator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
 					if (convertedQuery != null) {
 						sb.append(convertedQuery);
-						if (singlequeryExecutionContext.getQueryType()!=null && !singlequeryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-							queryExecutionContext.setQueryType(singlequeryExecutionContext.getQueryType());
+						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
+							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
 						}
 					}
 				}

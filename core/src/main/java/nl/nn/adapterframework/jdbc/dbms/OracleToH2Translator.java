@@ -48,7 +48,7 @@ public class OracleToH2Translator {
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
-	public static String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyqueryExecutionContext) throws JdbcException, SQLException {
+	public static String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {
 		if (StringUtils.isEmpty(queryExecutionContext.getQuery()))
 			return null;
 
@@ -81,7 +81,7 @@ public class OracleToH2Translator {
 		}
 		// split on whitespaces excepts whitespaces between single quotes
 		String[] split = orgQueryReadyForSplitEOS.split("\\s+(?=([^']*'[^']*')*[^']*$)");
-		String[] newSplit = convertQuery(split, queryExecutionContext, canModifyqueryExecutionContext);
+		String[] newSplit = convertQuery(split, queryExecutionContext, canModifyQueryExecutionContext);
 		if (newSplit == null) {
 			log.debug("ignore oracle query [" + queryComment.toString() + originalQuery + "]");
 			return null;
@@ -107,7 +107,7 @@ public class OracleToH2Translator {
 		return sb.toString() + (removedEOS ? ";" : "");
 	}
 
-	private static String[] convertQuery(String[] split, QueryExecutionContext queryExecutionContext, boolean canModifyqueryExecutionContext) {
+	private static String[] convertQuery(String[] split, QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) {
 		String[] newSplit;
 		if (isSelectOneWhereForUpdateQuery(split)) {
 			newSplit = convertQuerySelectOneWhereForUpdate(split);
