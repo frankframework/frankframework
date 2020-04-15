@@ -207,6 +207,37 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse("Origin must have disappeared",_fileExists(fileName));
 	}
 
+	@Test
+	public void basicFileSystemTestCopyFile() throws Exception {
+		String fileName = "fileTobeMoved.txt";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null,fileName, "tja");
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		String destinationFolder = "destinationFolder";
+		_createFolder(destinationFolder);
+		waitForActionToFinish();
+
+		assertTrue(_fileExists(fileName));
+		assertTrue(_folderExists(destinationFolder));
+
+		F f = fileSystem.toFile(fileName);
+		F movedFile =fileSystem.copyFile(f, destinationFolder, false);
+		waitForActionToFinish();
+		
+		
+		assertTrue("Destination folder must exist",_folderExists(destinationFolder));
+		assertTrue("Destination must exist ["+fileSystem.getName(movedFile)+"]",fileSystem.exists(movedFile));
+		//TODO: test that contents of file has remained the same
+		//TODO: test that file timestamp has not changed
+		assertTrue("Origin must still exist",_fileExists(fileName));
+	}
+
 
 
 	
