@@ -15,6 +15,24 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.config.Configurator;
+
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -28,23 +46,16 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CounterStatistic;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
@@ -80,6 +91,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
+	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
+
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
@@ -96,7 +109,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
-	
+
 	private class SenderLastExitState {
 		private String lastExitState = null;
 		private long lastExitStateDate = 0;
@@ -106,20 +119,20 @@ public class Adapter implements IAdapter, NamedBean {
 			this.lastExitState = lastExitState;
 		}
 	}
-	
+
 	private int numOfMessagesInProcess = 0;
 
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
-	
+
 	private int hourOfLastMessageProcessed=-1;
 	private long[] numOfMessagesStartProcessingByHour = new long[24];
-	
+
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
-	
+
 	private RunStateManager runState = new RunStateManager();
 	private boolean configurationSucceeded = false;
 	private String description;
@@ -133,12 +146,13 @@ public class Adapter implements IAdapter, NamedBean {
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
-	
+
 	private TaskExecutor taskExecutor;
-	
+
 	private String composedHideRegex;
 
 	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
+	private boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 
 	/**
 	 * Indicates whether the configuration succeeded.
@@ -146,7 +160,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public boolean configurationSucceeded() {
 		return configurationSucceeded;
 	}
-	
+
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
@@ -325,8 +339,12 @@ public class Adapter implements IAdapter, NamedBean {
 				originalMessage,
 				messageID,
 				receivedTime);
-			msgLog.log(Level.toLevel("BASIC"), String.format("Received formatted errormessage messageId [%s] with size [%s]", messageID, getFileSizeAsBytes(formattedErrorMessage)));
-			msgLog.trace(String.format("Message with id [%s] is [%s]", messageID, formattedErrorMessage));
+
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage;
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Adapter [%s] messageId [%s] formatted errormessage, result [%s]", getName(), messageID, resultOrSize));
+			}
+
 			return formattedErrorMessage;
 		}
 		catch (Exception e) {
@@ -441,7 +459,6 @@ public class Adapter implements IAdapter, NamedBean {
 			doForEachStatisticsKeeperBody(hski,adapterData,action);
 		}
 		hski.closeGroup(adapterData);
-				
 	}
 
 	/**
@@ -582,8 +599,15 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			//if (isRequestReplyLogging()) {
-			msgLog.log(Level.toLevel("BASIC"), String.format("Got exit-state [%s] with messageId [%s], and result with size [%s]", result.getState(), messageId, getFileSizeAsBytes(result.getResult())));
-			msgLog.trace(String.format("Message with id [%s] is [%s]", messageId, result.toString()));
+
+			String format = "Adapter [%s] messageId [%s] got exit-state [%s] and result [%s] from PipeLine";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult();
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageId, result.getState(), resultOrSize));
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(String.format(format, getName(), messageId, result.getState(), result.getResult()));
+			}
 			return result;
 		}
 	}
@@ -632,8 +656,16 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 			}
 
-			msgLog.log(Level.toLevel("BASIC"), String.format("Received message with id [%s] with size [%s] %s", messageId, getFileSizeAsBytes(message), additionalLogging));
-			msgLog.trace(String.format("Message with id [%s] is [%s]", messageId, result.toString()));
+			String format = "Adapter [%s] received message [%s] with messageId [%s]";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message;
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
+			}
+			if (log.isDebugEnabled()) { 
+				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
+			} else if(log.isInfoEnabled()) {
+				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
+			}
 
 			if (message == null && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
@@ -648,8 +680,14 @@ public class Adapter implements IAdapter, NamedBean {
 				duration = Misc.getDurationInMs(startTime);
 			}
 
-			msgLog.log(Level.toLevel("BASIC"), String.format("Got exit state [%s], with message id [%s], after duration [%s], with result size [%s]", result.getState(), messageId, duration, getFileSizeAsBytes(result.toString())));
-			msgLog.trace(String.format("Message with id [%s] is [%s]", messageId, result.toString()));
+			String format2 = "Adapter [%s] messageId [%s] duration [%s] got exit-state [%s] and result [%s] from PipeLine";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.toString()) : result.toString();
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format2, getName(), messageId, duration, result.getState(), resultOrSize));
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(String.format(format2, getName(), messageId, duration, result.getState(), result.getResult()));
+			}
 			return result;
 
 		} catch (Throwable t) {
@@ -990,7 +1028,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		if (requestReplyLogging) {
 			ConfigurationWarnings.add(this, log, "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
-			msgLogLevel = Level.toLevel("TERSE");
+			msgLogLevel = MSGLOG_LEVEL_TERSE;
 		} else {
 			ConfigurationWarnings.add(this, log, "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			msgLogLevel = Level.toLevel("OFF");
@@ -1035,7 +1073,7 @@ public class Adapter implements IAdapter, NamedBean {
 			"<tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>", "BASIC"})
 	public void setMsgLogLevel(String level) throws ConfigurationException {
 		Level toSet = Level.toLevel(level);
-		if (toSet.name().equalsIgnoreCase(level))
+		if (toSet.name().equalsIgnoreCase(level)) //toLevel falls back to DEBUG, so to make sure the level has been changed this explicity check is used.
 			msgLogLevel = toSet;
 		else
 			throw new ConfigurationException("illegal value for msgLogLevel ["+level+"]");
@@ -1043,6 +1081,14 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public String getMsgLogLevel() {
 		return msgLogLevel.name();
+	}
+
+	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
+	public void setMsgLogHidden(boolean b) {
+		msgLogHidden = b;
+	}
+	public boolean isMsgLogHidden() {
+		return msgLogHidden;
 	}
 
 	public void setRecover(boolean b) {
