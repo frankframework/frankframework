@@ -30,10 +30,11 @@ import org.apache.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
 
 @IbisInitializer
-public class DetermineApplicationServerBean implements ServletContextAware {
+public class DetermineApplicationServer implements ServletContextAware {
 
 	private ServletContext servletContext;
 	private Logger log = LogUtil.getLogger(this);
+	private String applicationServerType = null;
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {
@@ -102,8 +103,8 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 	}
 
 	private void determineApplicationServerType() {
-		String serverInfo = servletContext.getServerInfo();
 		String defaultApplicationServerType = null;
+		String serverInfo = servletContext.getServerInfo();
 		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
 			defaultApplicationServerType = "WLP";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
@@ -128,11 +129,17 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 
 		//has it explicitly been set? if not, set the property
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
+		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?'
+			applicationServerType = serverType;
 			log2ContextAndGui("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+defaultApplicationServerType+"]");
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
+			applicationServerType = defaultApplicationServerType;
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
 		}
+	}
+
+	public String getApplicationServerType() {
+		return applicationServerType;
 	}
 }
