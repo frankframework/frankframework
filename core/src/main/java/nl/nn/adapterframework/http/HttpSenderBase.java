@@ -251,6 +251,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
 		URIBuilder uri = new URIBuilder(url);
 
+		if (!uri.getScheme().matches("(?i)https?"))
+			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
+
 		if (uri.getPath()==null) {
 			uri.setPath("/");
 		}
@@ -605,9 +608,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			} else {
 				uri = staticUri;
 			}
-
-			if (!uri.getScheme().matches("(?i)https?"))
-				throw new IllegalArgumentException("HttpSenderBase only supports web based schemes. (http or https)");
 
 			httpTarget = new HttpHost(uri.getHost(), getPort(uri), uri.getScheme());
 

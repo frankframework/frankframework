@@ -738,7 +738,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			assertTrue(false);
 		} catch (SenderException e) {
 			assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
-			assertTrue(e.getCause().getMessage().contains("HttpSenderBase only supports web based schemes. (http or https)"));
+			assertTrue(e.getCause().getMessage().contains("only supports web based schemes. (http or https)"));
 		} finally {
 			if (sender != null) {
 				sender.close();
