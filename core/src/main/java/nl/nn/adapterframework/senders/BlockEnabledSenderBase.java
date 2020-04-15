@@ -25,9 +25,8 @@ public abstract class BlockEnabledSenderBase<H> extends SenderWithParametersBase
 
 	@Override
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		H blockHandle = null;
+		H blockHandle = openBlock(session);
 		try {
-			blockHandle = openBlock(session);
 			return sendMessage(blockHandle, message, session);
 		} finally {
 			closeBlock(blockHandle, session);

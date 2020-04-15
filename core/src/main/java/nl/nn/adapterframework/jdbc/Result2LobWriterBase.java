@@ -88,9 +88,9 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);
-		QueryContext queryContext = querySender.getQueryExecutionContext(connection, message, session);
-		PreparedStatement statement=queryContext.getStatement();
-		JdbcUtil.applyParameters(statement, queryContext.getParameterList(), message, session);
+		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+		PreparedStatement statement=queryExecutionContext.getStatement();
+		JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();

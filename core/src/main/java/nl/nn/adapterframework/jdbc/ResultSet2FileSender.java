@@ -65,7 +65,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	public Message sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)session.get(getFileNameSessionKey());
@@ -77,9 +77,9 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = blockHandle;
-			PreparedStatement statement=queryContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryContext.getParameterList(), message, session);
+			QueryExecutionContext queryExecutionContext = blockHandle;
+			PreparedStatement statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {

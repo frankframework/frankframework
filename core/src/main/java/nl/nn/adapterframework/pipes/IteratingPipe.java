@@ -188,8 +188,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (it==null) {
 				 throw new SenderException("Could not obtain iterator");
 			} else {
-				callback.startIterating();
 				try {
+					callback.startIterating();
 					boolean keepGoing = true;
 					while (keepGoing && (it.hasNext())) {
 						if (Thread.currentThread().isInterrupted()) {

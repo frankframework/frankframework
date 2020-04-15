@@ -356,19 +356,22 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		try {
 			XmlUtils.parseXml(inputHandler,src);
 		} catch (Exception e) {
-			if (itemHandler.getTimeOutException()!=null) {
-				throw itemHandler.getTimeOutException();
-			}
-			if (!itemHandler.isStopRequested()) {
-				// Xalan rethrows any caught exception with the message, but without the cause.
-				// For improved diagnosability of error situations, rethrow the original exception, where applicable.
-				rethrowTransformerException(transformerErrorListener, errorMessage);
-				throw new SenderException(errorMessage,e);
-			}
 			try {
-				itemHandler.endDocument();
-			} catch (SAXException e1) {
-				throw new SenderException(errorMessage,e1);
+				if (itemHandler.getTimeOutException()!=null) {
+					throw itemHandler.getTimeOutException();
+				}
+				if (!itemHandler.isStopRequested()) {
+					// Xalan rethrows any caught exception with the message, but without the cause.
+					// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+					rethrowTransformerException(transformerErrorListener, errorMessage);
+					throw new SenderException(errorMessage,e);
+				}
+			} finally {
+				try {
+					itemHandler.endDocument();
+				} catch (SAXException e1) {
+					throw new SenderException(errorMessage,e1);
+				}
 			}
 		}
 		rethrowTransformerException(transformerErrorListener, errorMessage);

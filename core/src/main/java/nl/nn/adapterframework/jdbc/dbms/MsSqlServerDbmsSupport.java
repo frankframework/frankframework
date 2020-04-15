@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -84,22 +84,22 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 	
 	@Override
-	public void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
 			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				List<String> multipleQueries = splitQuery(queryContext.getQuery());
+				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
 				StringBuilder sb = new StringBuilder();
 				for (String singleQuery : multipleQueries) {
-					QueryContext singleQueryContext = new QueryContext(singleQuery, queryContext.getQueryType(), queryContext.getParameterList());
-					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryContext, multipleQueries.size() == 1);
+					QueryExecutionContext singlequeryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
+					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singlequeryExecutionContext, multipleQueries.size() == 1);
 					if (convertedQuery != null) {
 						sb.append(convertedQuery);
-						if (singleQueryContext.getQueryType()!=null && !singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {
-							queryContext.setQueryType(singleQueryContext.getQueryType());
+						if (singlequeryExecutionContext.getQueryType()!=null && !singlequeryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
+							queryExecutionContext.setQueryType(singlequeryExecutionContext.getQueryType());
 						}
 					}
 				}
-				queryContext.setQuery(sb.toString());
+				queryExecutionContext.setQuery(sb.toString());
 			} else {
 				warnConvertQuery(sqlDialectFrom);
 			}

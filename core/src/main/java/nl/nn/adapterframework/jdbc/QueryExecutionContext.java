@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 
 import nl.nn.adapterframework.parameters.ParameterList;
 
-public class QueryContext {
+public class QueryExecutionContext {
 
 	private String query;
 	private String queryType;
@@ -29,7 +29,7 @@ public class QueryContext {
 	private PreparedStatement statement;
 	private PreparedStatement resultQueryStatement;
 
-	public QueryContext(String query, String queryType, ParameterList parameterList) {
+	public QueryExecutionContext(String query, String queryType, ParameterList parameterList) {
 		this.query = query;
 		this.queryType = queryType;
 		this.parameterList = parameterList;

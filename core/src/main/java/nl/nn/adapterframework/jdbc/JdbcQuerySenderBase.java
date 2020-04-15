@@ -163,8 +163,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	protected abstract String getQuery(Message message) throws SenderException;
 
-	protected final PreparedStatement getStatement(Connection con, QueryContext queryContext) throws JdbcException, SQLException {
-		return prepareQuery(con, queryContext);
+	protected final PreparedStatement getStatement(Connection con, QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
+		return prepareQuery(con, queryExecutionContext);
 	}
 
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
@@ -176,7 +176,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		super.open();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try (Connection connection = getConnection()) {
-				QueryContext resultContext = new QueryContext(getResultQuery(), "select", null);
+				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), "select", null);
 				convertQuery(connection, resultContext);
 				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
 				convertedResultQuery = resultContext.getQuery();
@@ -186,18 +186,18 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
+	protected void convertQuery(Connection connection, QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
 		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + queryContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+				log.debug(getLogPrefix() + "converting query [" + queryExecutionContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
-			getDbmsSupport().convertQuery(queryContext, getSqlDialect());
+			getDbmsSupport().convertQuery(queryExecutionContext, getSqlDialect());
 		}
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
-		convertQuery(con, queryContext);
-		String query = queryContext.getQuery();
+	protected PreparedStatement prepareQuery(Connection con, QueryExecutionContext queryExecutionContext) throws SQLException, JdbcException {
+		convertQuery(con, queryExecutionContext);
+		String query = queryExecutionContext.getQuery();
 		if (isLockRows()) {
 			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
 		}
@@ -208,7 +208,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryContext.getQueryType());
+		boolean resultSetUpdateable = isLockRows() || "updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType());
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
@@ -224,23 +224,23 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryContext getQueryExecutionContext(Connection connection, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(message);
 		if (isUseNamedParams()) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
-		queryContext.setConnection(connection);
+		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryType(), newParameterList);
+		queryExecutionContext.setConnection(connection);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-		PreparedStatement statement = getStatement(connection, queryContext);
+		PreparedStatement statement = getStatement(connection, queryExecutionContext);
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
-		queryContext.setStatement(statement);
+		queryExecutionContext.setStatement(statement);
 		statement.setQueryTimeout(getTimeout());
 		if (convertedResultQuery!=null) {
-			queryContext.setResultQueryStatement(connection.prepareStatement(convertedResultQuery));
+			queryExecutionContext.setResultQueryStatement(connection.prepareStatement(convertedResultQuery));
 		}
-		return queryContext;
+		return queryExecutionContext;
 	}
 
 
@@ -260,20 +260,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 	
-	protected QueryContext prepareStatementSet(H blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
 		try {
 			return getQueryExecutionContext(connection, message, session);
 		} catch (JdbcException|ParameterException|SQLException e) {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
-	protected void closeStatementSet(QueryContext queryContext, IPipeLineSession session) {
-		try (PreparedStatement statement = queryContext.getStatement()) {
+	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, IPipeLineSession session) {
+		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			// only close statement
 		} catch (SQLException e) {
 			log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 		}
-		try (Statement statement = queryContext.getResultQueryStatement()) {
+		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
 			log.warn(new SenderException(getLogPrefix() + "got exception closing result SQL statement",e ));
@@ -282,20 +282,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		QueryContext queryContext = prepareStatementSet(null, connection, message, session);
+		QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 		try {
-			return executeStatementSet(queryContext, message, session);
+			return executeStatementSet(queryExecutionContext, message, session);
 		} finally {
-			closeStatementSet(queryContext, session);
+			closeStatementSet(queryExecutionContext, session);
 		}
 	}
 	
 
-	protected String executeStatementSet(QueryContext queryContext, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected String executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
-			PreparedStatement statement=queryContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryContext.getParameterList(), message, session);
-			if ("select".equalsIgnoreCase(queryContext.getQueryType())) {
+			PreparedStatement statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			if ("select".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				Object blobSessionVar=null;
 				Object clobSessionVar=null;
 				if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
@@ -313,22 +313,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
 				}
 			} 
-			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
+			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				if (StringUtils.isEmpty(getBlobSessionKey())) {
 					return executeUpdateBlobQuery(statement,message.asInputStream());
 				} 
 				return executeUpdateBlobQuery(statement,session==null?null:session.get(getBlobSessionKey()));
 			} 
-			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
+			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				if (StringUtils.isEmpty(getClobSessionKey())) {
 					return executeUpdateClobQuery(statement,message.asReader());
 				} 
 				return executeUpdateClobQuery(statement,session==null?null:session.get(getClobSessionKey()));
 			} 
-			if ("package".equalsIgnoreCase(queryContext.getQueryType())) {
-				return executePackageQuery(queryContext);
+			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
+				return executePackageQuery(queryExecutionContext);
 			}
-			return executeOtherQuery(queryContext, message, session);
+			return executeOtherQuery(queryExecutionContext, message, session);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -340,8 +340,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", t);
 		} finally {
-			closeStatementSet(queryContext, session);
-			ParameterList newParameterList = queryContext.getParameterList();
+			closeStatementSet(queryExecutionContext, session);
+			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
 					if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
@@ -616,19 +616,19 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		MessageOutputStream target=null;
 		final Connection connection;
-		QueryContext queryContext;
+		QueryExecutionContext queryExecutionContext;
 		try {
 			connection = getConnectionWithTimeout(getTimeout());
-			queryContext = getQueryExecutionContext(connection, null, session);
+			queryExecutionContext = getQueryExecutionContext(connection, null, session);
 		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
 			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 		try {
-			PreparedStatement statement=queryContext.getStatement();
-			if (queryContext.getParameterList() != null) {
-				JdbcUtil.applyParameters(statement, queryContext.getParameterList().getValues(new Message(""), session));
+			PreparedStatement statement=queryExecutionContext.getStatement();
+			if (queryExecutionContext.getParameterList() != null) {
+				JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
-			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
+			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
@@ -637,7 +637,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			}
-			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
+			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), target, nextProvider) {
 					@Override
 					public void afterClose() throws SQLException {
@@ -646,7 +646,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			} 
-			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}
@@ -690,9 +690,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected String executePackageQuery(QueryContext queryContext) throws SenderException, JdbcException, IOException, JMSException {
-		Connection connection = queryContext.getConnection();
-		String query = queryContext.getQuery();
+	protected String executePackageQuery(QueryExecutionContext queryExecutionContext) throws SenderException, JdbcException, IOException, JMSException {
+		Connection connection = queryExecutionContext.getConnection();
+		String query = queryExecutionContext.getQuery();
 		Object[] paramArray = new Object[10];
 		String callMessage = fillParamArray(paramArray, query);
 		ResultSet resultset = null;
@@ -739,13 +739,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (convertedResultQuery!=null) {
-				PreparedStatement resStmt = queryContext.getResultQueryStatement();
+				PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
 				if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
 				ResultSet rs = resStmt.executeQuery();
 				return getResult(rs);
 			}
 			if (getColumnsReturnedList() != null) {
-				return getResult(getReturnedColumns(getColumnsReturnedList(),queryContext.getStatement()));
+				return getResult(getReturnedColumns(getColumnsReturnedList(),queryExecutionContext.getStatement()));
 			}
 			if (isScalar()) {
 				return numRowsAffected + "";
@@ -769,12 +769,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected String executeOtherQuery(QueryContext queryContext, Message message, IPipeLineSession session) throws SenderException {
-		Connection connection = queryContext.getConnection(); 
-		PreparedStatement statement = queryContext.getStatement(); 
-		String query = queryContext.getQuery();
-		ParameterList parameterList = queryContext.getParameterList();
-		PreparedStatement resStmt = queryContext.getResultQueryStatement();
+	protected String executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException {
+		Connection connection = queryExecutionContext.getConnection(); 
+		PreparedStatement statement = queryExecutionContext.getStatement(); 
+		String query = queryExecutionContext.getQuery();
+		ParameterList parameterList = queryExecutionContext.getParameterList();
+		PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
 		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
 	}
 	

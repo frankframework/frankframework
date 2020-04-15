@@ -41,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
+public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
 	private String query=null;
 
@@ -78,7 +78,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 
 	@Override
-	public QueryContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
+	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
 			return super.prepareStatementSet(null, connection, null, session);
@@ -89,7 +89,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 
 	@Override
-	public void closeBlock(QueryContext blockHandle, IPipeLineSession session) throws SenderException {
+	public void closeBlock(QueryExecutionContext blockHandle, IPipeLineSession session) throws SenderException {
 		try {
 			super.closeStatementSet(blockHandle, session);
 		} finally {
@@ -103,23 +103,23 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryContext> {
 
 
 	@Override
-	protected QueryContext prepareStatementSet(QueryContext blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+	protected QueryExecutionContext prepareStatementSet(QueryExecutionContext blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
 		return blockHandle;
 	}
 
 	@Override
-	protected void closeStatementSet(QueryContext statementSet, IPipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext statementSet, IPipeLineSession session) {
 		// postpone close to closeBlock()
 	}
 
 	@Override
-	public Message sendMessage(QueryContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return new Message(executeStatementSet(blockHandle, message, session));
 	}
 
 	@Override
 	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryContext,...)");
+		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
 	}
 
 }

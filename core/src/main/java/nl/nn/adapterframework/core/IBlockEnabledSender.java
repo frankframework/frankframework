@@ -23,7 +23,15 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface IBlockEnabledSender<H> extends ISenderWithParameters {
 	
+	/**
+	 * open a resource that can be used multiple times when {@link #sendMessage(Object, Message, IPipeLineSession)} is called.
+	 */
 	public H openBlock(IPipeLineSession session) throws SenderException, TimeOutException;
+	
+	/**
+	 * close the resource that is opened by {@link #openBlock(IPipeLineSession)}. It is important that this method is always called
+	 * after processing with the blockHandle ends. It should effectively be called in a finally clause of a try around the openBlock.
+	 */
 	public void closeBlock(H blockHandle, IPipeLineSession session) throws SenderException;
 	public Message sendMessage(H blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
 }

@@ -317,8 +317,8 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryContext queryContext = new QueryContext(query, "select", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "select", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -359,8 +359,8 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryContext queryContext = new QueryContext(query, "delete", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "delete", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (SQLException e) {
@@ -394,8 +394,8 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private String sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -406,8 +406,8 @@ public class XmlQuerySender extends DirectQuerySender {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryContext = new QueryContext(q, "other", null);
-					statement = getStatement(connection, queryContext);
+					queryExecutionContext = new QueryExecutionContext(q, "other", null);
+					statement = getStatement(connection, queryExecutionContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
@@ -440,13 +440,13 @@ public class XmlQuerySender extends DirectQuerySender {
 					Column column = iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryContext queryContext;
+						QueryExecutionContext queryExecutionContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryContext = new QueryContext(query, "updateBlob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateBlob", null);
 						} else {
-							queryContext = new QueryContext(query, "updateClob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateClob", null);
 						}
-						PreparedStatement statement = getStatement(connection, queryContext);
+						PreparedStatement statement = getStatement(connection, queryExecutionContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -458,8 +458,8 @@ public class XmlQuerySender extends DirectQuerySender {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, statement, query, null, null, null, null);
