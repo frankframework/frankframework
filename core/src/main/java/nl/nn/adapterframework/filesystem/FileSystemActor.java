@@ -222,7 +222,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getFilename();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_FILENAME)) {
-			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue("");
+			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue(null);
 		}
 		try {
 			return input.asString();
@@ -236,7 +236,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getDestination();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_DESTINATION)) {
-			return pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue("");
+			return pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
 		}
 		return null;
 	}
@@ -251,7 +251,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return getInputFolder();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_INPUTFOLDER)) {
-			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue("");
+			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue(null);
 		}
 		try {
 			if (input==null || StringUtils.isEmpty(input.asString())) {
