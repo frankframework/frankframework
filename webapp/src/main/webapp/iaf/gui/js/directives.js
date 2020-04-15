@@ -140,7 +140,7 @@ angular.module('iaf.beheerconsole')
 		replace: true,
 		link: function(scope, element, attributes) {
 			scope.customViews = [];
-			scope.$watch('::dtapStage', function() {
+			scope.$on('appConstants', function() {
 				var customViews = appConstants["customViews.names"];
 				if(customViews == undefined)
 					return;
