@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,11 +23,17 @@ public class SqlTranslatorTest {
 		this.expected = expected;
 	}
 
-
-	@Parameterized.Parameters(name = "{index} - {0} -> {1}")
+	@Parameterized.Parameters(name = "{index} - {0} -> {1} [{3}]")
 	public static Collection<Object[]> data() {
+		LogUtil.getRootLogger().setLevel(Level.ALL);
 		return Arrays.asList(new Object[][]{
-				{"oracle", "mssql", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"}
+				{"oracle", "mssql", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
+				{"oracle", "oracle", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
+				{"oracle", null, null, "java.lang.IllegalArgumentException"},
+				{"not-a-db", "mssql", null, "java.lang.IllegalArgumentException"},
+				{"", "mssql", null, "java.lang.IllegalArgumentException"},
+				{"oracle", "mssql", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES ((NEXT VALUE FOR SEQ_IBISTEMP),0x);"},
+				{"oracle", "mssql", "SELECT SEQ_IBISTEMP.NEXTVAL FROM DuaL", "SELECT (NEXT VALUE FOR SEQ_IBISTEMP)"},
 		});
 	}
 

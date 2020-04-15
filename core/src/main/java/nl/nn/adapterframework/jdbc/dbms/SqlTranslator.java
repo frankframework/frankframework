@@ -58,7 +58,7 @@ public class SqlTranslator {
 				}
 			}
 		}
-		return query;
+		return query.trim();
 	}
 
 	/**
