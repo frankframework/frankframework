@@ -22,7 +22,7 @@ public class SqlTranslator {
 
 	public SqlTranslator(String source, String target) throws Exception {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
-			throw new Exception("Can not translate from [" + source + "] to [" + target + "]");
+			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target))
 			return;
 		readSource(source);
@@ -110,6 +110,6 @@ public class SqlTranslator {
 			if (firstline[i].equalsIgnoreCase(name))
 				return i;
 		}
-		throw new Exception("Database name not found");
+		throw new IllegalArgumentException("Database name not found");
 	}
 }
