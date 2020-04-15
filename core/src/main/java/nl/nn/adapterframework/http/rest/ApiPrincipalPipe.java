@@ -107,7 +107,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 				cookie.setMaxAge(authTTL);
 				cookie.setHttpOnly(true);
 
-				ServletSecurity.TransportGuarantee currentGuarantee = ServletManager.getTransportGuarantee(AppConstants.getInstance(), "servlet.ApiListenerServlet.transportGuarantee");
+				ServletSecurity.TransportGuarantee currentGuarantee = ServletManager.getTransportGuarantee("servlet.ApiListenerServlet.transportGuarantee");
 				cookie.setSecure(currentGuarantee == ServletSecurity.TransportGuarantee.CONFIDENTIAL);
 
 				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);

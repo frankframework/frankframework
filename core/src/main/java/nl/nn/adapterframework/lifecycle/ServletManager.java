@@ -93,7 +93,7 @@ public class ServletManager {
 			return;
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servletClass);
-		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(appConstants, propertyPrefix+"transportGuarantee");
+		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
 		String stage = appConstants.getString("dtap.stage", null);
 		String[] rolesCopy = new String[0];
@@ -145,7 +145,8 @@ public class ServletManager {
 		registerServlet(servlet.getName(), servlet.getServlet(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
 	}
 
-	public static ServletSecurity.TransportGuarantee getTransportGuarantee(AppConstants appConstants, String propertyName) {
+	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String constraintType = appConstants.getString(propertyName, null);
 		if (StringUtils.isNotEmpty(constraintType))
 			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
