@@ -13,8 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 - reset Adapter Statistics by the hour when entering a new hour time slot
 - introduced property jdbc.datasource.default, with default value jdbc/${instance.name.lc}
-
-
+- Add possibility to put error details in ESB SOAP body response
 
 
 
