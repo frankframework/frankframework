@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import com.opencsv.CSVReader;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,6 +17,7 @@ import java.util.regex.Pattern;
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
 public class SqlTranslator {
+	Logger logger = LogUtil.getLogger(this);
 	private static final String SOURCE_CSV = "src/main/resources/dbms/source.csv";
 	private static final String TARGET_CSV = "src/main/resources/dbms/target.csv";
 	public Map<String, String> target;
@@ -23,8 +26,10 @@ public class SqlTranslator {
 	public SqlTranslator(String source, String target) throws Exception {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
-		if (source.equalsIgnoreCase(target))
+		if (source.equalsIgnoreCase(target)) {
+			logger.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
 			return;
+		}
 		readSource(source);
 		readTarget(target);
 	}
@@ -37,11 +42,14 @@ public class SqlTranslator {
 	 * @return Translated query.
 	 */
 	public String translate(String query) throws NullPointerException {
-		if (source == null || target == null || StringUtils.isEmpty(query))
+		if (source == null || target == null || StringUtils.isEmpty(query)) {
+			logger.info("Same source and target for SqlTranslator. Skipping translation.");
 			return query;
+		}
 		for (String key : source.keySet()) {
 			Matcher matcher = source.get(key).matcher(query);
 			if (matcher.find()) {
+				logger.trace(String.format("Found a match for pattern [%s]", source.get(key).pattern()));
 				String regex = target.get(key);
 				if (StringUtils.isNotEmpty(regex)) {
 					query = matcher.replaceAll(regex);
@@ -61,6 +69,7 @@ public class SqlTranslator {
 	protected Pattern toPattern(String str) {
 		// Make sure there are no greedy matchers.
 		str = str.replaceAll("\\.\\*", ".*?");
+		logger.trace(String.format("Compiling pattern [%s]", str));
 		return Pattern.compile(str, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 
@@ -74,6 +83,7 @@ public class SqlTranslator {
 		source = new HashMap<>();
 		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(SOURCE_CSV)));
 		int index = getIndex(reader, name);
+		logger.debug(String.format("Reading SqlTranslator source values for database [%s] from index [%d]", name, index));
 		String[] values;
 		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
 			source.put(values[0], toPattern(values[index]));
@@ -90,6 +100,7 @@ public class SqlTranslator {
 		target = new HashMap<>();
 		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(TARGET_CSV)));
 		int index = getIndex(reader, name);
+		logger.debug(String.format("Reading SqlTranslator target values for database [%s] from index [%d]", name, index));
 		String[] values;
 		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
 				target.put(values[0], values[index]);
