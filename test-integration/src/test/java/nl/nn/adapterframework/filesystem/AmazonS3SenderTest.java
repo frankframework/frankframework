@@ -81,7 +81,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
-		s3.setProxyConfig(proxyHost, proxyPort);
+		s3.setProxyHost(proxyHost);
+		s3.setProxyPort(proxyPort);
 		return s3;
 	}
 

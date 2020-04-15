@@ -90,7 +90,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
-	private ClientConfiguration proxyConfig = null;
+	private String proxyHost = null;
+	private Integer proxyPort = null;
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -610,16 +611,30 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	}
 
 	public ClientConfiguration getProxyConfig() {
+		ClientConfiguration proxyConfig = null;
+		if (this.getProxyHost() != null && this.getProxyPort() != null) {
+			proxyConfig = new ClientConfiguration();
+			proxyConfig.setProtocol(Protocol.HTTPS);
+			proxyConfig.setProxyHost(this.getProxyHost());
+			proxyConfig.setProxyPort(this.getProxyPort());
+		}
 		return proxyConfig;
 	}
 
-	public void setProxyConfig(String proxyHost, Integer proxyPort) {
-		if (proxyHost != null && proxyPort != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(proxyHost);
-			proxyConfig.setProxyPort(proxyPort);
-		}
+	public String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	public Integer getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(Integer proxyPort) {
+		this.proxyPort = proxyPort;
 	}
 
 	
