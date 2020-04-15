@@ -1312,7 +1312,7 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		}, function(data) {
 			$scope.messagesResending = false;
-			$scope.addNote("danger", "Something went wrong, unable to resend messages!");
+			$scope.addNote("danger", "Something went wrong, unable to resend all messages!");
 			$scope.updateTable();
 		});
 	}
@@ -1324,7 +1324,7 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		}, function(data) {
 			$scope.messagesDeleting = false;
-			$scope.addNote("danger", "Something went wrong, unable to delete messages!");
+			$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
 			$scope.updateTable();
 		});
 	}
@@ -2015,15 +2015,23 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
+.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', function($scope, Api, $timeout, $state, Cookies) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
+	$scope.form = {};
+
+	var executeQueryCookie = Cookies.get("executeQuery");
+	if(executeQueryCookie) {
+		$scope.form.query = executeQueryCookie.query;
+		//Maybe also prefill datasource and result type?
+	}
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0], resultType: data.resultTypes[0] };
+		$scope.form.datasource = data.datasources[0];
+		$scope.form.resultType = data.resultTypes[0];
 	});
 
 	$scope.submit = function(formData) {
@@ -2034,6 +2042,8 @@ angular.module('iaf.beheerconsole')
 		}
 		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
+
+		Cookies.set("executeQuery", formData);
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
