@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -75,7 +76,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = (String)prr.getResult();
+		String result = Message.asString(prr.getResult());
 		assertResultsAreCorrect(expected,result.trim(),session);
 		
 	}
@@ -133,9 +134,8 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		for (int i=0;i<warnings.size();i++) {
 			System.out.println(i+" "+warnings.get(i));
 		}
-		assertTrue("Expected at least two config warnings",warnings.size()>1);
-		assertThat(warnings.get(0), StringContains.containsString("the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion"));
-		int nextPos=warnings.size()>4?warnings.size()-2:1;
+		assertTrue("Expected at least one config warnings",warnings.size()>0);
+		int nextPos=0;//warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
 		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
 	}
@@ -211,7 +211,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -228,7 +228,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -246,7 +246,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -264,7 +264,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -280,7 +280,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -297,7 +297,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -318,7 +318,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "<dummy name=\"input\"/>", session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 
 		assertResultsAreCorrect("b", result, session);
 	}
@@ -332,7 +332,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -347,7 +347,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -363,7 +363,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -378,7 +378,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -394,7 +394,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -411,7 +411,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -432,7 +432,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected.trim(), result.trim(), session); // trim is necessary on IBM JDK
 	}
@@ -447,7 +447,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected.replaceAll("\\s", ""), result.replaceAll("\\s", ""), session);
 	}
@@ -466,7 +466,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
@@ -484,7 +484,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asMessage(prr.getResult()).asString();
 		
 		assertResultsAreCorrect(expected, result, session);
 	}

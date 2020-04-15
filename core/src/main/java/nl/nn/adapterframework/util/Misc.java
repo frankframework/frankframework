@@ -25,7 +25,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -890,7 +889,7 @@ public class Misc {
 				return null;
 			}
 		}
-	  }
+	}
 
 	public static String getAge(long value) {
 		long currentTime = (new Date()).getTime();
@@ -909,6 +908,12 @@ public class Misc {
 			}
 		}
 		return ageString;
+	}
+
+	public static String getDurationInMs(long value) {
+		long currentTime = (new Date()).getTime();
+		long duration = currentTime - value;
+		return duration + "ms";
 	}
 
 	public static long parseAge(String value, long defaultValue) {

@@ -124,15 +124,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache<>();
+			cache = new EhCache<PreparseResult>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ConfigurationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 			cache.open();
 		}
@@ -164,7 +163,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				if (cache == null || isIgnoreCaching()) {
 					this.preparseResult = preparseResult;
 				} else {
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
@@ -262,7 +261,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
 					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
@@ -356,6 +355,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// See comment in method XmlValidator.getSchemas() too.
 		// See ClassLoaderXmlEntityResolver too.
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+	}
+
+	@Override
+	public List<XSModel> getXSModels() {
+		return preparseResult.getXsModels();
 	}
 
 }
@@ -456,7 +460,7 @@ class MyErrorHandler implements XMLErrorHandler {
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
@@ -464,19 +468,18 @@ class MyErrorHandler implements XMLErrorHandler {
 	public void error(String domain, String key, XMLParseException e) throws XNIException {
 		// In case the XSD doesn't exist throw an exception to prevent the
 		// the adapter from starting.
-		if (e.getMessage() != null
-				&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

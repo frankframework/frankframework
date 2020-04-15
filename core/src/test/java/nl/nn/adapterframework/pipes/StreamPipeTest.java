@@ -16,6 +16,7 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -23,18 +24,27 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.ClassUtils;
 
-public class StreamPipeTest {
+public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
-	private IPipeLineSession session = new PipeLineSessionBase();
+
+	@Override
+	public StreamPipe createPipe() {
+		return new StreamPipe();
+	}
+
+	@Override
+	public void setup() throws ConfigurationException {
+		super.setup();
+		session = new PipeLineSessionBase();
+	}
 
 	@Test
 	public void doPipeHttpRequestTest() throws Exception {
-		StreamPipe streamPipe = new StreamPipe();
-		streamPipe.registerForward(createPipeSuccessForward());
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest();
-		streamPipe.addParameter(createHttpRequestParameter(request, session));
-		streamPipe.configure();
-		PipeRunResult pipeRunResult = streamPipe.doPipe("", session);
+		pipe.addParameter(createHttpRequestParameter(request, session));
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
@@ -46,13 +56,11 @@ public class StreamPipeTest {
 
 	@Test
 	public void doPipeHttpRequestAntiVirusTest() throws Exception {
-		StreamPipe streamPipe = new StreamPipe();
-		streamPipe.registerForward(createPipeSuccessForward());
-		MockMultipartHttpServletRequest request = createMultipartHttpRequest(
-				streamPipe, true);
-		streamPipe.addParameter(createHttpRequestParameter(request, session));
-		streamPipe.configure();
-		PipeRunResult pipeRunResult = streamPipe.doPipe("", session);
+		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true);
+		pipe.addParameter(createHttpRequestParameter(request, session));
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
@@ -66,14 +74,12 @@ public class StreamPipeTest {
 
 	@Test
 	public void doPipeHttpRequestCheckAntiVirusPassedTest() throws Exception {
-		StreamPipe streamPipe = new StreamPipe();
-		streamPipe.setCheckAntiVirus(true);
-		streamPipe.registerForward(createPipeSuccessForward());
-		MockMultipartHttpServletRequest request = createMultipartHttpRequest(
-				streamPipe, true);
-		streamPipe.addParameter(createHttpRequestParameter(request, session));
-		streamPipe.configure();
-		PipeRunResult pipeRunResult = streamPipe.doPipe("", session);
+		pipe.setCheckAntiVirus(true);
+		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true);
+		pipe.addParameter(createHttpRequestParameter(request, session));
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
@@ -85,42 +91,29 @@ public class StreamPipeTest {
 
 	@Test
 	public void doPipeHttpRequestCheckAntiVirusFailedTest() throws Exception {
-		StreamPipe streamPipe = new StreamPipe();
-		streamPipe.setCheckAntiVirus(true);
+		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
-		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);
-		streamPipe.registerForward(pipeAntiVirusFailedForward);
-		streamPipe.registerForward(createPipeSuccessForward());
-		MockMultipartHttpServletRequest request = createMultipartHttpRequest(
-				streamPipe, true, true);
-		streamPipe.addParameter(createHttpRequestParameter(request, session));
-		streamPipe.configure();
-		PipeRunResult pipeRunResult = streamPipe.doPipe("", session);
-		assertEquals("antiVirusFailed",
-				pipeRunResult.getPipeForward().getName());
+		pipeAntiVirusFailedForward.setName(pipe.ANTIVIRUS_FAILED_FORWARD);
+		pipe.registerForward(pipeAntiVirusFailedForward);
+		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true, true);
+		pipe.addParameter(createHttpRequestParameter(request, session));
+		pipe.configure();
+		pipe.start();
+		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
+		assertEquals("antiVirusFailed", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "multipart contains file [doc002.pdf] with antivirus status [Fail] and message []";
 		assertEquals(expectedResult, pipeRunResult.getResult());
 	}
 
-	private MockMultipartHttpServletRequest createMultipartHttpRequest()
-			throws Exception {
+	private MockMultipartHttpServletRequest createMultipartHttpRequest() throws Exception {
 		return createMultipartHttpRequest(null, false);
 	}
 
-	private MockMultipartHttpServletRequest createMultipartHttpRequest(
-			StreamPipe streamPipe, boolean addAntiVirusParts) throws Exception {
-		return createMultipartHttpRequest(streamPipe, addAntiVirusParts, false);
+	private MockMultipartHttpServletRequest createMultipartHttpRequest(StreamPipe pipe, boolean addAntiVirusParts) throws Exception {
+		return createMultipartHttpRequest(pipe, addAntiVirusParts, false);
 	}
 
-	private PipeForward createPipeSuccessForward() {
-		PipeForward pipeForward = new PipeForward();
-		pipeForward.setName("success");
-		return pipeForward;
-	}
-
-	private Parameter createHttpRequestParameter(
-			MockMultipartHttpServletRequest request,
-			IPipeLineSession session) {
+	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, IPipeLineSession session) {
 		session.put("httpRequest", request);
 		Parameter parameter = new Parameter();
 		parameter.setName("httpRequest");
@@ -128,12 +121,9 @@ public class StreamPipeTest {
 		return parameter;
 	}
 
-	private MockMultipartHttpServletRequest createMultipartHttpRequest(
-			StreamPipe streamPipe, boolean addAntiVirusParts,
-			boolean antiVirusLastPartFailed) throws Exception {
+	private MockMultipartHttpServletRequest createMultipartHttpRequest(StreamPipe pipe, boolean addAntiVirusParts, boolean antiVirusLastPartFailed) throws Exception {
 		MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
-		request.setContentType(
-				"multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
+		request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
 		List<Part> parts = new ArrayList<Part>();
 		String string = "<hello>test</hello>";
 		StringPart stringPart = new StringPart("string1", string);
@@ -144,8 +134,8 @@ public class StreamPipeTest {
 		parts.add(filePart);
 		if (addAntiVirusParts) {
 			StringPart antiVirusPassedPart = new StringPart(
-					streamPipe.getAntiVirusPartName(),
-					streamPipe.getAntiVirusPassedMessage());
+					pipe.getAntiVirusPartName(),
+					pipe.getAntiVirusPassedMessage());
 			parts.add(antiVirusPassedPart);
 		}
 		URL url2 = ClassUtils.getResourceURL(this, "/Documents/doc002.pdf");
@@ -157,18 +147,18 @@ public class StreamPipeTest {
 			if (antiVirusLastPartFailed) {
 				antiVirusLastPartMessage = "Fail";
 				if (antiVirusLastPartMessage.equalsIgnoreCase(
-						streamPipe.getAntiVirusPassedMessage())) {
+						pipe.getAntiVirusPassedMessage())) {
 					throw new Exception("fail message ["
 							+ antiVirusLastPartMessage
 							+ "] must differ from pass message ["
-							+ streamPipe.getAntiVirusPassedMessage() + "]");
+							+ pipe.getAntiVirusPassedMessage() + "]");
 				}
 			} else {
-				antiVirusLastPartMessage = streamPipe
+				antiVirusLastPartMessage = pipe
 						.getAntiVirusPassedMessage();
 			}
 			StringPart antiVirusPassedPart2 = new StringPart(
-					streamPipe.getAntiVirusPartName(),
+					pipe.getAntiVirusPartName(),
 					antiVirusLastPartMessage);
 			parts.add(antiVirusPassedPart2);
 		}

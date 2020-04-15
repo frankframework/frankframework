@@ -6,7 +6,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 
@@ -45,7 +45,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>\n"
 				+"</root>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");
@@ -70,7 +70,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>\n"
 				+"</root>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");
@@ -95,7 +95,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>"
 				+"</OtherRoot>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");
@@ -121,7 +121,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>"
 				+"</OtherRoot>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");
@@ -146,7 +146,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>\n"
 				+"</root></soapenv:Body></soapenv:Envelope>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");
@@ -171,7 +171,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>"
 				+"</OtherRoot></soapenv:Body></soapenv:Envelope>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");

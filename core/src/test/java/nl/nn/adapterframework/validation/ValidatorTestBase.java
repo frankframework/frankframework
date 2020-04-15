@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.validation;
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +12,6 @@ import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**

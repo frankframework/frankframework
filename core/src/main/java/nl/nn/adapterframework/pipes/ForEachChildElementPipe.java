@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -44,7 +45,6 @@ import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -144,8 +144,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 
 	
 	@Override
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
-		return super.sendMessage(input, session, correlationID, sender, threadContext, null);
+	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException, IOException {
+		return super.sendMessage(input, session, sender, threadContext, null);
 	}
 
 	private class ItemCallbackCallingHandler extends NodeSetFilter {
@@ -165,6 +165,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			this.callback=callback;
 		}
 
+		/*
+		 * Nodes are the elements that are iterated over.
+		 */
 		@Override
 		public void startNode(String uri, String localName, String qName) throws SAXException {
 			if (itemCounter==0) {
@@ -297,17 +300,23 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	}
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputSource src;
 		if (isProcessFile()) {
 			try {
-				src = new InputSource(new FileInputStream((String)input));
+				String filename;
+				try {
+					filename = input.asString();
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot find filename", e);
+				}
+				src = new InputSource(new FileInputStream(filename));
 			} catch (FileNotFoundException e) {
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
 			try {
-				src = new Message(input).asInputSource();
+				src = input.asInputSource();
 			} catch (IOException e) {
 				throw new SenderException("could not get InputSource",e);
 			}
@@ -328,7 +337,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			
 			if (getExtractElementsTp()!=null) {
 				if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
 				transformerFilter.setContentHandler(inputHandler);
 				inputHandler=transformerFilter;
 				ErrorListener errorListener = transformerFilter.getTransformer().getErrorListener();
@@ -444,15 +453,13 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		return xsltVersion;
 	}
 
-	@IbisDoc({"7", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"7", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
+	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. If necessary, replace with a setting of xsltVersion";
-		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
 	

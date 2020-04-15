@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 
@@ -14,7 +13,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Ignore;

@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -84,12 +83,12 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
-		querySender.sendMessage(streamId, streamId); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
+	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message msg = new Message(streamId);
-		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+		QueryContext queryContext = querySender.getQueryExecutionContext(connection, msg, session);
 		PreparedStatement statement=queryContext.getStatement();
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
@@ -100,9 +99,9 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 	
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
-			return super.finalizeResult(session,streamId, error, prc);
+			return super.finalizeResult(session,streamId, error);
 		} finally {
 			Object lobHandle = openLobHandles.get(streamId);
 			Connection conn = openConnections.get(streamId);

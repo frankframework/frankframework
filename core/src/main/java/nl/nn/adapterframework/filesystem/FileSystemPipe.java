@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -110,8 +109,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(correlationID, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+		MessageOutputStream result = actor.provideOutputStream(session, nextProvider);
 		if (result!=null && result.getForward()==null) {
 			result.setForward(getForward());
 		}
@@ -120,14 +119,12 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
-		
 		try {
 			if (paramList != null) {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
@@ -135,7 +132,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 		Object result;
 		try {
-			result = actor.doAction(new Message(input), pvl, session);
+			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards!=null && forwards.containsKey("exception")) {
@@ -146,7 +143,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		if (result!=null) {
 			return new PipeRunResult(getForward(), result);
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getForward(), message);
 	}
 
 	@Override

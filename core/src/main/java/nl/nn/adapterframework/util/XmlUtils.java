@@ -252,7 +252,7 @@ public class XmlUtils {
 	}
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transform(source, null);
+		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
 		Map<String,String> result = new LinkedHashMap<String,String>();
 		while (st1.hasMoreTokens()) {
@@ -511,7 +511,7 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
-		parseXml(handler,new Message(source).asInputSource());
+		parseXml(handler,Message.asInputSource(source));
 	}
 
 	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
@@ -696,8 +696,15 @@ public class XmlUtils {
 	 * (namespace aware)
 	 */
 	public static Element buildElement(String s) throws DomBuilderException {
-
 		return buildDomDocument(s).getDocumentElement();
+	}
+
+	public static Element buildElement(Message s) throws DomBuilderException {
+		try {
+			return buildElement(s.asString());
+		} catch (IOException e) {
+			throw new DomBuilderException(e);
+		}
 	}
 	
 	public static String skipXmlDeclaration(String xmlString) {
@@ -1027,7 +1034,7 @@ public class XmlUtils {
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(ClassUtils.getCleanedFilePath(xsltUrl.toExternalForm()));
 			
-			return interpretXsltVersion(tpVersion.transform(stylesource, null));
+			return interpretXsltVersion(tpVersion.transform(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1677,10 +1684,8 @@ public class XmlUtils {
 			rootValidations = new HashSet<List<String>>();
 			rootValidations.add(path);
 		}
-		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
-				null, rootValidations, null, true);
-		XmlValidatorErrorHandler xmlValidatorErrorHandler =
-				new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
 			SAXSource saxSource = stringToSAXSource(input, true, false);
@@ -1775,7 +1780,7 @@ public class XmlUtils {
 		if (removeNamespaces) {
 			try {
 				TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
-				return tp.transform(source,null);
+				return tp.transform(source);
 			} catch (Exception e) {
 				throw new TransformerException(e);
 			}

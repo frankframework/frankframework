@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 
 		pipe.configure();
 		pipe.start();
-		pipe.doPipe("I will fail!", session);
+		doPipe(pipe, "I will fail!", session);
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("hash me plz", session);
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash = (String) prr.getResult();
 		assertEquals("KZAvcWh5wSTeoBWty9MHZl+L4ApUjbWnJNaVq6xftAo=", hash);
 	}
@@ -74,7 +74,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("hash me plz", session);
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash = (String) prr.getResult();
 		assertEquals("TwGD5U8BwKoLn8u/F+4R/g==", hash);
 	}
@@ -86,7 +86,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("hash me plz", session);
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash = (String) prr.getResult();
 		assertEquals("56V9GhAPU9NPP76zJ5KVLrfMaCherC8JcY16PTPEO3W+yxNnoXwmLS+Ic61J3gqZyeUfc0VZzzgg23WqesXm2g==", hash);
 	}

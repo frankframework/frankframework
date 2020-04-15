@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.quartz.SchedulerException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -39,13 +47,10 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.log4j.Logger;
-import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -54,7 +59,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class DefaultIbisManager implements IbisManager {
+public class DefaultIbisManager implements IbisManager, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
@@ -285,7 +290,7 @@ public class DefaultIbisManager implements IbisManager {
 				localSender.configure();
 				localSender.open();
 				try {
-					localSender.sendMessage(null, "");
+					localSender.sendMessage(new Message(""), null);
 				} finally {
 					localSender.close();
 				}
@@ -460,5 +465,17 @@ public class DefaultIbisManager implements IbisManager {
 	@Override
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return applicationEventPublisher;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
+		if(requiresDatabase) {
+			//Try to create a new transaction to check if there is a connection to the database
+			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+			if(status != null) { //If there is a transaction (read connection) close it!
+				this.transactionManager.commit(status);
+			}
+		}
 	}
 }

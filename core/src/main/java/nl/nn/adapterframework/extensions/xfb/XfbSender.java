@@ -16,18 +16,20 @@
 package nl.nn.adapterframework.extensions.xfb;
 
 import java.io.File;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.ProcessUtil;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
@@ -93,6 +95,7 @@ public class XfbSender extends SenderWithParametersBase {
 	private boolean copy = true;
 	private String copyPrefix = "IBIS_";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getScript())) {
 			throw new ConfigurationException("XfbSender ["+getName()+"] attribute script must be specified");
@@ -105,32 +108,37 @@ public class XfbSender extends SenderWithParametersBase {
 		}
  	} 
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		File file = new File(message);
-		if (getCopy()) {
-			File fromFile = file;
-			String name = fromFile.getName();
-			if (name.startsWith(getCopyPrefix())) {
-				name = name.substring(getCopyPrefix().length());
-			} else {
-				name = getCopyPrefix() + name;
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			File file = new File(message.asString());
+			if (getCopy()) {
+				File fromFile = file;
+				String name = fromFile.getName();
+				if (name.startsWith(getCopyPrefix())) {
+					name = name.substring(getCopyPrefix().length());
+				} else {
+					name = getCopyPrefix() + name;
+				}
+				File toFile = new File(fromFile.getParentFile(), name);
+				file = toFile;
+				if (toFile.exists()) {
+					throw new SenderException("File " + toFile.getAbsolutePath() + " already exist");
+				}
+				if (!FileUtils.copyFile(fromFile, toFile, false)) {
+					throw new SenderException("Could not copy file");
+				}
 			}
-			File toFile = new File(fromFile.getParentFile(), name);
-			file = toFile;
-			if (toFile.exists()) {
-				throw new SenderException("File " + toFile.getAbsolutePath() + " already exist");
+			String command = getScript() + " ft=" +getFt() + " flow=" +getFlow() + " appli="+getAppli();
+			if (StringUtils.isNotEmpty(getNoname())) {
+				command = command + " noname=" +getNoname();
 			}
-			if (!FileUtils.copyFile(fromFile, toFile, false)) {
-				throw new SenderException("Could not copy file");
-			}
+			command = command + " filename=" +file.getAbsolutePath();
+			String output = ProcessUtil.executeCommand(command);
+			return new Message(output);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
 		}
-		String command = getScript() + " ft=" +getFt() + " flow=" +getFlow() + " appli="+getAppli();
-		if (StringUtils.isNotEmpty(getNoname())) {
-			command = command + " noname=" +getNoname();
-		}
-		command = command + " filename=" +file.getAbsolutePath();
-		String output = ProcessUtil.executeCommand(command);
-		return output;
 	}
 
 	public void setScript(String script) {

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,9 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -59,7 +55,6 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -270,7 +265,7 @@ public final class ShowConfiguration extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
 
-		String datasource = null, name = null, version = null, fileName = null, fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+		String datasource = null, fileName = null;
 		InputStream file = null;
 		boolean multiple_configs = false, activate_config = true, automatic_reload = false;
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
@@ -283,16 +278,6 @@ public final class ShowConfiguration extends Base {
 				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
 			else
 				throw new ApiException("Datasource not defined", 400);
-			if(inputDataMap.get("name") != null)
-				name = inputDataMap.get("name").get(0).getBodyAsString();
-			else
-				throw new ApiException("No name specified", 400);
-			if(inputDataMap.get("file_encoding") != null)
-				fileEncoding = inputDataMap.get("file_encoding").get(0).getBodyAsString();
-			if(inputDataMap.get("version") != null) 
-				version = inputDataMap.get("version").get(0).getBodyAsString();
-			else
-				throw new ApiException("No version specified", 400);
 			if(inputDataMap.get("multiple_configs") != null)
 				multiple_configs = inputDataMap.get("multiple_configs").get(0).getBody(boolean.class, null);
 			if(inputDataMap.get("activate_config") != null)
@@ -318,18 +303,6 @@ public final class ShowConfiguration extends Base {
 		}
 
 		try {
-			String result = "";
-			if(multiple_configs) {
-				if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version)) {
-					String[] fnArray = splitFilename(fileName);
-					if (fnArray[0] != null) {
-						name = fnArray[0];
-					}
-					if (fnArray[1] != null) {
-						version = fnArray[1];
-					}
-				}
-			}
 			String user = null;
 			Principal principal = securityContext.getUserPrincipal();
 			if(principal != null)
@@ -337,19 +310,15 @@ public final class ShowConfiguration extends Base {
 
 			if(multiple_configs) {
 				try {
-					result = processZipFile(file, fileEncoding, datasource, automatic_reload, automatic_reload, user);
+					ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, name, version, fileName, file, user);
+				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
 			}
 
-			if(automatic_reload) {
-				getIbisContext().reload(name);
-			}
-
-			return Response.status(Response.Status.CREATED).entity(result).build();
+			return Response.status(Response.Status.CREATED).build();
 		} catch (Exception e) {
 			throw new ApiException("Failed to upload Configuration", e);
 		}
@@ -436,70 +405,5 @@ public final class ShowConfiguration extends Base {
 			qs.close();
 		}
 		return returnMap;
-	}
-
-	private String[] splitFilename(String fileName) {
-		String name = null;
-		String version = null;
-		if (StringUtils.isNotEmpty(fileName)) {
-			int i = fileName.lastIndexOf(".");
-			if (i != -1) {
-				name = fileName.substring(0, i);
-				int j = name.lastIndexOf("-");
-				if (j != -1) {
-					name = name.substring(0, j);
-					j = name.lastIndexOf("-");
-					if (j != -1) {
-						name = fileName.substring(0, j);
-						version = fileName.substring(j + 1, i);
-					}
-				}
-			}
-		}
-		return new String[] { name, version };
-	}
-
-	private String processZipFile(InputStream inputStream, String fileEncoding, String datasource, boolean automatic_reload, boolean activate_config, String user) throws Exception {
-		String result = "";
-		if (inputStream.available() > 0) {
-			ZipInputStream archive = new ZipInputStream(inputStream);
-			int counter = 1;
-			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
-				String entryName = entry.getName();
-				int size = (int) entry.getSize();
-				if (size > 0) {
-					byte[] b = new byte[size];
-					int rb = 0;
-					int chunk = 0;
-					while (((int) size - rb) > 0) {
-						chunk = archive.read(b, rb, (int) size - rb);
-						if (chunk == -1) {
-							break;
-						}
-						rb += chunk;
-					}
-					ByteArrayInputStream bais = new ByteArrayInputStream(b, 0, rb);
-					String fileName = "file_zipentry" + counter;
-					if (StringUtils.isNotEmpty(result)) {
-						result += "\n";
-					}
-					String name = "";
-					String version = "";
-					String[] fnArray = splitFilename(entryName);
-					if (fnArray[0] != null) {
-						name = fnArray[0];
-					}
-					if (fnArray[1] != null) {
-						version = fnArray[1];
-					}
-					result += entryName + ":" + 
-					ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, name, version, fileName, bais, user);
-				}
-				archive.closeEntry();
-				counter++;
-			}
-			archive.close();
-		}
-		return result;
 	}
 }

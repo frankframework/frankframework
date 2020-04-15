@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
@@ -41,8 +40,8 @@ public interface IResultHandler extends INamedObject {
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
-	void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
-	void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc);
+	void openDocument(IPipeLineSession session, String streamId) throws Exception;
+	void closeDocument(IPipeLineSession session, String streamId);
 
 	/**
 	 * write a result ta record. 
@@ -51,7 +50,7 @@ public interface IResultHandler extends INamedObject {
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception;
+	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -59,22 +58,22 @@ public interface IResultHandler extends INamedObject {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception;
+	Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void openRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
+	void openRecordType(IPipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void closeRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
+	void closeRecordType(IPipeLineSession session, String streamId) throws Exception;
 	
-	void openBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception;
-	void closeBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception;
+	void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
+	void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 

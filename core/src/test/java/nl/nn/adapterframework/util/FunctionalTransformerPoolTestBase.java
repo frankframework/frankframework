@@ -7,6 +7,8 @@ import javax.xml.transform.TransformerException;
 
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.testutil.TestAssertions;
+
 public class FunctionalTransformerPoolTestBase {
 
 	public void testTransformerPool(TransformerPool tp, String input, String expected, boolean namespaceAware, String message) throws TransformerException, IOException, SAXException {
@@ -15,7 +17,7 @@ public class FunctionalTransformerPoolTestBase {
 	}
 
 	public void testTransformerPool(TransformerPool tp, Source input, String expected, boolean namespaceAware, String message) throws DomBuilderException, TransformerException, IOException {
-		String actual=tp.transform(input, null);
+		String actual=tp.transform(input);
 		TestAssertions.assertEqualsIgnoreCRLF(message,expected,actual);
 	}
 

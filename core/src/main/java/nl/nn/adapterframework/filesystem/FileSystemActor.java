@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -451,16 +450,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {
 			if (parameterList != null) {
-				pvl = prc.getValues(parameterList);
+				pvl = parameterList.getValues(null, session);
 			}
 		} catch (ParameterException e) {
 			throw new StreamingException("caught exception evaluating parameters", e);

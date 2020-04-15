@@ -41,7 +41,7 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe>{
     @Test(expected = PipeRunException.class)
     public void testLegitimateDivisor() throws Exception {
         configurePipe();
-        pipe.doPipe("dummy", session);
+        doPipe(pipe, "dummy", session);
     }
 
     @Test(expected = ConfigurationException.class)

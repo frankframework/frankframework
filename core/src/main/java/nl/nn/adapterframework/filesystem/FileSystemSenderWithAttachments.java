@@ -24,10 +24,10 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -54,9 +54,9 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 	
 	@Override
-	public PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
-			return super.sendMessage(correlationID, message, prc, next);
+			return super.sendMessage(message, session, next);
 		} else {
 
 			IBasicFileSystem<F> ifs = getFileSystem();
@@ -89,7 +89,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 							attachmentXml.setCdataValue(Misc.streamToString(base64,Misc.DEFAULT_INPUT_STREAM_ENCODING));
 						} else {
 							attachmentXml.setValue(fileAttachment.getName());
-							prc.getSession().put(fileAttachment.getName(), fileAttachment.getContent());
+							session.put(fileAttachment.getName(), fileAttachment.getContent());
 						}
 						attachments.addSubElement(attachmentXml);
 					}

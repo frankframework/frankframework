@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -94,7 +93,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	}
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
 		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
 	}
 
@@ -103,15 +102,13 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 
 	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			Message msg = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, correlationID, msg, prc);
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, message, session);
 			statement=queryContext.getStatement();
 			rs = statement.executeQuery();
 			if (rs==null) {

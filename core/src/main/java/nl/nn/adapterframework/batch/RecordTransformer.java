@@ -32,7 +32,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -65,15 +64,16 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;
 
-	private List outputFields=new LinkedList();
+	private List<IOutputField> outputFields=new LinkedList<>();
 
 	
-	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
+	@Override
+	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
-		Stack conditions = new Stack();
+		Stack<IOutputField> conditions = new Stack<>();
 		
-		for (Iterator outputFieldIt = outputFields.iterator(); outputFieldIt.hasNext();) {
-			IOutputField outputField = (IOutputField) outputFieldIt.next();
+		for (Iterator<IOutputField> outputFieldIt = outputFields.iterator(); outputFieldIt.hasNext();) {
+			IOutputField outputField = outputFieldIt.next();
 			
 			// if outputfields are to be seperator with delimiter
 			if (outputSeparator != null && output.length() > 0) {
@@ -89,7 +89,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 			// in condition
 			else {
-				IOutputField condition = (IOutputField)conditions.pop();
+				IOutputField condition = conditions.pop();
 				IOutputField newCondition = condition.appendValue(outputField, output, parsedRecord);
 				if (newCondition != null) {
 					conditions.push(condition);
@@ -144,7 +144,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addOutputField(new FixedDateOutput(outformat, informat, inputFieldIndex-1));
 	}
 	
-	public void addLookup(int inputFieldIndex, Map lookupValues) throws ConfigurationException {
+	public void addLookup(int inputFieldIndex, Map<String,String> lookupValues) throws ConfigurationException {
 		addOutputField(new Lookup(inputFieldIndex-1, lookupValues));
 	}
 	
@@ -195,7 +195,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 		else if ("LOOKUP".equals(def)) {
 			int field = Integer.parseInt(nextToken(st, "Lookup function expects a fieldnummer"));
-			Map keyValues = convertToKeyValueMap(st, '=');
+			Map<String,String> keyValues = convertToKeyValueMap(st, '=');
 			addLookup(field, keyValues);
 		}
 		else if ("SUBSTR".equals(def)) {
@@ -254,8 +254,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 	/*
 	 * Converts a string to a map 
 	 */
-	private Map convertToKeyValueMap(StringTokenizer st, char kvSep) {
-		Map result = new HashMap();
+	private Map<String,String> convertToKeyValueMap(StringTokenizer st, char kvSep) {
+		Map<String,String> result = new HashMap<String,String>();
 		while (st.hasMoreTokens()) {
 			String kv = st.nextToken();
 			int ndx = kv.indexOf(kvSep);
@@ -293,7 +293,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	public interface IOutputField {
-		IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws Exception;
+		IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws Exception;
 	}
 	
 	/**
@@ -307,7 +307,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			this.inputFieldIndex = inputFieldIndex;
 		}
 
-		protected String toValue(List inputFields) throws ConfigurationException {
+		protected String toValue(List<String> inputFields) throws ConfigurationException {
 			if (inputFieldIndex < 0 || inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
@@ -318,7 +318,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			return val;
 		}
 
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws ConfigurationException {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
 			result.append(toValue(inputFields));
 			return null;
 		}
@@ -347,7 +348,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 		}
 		
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws ConfigurationException {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
 			String val = ((String)super.toValue(inputFields)).trim();
 			
 			if (startIndex >= val.length()) {
@@ -387,7 +389,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			this.leftAlign = leftAlign;
 		}
 		
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws ConfigurationException {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
 			String val = ((String)super.toValue(inputFields)).trim();
 			FileUtils.align(result, val, length, leftAlign, fillchar);
 			return null;
@@ -405,7 +408,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			this.fixedOutput = fixedOutput;
 		}
 
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) {
 			result.append(fixedOutput);
 			return null;
 		}
@@ -436,21 +440,22 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	class Lookup extends OutputInput {
-		private Map lookupValues;
+		private Map<String,String> lookupValues;
 		
-		Lookup(int fieldNr, Map lookupValues) {
+		Lookup(int fieldNr, Map<String,String> lookupValues) {
 			super(fieldNr);
 			this.lookupValues = lookupValues;
 		}
 		
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws ConfigurationException {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
 			String inVal = super.toValue(inputFields);
 			String outVal = null;
 			if (inVal != null) {
-				outVal = (String)lookupValues.get(inVal.trim());
+				outVal = lookupValues.get(inVal.trim());
 			}
 			if (outVal == null) {
-				outVal = (String)lookupValues.get("*");
+				outVal = lookupValues.get("*");
 				if (outVal == null) {
 					throw new ConfigurationException("Loopupvalue for ["+inVal+"] not found");
 				}
@@ -485,7 +490,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 		}
 		
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws ParseException, ConfigurationException {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ParseException, ConfigurationException {
 			Date date = null;
 			
 			if (inputFieldIndex < 0) {
@@ -509,7 +515,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 	abstract class Condition implements IOutputField {
 		private boolean output;
 		 
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) throws Exception {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws Exception {
 			// first call, check wether the condition is true or false 
 			if (this == curFunction) {
 				output = conditionIsTrue(inputFields);
@@ -537,7 +544,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			return this;
 		}
 		
-		protected abstract boolean conditionIsTrue(List inputFields) throws ConfigurationException;
+		protected abstract boolean conditionIsTrue(List<String> inputFields) throws ConfigurationException;
 		protected abstract boolean isEndMarker(IOutputField function);
 	}
 
@@ -568,14 +575,15 @@ public class RecordTransformer extends AbstractRecordHandler {
 			this.compareValue = compareValue;			
 		}
 		 
-		protected boolean conditionIsTrue(List inputFields) throws ConfigurationException {
+		@Override
+		protected boolean conditionIsTrue(List<String> inputFields) throws ConfigurationException {
 			if (inputFieldIndex < 0 && inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
 
 			if (compareValue.startsWith("{") && compareValue.endsWith("}")) { 
-				Vector v = new Vector();
+				Vector<String> v = new Vector<String>();
 				StringTokenizer st = new StringTokenizer(compareValue.substring(1, compareValue.length() - 1),"|");
 				while (st.hasMoreTokens()) {
 					v.add(st.nextToken());
@@ -616,6 +624,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 		}
 		
+		@Override
 		protected boolean isEndMarker(IOutputField function) {
 			return (function instanceof EndIfCondition);
 		}
@@ -626,7 +635,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	class EndIfCondition implements IOutputField {
-		public IOutputField appendValue(IOutputField curFunction,StringBuffer result,List inputFields) throws Exception {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction,StringBuffer result,List<String> inputFields) throws Exception {
 			throw new Exception("Endif function has no corresponding if");
 		}
 	}
@@ -637,7 +647,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	public interface IOutputDelegate {
-		String transform(int fieldNr, List inputFields, String params); 
+		String transform(int fieldNr, List<String> inputFields, String params); 
 	}
 	
 
@@ -659,19 +669,12 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 		}
 
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) {
+		@Override
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) {
 			String transform = delegate.transform(getInputFieldIndex(), inputFields, params);
 			result.append(transform);
 			return null;
 		}
-	}
-	
-
-	public void setOutputSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'";
-		configWarnings.add(log, msg);
-		setOutputSeparator(string);
 	}
 
 	@IbisDoc({"optional separator to add between the fields", ""})

@@ -15,22 +15,23 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -101,7 +102,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -120,8 +121,7 @@ public class ShadowSender extends ParallelSenders {
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
-			ParameterResolutionContext newPrc = new ParameterResolutionContext(prc.getMessage(), prc.getSession());
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, correlationID, message, newPrc, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 			executor.execute(pse);
 		}
@@ -133,10 +133,15 @@ public class ShadowSender extends ParallelSenders {
 
 		ParallelSenderExecutor originalSender = null;
 		XmlBuilder resultsXml = new XmlBuilder("results");
+		String correlationID = session==null ? null : session.getMessageId();
 		resultsXml.addAttribute("correlationID", correlationID);
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message),false);
+		try {
+			originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message.asString()),false);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		resultsXml.addSubElement(originalMessageXml);
 
 		// First loop through all (Shadow)Senders and handle their results
@@ -184,22 +189,15 @@ public class ShadowSender extends ParallelSenders {
 
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
-			if(resultISender instanceof ISenderWithParameters) {
-				ParameterResolutionContext newPrc2 = new ParameterResolutionContext(resultsXml.toXML(), prc.getSession());
-				((ISenderWithParameters) resultISender).sendMessage(correlationID, resultsXml.toXML(), newPrc2);
-			}
-			else {
-				resultISender.sendMessage(correlationID, resultsXml.toXML());
-			}
-		}
-		catch(SenderException se) {
+			resultISender.sendMessage(new Message(resultsXml.toXML()), session);
+		} catch(SenderException se) {
 			log.warn("failed to send ShadowSender result to ["+resultISender.getName()+"]");
 		}
 
 		if (originalSender.getThrowable() != null) {
 			throw new SenderException(originalSender.getThrowable());
 		}
-		return originalSender.getReply().toString();
+		return originalSender.getReply();
 	}
 
 	protected Iterator<ISender> getExecutableSenders() {
