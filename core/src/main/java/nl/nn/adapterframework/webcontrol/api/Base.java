@@ -203,14 +203,7 @@ public abstract class Base {
 	 * Method that return a string from MultipartBody, if it does not exist, an exception will be thrown
 	 */
 	protected String resolveStringFromMapMandatory(MultipartBody inputDataMap, String key) throws ApiException {
-		String result = null;
-		try {
-			result = this.resolveTypeFromMapMandatory(inputDataMap, key, String.class).get();
-		}catch(Exception e) {
-			log.error("Failed to parse parameter ["+key+"]", e);
-			throw e;
-		}
-		return result;
+		return this.resolveTypeFromMapMandatory(inputDataMap, key, String.class).get();
 	}
 
 	/**
@@ -218,13 +211,8 @@ public abstract class Base {
 	 */
 	protected <T> Optional<T> resolveTypeFromMapMandatory(MultipartBody inputDataMap, String key, Class<T> clazz) throws ApiException {
 		Optional<T> value = Optional.empty();
-		try {
-			value = Optional.ofNullable(inputDataMap.getAttachmentObject(key, clazz));
-			if (!value.isPresent()) {
-				throw new Exception();
-			}
-		} catch (Exception e) {
-			log.debug("Failed to parse parameter ["+key+"]", e);
+		value = Optional.ofNullable(inputDataMap.getAttachmentObject(key, clazz));		
+		if (!value.isPresent()) {
 			throw new ApiException("Key ["+key+"] not defined", 400);
 		}
 		return value;
