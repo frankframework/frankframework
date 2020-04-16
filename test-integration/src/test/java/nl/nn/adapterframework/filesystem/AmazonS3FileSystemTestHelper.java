@@ -34,26 +34,14 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	private String accessKey;
 	private String secretKey;
-	private ClientConfiguration config = null; 
+	private String proxyHost = null;
+	private Integer proxyPort = null;
 	private boolean chunkedEncodingDisabled;
 	private boolean accelerateModeEnabled; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled;
 	private String bucketName;
 	private Regions clientRegion;
 	private AmazonS3 s3Client;
-
-	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
-			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
-			Regions clientRegion, String proxyHost, Integer proxyPort) {
-		
-		this(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
-		if (proxyHost != null && proxyPort != null) {
-			config = new ClientConfiguration();
-			config.setProtocol(Protocol.HTTPS);
-			config.setProxyHost(proxyHost);
-			config.setProxyPort(proxyPort);
-		}
-	}
 
 	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
 			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
@@ -114,7 +102,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
 				.withRegion(clientRegion.getName())
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-				.withClientConfiguration(config);
+				.withClientConfiguration(this.getProxyConfig());
 		s3Client = s3ClientBuilder.build();
 	}
 	
@@ -201,4 +189,33 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	public AmazonS3 getS3Client() {
 		return s3Client;
 	}
+	
+	public String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	public Integer getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(Integer proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+	
+	public ClientConfiguration getProxyConfig() {
+		ClientConfiguration proxyConfig = null;
+		if (this.getProxyHost() != null && this.getProxyPort() != null) {
+			proxyConfig = new ClientConfiguration();
+			proxyConfig.setProtocol(Protocol.HTTPS);
+			proxyConfig.setProxyHost(this.getProxyHost());
+			proxyConfig.setProxyPort(this.getProxyPort());
+		}
+		return proxyConfig;
+	}
+
+
 }

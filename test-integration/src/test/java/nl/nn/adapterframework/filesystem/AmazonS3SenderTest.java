@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+//import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
 import nl.nn.adapterframework.stream.Message;
 
@@ -38,10 +38,10 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	@Rule
 	public TestName name = new TestName();
 	
-	private String accessKey = "";
-	private String secretKey = "";
-	private String proxyHost = null;
-	private Integer proxyPort = null;
+	private String accessKey = "AKIAQMBXG4F2O27KWXCP";
+	private String secretKey = "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";
+	private String proxyHost = "172.18.0.1";
+	private Integer proxyPort = 3128;
 
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
@@ -72,7 +72,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
-				forceGlobalBucketAccessEnabled, bucketName, clientRegion, proxyHost, proxyPort);
+				forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
 	
 	@Override
@@ -131,8 +131,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		p.setName("destinationFileName");
 		p.setSessionKey("destinationFileName");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
+		//ParameterResolutionContext prc = new ParameterResolutionContext();
+		//prc.setSession(session);
 		if (_fileExists(dest)) {
 			_deleteFile(null, dest);
 		}
