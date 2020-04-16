@@ -35,7 +35,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -72,6 +74,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
+	@Context Request request;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
@@ -226,7 +229,21 @@ public class ServerStatistics extends Base {
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		Response.ResponseBuilder response = null;
+
+		//Calculate the ETag on last modified date of user resource 
+		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
+
+		//Verify if it matched with etag available in http request
+		response = request.evaluatePreconditions(etag);
+
+		//If ETag matches the response will be non-null; 
+		if (response != null) {
+			return response.tag(etag).build();
+		}
+
+		response = Response.status(Response.Status.OK).entity(returnMap).tag(etag);
+		return response.build();
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {

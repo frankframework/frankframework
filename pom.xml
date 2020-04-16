@@ -115,7 +115,7 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-test-integration</artifactId>
-        <version>7.4-SNAPSHOT</version>
+        <version>7.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
@@ -395,6 +395,12 @@
           <url>file:target/site-deploy</url>
         </site>
       </distributionManagement>
+      <repositories>
+        <repository>
+          <id>ibissource</id>
+          <url>https://nexus.ibissource.org/content/groups/public</url>
+        </repository>
+      </repositories>
     </profile>
     <profile>
       <id>default-modules</id>

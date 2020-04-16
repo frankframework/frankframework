@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,13 +25,14 @@ import nl.nn.adapterframework.soap.SoapWrapper;
  */
 public class SoapErrorMessage extends ErrorMessageFormatter {
 
-	public String format(String message, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	@Override
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
 
 		try {
-			return SoapWrapper.getInstance().createSoapFaultMessage(getMessage(message, t));
+			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));
 		} catch (Exception e) {
 			log.error("got error getting soapWrapper instance", e);
-			return super.format(message, t, location, originalMessage, messageId, receivedTime);
+			return super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 		}
 	}
 }

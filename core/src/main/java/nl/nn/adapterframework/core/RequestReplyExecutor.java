@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.stream.Message;
+
 /**
  * Runnable object for calling a request reply service. When a
  * <code>Throwable</code> has been thrown during execution is should be returned
@@ -24,8 +26,8 @@ package nl.nn.adapterframework.core;
  */
 public abstract class RequestReplyExecutor implements Runnable {
 	protected String correlationID;
-	protected String request;
-	protected Object reply;
+	protected Message request;
+	protected Message reply;
 	protected Throwable throwable;
 
 	public void setCorrelationID(String correlationID) {
@@ -36,19 +38,19 @@ public abstract class RequestReplyExecutor implements Runnable {
 		return correlationID;
 	}
 
-	public void setRequest(String request) {
+	public void setRequest(Message request) {
 		this.request = request;
 	}
 
-	public Object getRequest() {
+	public Message getRequest() {
 		return request;
 	}
 
-	public void setReply(Object reply) {
+	public void setReply(Message reply) {
 		this.reply = reply;
 	}
 
-	public Object getReply() {
+	public Message getReply() {
 		return reply;
 	}
 

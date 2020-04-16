@@ -368,7 +368,7 @@ public class CmisSessionBuilder {
 	}
 
 	/**
-	 * @param bindingType See {@link BindingTypes BindingTypes} for possible binding types
+	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
 	public CmisSessionBuilder setBindingType(String bindingType) throws ConfigurationException {
 		try {

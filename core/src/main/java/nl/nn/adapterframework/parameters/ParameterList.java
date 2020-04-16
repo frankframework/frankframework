@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -64,4 +68,47 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		return false;
 	}
+	
+
+	public ParameterValueList getValues(Message message, IPipeLineSession session) throws ParameterException {
+		return getValues(message, session, true);
+	}
+	/**
+	 * Returns an array list of <link>ParameterValue<link> objects
+	 */
+	public ParameterValueList getValues(Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+		ParameterValueList result = new ParameterValueList();
+		for (Parameter parm:this) {
+			String parmSessionKey = parm.getSessionKey();
+			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to 
+			// each session variable whose name starts with the name of the original parameter
+			if ("*".equals(parmSessionKey)) {
+				String parmName = parm.getName();
+				for (String sessionKey: session.keySet()) {
+					if (!PipeLineSessionBase.tsReceivedKey.equals(sessionKey) && !PipeLineSessionBase.tsSentKey.equals(sessionKey)) {
+						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
+							Parameter newParm = new Parameter();
+							newParm.setName(sessionKey);
+							newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
+							try {
+								newParm.configure();
+							} catch (ConfigurationException e) {
+								throw new ParameterException(e);
+							}
+							result.add(getValue(result, newParm, message, session, namespaceAware));
+						}
+					}
+				}
+			} else {
+				result.add(getValue(result, parm, message, session, namespaceAware));
+			}
+		}
+		return result;
+	}
+
+	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
+	}
+
+	
 }

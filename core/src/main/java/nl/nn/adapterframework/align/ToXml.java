@@ -32,7 +32,6 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -89,8 +88,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	}
 
 	public ToXml(ValidatorHandler validatorHandler) {
-		super((PSVIProvider)validatorHandler);
-		validatorHandler.setContentHandler(this);
+		super(validatorHandler);
 		this.validatorHandler=validatorHandler;
 	}
 

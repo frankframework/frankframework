@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -72,20 +73,20 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {
 			try {
-				return doPipeWithException(input, session);
+				return doPipeWithException(message, session);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
-				return new PipeRunResult(exceptionForward, input);
+				return new PipeRunResult(exceptionForward, message);
 			}
 		} else {
-			return doPipeWithException(input, session);
+			return doPipeWithException(message, session);
 		}
 	}
 
-	public abstract PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url; 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden
+   Copyright 2013-2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -47,12 +53,6 @@ import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -115,10 +115,11 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 	private int numOfMessagesInProcess = 0;
-   
+
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 	
+	private int hourOfLastMessageProcessed=-1;
 	private long[] numOfMessagesStartProcessingByHour = new long[24];
 	
 	private StatisticsKeeper statsMessageProcessingDuration = null;
@@ -251,6 +252,23 @@ public class Adapter implements IAdapter, NamedBean {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(startTime);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			if (hourOfLastMessageProcessed!=hour) {
+				if (hourOfLastMessageProcessed>=0) {
+					if (hourOfLastMessageProcessed<hour) {
+						for(int i=hourOfLastMessageProcessed+1; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					} else {
+						for(int i=hourOfLastMessageProcessed+1; i<24; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+						for(int i=0; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					}
+				}
+				hourOfLastMessageProcessed=hour;
+			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
 	}
@@ -407,7 +425,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter cache=pipeline.getCache();
+			ICacheAdapter<String,String> cache=pipeline.getCache();
 			if (cache!=null && cache instanceof HasStatistics) {
 				((HasStatistics)cache).iterateOverStatistics(hski, recsData, action);
 			}
@@ -417,7 +435,7 @@ public class Adapter implements IAdapter, NamedBean {
 			hski.closeGroup(pipelineData);
 		}
 	}
-	
+
 	@Override
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
@@ -487,7 +505,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class listenerClass) {
+	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
@@ -505,12 +523,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Iterator<IReceiver> getReceiverIterator() {
 		return receivers.iterator();
 	}
-	
+
 	public PipeLine getPipeLine() {
 		return pipeline;
 	}
@@ -588,7 +606,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return result;
 		}
 	}
-	
+
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException {
 
@@ -601,14 +619,13 @@ public class Adapter implements IAdapter, NamedBean {
 		RunStateEnum currentRunState = getRunState();
 		if (!currentRunState.equals(RunStateEnum.STARTED) && !currentRunState.equals(RunStateEnum.STOPPING)) {
 
-			String msgAdapterNotOpen =
-				"Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
+			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
 		incNumOfMessagesInProcess(startTime);
 		String lastNDC=NDC.peek();
-		String newNDC="cid [" + messageId + "]";
+		String newNDC="mid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
@@ -743,7 +760,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("Adapter ["	+ name 	+ "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
 	}
-	
+
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
@@ -956,7 +973,7 @@ public class Adapter implements IAdapter, NamedBean {
 		configuration.addStopAdapterThread(runnable);
 		taskExecutor.execute(runnable);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -976,9 +993,9 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(String string) {
-		return Misc.toFileSize(string.getBytes().length, false, true);
+		return string==null?"null": Misc.toFileSize(string.getBytes().length, false, true);
 	}
-	
+
 	@Override
 	public String getAdapterConfigurationAsString() throws ConfigurationException {
 		String loadedConfig = getConfiguration().getLoadedConfiguration();
@@ -990,7 +1007,7 @@ public class Adapter implements IAdapter, NamedBean {
 			throw new ConfigurationException(e);
 		}
 	}
-	
+
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
@@ -1012,16 +1029,13 @@ public class Adapter implements IAdapter, NamedBean {
 	public boolean isAutoStart() {
 		return autoStart;
 	}
-	
+
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
 		} else {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
 	}

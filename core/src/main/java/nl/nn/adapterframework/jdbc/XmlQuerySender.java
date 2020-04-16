@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,14 +34,15 @@ import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -73,7 +74,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlQuerySender extends JdbcQuerySenderBase {
+public class XmlQuerySender extends DirectQuerySender {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -88,7 +89,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private boolean lockRows=false;
 	private int lockWait=-1;
-	
+
 	public class Column {
 		private String name = null;
 		private String value = null;
@@ -233,15 +234,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String getQuery(Message message) {
-		return message.toString();
-	}
-
-	@Override
-	protected String sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	protected String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
-		Vector columns = null;
+		Vector<Column> columns = null;
 		String where = null;
 		String order = null;
 		String result = null;
@@ -257,16 +253,16 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if (root.equalsIgnoreCase("select")) {
-				result = selectQuery(connection, correlationID, tableName, columns, where, order);
+				result = selectQuery(connection, tableName, columns, where, order);
 			} else {
 				if (root.equalsIgnoreCase("insert")) {
-					result = insertQuery(connection, correlationID, prc, tableName, columns);
+					result = insertQuery(connection, tableName, columns);
 				} else {
 					if (root.equalsIgnoreCase("delete")) {
-						result = deleteQuery(connection, correlationID, tableName, where);
+						result = deleteQuery(connection, tableName, where);
 					} else {
 						if (root.equalsIgnoreCase("update")) {
-							result = updateQuery(connection, correlationID, tableName, columns, where);
+							result = updateQuery(connection, tableName, columns, where);
 						} else {
 							if (root.equalsIgnoreCase("alter")) {
 								String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
@@ -276,7 +272,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 								if (root.equalsIgnoreCase("sql")) {
 									String type = XmlUtils.getChildTagAsString(queryElement, "type");
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
-									result = sql(connection, correlationID, query, type);
+									result = sql(connection, query, type);
 								} else {
 								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 							}
@@ -296,14 +292,14 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return result;
 	}
 
-	private String selectQuery(Connection connection, String correlationID, String tableName, Vector columns, String where, String order) throws SenderException, JdbcException {
+	private String selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
 		try {
 			String query = "SELECT ";
 			if (columns != null) {
-				Iterator iter = columns.iterator();
+				Iterator<Column> iter = columns.iterator();
 				boolean firstColumn = true;
 				while (iter.hasNext()) {
-					Column column = (Column) iter.next();
+					Column column = iter.next();
 					if (firstColumn) {
 						query = query + column.getName();
 						firstColumn = false;
@@ -321,8 +317,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryContext queryContext = new QueryContext(query, "select", null);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "select", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -331,14 +327,14 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private String insertQuery(Connection connection, String correlationID, ParameterResolutionContext prc, String tableName, Vector columns) throws SenderException {
+	private String insertQuery(Connection connection, String tableName, Vector<Column> columns) throws SenderException {
 		try {
 			String query = "INSERT INTO " + tableName + " (";
-			Iterator iter = columns.iterator();
+			Iterator<Column> iter = columns.iterator();
 			String queryColumns = null;
 			String queryValues = null;
 			while (iter.hasNext()) {
-				Column column = (Column) iter.next();
+				Column column = iter.next();
 				if (queryColumns == null) {
 					queryColumns = column.getName();
 				} else {
@@ -351,34 +347,34 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 			}
 			query = query + queryColumns + ") VALUES (" + queryValues + ")";
-			return executeUpdate(connection, correlationID, tableName, query, columns);
+			return executeUpdate(connection, tableName, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command", t);
 		}
 	}
 
-	private String deleteQuery(Connection connection, String correlationID, String tableName, String where) throws SenderException, JdbcException {
+	private String deleteQuery(Connection connection, String tableName, String where) throws SenderException, JdbcException {
 		try {
 			String query = "DELETE FROM " + tableName;
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryContext queryContext = new QueryContext(query, "delete", null);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "delete", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
 	}
 
-	private String updateQuery(Connection connection, String correlationID, String tableName, Vector columns, String where) throws SenderException {
+	private String updateQuery(Connection connection, String tableName, Vector<Column> columns, String where) throws SenderException {
 		try {
 			String query = "UPDATE " + tableName + " SET ";
-			Iterator iter = columns.iterator();
+			Iterator<Column> iter = columns.iterator();
 			String querySet = null;
 			while (iter.hasNext()) {
-				Column column = (Column) iter.next();
+				Column column = iter.next();
 				if (querySet == null) {
 					querySet = column.getName();
 				} else {
@@ -390,16 +386,16 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			return executeUpdate(connection, correlationID, tableName, query, columns);
+			return executeUpdate(connection, tableName, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command", t);
 		}
 	}
 
-	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
+	private String sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -410,27 +406,27 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryContext = new QueryContext(q, "other", null);
-					statement = getStatement(connection, correlationID, queryContext);
+					queryExecutionContext = new QueryExecutionContext(q, "other", null);
+					statement = getStatement(connection, queryExecutionContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, correlationID, statement, q, null, null));
+						result.append(executeOtherQuery(connection, statement, q, null, null, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(connection, correlationID, statement, query, null, null);
+				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
 	}
 
-	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
+	private String executeUpdate(Connection connection, String tableName, String query, Vector<Column> columns) throws SenderException {
 		try {
 			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
-				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
+				CallableStatement callableStatement = getCallWithRowIdReturned(connection, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
 				callableStatement.registerOutParameter(ri, Types.VARCHAR);
@@ -439,18 +435,18 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				String rowId = callableStatement.getString(ri);
 				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
 
-				Iterator iter = columns.iterator();
+				Iterator<Column> iter = columns.iterator();
 				while (iter.hasNext()) {
-					Column column = (Column) iter.next();
+					Column column = iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryContext queryContext;
+						QueryExecutionContext queryExecutionContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryContext = new QueryContext(query, "updateBlob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateBlob", null);
 						} else {
-							queryContext = new QueryContext(query, "updateClob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateClob", null);
 						}
-						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+						PreparedStatement statement = getStatement(connection, queryExecutionContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -462,20 +458,20 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
 	}
 
-	private boolean existBlob(Vector columns) {
-		Iterator iter = columns.iterator();
+	private boolean existBlob(Vector<Column> columns) {
+		Iterator<Column> iter = columns.iterator();
 		while (iter.hasNext()) {
-			Column column = (Column) iter.next();
+			Column column = iter.next();
 			if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
 				return true;
 			}
@@ -483,10 +479,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return false;
 	}
 
-	private boolean existClob(Vector columns) {
-		Iterator iter = columns.iterator();
+	private boolean existClob(Vector<Column> columns) {
+		Iterator<Column> iter = columns.iterator();
 		while (iter.hasNext()) {
-			Column column = (Column) iter.next();
+			Column column = iter.next();
 			if (column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 				return true;
 			}
@@ -494,11 +490,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return false;
 	}
 
-	private int countParameters(Vector columns) {
+	private int countParameters(Vector<Column> columns) {
 		int parameterCount = 0;
-		Iterator iter = columns.iterator();
+		Iterator<Column> iter = columns.iterator();
 		while (iter.hasNext()) {
-			Column column = (Column) iter.next();
+			Column column = iter.next();
 			if (column.getParameter() != null) {
 				parameterCount++;
 			}
@@ -518,11 +514,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private Vector getColumns(Element columnsElement) throws SenderException {
-		Collection columnElements = XmlUtils.getChildTags(columnsElement, "column");
-		Iterator iter = columnElements.iterator();
+	private Vector<Column> getColumns(Element columnsElement) throws SenderException {
+		Collection<Node> columnElements = XmlUtils.getChildTags(columnsElement, "column");
+		Iterator<Node> iter = columnElements.iterator();
 		if (iter.hasNext()) {
-			Vector columns = new Vector();
+			Vector<Column> columns = new Vector<>();
 			while (iter.hasNext()) {
 				Element columnElement = (Element) iter.next();
 				Element nameElement = XmlUtils.getFirstChildTag(columnElement, "name");
@@ -563,11 +559,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return null;
 	}
 
-	private void applyParameters(PreparedStatement statement, Vector columns) throws SQLException {
-		Iterator iter = columns.iterator();
+	private void applyParameters(PreparedStatement statement, Vector<Column> columns) throws SQLException {
+		Iterator<Column> iter = columns.iterator();
 		int var = 1;
 		while (iter.hasNext()) {
-			Column column = (Column) iter.next();
+			Column column = iter.next();
 			if (column.getParameter() != null) {
 				if (column.getParameter() instanceof Integer) {
 					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
@@ -597,13 +593,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		super.configure(parameterList);
-		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
-		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
 	}
 
 	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})

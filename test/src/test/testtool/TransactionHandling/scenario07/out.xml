@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionHandlingNotSupportedSubAdapterException]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionHandlingNotSupportedSubAdapterException] caught exception: (UnexpectedRollbackException) Transaction rolled back because it has been marked as rollback-only</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionHandlingNotSupportedSubAdapterException]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionHandlingNotSupportedSubAdapterException] caught exception: (UnexpectedRollbackException) Transaction rolled back because it has been marked as rollback-only</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

@@ -28,6 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -55,6 +67,7 @@ import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -67,18 +80,6 @@ import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -748,9 +749,7 @@ public class JobDef {
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		
-		String configJmsRealm = JmsRealmFactory.getInstance()
-				.getFirstDatasourceJmsRealm();
+		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
 			List<String> configNames = new ArrayList<String>();
@@ -777,13 +776,11 @@ public class JobDef {
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
 							String configVersion = configuration.getVersion();
-							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
-									configVersion)) {
-								log.info(getLogPrefix() + "configuration ["
-										+ configName + "] with version ["
-										+ configVersion
-										+ "] will be reloaded with new version ["
-										+ ibisConfigVersion + "]");
+							if(StringUtils.isEmpty(configVersion)) {
+								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+							}
+							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
 								configsToReload.add(configName);
 							}
 						}
@@ -966,7 +963,7 @@ public class JobDef {
 			qs.setTimeout(getQueryTimeout());
 			qs.configure(true);
 			qs.open();
-			String result = qs.sendMessage("dummy", getQuery());
+			Message result = qs.sendMessage(new Message(getQuery()), null);
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
@@ -1000,8 +997,8 @@ public class JobDef {
 			localSender.open();
 			try {
 				//sendMessage message cannot be NULL
-				String message = (getMessage()==null) ? "" : getMessage();
-				localSender.sendMessage(null, message);
+				Message message = new Message((getMessage()==null) ? "" : getMessage());
+				localSender.sendMessage(message, null);
 			}
 			finally {
 				localSender.close();

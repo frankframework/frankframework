@@ -22,8 +22,8 @@ package nl.nn.adapterframework.core;
  * @author  Gerrit van Brakel
  * @since	4.9  
  */
-public interface IKnowsDeliveryCount {
+public interface IKnowsDeliveryCount<M> {
 	
-	int getDeliveryCount(Object rawMessage);
+	int getDeliveryCount(M rawMessage);
 
 }

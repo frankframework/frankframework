@@ -18,6 +18,7 @@ package nl.nn.adapterframework.parameters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,19 @@ public class ParameterValueList {
 		return map.get(name);
 	}
 
+	public Object getValue(int i) {
+		return list.get(i).getValue();
+	}
+
+	public String getName(int i) {
+		return list.get(i).getName();
+	}
+
+	public Object getValue(String name) {
+		ParameterValue pv = map.get(name);
+		return pv ==null ? null : pv.getValue();
+	}
+
 	public boolean containsKey(String name) {
 		return map.containsKey(name);
 	}
@@ -81,6 +95,20 @@ public class ParameterValueList {
 	
 	Map<String, ParameterValue> getParameterValueMap() {
 		return map;
+	}
+
+	/**
+	 * Returns a Map of value objects
+	 */
+	public Map<String,Object> getValueMap() throws ParameterException {
+		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
+
+		// convert map with parameterValue to map with value		
+		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
+		for (ParameterValue pv : paramValuesMap.values()) {
+			result.put(pv.getDefinition().getName(), pv.getValue());
+		}
+		return result;
 	}
 
 	/*

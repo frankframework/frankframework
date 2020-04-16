@@ -22,6 +22,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
@@ -29,9 +30,9 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 
 	private ThreadConnector threadConnector;
 	
-	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
 		super();
-		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
+		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 
 	private void handleException(SAXException e) throws SAXException {

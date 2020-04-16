@@ -92,7 +92,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		credentialsConfigured=true;
 	}
-	
+
 	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
@@ -153,8 +153,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				// contains a GenericMessageSendingPipe using
 				// transactionAttribute="NotSupported":
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
 		} catch (SQLException e) {
@@ -195,7 +194,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
 		this.dbmsSupport=dbmsSupport;
 	}
-		
+
 	public IDbmsSupport getDbmsSupport() {
 		if (dbmsSupport==null) {
 			Connection conn=null;
@@ -262,7 +261,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * Returns the name and location of the database that this objects operates on.
-	 *  
+	 * 
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
@@ -271,12 +270,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		try (Connection connection = getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			result = metadata.getURL();
-	
+
 			String catalog=null;
 			catalog=connection.getCatalog();
 			result += catalog!=null ? ("/"+catalog):"";
 		} catch (Exception e) {
-			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);		
+			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
 		}
 		return result;
 	}

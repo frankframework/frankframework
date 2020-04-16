@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.LogUtil;

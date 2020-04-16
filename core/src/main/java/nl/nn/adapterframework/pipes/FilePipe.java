@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileHandler;
 
 
@@ -35,8 +36,11 @@ import nl.nn.adapterframework.util.FileHandler;
  * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
+ * 
+ * @deprecated Please use LocalFileSystemPipe instead
  *
  */
+@Deprecated
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
@@ -44,21 +48,25 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler = new FileHandler();
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		fileHandler.configure();
 	}
 	
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
- 			return new PipeRunResult(getForward(), fileHandler.handle(input, session, getParameterList()));
+
+			return new PipeRunResult(getForward(), fileHandler.handle(message, session, getParameterList()));
+
 		}
 		catch(Exception e) {
 			if (findForward("exception") != null) {
-				return new PipeRunResult(findForward("exception"), input);
+				return new PipeRunResult(findForward("exception"), message);
 			} else {
 				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
 			}
