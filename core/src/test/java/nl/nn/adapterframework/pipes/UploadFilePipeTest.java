@@ -1,0 +1,176 @@
+package nl.nn.adapterframework.pipes;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import org.mockito.Mock;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.util.zip.ZipInputStream;
+
+/**
+ * UploadFilePipe Tester.
+ *
+ * @author <Sina Sen>
+ * @version 1.0
+ * @since <pre>Mar 5, 2020</pre>
+ */
+public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
+
+    private static InputStream inputStream;
+    private static ZipInputStream zis;
+    @ClassRule
+    public static TemporaryFolder testFolderSource = new TemporaryFolder();
+
+    private static String sourceFolderPath;
+
+    private static File newFile;
+    private static File newFile2;
+
+
+    @Mock
+    private IPipeLineSession session1 = new PipeLineSessionBase();
+
+
+    @Override
+    public UploadFilePipe createPipe() {
+        return new UploadFilePipe();
+    }
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        sourceFolderPath = testFolderSource.getRoot().getPath();
+        newFile  = testFolderSource.newFile("1.txt");
+        newFile2  = testFolderSource.newFile("1.zip");
+    }
+
+    @Before
+    public void before() throws Exception {
+
+
+        FileInputStream fis = new FileInputStream(sourceFolderPath+"/1.zip");
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        zis = new ZipInputStream(bis);
+
+    }
+
+    @After
+    public void after() throws Exception {
+    }
+
+    /**
+     * Method: configure()
+     */
+    @Test
+    public void testNullSessionKey() throws Exception {
+        exception.expect(NullPointerException.class);
+        pipe.doPipe("das", session);
+    }
+
+    @Test
+    public void testNullInputStream() throws Exception {
+        //exception.expect(PipeRunException.class);
+        exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] got null value from session under key [fdsf123]");
+        pipe.setSessionKey("fdsf123");
+        pipe.doPipe("das", session1);
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeWrongInputFormat() throws Exception {
+        exception.expect(ClassCastException.class);
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
+        session1.put("key", "32434");
+        PipeRunResult res =pipe.doPipe("dsfdfs", session1);
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeSuccess() throws Exception {
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
+        session1.put("key", zis); session1.put("fileName", "1.zip");
+        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        assertEquals(sourceFolderPath, res.getResult().toString());
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeFailWrongExtension() throws Exception {
+        exception.expect(PipeRunException.class);
+        exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] file extension [txt] should be 'zip'");
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
+        session1.put("key", zis); session1.put("fileName", "1.txt");
+        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeSuccessWithDirectorySessionKey() throws Exception {
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
+        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath);
+        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        assertEquals(sourceFolderPath, res.getResult().toString());
+    }
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeSuccessWithoutDirectory() throws Exception {
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("");
+        session1.put("key", zis); session1.put("fileName", "1.zip");
+        PipeRunResult res =pipe.doPipe("hoooray.zip", session1);
+        assertEquals("hoooray.zip", res.getResult().toString());
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeCreateNonExistingDirectory() throws Exception {
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
+        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+"/new_dir");
+        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        assertEquals(sourceFolderPath+"/new_dir", res.getResult().toString());
+    }
+
+    /**
+     * Method: doPipe(Object input, IPipeLineSession session)
+     */
+    @Test
+    public void testDoPipeCantCreateNonExistingDirectory() throws Exception {
+        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
+        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", "");
+        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        assertNotEquals("something", res.getResult().toString());
+        assertEquals(null, res.getPipeForward());
+    }
+
+
+
+}
