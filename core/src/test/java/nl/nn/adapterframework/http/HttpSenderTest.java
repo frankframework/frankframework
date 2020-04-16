@@ -745,4 +745,38 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			}
 		}
 	}
+
+	@Test
+	public void paramsWithoutValue() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("paramterValue");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			Parameter param1 = new Parameter();
+			param1.setName("url");
+			param1.setValue("http://127.0.0.1/value%2Fvalue?emptyParam");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("myParam");
+			param2.setValue("");
+			sender.addParameter(param2);
+
+			sender.setMethodType("GET");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("paramsWithoutValue.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
 }
