@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import nl.nn.adapterframework.stream.Message;
+
 /**
  * The PipeRunResult is a type to store both the result of the processing of a message
- * in {@link IPipe#doPipe(Object, IPipeLineSession) doPipe()} as well as the exitState.
+ * in {@link IPipe#doPipe(Message, IPipeLineSession) doPipe()} as well as the exitState.
  * <br/>
  * <b>Responsibility:</b><br/>
  * <ul><li>keeper of the result of the execution of a <code>Pipe</code></li>

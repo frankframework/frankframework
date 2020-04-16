@@ -39,7 +39,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("test1", session);
+		PipeRunResult prr  = doPipe(pipe, "test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -51,7 +51,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(" <test1", session);
+		PipeRunResult prr  = doPipe(pipe, " <test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -64,7 +64,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(" <test1", session);
+		PipeRunResult prr  = doPipe(pipe, " <test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -76,7 +76,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("	<test1", session);
+		PipeRunResult prr  = doPipe(pipe, "	<test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -88,7 +88,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("	<test1", session);
+		PipeRunResult prr  = doPipe(pipe, "	<test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -101,7 +101,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("<test1", session);
+		PipeRunResult prr  = doPipe(pipe, "<test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -114,7 +114,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("test1", session);
+		PipeRunResult prr  = doPipe(pipe, "test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -126,7 +126,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("<test1", session);
+		PipeRunResult prr  = doPipe(pipe, "<test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -135,7 +135,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("test", session);
+		PipeRunResult prr  = doPipe(pipe, "test", session);
 		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -144,7 +144,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("<test", session);
+		PipeRunResult prr  = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -153,7 +153,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("", session);
+		PipeRunResult prr  = doPipe(pipe, "", session);
 		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -163,7 +163,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("", session);
+		PipeRunResult prr  = doPipe(pipe, "", session);
 		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -172,7 +172,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(null, session);
+		PipeRunResult prr  = doPipe(pipe, null, session);
 		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 	
@@ -182,7 +182,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(null, session);
+		PipeRunResult prr  = doPipe(pipe, null, session);
 		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 }

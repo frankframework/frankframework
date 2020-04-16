@@ -11,9 +11,10 @@ Upcoming
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
-
-
-
+- reset Adapter Statistics by the hour when entering a new hour time slot
+- introduced property jdbc.datasource.default, with default value jdbc/${instance.name.lc}
+- introduced attribute combineBlocks on ForEachChildElementPipe, that can be set to false to leverage BlockEnhancedCapabilites of the configured sender
+- Add possibility to put error details in ESB SOAP body response
 
 
 

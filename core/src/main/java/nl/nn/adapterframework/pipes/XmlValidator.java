@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden
+   Copyright 2013, 2015-2017, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +33,10 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.xerces.xs.XSModel;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
@@ -45,6 +48,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -170,9 +174,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			throw e;
 		}
 		if (getRoot() == null) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix(null) + "Root not specified";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "root not specified");
 		}
 	}
 
@@ -189,26 +191,33 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return configurationException;
 	}
 
-
+	public List<XSModel> getXSModels() {
+		return validator.getXSModels();
+	}
+ 
 	/**
 	 * Validate the XML string
 	 * 
-	 * @param input   a String
+	 * @param message   a String
 	 * @param session a {@link IPipeLineSession Pipelinesession}
 	 * 
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
-	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input, session, false);
+	public final PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		return doPipe(message, session, false);
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
 		String messageToValidate;
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			messageToValidate = getMessageToValidate(input, session);
 		} else {
-			messageToValidate = input.toString();
+			try {
+				messageToValidate = input.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			}
 		}
 		try {
 			PipeForward forward = validate(messageToValidate, session, responseMode);
@@ -261,12 +270,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Deprecated
-	private String getMessageToValidate(Object input, IPipeLineSession session) throws PipeRunException {
-		String inputStr = input.toString();
-		if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
+	private String getMessageToValidate(Message message, IPipeLineSession session) throws PipeRunException {
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
+		if (XmlUtils.isWellFormed(input, "Envelope")) {
 			String inputRootNs;
 			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(inputStr, null);
+				inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
@@ -284,19 +298,19 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				if (extractSoapBody) {
 					log.debug(getLogPrefix(session) + "extract SOAP body for validation");
 					try {
-						inputStr = transformerPoolExtractSoapBody.transform(inputStr, null, true);
+						input = transformerPoolExtractSoapBody.transform(input, null, true);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
 					try {
-						inputRootNs = transformerPoolGetRootNamespace.transform(inputStr, null);
+						inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}
 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
 						log.debug(getLogPrefix(session) + "remove namespaces from extracted SOAP body");
 						try {
-							inputStr = transformerPoolRemoveNamespaces.transform(inputStr, null, true);
+							input = transformerPoolRemoveNamespaces.transform(input, null, true);
 						} catch (Exception e) {
 							throw new PipeRunException(this, "cannot remove namespaces", e);
 						}
@@ -304,7 +318,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 		}
-		return inputStr;
+		return input;
 	}
 
 	protected boolean isConfiguredForMixedValidation() {
@@ -404,10 +418,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
 	 */
+	@Deprecated
+	@ConfigurationWarning("please use 'schemaSessionKey' instead.")
 	public void setSchemaSession(String schemaSessionKey) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
-		configWarnings.add(log, msg);
 		setSchemaSessionKey(schemaSessionKey);
 	}
 
@@ -675,8 +688,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
 		@Override
-		public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-			return owner.doPipe(input, session, true);
+		public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+			return owner.doPipe(message, session, true);
 		}
 
 		@Override
@@ -692,11 +705,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		@Override
 		public Map<String, PipeForward> getForwards() {
 			return forwards;
-		}
-
-		@Override
-		public String getType() {
-			return owner.getType();
 		}
 
 		@Override
@@ -770,10 +778,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					}
 				}
 				if (!found) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix(null) + "Element '" + validElement +
-					"' not in list of available root elements " + allRootTags;
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
 				}
 			}
 		}

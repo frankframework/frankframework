@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.RequestReplyExecutor;
-import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -50,12 +49,12 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, null);
 		getTaskExecutor().execute(ise);
 	}
 	
-	public String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+	public Message callServiceIsolated(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, guard);
@@ -72,7 +71,7 @@ public class IsolatedServiceCaller {
 				throw new ListenerException(ise.getThrowable());
 			}
 		} else {
-			return (String)ise.getReply();
+			return ise.getReply();
 		}
 	}
 

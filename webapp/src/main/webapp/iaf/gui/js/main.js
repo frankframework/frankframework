@@ -75,10 +75,10 @@ $(function() {
 		var scroll2top = $(".scroll-to-top").stop(true);
 		if($(this).scrollTop() > 100) {
 			if(parseInt(scroll2top.css("opacity")) === 0) {
-				scroll2top.animate({"opacity": 1, "bottom": 24}, 50, "linear");
+				scroll2top.animate({"opacity": 1, "z-index": 10000}, 50, "linear");
 			}
 		} else {
-			scroll2top.animate({"opacity": 0, "bottom": 0}, 50, "linear");
+			scroll2top.animate({"opacity": 0, "z-index": -1}, 50, "linear");
 		}
 	});
 });

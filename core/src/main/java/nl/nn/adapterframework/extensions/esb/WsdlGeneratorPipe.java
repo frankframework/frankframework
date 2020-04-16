@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
@@ -52,13 +53,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get("file");
 		if (inputStream == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got null value from session under key ["
-					+ getSessionKey() + "]");
+			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;

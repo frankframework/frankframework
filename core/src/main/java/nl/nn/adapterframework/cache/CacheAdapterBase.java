@@ -15,16 +15,14 @@
 */
 package nl.nn.adapterframework.cache;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Baseclass for caching.
@@ -57,6 +55,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	private TransformerPool keyTp=null;
 	private TransformerPool valueTp=null;
 
+	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
 			setName(ownerName+"Cache");
@@ -77,14 +76,13 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	
 	protected abstract V getElement(String key);
 	protected abstract void putElement(String key, V value);
-	protected abstract Object getElementObject(Object key);
-	protected abstract void putElementObject(Object key, Object value);
 	protected abstract boolean removeElement(Object key);
+	protected abstract V stringToValue(String value);
 
 	@Override
-	public String transformKey(String input, Map sessionContext) {
-		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && sessionContext!=null) {
-			input=(String)sessionContext.get(getKeyInputSessionKey());
+	public String transformKey(String input, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
+			input=(String)session.get(getKeyInputSessionKey());
 		}
 		if (keyTp!=null) {
 			try {
@@ -104,49 +102,37 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	}
 
 	@Override
-	public V transformValue(String value, Map sessionContext) {
-		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && sessionContext!=null) {
-			value=(String)sessionContext.get(getValueInputSessionKey());
+	public V transformValue(String value, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
+			value=(String)session.get(getValueInputSessionKey());
 		}
 		if (valueTp!=null) {
 			try{
 				value=valueTp.transform(value, null);
 			} catch (Exception e) {
-			   log.error(getLogPrefix()+"transformValue() cannot transform cache value ["+value+"], will not cache",e);
-			   return null; 
+				log.error(getLogPrefix() + "transformValue() cannot transform cache value [" + value + "], will not cache", e);
+				return null;
 			}
 		}
 		if (StringUtils.isEmpty(value)) {
 			log.debug("determined empty cache value");
 			if (isCacheEmptyValues()) {
-				return (V)"";
+				return stringToValue("");
 			}
 			return null;
 		}
-		return (V)value;
+		return stringToValue(value);
 	}
 
-	public String getString(String key) {
-		return (String)getElement(key);
-	}
-	public void putString(String key, String value) {
-		putElement(key, (V)value);
-	}
-
+	@Override
 	public V get(String key){
 		return getElement(key);
 	}
+	@Override
 	public void put(String key, V value) {
 		putElement(key, value);
 	}
 
-	public Object getObject(String key){
-		return getElementObject(key);
-	}
-	public void putObject(Object key, Object value) {
-		putElementObject(key, value);
-	}
-	
 	public boolean remove(Object key) {
 		return removeElement(key);
 	}

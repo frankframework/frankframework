@@ -166,6 +166,10 @@ angular.module('iaf.beheerconsole')
 			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
 			delete configurations.totalErrorStoreCount;
 
+			for(x in configurations.warnings) {
+				$scope.addWarning('', configurations.warnings[x]);
+			}
+
 			for(i in configurations) {
 				var configuration = configurations[i];
 				if(configuration.exception)
@@ -187,7 +191,7 @@ angular.module('iaf.beheerconsole')
 			}
 
 			$scope.messageLog = configurations;
-		});
+		}, true, 60000);
 
 		var raw_adapter_data = {};
 		var pollerCallback = function(allAdapters) {
@@ -394,10 +398,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.openOldGui = function() {
-		location.href = Misc.getServerPath() + "rest/showConfigurationStatus";
-	};
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
@@ -412,7 +412,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('ErrorPageCtrl', ['$scope', 'Api', '$state', '$interval', '$rootScope', function($scope, Api, $state, $interval, $rootScope) {
+.controller('ErrorPageCtrl', ['$scope', 'Api', '$state', '$interval', '$rootScope', '$timeout', function($scope, Api, $state, $interval, $rootScope, $timeout) {
 	$scope.cooldownCounter = 0;
 	$scope.viewStackTrace = false;
 
@@ -437,7 +437,7 @@ angular.module('iaf.beheerconsole')
 	$scope.checkState = function() {
 		Api.Get("server/health", function() {
 			$state.go("pages.status");
-			window.location.reload();
+			$timeout(function() { window.location.reload(); }, 50);
 		}, cooldown);
 	};
 
@@ -858,8 +858,6 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			datasource:"",
-			name:"",
-			version:"",
 			encoding:"",
 			multiple_configs:false,
 			activate_config:true,
@@ -872,18 +870,6 @@ angular.module('iaf.beheerconsole')
 			$scope.file = null;
 			return;
 		}
-		var name = files[0].name.replace(/^.*[\\\/]/, '');
-		var i = name.lastIndexOf(".");
-		if(i > -1)
-			name = name.substring(0, i);
-
-		var nameL = name.split("-"); //Explode the name "Test_Configuration-001-SNAPSHOT_20171122-1414.jar"
-		var splitOn = nameL.length -3; //(4) ["Test_Configuration", "001", "SNAPSHOT_20171122", "1414"]
-		if((nameL[nameL.length -2]).indexOf("SNAPSHOT")) {
-			splitOn +=1;
-		}
-		$scope.form.name = nameL.splice(0, splitOn).join("-"); //split nameL on index SPLITON and join the values with "-"
-		$scope.form.version = nameL.join("-"); //Join the remaining array with "-"
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 
@@ -896,8 +882,6 @@ angular.module('iaf.beheerconsole')
 		else 
 			fd.append("datasource", $scope.datasources[0]);
 
-		fd.append("name", $scope.form.name);
-		fd.append("version", $scope.form.version);
 		fd.append("encoding", $scope.form.encoding);
 		fd.append("multiple_configs", $scope.form.multiple_configs);
 		fd.append("activate_config", $scope.form.activate_config);
@@ -909,8 +893,6 @@ angular.module('iaf.beheerconsole')
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
 					datasource: $scope.datasources[0],
-					name:"",
-					version:"",
 					encoding:"",
 					multiple_configs:false,
 					activate_config:true,
@@ -1128,6 +1110,9 @@ angular.module('iaf.beheerconsole')
 	$scope.closeNote = function(index) {
 		$scope.notes.splice(index, 1);
 	};
+	$scope.closeNotes = function() {
+		$scope.notes = [];
+	};
 
 	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
@@ -1136,79 +1121,224 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.receiverName)
 		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
 
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete(base_url+"/"+message.id, function() {
+		Api.Delete($scope.base_url+"/"+message.id, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
+			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
+			$scope.updateTable();
 		}, function() {
 			message.deleting = false;
 			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
+			$scope.updateTable();
 		});
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+messageId+"/download");
 	};
 
-	$scope.resendMessage = function(message) {
+	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put(base_url+"/"+message.id, false, function() {
-			for(x in $scope.messages) {
-				if($scope.messages[x].id == message.id) {
-					$scope.messages.splice(x, 1);
-				}
-			}
-		}, function() {
+		Api.Put($scope.base_url+"/"+message.id, false, function() {
+			if(callback != undefined && typeof callback == 'function')
+				callback(message.id);
+			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
+			$scope.updateTable();
+		}, function(data) {
 			message.resending = false;
-			$scope.addNote("danger", "Unable to resend messages with ID: "+message.id);
+			$scope.addNote("danger", "Unable to resend message ["+message.id+"]. "+data.error);
+			$scope.updateTable();
 		});
 	};
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', 'DTColumnDefBuilder', function($scope, Api, DTColumnDefBuilder) {
-	$scope.columnDefs = [
-		DTColumnDefBuilder.newColumnDef(0).notSortable(),
-		DTColumnDefBuilder.newColumnDef(1),
-		DTColumnDefBuilder.newColumnDef(2),
-		DTColumnDefBuilder.newColumnDef(3),
-		DTColumnDefBuilder.newColumnDef(4),
-		DTColumnDefBuilder.newColumnDef(5),
-		DTColumnDefBuilder.newColumnDef(6),
-		DTColumnDefBuilder.newColumnDef(7),
-		DTColumnDefBuilder.newColumnDef(8),
-		DTColumnDefBuilder.newColumnDef(9),
-		DTColumnDefBuilder.newColumnDef(10),
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies', function($scope, Api, $compile, Cookies) {
+	$scope.closeNotes();
+	$scope.selectedMessages = [];
+
+	var a =  '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
+		a += '<div ng-show="!selectedMessages[message.id]">';
+		a += '<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
+		a += '<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+		a += '</div';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
+		{ "name": "id", "data": "id", bSortable: false },
+		{ "name": "insertDate", "data": "insertDate", className: "date" },
+		{ "name": "host", "data": "host", bSortable: false },
+		{ "name": "originalId", "data": "originalId", bSortable: false },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false },
+		{ "name": "comment", "data": "comment", bSortable: false },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
+		{ "name": "label", "data": "label", bSortable: false },
 	];
 
-	$scope.messages = [];
-	Api.Get("adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage", function(data) {
-		$.extend($scope, data);
-	});
+	var filterCookie = Cookies.get("errorstorageFilter");
+	if(filterCookie) {
+		for(i in columns) {
+			var column = columns[i];
+			if(column.name && filterCookie[column.name] === false) {
+				column.visible = false;
+			}
+		}
+		$scope.displayColumn = filterCookie;
+	} else {
+		$scope.displayColumn = {
+			id: true,
+			insertDate: true,
+			host: true,
+			originalId: true,
+			correlationId: true,
+			comment: true,
+			expiryDate: true,
+			label: true,
+		}
+	}
 
-	$scope.deleteMessage = function(message) {
-		$scope.doDeleteMessage(message, function(messageId) {
-			for(x in $scope.messages) {
-				if($scope.messages[x].id == messageId) {
-					$scope.messages.splice(x, 1);
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$scope.selectedMessages[data.id] = false;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'asc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
+
+			var url = $scope.base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
 				}
 			}
-		});
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
 	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
+
+	$scope.updateFilter = function(column) {
+		Cookies.set("errorstorageFilter", $scope.displayColumn);
+
+		var table = $('#datatable').DataTable();
+		if(table) {
+			var tableColumn = table.column(column+":name");
+			if(tableColumn && tableColumn.length == 1)
+				tableColumn.visible( $scope.displayColumn[column] );
+			table.draw();
+		}
+	}
+
+	$scope.resendMessage = $scope.doResendMessage;
+	$scope.deleteMessage = $scope.doDeleteMessage;
+
+	$scope.selectAll = function() {
+		for(i in $scope.selectedMessages) {
+			$scope.selectedMessages[i] = true;
+		}
+	}
+	$scope.unselectAll = function() {
+		for(i in $scope.selectedMessages) {
+			$scope.selectedMessages[i] = false;
+		}
+	}
+
+	$scope.messagesResending = false;
+	$scope.messagesDeleting = false;
+	function getFormData() {
+		var messageIds = [];
+		for(i in $scope.selectedMessages) {
+			if($scope.selectedMessages[i]) {
+				messageIds.push(i);
+			}
+		}
+
+		var fd = new FormData();
+		fd.append("messageIds", messageIds);
+		return fd;
+	}
+	$scope.resendMessages = function() {
+		$scope.messagesResending = true;
+		Api.Post($scope.base_url, getFormData(), function() {
+			$scope.messagesResending = false;
+			$scope.addNote("success", "Successfully resent messages");
+			$scope.updateTable();
+		}, function(data) {
+			$scope.messagesResending = false;
+			$scope.addNote("danger", "Something went wrong, unable to resend all messages!");
+			$scope.updateTable();
+		});
+	}
+	$scope.deleteMessages = function() {
+		$scope.messagesDeleting = true;
+		Api.Delete($scope.base_url, getFormData(), function() {
+			$scope.messagesDeleting = false;
+			$scope.addNote("success", "Successfully deleted messages");
+			$scope.updateTable();
+		}, function(data) {
+			$scope.messagesDeleting = false;
+			$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
+			$scope.updateTable();
+		});
+	}
 }])
 
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
 	$scope.message = {};
+	$scope.closeNotes();
 
 	$scope.message.id = $state.params.messageId;
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
-	Api.Get(base_url+"/"+$scope.message.id, function(data) {
+	Api.Get($scope.base_url+"/"+$scope.message.id, function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
@@ -1221,10 +1351,17 @@ angular.module('iaf.beheerconsole')
 		return data;
 	}});
 
+	$scope.resendMessage = function(message) {
+		$scope.doResendMessage(message, function(messageId) {
+			//Go back to the error storage list if successful
+			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+		});
+	};
+
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
+			//Go back to the error storage list if successful
 			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
-			$scope.addNote("success", "Successfully removed message with ID: "+messageId);
 		});
 	};
 }])
@@ -1241,15 +1378,87 @@ angular.module('iaf.beheerconsole')
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
 	};
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 }])
 
-.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.messages = [];
+.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
 
-	Api.Get(base_url, function(data) {
-		$.extend($scope, data);
-	});
+	var a =  '<a ui-sref="pages.messagelog.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
+		{ "data": "id", bSortable: false },
+		{ "data": "insertDate", className: "date" },
+		{ "data": "type", bSortable: false },
+		{ "data": "host", bSortable: false },
+		{ "data": "originalId", bSortable: false },
+		{ "data": "correlationId", bSortable: false },
+		{ "data": "comment", bSortable: false },
+		{ "data": "expiryDate", className: "date", bSortable: false },
+		{ "data": "label", bSortable: false },
+	];
+
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'desc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
+
+			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
+				}
+			}
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
+	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		type: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
 }])
 
 .controller('AdapterMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
@@ -1286,15 +1495,87 @@ angular.module('iaf.beheerconsole')
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
 	};
+
+	$scope.updateTable = function() {
+		var table = $('#datatable').DataTable();
+		if(table)
+			table.draw();
+	};
 }])
 
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.messages = [];
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
 
-	Api.Get(base_url, function(data) {
-		$.extend($scope, data);
-	});
+	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	var columns = [
+		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
+		{ "data": "id", bSortable: false },
+		{ "data": "insertDate", className: "date" },
+		{ "data": "type", bSortable: false },
+		{ "data": "host", bSortable: false },
+		{ "data": "originalId", bSortable: false },
+		{ "data": "correlationId", bSortable: false },
+		{ "data": "comment", bSortable: false },
+		{ "data": "expiryDate", className: "date", bSortable: false },
+		{ "data": "label", bSortable: false },
+	];
+
+	$scope.dtOptions = {
+		rowCallback: function(row, data) {
+			var row = $(row);// .children("td:first").addClass("m-b-xxs");
+			row.children("td.date").each(function(_, element) {
+				var time = $(this).text();
+				if(time)
+					$(element).attr({"to-date": "", "time": time });
+			});
+			var scope = $scope.$new();
+			scope.message = data;
+			$compile(row)(scope);
+		},
+		searching: false,
+		scrollX: true,
+		orderCellsTop: true,
+		serverSide: true,
+		processing: true,
+		paging: true,
+		order: [[ 2, 'desc' ]],
+		columns: columns,
+		sAjaxDataProp: 'messages',
+		ajax: function (data, callback, settings) {
+			var start = data.start;
+			var length = data.length;
+			var order = data.order[0];
+			var direction = order.dir; // asc or desc
+
+			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
+			var search = $scope.search;
+			for(column in search) {
+				var value = search[column];
+				if(value) {
+					url += "&"+column+"="+value;
+				}
+			}
+			Api.Get(url, function(response) {
+				response.draw = data.draw;
+				response.recordsTotal = response.totalMessages;
+				response.recordsFiltered = response.skipMessages + response.messageCount;
+				callback(response);
+			});
+		}
+	};
+
+	$scope.search = {
+		id: "",
+		startDate: "",
+		type: "",
+		host: "",
+		messageId: "",
+		correlationId: "",
+		comment: "",
+		label: "",
+	};
 }])
 
 .controller('PipeMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
@@ -1354,7 +1635,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', function($scope, Api, Poller, $state) {
+.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', 'SweetAlert', function($scope, Api, Poller, $state, SweetAlert) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
 
@@ -1379,7 +1660,11 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
-		Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+		SweetAlert.Confirm({title:"Please confirm the deletion of '"+jobName+"'"}, function(imSure) {
+			if(imSure) {
+				Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+			}
+		});
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
@@ -1730,15 +2015,23 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
+.controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', 'Cookies', function($scope, Api, $timeout, $state, Cookies) {
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 	$scope.processingMessage = false;
+	$scope.form = {};
+
+	var executeQueryCookie = Cookies.get("executeQuery");
+	if(executeQueryCookie) {
+		$scope.form.query = executeQueryCookie.query;
+		//Maybe also prefill datasource and result type?
+	}
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0], resultType: data.resultTypes[0] };
+		$scope.form.datasource = data.datasources[0];
+		$scope.form.resultType = data.resultTypes[0];
 	});
 
 	$scope.submit = function(formData) {
@@ -1749,6 +2042,8 @@ angular.module('iaf.beheerconsole')
 		}
 		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
+
+		Cookies.set("executeQuery", formData);
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
@@ -1772,12 +2067,14 @@ angular.module('iaf.beheerconsole')
 	$scope.datasources = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
+	$scope.processingMessage = false;
 
 	Api.Get("jdbc", function(data) {
 		$scope.datasources = data.datasources;
 		$scope.form = {datasource: data.datasources[0]};
 	});
 	$scope.submit = function(formData) {
+		$scope.processingMessage = true;
 		if(!formData || !formData.table) {
 			$scope.error = "Please specify a datasource and table name!";
 			return;
@@ -1822,10 +2119,12 @@ angular.module('iaf.beheerconsole')
 				}
 				$scope.result.push(orderedRow);
 			}
+			$scope.processingMessage = false;
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData.error) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.query = "";
+			$scope.processingMessage = false;
 		});
 	};
 	$scope.reset = function() {

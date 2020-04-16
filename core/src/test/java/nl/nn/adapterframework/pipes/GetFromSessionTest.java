@@ -52,7 +52,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("dummyString", session);
+		PipeRunResult prr = doPipe(pipe, "dummyString", session);
 		String result = (String) prr.getResult();
 		assertEquals(DUMMY_DATA, result.trim());
 	}
@@ -63,7 +63,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		assertNull(prr.getResult());
 	}
 
@@ -73,7 +73,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		String result = (String) prr.getResult();
 		assertEquals(DUMMY_DATA, result);
 	}
@@ -84,7 +84,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		byte[] result = (byte[]) prr.getResult();
 		assertEquals(DUMMY_DATA, new String(result));
 	}
@@ -95,7 +95,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		InputStream result = (InputStream) prr.getResult();
 		assertEquals(DUMMY_DATA, Misc.streamToString(result));
 	}
@@ -107,7 +107,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		String result = (String) prr.getResult();
 		assertEquals("<items />", result.trim());
 	}
@@ -119,7 +119,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		String result = (String) prr.getResult();
 
 		assertNotNull(result);

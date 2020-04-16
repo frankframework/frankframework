@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.AsposeLicense
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -132,63 +133,35 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		InputStream binaryInputStream = null;
-		if (input instanceof InputStream) {
-			binaryInputStream = (InputStream) input;
-		} else if (input instanceof byte[]) {
-			binaryInputStream = new ByteArrayInputStream((byte[]) input);
-		} else {
-			try {
-				binaryInputStream = (input == null) ? null
-						: new ByteArrayInputStream(input.toString().getBytes(charset));
-			} catch (UnsupportedEncodingException e) {
-				throw new PipeRunException(this,
-						getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
-			}
-		}
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+		
+		try (InputStream binaryInputStream = input.asInputStream(charset)) {
 
-		if ("combine".equalsIgnoreCase(action)) {
-			// Get main document to attach attachments
-			InputStream mainPdf = null;
-			Object mainPdfObject = session.get(mainDocumentSessionKey);
-			if (mainPdfObject instanceof InputStream) {
-				mainPdf = (InputStream) mainPdfObject;
-			} else if (mainPdfObject instanceof byte[]) {
-				mainPdf = new ByteArrayInputStream((byte[]) mainPdfObject);
-			} else {
-				try {
-					mainPdf = (mainPdfObject == null) ? null
-							: new ByteArrayInputStream(mainPdfObject.toString().getBytes(charset));
-				} catch (UnsupportedEncodingException e) {
-					throw new PipeRunException(this,
-							getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
-				}
-			}
-			// Get file name of attachment
-			String fileNameToAttach = (String) session.get(fileNameToAttachSessionKey);
-
-			InputStream result = PdfAttachmentUtil.combineFiles(mainPdf, binaryInputStream, fileNameToAttach + ".pdf");
-
-			session.put("CONVERSION_OPTION", ConversionOption.SINGLEPDF);
-			session.put(mainDocumentSessionKey, result);
-
-		} else if ("convert".equalsIgnoreCase(action)) {
-			String fileName = (String) session.get("fileName");
-			CisConversionResult cisConversionResult = null;
-			try {
+			if ("combine".equalsIgnoreCase(action)) {
+				// Get main document to attach attachments
+				InputStream mainPdf = Message.asInputStream(session.get(mainDocumentSessionKey),charset);
+				// Get file name of attachment
+				String fileNameToAttach = Message.asString(session.get(fileNameToAttachSessionKey));
+	
+				InputStream result = PdfAttachmentUtil.combineFiles(mainPdf, binaryInputStream, fileNameToAttach + ".pdf");
+	
+				session.put("CONVERSION_OPTION", ConversionOption.SINGLEPDF);
+				session.put(mainDocumentSessionKey, result);
+	
+			} else if ("convert".equalsIgnoreCase(action)) {
+				String fileName = (String) session.get("fileName");
+				CisConversionResult cisConversionResult = null;
 				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, loader.getPathToExtractFonts());
-				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
-						saveSeparate ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName, saveSeparate ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 				XmlBuilder main = new XmlBuilder("main");
 				cisConversionResult.buildXmlFromResult(main, cisConversionResult, true);
 				
 				session.put("documents", main.toXML());
-			} catch (IOException e) {
-				throw new PipeRunException(this, "", e);
 			}
+			return new PipeRunResult(getForward(), "");
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
 		}
-		return new PipeRunResult(getForward(), "");
 	}
 
 	public String getAction() {
