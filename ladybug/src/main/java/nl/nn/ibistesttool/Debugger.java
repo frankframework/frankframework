@@ -76,8 +76,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input) {
-		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input);
+	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input) {
+		return Message.asMessage(testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input.asObject()));
 	}
 
 	@Override
@@ -97,9 +97,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Object input) {
+	public Message pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Message input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		Object result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
+		Message result = Message.asMessage(testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input.asObject()));
 		if (pipeDescription.getDescription() != null) {
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
@@ -112,9 +112,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 	
 	@Override
-	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Object output) {
+	public Message pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Message output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output);
+		return Message.asMessage(testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output.asObject()));
 	}
 
 	@Override
@@ -126,12 +126,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Message senderInput(ISender sender, String correlationId, Message input) {
-		return (Message)testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
+		return Message.asMessage(testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input.asObject()));
 	}
 
 	@Override
 	public Message senderOutput(ISender sender, String correlationId, Message output) {
-		return (Message)testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
+		return Message.asMessage(testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output.asObject()));
 	}
 
 	@Override
@@ -203,8 +203,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Object preserveInput(String correlationId, Object input) {
-		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
+	public Message preserveInput(String correlationId, Message input) {
+		return Message.asMessage(testTool.outputpoint(correlationId, null, "PreserveInput", input.asObject()));
 	}
 	
 	@Override

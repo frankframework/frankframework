@@ -131,5 +131,21 @@ public class ParameterTest {
 		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
 	}
 
+	@Test
+	public void testEmptyDefault() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("dummy");
+		p.setDefaultValue("");
+		p.configure();
+		
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		Message message = new Message("fakeMessage");
+		
+		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
 
 }

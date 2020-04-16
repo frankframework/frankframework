@@ -6,7 +6,8 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
@@ -44,7 +45,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
 		
 		String result = (String)prr.getResult();
 		System.out.println("result ["+result+"]");
@@ -92,7 +93,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
 		
 		String result = (String)prr.getResult();
 		System.out.println("result ["+result+"]");
@@ -148,7 +149,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
 		
 		String result = (String)prr.getResult();
 		System.out.println("result ["+result+"]");
@@ -182,7 +183,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSessionBase());
 		
 		String result = (String)prr.getResult();
 		System.out.println("result ["+result+"]");

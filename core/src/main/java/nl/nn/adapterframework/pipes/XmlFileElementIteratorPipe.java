@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,18 +33,22 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
  * 
  * @author  Peter Leeuwenburgh
  */
+@Deprecated
+@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with containerElement or targetElement")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
@@ -81,18 +86,37 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 
 		@Override
+		public void startDocument() throws SAXException {
+			try {
+				callback.startIterating();
+			} catch (SenderException | TimeOutException | IOException e) {
+				throw new SaxException(e);
+			}
+			super.startDocument();
+			
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			super.endDocument();
+			try {
+				callback.endIterating();
+			} catch (SenderException | TimeOutException | IOException e) {
+				throw new SaxException(e);
+			}
+		}
+
+		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			elements.add(localName);
 			if ((getElementName() != null && localName.equals(getElementName()))
-					|| (getElementChain() != null && elementsToString().equals(
-							getElementChain()))) {
+					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				sElem = true;
 			}
 			if (sElem) {
 				elementBuffer.append("<" + localName);
 				for (int i = 0; i < attributes.getLength(); i++) {
-					elementBuffer.append(" " + attributes.getLocalName(i)
-							+ "=\"" + attributes.getValue(i) + "\"");
+					elementBuffer.append(" " + attributes.getLocalName(i) + "=\"" + attributes.getValue(i) + "\"");
 				}
 				elementBuffer.append(">");
 			}
@@ -103,18 +127,15 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			int lastIndex = elements.size() - 1;
 			String lastElement = (String) elements.get(lastIndex);
 			if (!lastElement.equals(localName)) {
-				throw new SAXException("expected end element [" + lastElement
-						+ "] but got end element [" + localName + "]");
+				throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 			}
 			if (sElem) {
 				elementBuffer.append("</" + localName + ">");
 			}
 			if ((getElementName() != null && localName.equals(getElementName()))
-					|| (getElementChain() != null && elementsToString().equals(
-							getElementChain()))) {
+					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				try {
-					stopRequested = !callback.handleItem(elementBuffer
-							.toString());
+					stopRequested = !callback.handleItem(elementBuffer.toString());
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
@@ -193,6 +214,11 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			}
 			if (!handler.isStopRequested()) {
 				throw new SenderException("Could not extract list of elements [" + getElementName() + "] using sax parser", e);
+			}
+			try {
+				handler.endDocument();
+			} catch (SAXException e1) {
+				throw new SenderException("could not endDocument after stop was requested",e1);
 			}
 		}
 	}

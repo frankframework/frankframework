@@ -1,4 +1,4 @@
-<transaction xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/Transaction/transaction.xsd">
+<transaction>
 	<invoice>1</invoice>
 	<vendor>A</vendor>
 	<customer>B</customer>

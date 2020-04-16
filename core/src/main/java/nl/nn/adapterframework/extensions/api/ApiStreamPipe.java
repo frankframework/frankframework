@@ -23,10 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.pipes.StreamPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -156,7 +156,7 @@ public class ApiStreamPipe extends StreamPipe {
 	private String selectMessageKey(String slotId, String messageId)
 			throws JdbcException {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
-				+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
+				+ ITransactionalStorage.TYPE_MESSAGESTORAGE
 				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
 				+ "'";
 		Connection conn = dummyQuerySender.getConnection();

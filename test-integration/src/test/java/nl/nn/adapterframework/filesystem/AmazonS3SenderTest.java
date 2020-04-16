@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
 import nl.nn.adapterframework.stream.Message;
 
@@ -126,8 +125,6 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		p.setName("destinationFileName");
 		p.setSessionKey("destinationFileName");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		if (_fileExists(dest)) {
 			_deleteFile(null, dest);
 		}
