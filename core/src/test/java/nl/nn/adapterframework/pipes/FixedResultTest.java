@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import jdk.internal.org.xml.sax.SAXParseException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import org.junit.BeforeClass;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import javax.xml.xpath.XPathException;
 import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
@@ -110,7 +112,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     }
     @Test
     public void xsltFailForTransformation() throws Exception{
-        exception.expect(SAXParseException.class);
+        exception.expect(PipeRunException.class);
         Parameter param = new Parameter();
         param.setName("param1");
         param.setValue("abs");
