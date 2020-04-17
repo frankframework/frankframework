@@ -26,13 +26,11 @@ import static org.junit.Assert.*;
 public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     private String pipeForwardThen = "success";
-    private String pipeForwardElse = "else";
 
     @Mock
     private IPipeLineSession session = new PipeLineSessionBase();
 
-    @Override
-    public MoveFilePipe createPipe() { return new MoveFilePipe(); }
+
 
     @ClassRule
     public static TemporaryFolder testFolderSource = new TemporaryFolder();
@@ -54,6 +52,9 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     public static TemporaryFolder testFolderDelete = new TemporaryFolder();
 
     private static String deleteFolderPath;
+
+    @Override
+    public MoveFilePipe createPipe() { return new MoveFilePipe(); }
 
     @BeforeClass
     public static void setUpTest() throws IOException {
@@ -200,7 +201,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Test
     @Order(15)
-    public void AppendFilesNotCompatible() throws ConfigurationException, PipeStartException, PipeRunException {
+    public void appendFilesNotCompatible() throws ConfigurationException, PipeStartException, PipeRunException {
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath);
         pipe.setFilename("notCompatible.txt");

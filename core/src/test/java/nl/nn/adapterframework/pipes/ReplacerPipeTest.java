@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.After;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * ReplacerPipe Tester.
@@ -20,13 +21,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         return new ReplacerPipe();
     }
 
-    @Before
-    public void before() throws Exception {
-    }
-
-    @After
-    public void after() throws Exception {
-    }
 
     @Test
     public void everythingNull() throws Exception {
@@ -34,14 +28,18 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         exception.expectMessage("cannot have a null replace-attribute");
         pipe.setFind("laa");
         pipe.configure();
-        doPipe(pipe, "", session);
+        PipeRunResult res = doPipe(pipe, "", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
     public void getFindEmpty() throws Exception {
         pipe.setFind("");
         pipe.configure();
-        doPipe(pipe, "dsf", session);
+        PipeRunResult res = doPipe(pipe, "dsf", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     /**
@@ -54,12 +52,12 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplace("yo");
         pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, pipe.getFind(), session);
+        doPipe(pipe, pipe.getFind(), session);
         assertEquals("sina\nmurat\nniels", pipe.getFind());
     }
 
     @Test
-    public void ReplaceNonXMLChar() throws Exception{
+    public void replaceNonXMLChar() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
         pipe.setReplaceNonXmlChar("k");
@@ -70,7 +68,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
     }
 
     @Test
-    public void ReplaceStringSuccess() throws Exception{
+    public void replaceStringSuccess() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
         pipe.setReplaceNonXmlChars(true);
@@ -80,7 +78,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
     }
 
     @Test
-    public void ReplaceNonXMLCharLongerThanOne() throws Exception{
+    public void replaceNonXMLCharLongerThanOne() throws Exception{
         exception.expect(ConfigurationException.class);
         exception.expectMessage("replaceNonXmlChar [klkl] has to be one character");
         pipe.setFind("test");

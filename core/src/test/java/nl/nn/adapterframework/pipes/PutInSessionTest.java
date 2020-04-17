@@ -2,12 +2,13 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
 
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * PutInSession Tester.
@@ -67,7 +68,9 @@ No Difference??
         exception.expectMessage("attribute sessionKey must be specified");
         exception.expect(ConfigurationException.class);
         pipe.setValue("val");
-        pipe.configure(); pipe.doPipe(null, session);
+        pipe.configure();
+        PipeRunResult res = pipe.doPipe(null, session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
     }
 
 

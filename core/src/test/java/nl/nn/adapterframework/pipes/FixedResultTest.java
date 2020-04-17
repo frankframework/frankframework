@@ -12,6 +12,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * FixedResult Tester.
@@ -77,6 +78,8 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test

@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.After;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * RhinoPipe Tester.
@@ -21,13 +22,6 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         return new RhinoPipe();
     }
 
-    @Before
-    public void before() throws Exception {
-    }
-
-    @After
-    public void after() throws Exception {
-    }
 
 
 
@@ -60,6 +54,8 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "3", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
@@ -69,6 +65,8 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "3", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
     @Test
     public void testDoPipeFailAsWrongFileName() throws Exception {

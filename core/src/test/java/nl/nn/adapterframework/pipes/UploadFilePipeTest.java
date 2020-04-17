@@ -11,9 +11,6 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.rules.TemporaryFolder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
 import org.mockito.Mock;
 
 import java.io.BufferedInputStream;
@@ -22,6 +19,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import java.util.zip.ZipInputStream;
+
+import static org.junit.Assert.*;
 
 /**
  * UploadFilePipe Tester.
@@ -67,9 +66,6 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 
     }
 
-    @After
-    public void after() throws Exception {
-    }
 
     /**
      * Method: configure()
@@ -77,7 +73,9 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     @Test
     public void testNullSessionKey() throws Exception {
         exception.expect(NullPointerException.class);
-        doPipe(pipe, "das", session);
+        PipeRunResult res = doPipe(pipe, "das", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
@@ -85,7 +83,9 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         //exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] got null value from session under key [fdsf123]");
         pipe.setSessionKey("fdsf123");
-        doPipe(pipe, "das", session1);
+       PipeRunResult res = doPipe(pipe, "das", session1);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     /**
@@ -99,6 +99,8 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         pipe.setDirectory(sourceFolderPath);
         session1.put("key", "32434");
         PipeRunResult res = doPipe(pipe, "dsfdfs", session1);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     /**
@@ -128,6 +130,8 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         session1.put("key", zis);
         session1.put("fileName", "1.txt");
         PipeRunResult res =doPipe(pipe, "dsfdf", session1);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     /**

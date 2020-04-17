@@ -4,8 +4,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
 
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Text2XmlPipe Tester.
@@ -79,23 +78,12 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
     public void testEmptyXmlTag() throws Exception {
         exception.expect(ConfigurationException.class);
         exception.expectMessage("You have not defined xmlTag");
-        pipe.configure(); doPipe(pipe, "bara", session);
-    }
+        pipe.configure();
+        PipeRunResult res = doPipe(pipe, "bara", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
 
-    /**
-     * Method: setXmlTag(String xmlTag)
-     */
-    @Test
-    public void testSetXmlTag() throws Exception {
-        pipe.setSplitLines(true);
-        doPipe(pipe, new Text2XmlPipe(), session);
     }
-
-    @Test
-    public void nullInput() throws Exception {
-        pipe.setXmlTag("balltype"); pipe.setIncludeXmlDeclaration(false); pipe.setSplitLines(false);
-        pipe.doPipe(null, session);
-    }
+    
 
 
 }

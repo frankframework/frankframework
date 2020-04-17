@@ -5,8 +5,7 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * PasswordGeneratorPipe Tester.
@@ -15,13 +14,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPipe> {
 
-    @Before
-    public void before() throws Exception {
-    }
-
-    @After
-    public void after() throws Exception {
-    }
 
     @Override
     public PasswordGeneratorPipe createPipe() {
@@ -35,6 +27,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
     public void testConfigure() throws Exception {
         pipe.setUseSecureRandom(true);
         pipe.configure();
+
     }
     /**
      * Method: generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers)
@@ -44,7 +37,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
         pipe.configure();
         String res = pipe.generate(3, 4, 2, 1);
         assertEquals(res.length(), 10);
-        assertTrue(!res.isEmpty());
+        assertFalse(res.isEmpty());
     }
 
     /**

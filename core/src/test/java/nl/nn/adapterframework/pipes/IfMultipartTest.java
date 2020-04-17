@@ -7,7 +7,9 @@ import org.junit.Test;
 import org.junit.Before; 
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -18,8 +20,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 * @author <Sina Sen>
 */ 
 public class IfMultipartTest extends PipeTestBase<IfMultipart>{
-    private final String thenForward = "then";
-    private final String elseForward = "else";
 
 
     private MockHttpServletRequest request;
@@ -41,14 +41,18 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
-        pipe.doPipe(null, session);
+        PipeRunResult res = pipe.doPipe(null, session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
     public void testInputNotHTTPRequest() throws Exception {
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] expected HttpServletRequest as input, got [Message]");
-        doPipe(pipe, "i am a string not a http req", session);
+        PipeRunResult res = doPipe(pipe, "i am a string not a http req", session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
@@ -84,6 +88,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         pipe.setElseForwardName("elsee");
         PipeRunResult res = doPipe(pipe, request, session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
     }
 
 

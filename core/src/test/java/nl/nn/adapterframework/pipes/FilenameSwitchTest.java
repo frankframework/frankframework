@@ -4,19 +4,16 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Before; 
-import org.junit.After;
+
 import org.mockito.Mock;
 
 import static org.junit.Assert.*;
-/** 
+
+/**
 * FilenameSwitch Tester. 
 * 
 * @author <Sina Sen>
-* @since <pre>Feb 28, 2020</pre> 
-* @version 1.0 
 */ 
 public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
 
@@ -61,6 +58,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         pipe.setNotFoundForwardName(null);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "", session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
     }
 
     @Test
@@ -68,6 +66,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         exception.expect(NullPointerException.class);
         pipe.configure();
         PipeRunResult res = pipe.doPipe(null, session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
     }
 
     @Test

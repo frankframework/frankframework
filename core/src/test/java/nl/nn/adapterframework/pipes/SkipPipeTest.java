@@ -5,8 +5,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * SkipPipe Tester.
@@ -36,7 +35,7 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
     public void testDoPipeWithByteArray() throws Exception {
         byte[] myvar = "Any String you want".getBytes(); pipe.setSkip(2);
         PipeRunResult res = doPipe(pipe, myvar, session);
-        assertTrue(res.getResult().toString() != "");
+        assertNotEquals(res.getResult().toString(),  "");
 
     }
     @Test

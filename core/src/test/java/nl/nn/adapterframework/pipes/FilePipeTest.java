@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import java.io.ByteArrayInputStream;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * FilePipe Tester.
@@ -34,7 +34,6 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     private IPipeLineSession session1 = new PipeLineSessionBase();
 
     private byte[] var = "Some String you want".getBytes();
-    private ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(var);
 
     @Override
     public FilePipe createPipe() {
