@@ -31,5 +31,14 @@ public class LocalFileSystemPipe extends FileSystemPipe<File, LocalFileSystem>{
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
-	
+
+	@IbisDoc({"2", "Filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
+	public void setWildcard(String wildcard) {
+		getFileSystem().setWildcard(wildcard);
+	}
+
+	@IbisDoc({"3", "Filter of files to be excluded when looking in inputdirectory", ""})
+	public void setExcludeWildcard(String excludeWildcard) {
+		getFileSystem().setExcludeWildcard(excludeWildcard);
+	}
 }
