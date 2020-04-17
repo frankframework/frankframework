@@ -83,7 +83,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         assertFalse(res.getPipeForward().getName().isEmpty());
 
     }
-    
+
 
 
 }

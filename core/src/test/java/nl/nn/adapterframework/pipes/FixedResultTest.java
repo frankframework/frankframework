@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import jdk.internal.org.xml.sax.SAXParseException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -10,6 +11,8 @@ import org.junit.Test;
 
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -107,7 +110,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     }
     @Test
     public void xsltFailForTransformation() throws Exception{
-        exception.expectMessage("Pipe [FixedResult under test] msgId [null] got error transforming resource [file:/Users/apollo11/Desktop/iaf2/core/target/test-classes/Xslt/importNotFound/name2.xsl] from [/Xslt/importNotFound/name2.xsl]: (XPathException): (SAXParseException) line [1] column [1]: Content is not allowed in prolog.");
+        exception.expect(SAXParseException.class);
         Parameter param = new Parameter();
         param.setName("param1");
         param.setValue("abs");
