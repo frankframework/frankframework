@@ -29,15 +29,14 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
 		
-		if (_fileExists(filename)) {
+		if (folder!=null && !_folderExists(folder)) {
+			_createFolder(folder);
+		}
+
+		if (_fileExists(folder, filename)) {
 			_deleteFile(folder, filename);
 		}
 
-		if (folder!=null) {
-			if  (_folderExists(folder)) {
-				_createFolder(folder);
-			}
-		}
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			createFile(folder, filename+"."+i,contents+i);
 		}
@@ -212,15 +211,14 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
 		
-		if (_fileExists(filename)) {
+		if (dstFolder!=null && !_folderExists(dstFolder)) {
+			_createFolder(dstFolder);
+		}
+
+		if (_fileExists(dstFolder, filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
-		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
-				_createFolder(dstFolder);
-			}
-		}
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			createFile(dstFolder, filename+"."+i,contents+i);
 		}
