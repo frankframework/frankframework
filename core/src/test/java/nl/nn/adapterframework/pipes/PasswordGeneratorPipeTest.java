@@ -12,8 +12,6 @@ import static org.junit.Assert.assertTrue;
  * PasswordGeneratorPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 5, 2020</pre>
  */
 public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPipe> {
 
@@ -54,10 +52,17 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
      */
     @Test
     public void testDoPipe() throws Exception {
-        pipe.setLCharacters("abcd"); pipe.setNumbers("12342"); pipe.setUCharacters("ASDF"); pipe.setSigns("!@#@"); pipe.setNumOfDigits(3);
-        pipe.setNumOfLCharacters(4); pipe.setNumOfUCharacters(2); pipe.setNumOfSigns(2); pipe.setUseSecureRandom(false);
+        pipe.setLCharacters("abcd");
+        pipe.setNumbers("12342");
+        pipe.setUCharacters("ASDF");
+        pipe.setSigns("!@#@");
+        pipe.setNumOfDigits(3);
+        pipe.setNumOfLCharacters(4);
+        pipe.setNumOfUCharacters(2);
+        pipe.setNumOfSigns(2);
+        pipe.setUseSecureRandom(false);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("pipey", session);
+        PipeRunResult res = doPipe(pipe, "pipey", session);
         assertEquals(res.getResult().toString().length(), 11);
     }
 

@@ -2,12 +2,9 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
+
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
@@ -21,8 +18,6 @@ import java.util.zip.ZipInputStream;
  * UnzipPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 20, 2020</pre>
  */
 public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
@@ -59,6 +54,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
         sourceFolderPath = testFolderSource.getRoot().getPath();
         destFolderPath = testFolderDest.getRoot().getPath();
         newFile = testFolderSource.newFile("1.txt");
+
         FileWriter fw = new FileWriter(newFile);
         fw.write("asdfdf");
         fw.close();
@@ -69,6 +65,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
      */
+    /*
     @Test
     public void testDoPipe() throws Exception {
         pipe.setDirectory(destFolderPath);
@@ -76,7 +73,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
         PipeRunResult res = pipe.doPipe(newFile.getPath(), session1);
         String reso = res.getResult().toString();
     }
-
+*/
 
 
 

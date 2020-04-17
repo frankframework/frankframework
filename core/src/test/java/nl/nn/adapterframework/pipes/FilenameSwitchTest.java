@@ -60,7 +60,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named []");
         pipe.setNotFoundForwardName(null);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("", session);
+        PipeRunResult res = doPipe(pipe, "", session);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
 
     @Test
     public void testValidForwardName() throws Exception {
-        PipeRunResult res = pipe.doPipe("CreateHelloWorld/success", session);
+        PipeRunResult res = doPipe(pipe, "CreateHelloWorld/success", session);
         assertEquals(res.getPipeForward().getName(), "success");
 
     }
@@ -80,7 +80,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     @Test
     public void testValidForwardNameToLowerCase() throws Exception {
         pipe.setToLowercase(true);
-        PipeRunResult res = pipe.doPipe("https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
+        PipeRunResult res = doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
         assertEquals(res.getPipeForward().getName(), "success");
     }
 
@@ -88,7 +88,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     public void testValidForwardNameToLowerCaseFalse() throws Exception {
         exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named [SUCCESS]");
         pipe.setToLowercase(false);
-        PipeRunResult res = pipe.doPipe("https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
+        PipeRunResult res = doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
         assertNotEquals(res.getPipeForward().getName(), "success");
     }
 
@@ -96,7 +96,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     public void testWorkWithNothFoundForwardName() throws Exception {
         pipe.setNotFoundForwardName("success");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("https:\\www.delft.nl\\/corona-besmettingsgeval-gevonden-in-delft/asdSUCCasdESS", session);
+        PipeRunResult res = doPipe(pipe, "https:\\www.delft.nl\\/corona-besmettingsgeval-gevonden-in-delft/asdSUCCasdESS", session);
         assertEquals(res.getPipeForward().getName(), "success");
     }
 

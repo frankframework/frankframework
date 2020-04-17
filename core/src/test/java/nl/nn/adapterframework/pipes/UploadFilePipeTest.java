@@ -17,22 +17,17 @@ import static org.junit.Assert.assertNotEquals;
 import org.mockito.Mock;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.nio.file.Files;
+
 import java.util.zip.ZipInputStream;
 
 /**
  * UploadFilePipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 5, 2020</pre>
+
  */
 public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 
@@ -82,7 +77,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     @Test
     public void testNullSessionKey() throws Exception {
         exception.expect(NullPointerException.class);
-        pipe.doPipe("das", session);
+        doPipe(pipe, "das", session);
     }
 
     @Test
@@ -90,7 +85,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         //exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] got null value from session under key [fdsf123]");
         pipe.setSessionKey("fdsf123");
-        pipe.doPipe("das", session1);
+        doPipe(pipe, "das", session1);
     }
 
     /**
@@ -99,9 +94,11 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     @Test
     public void testDoPipeWrongInputFormat() throws Exception {
         exception.expect(ClassCastException.class);
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
+        String key = "key";
+        pipe.setSessionKey(key);
+        pipe.setDirectory(sourceFolderPath);
         session1.put("key", "32434");
-        PipeRunResult res =pipe.doPipe("dsfdfs", session1);
+        PipeRunResult res = doPipe(pipe, "dsfdfs", session1);
     }
 
     /**
@@ -109,9 +106,12 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
      */
     @Test
     public void testDoPipeSuccess() throws Exception {
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
-        session1.put("key", zis); session1.put("fileName", "1.zip");
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        String key = "key";
+        pipe.setSessionKey(key);
+        pipe.setDirectory(sourceFolderPath);
+        session1.put("key", zis);
+        session1.put("fileName", "1.zip");
+        PipeRunResult res = doPipe(pipe, "dsfdf", session1);
         assertEquals(sourceFolderPath, res.getResult().toString());
     }
 
@@ -122,9 +122,12 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     public void testDoPipeFailWrongExtension() throws Exception {
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] file extension [txt] should be 'zip'");
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectory(sourceFolderPath);
-        session1.put("key", zis); session1.put("fileName", "1.txt");
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        String key = "key";
+        pipe.setSessionKey(key);
+        pipe.setDirectory(sourceFolderPath);
+        session1.put("key", zis);
+        session1.put("fileName", "1.txt");
+        PipeRunResult res =doPipe(pipe, "dsfdf", session1);
     }
 
     /**
@@ -132,9 +135,13 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
      */
     @Test
     public void testDoPipeSuccessWithDirectorySessionKey() throws Exception {
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
-        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath);
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        String key = "key";
+        pipe.setSessionKey(key);
+        pipe.setDirectorySessionKey("key2");
+        session1.put("key", zis);
+        session1.put("fileName", "1.zip");
+        session1.put("key2", sourceFolderPath);
+        PipeRunResult res = doPipe(pipe, "dsfdf", session1);
         assertEquals(sourceFolderPath, res.getResult().toString());
     }
     /**
@@ -142,9 +149,12 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
      */
     @Test
     public void testDoPipeSuccessWithoutDirectory() throws Exception {
-        String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("");
-        session1.put("key", zis); session1.put("fileName", "1.zip");
-        PipeRunResult res =pipe.doPipe("hoooray.zip", session1);
+        String key = "key";
+        pipe.setSessionKey(key);
+        pipe.setDirectorySessionKey("");
+        session1.put("key", zis);
+        session1.put("fileName", "1.zip");
+        PipeRunResult res =doPipe(pipe, "hoooray.zip", session1);
         assertEquals("hoooray.zip", res.getResult().toString());
     }
 
@@ -155,7 +165,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     public void testDoPipeCreateNonExistingDirectory() throws Exception {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
         session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+"/new_dir");
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        PipeRunResult res =doPipe(pipe, "dsfdf", session1);
         assertEquals(sourceFolderPath+"/new_dir", res.getResult().toString());
     }
 
@@ -166,7 +176,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     public void testDoPipeCantCreateNonExistingDirectory() throws Exception {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
         session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", "");
-        PipeRunResult res =pipe.doPipe("dsfdf", session1);
+        PipeRunResult res = doPipe(pipe, "dsfdf", session1);
         assertNotEquals("something", res.getResult().toString());
         assertEquals(null, res.getPipeForward());
     }

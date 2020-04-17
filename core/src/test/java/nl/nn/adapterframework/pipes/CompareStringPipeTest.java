@@ -9,8 +9,7 @@ import nl.nn.adapterframework.core.PipeForward;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeForward;
+
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 
@@ -31,21 +30,21 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		pipe.configure();
 	}
 
-//	@Test
-//	public void setSessionKey1() {
-//		String dummyKey = "kappa123";
-//		pipe.setSessionKey1(dummyKey);
-//		String retrievedKey = pipe.getSessionKey1();
-//		assertEquals(dummyKey, retrievedKey);
-//	}
-//
-//	@Test
-//	public void setSessionKey2() {
-//		String dummyKey = "Kappa123";
-//		pipe.setSessionKey2(dummyKey);
-//		String retrievedKey = pipe.getSessionKey2();
-//		assertEquals(dummyKey, retrievedKey);
-//	}
+	@Test
+	public void setSessionKey1() {
+		String dummyKey = "kappa123";
+		pipe.setSessionKey1(dummyKey);
+		String retrievedKey = pipe.getSessionKey1();
+		assertEquals(dummyKey, retrievedKey);
+	}
+
+	@Test
+	public void setSessionKey2() {
+		String dummyKey = "Kappa123";
+		pipe.setSessionKey2(dummyKey);
+		String retrievedKey = pipe.getSessionKey2();
+		assertEquals(dummyKey, retrievedKey);
+	}
 	
 	@Test
 	public void testLessThan() throws Exception {
@@ -105,14 +104,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	
 
 
-    @Test(expected = ConfigurationException.class)
-    public void emptySessionKeys() throws ConfigurationException {
-        PipeForward forw = new PipeForward("lessthan", "/Users/apollo11/Desktop/iaf2/core/src/test/resources/Pipes");
-        pipe.registerForward(forw);
-        pipe.setSessionKey1("");
-        pipe.setSessionKey2("");
-        pipe.configure();
-    }
+
 
 
 

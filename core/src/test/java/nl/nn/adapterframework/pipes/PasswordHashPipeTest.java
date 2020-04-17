@@ -8,20 +8,11 @@ import org.junit.Before;
 import org.junit.After;
 import org.mockito.Mock;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
-import static nl.nn.adapterframework.util.PasswordHash.PBKDF2_ALGORITHM;
 import static org.junit.Assert.assertEquals;
 
 /**
  * PasswordHashPipe Tester.
- *
  * @author <Sina>
- * @version 1.0
- * @since <pre>Apr 12, 2020</pre>
  */
 public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
 
@@ -48,7 +39,7 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
     public void testHashPipe() throws Exception {
         session.put("key", "3:2342:2342" );
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("password", session);
+        PipeRunResult res = doPipe(pipe, "password", session);
         assertEquals("success", res.getPipeForward().getName());
     }
 
@@ -56,18 +47,20 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
     public void testValidatePipe() throws Exception {
 
         String sc = PasswordHash.createHash("password");
-        session.put("key", sc ); pipe.setHashSessionKey("key");
+        session.put("key", sc );
+        pipe.setHashSessionKey("key");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("password", session);
+        PipeRunResult res = doPipe(pipe, "password", session);
         assertEquals("success", res.getPipeForward().getName());
     }
 
     @Test
     public void testValidatePipeFailAsNotTheSame() throws Exception {
 
-        session.put("key", "2:22:22"); pipe.setHashSessionKey("key");
+        session.put("key", "2:22:22");
+        pipe.setHashSessionKey("key");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("password", session);
+        PipeRunResult res = doPipe(pipe, "password", session);
         assertEquals(null, res.getPipeForward());
     }
 

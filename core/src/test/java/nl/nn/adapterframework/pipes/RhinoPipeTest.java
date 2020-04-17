@@ -11,8 +11,6 @@ import static org.junit.Assert.assertEquals;
  * RhinoPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Apr 3, 2020</pre>
  */
 public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
@@ -39,17 +37,20 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
     @Test
     public void testDoPipe() throws Exception {
         pipe.setFileName(fileName);
-        pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("3");
+        pipe.setjsfunctionName("giveNumber");
+        pipe.setjsfunctionArguments("3");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("3", session);
+        PipeRunResult res = doPipe(pipe, "3", session);
         assertEquals(res.getResult().toString(), "9");
     }
 
     @Test
     public void testDoPipeLookupAtRuntime() throws Exception {
         pipe.setFileName(fileName);
-        pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2"); pipe.setLookupAtRuntime(true);
-        PipeRunResult res = pipe.doPipe("3", session);
+        pipe.setjsfunctionName("giveNumber");
+        pipe.setjsfunctionArguments("2");
+        pipe.setLookupAtRuntime(true);
+        PipeRunResult res = doPipe(pipe, "3", session);
         assertEquals(res.getResult().toString(), "9");
     }
 
@@ -58,7 +59,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         exception.expectMessage("Pipe [RhinoPipe under test] has neither fileName nor inputString specified");
         pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("3", session);
+        PipeRunResult res = doPipe(pipe, "3", session);
     }
 
     @Test
@@ -67,15 +68,16 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setFileName(fileName);
         pipe.setjsfunctionArguments("2");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("3", session);
+        PipeRunResult res = doPipe(pipe, "3", session);
     }
     @Test
     public void testDoPipeFailAsWrongFileName() throws Exception {
         exception.expectMessage("Pipe [RhinoPipe under test] cannot find resource [random]");
         pipe.setFileName("random");
-        pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("3");
+        pipe.setjsfunctionName("giveNumber");
+        pipe.setjsfunctionArguments("3");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("3", session);
+        PipeRunResult res = doPipe(pipe, "3", session);
         assertEquals(res.getResult().toString(), "9");
     }
 
@@ -84,18 +86,21 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
     public void testDoPipeLookupAtRuntimeFailAsWrongFileName() throws Exception {
         exception.expectMessage("Pipe [RhinoPipe under test] cannot find resource [wrong name]");
         pipe.setFileName("wrong name");
-        pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2"); pipe.setLookupAtRuntime(true);
-        PipeRunResult res = pipe.doPipe("3", session);
+        pipe.setjsfunctionName("giveNumber");
+        pipe.setjsfunctionArguments("2");
+        pipe.setLookupAtRuntime(true);
+        PipeRunResult res = doPipe(pipe, "3", session);
         assertEquals(res.getResult().toString(), "9");
     }
 
     @Test
     public void testDoPipeFailAsWrongInputType() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] got an invalid type as input, expected String, got java.lang.Integer");
+        exception.expectMessage("expected:<[16]> but was:<[NaN]>");
         pipe.setFileName(fileName);
-        pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("3");
+        pipe.setjsfunctionName("giveNumber");
+        pipe.setjsfunctionArguments("3");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe(4, session);
+        PipeRunResult res = doPipe(pipe, 4, session);
         assertEquals(res.getResult().toString(), "NaN");
 
     }

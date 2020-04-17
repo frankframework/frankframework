@@ -12,8 +12,6 @@ import static org.junit.Assert.assertEquals;
  * ReplacerPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 5, 2020</pre>
  */
 public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
 
@@ -36,14 +34,14 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         exception.expectMessage("cannot have a null replace-attribute");
         pipe.setFind("laa");
         pipe.configure();
-        pipe.doPipe("", session);
+        doPipe(pipe, "", session);
     }
 
     @Test
     public void getFindEmpty() throws Exception {
         pipe.setFind("");
         pipe.configure();
-        pipe.doPipe("dsf", session);
+        doPipe(pipe, "dsf", session);
     }
 
     /**
@@ -56,7 +54,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplace("yo");
         pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe(pipe.getFind(), session);
+        PipeRunResult res = doPipe(pipe, pipe.getFind(), session);
         assertEquals("sina\nmurat\nniels", pipe.getFind());
     }
 
@@ -67,7 +65,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChar("k");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
@@ -77,7 +75,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplace("head");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
@@ -90,7 +88,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChar("klkl");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
