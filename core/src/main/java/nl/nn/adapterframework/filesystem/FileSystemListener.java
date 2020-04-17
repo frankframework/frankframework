@@ -55,6 +55,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean createFolders=false;
 	private boolean delete = false;
 	private boolean overwrite = false;
+	private int numberOfBackups=5;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
 
@@ -168,7 +169,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					F inprocessFile = moveFile(file, getInProcessFolder());
+					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				} 
 				return file;
@@ -180,79 +181,31 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	/**
-	 * Used to be: Moves a file to another directory and places a UUID in the name.
-	 * Now is:  Moves a file
-	 * @return String with the name of the (renamed and moved) file
-	 * 
-	 */
-	protected F moveFile(F file, String destinationFolder) throws ListenerException {
-		FS fileSystem=getFileSystem();
 
-		String filename=null;
-		try {
-			if (isOverwrite()) {
-				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
-				if (fileSystem.exists(destinationFile)) {
-					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
-					fileSystem.deleteFile(destinationFile);
-				}
-			}
-			filename=fileSystem.getName(file);
-			F newFile = fileSystem.moveFile(file, destinationFolder, isCreateFolders());
-			if (newFile == null) {
-				throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]");
-			}
-			return newFile;
-		} catch(FileSystemException e) {
-			throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]", e);
-		}
-	}
-
-
-	protected F copyFile(F file, String destinationFolder) throws ListenerException {
-		FS fileSystem=getFileSystem();
-
-		String filename=null;
-		try {
-			if (isOverwrite()) {
-				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
-				if (fileSystem.exists(destinationFile)) {
-					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
-					fileSystem.deleteFile(destinationFile);
-				}
-			}
-			filename=fileSystem.getName(file);
-			F newFile = fileSystem.copyFile(file, destinationFolder, isCreateFolders());
-			if (newFile == null) {
-				throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]");
-			}
-			return newFile;
-		} catch(FileSystemException e) {
-			throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]", e);
-		}
-	}
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, F file, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		try {
+			if (StringUtils.isNotEmpty(getLogFolder())) {
+				FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+			}
 			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
 				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					moveFile(rawMessage, getErrorFolder());
+					FileSystemUtils.moveFile(fileSystem, file, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 					return;
 				}
 			}
 			if (isDelete()) {
-				fileSystem.deleteFile(rawMessage);
+				fileSystem.deleteFile(file);
 				return;
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				moveFile(rawMessage, getProcessedFolder());
+				FileSystemUtils.moveFile(fileSystem, file, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 		} catch (FileSystemException e) {
-			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
+			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(file)+"]",e);
 		}
 	}
 
@@ -262,9 +215,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public String getStringFromRawMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (StringUtils.isNotEmpty(getLogFolder())) {
-				copyFile(rawMessage, getLogFolder());
-			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
 				return getFileSystem().getName(rawMessage);
 			}
@@ -428,13 +378,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	}
 
 	
-//	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
-//	public void setNumberOfBackups(int i) {
-//		numberOfBackups = i;
-//	}
-//	public int getNumberOfBackups() {
-//		return numberOfBackups;
-//	}
+	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
 
 	@IbisDoc({"8", "when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
