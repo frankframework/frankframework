@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import jdk.internal.org.xml.sax.SAXParseException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -13,8 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import javax.xml.xpath.XPathException;
-import java.nio.file.Path;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
