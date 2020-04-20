@@ -18,8 +18,11 @@ package nl.nn.adapterframework.extensions.log4j;
 import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.impl.MutableLogEvent;
 import org.apache.logging.log4j.core.layout.AbstractStringLayout;
-
+import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.message.SimpleMessage;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,7 +48,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Explanation to display, if number of characters exceed the max length.
 	 * %d is for the number of extra characters.
 	 */
-	private static String moreMessage = " ...(%d more characters)";
+	private static String moreMessage = "...(%d more characters)";
 
 	/**
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
@@ -58,36 +61,70 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 */
 	private static Set<String> globalReplace = new HashSet<>();
 
-	protected AbstractStringLayout layout;
+	/**
+	 * @param config
+	 * @param charset defaults to the system's default
+	 */
+	protected IbisMaskingLayout(Configuration config, Charset charset) {
+		super(config, charset, null, null);
 
-	protected IbisMaskingLayout(Charset charset) {
-		super(charset);
+	}
+
+	@Override
+	public final String toSerializable(LogEvent logEvent) {
+		MutableLogEvent event = convertToMutableLog4jEvent(logEvent);
+		Message msg = event.getMessage();
+		String message = msg.getFormattedMessage();
+
+		if (StringUtils.isNotEmpty(message)) {
+			message = Misc.hideAll(message, globalReplace);
+			message = Misc.hideAll(message, threadLocalReplace.get());
+
+			int length = message.length();
+			if (maxLength > 0 && length > maxLength) {
+				int diff = length - maxLength;
+				//We trim the message because it may end with a newline or whitespace character.
+				message = message.substring(0, maxLength).trim() + " " + String.format(moreMessage, diff) + "\r\n";
+			}
+		}
+
+		event.setMessage(new LogMessage(message, msg.getThrowable()));
+
+		return serializeEvent(event);
 	}
 
 	/**
-	 * Uses an abstract string layout (e.g. Pattern Layout or XML Layout)
-	 * to serialize log events to log message. Masks those messages using
-	 * global and local regex strings. Then shortens the message to max length,
-	 * if necessary.
-	 *
-	 * @param event Event to be serialized.
-	 * @return Serialized and masked event.
+	 * Wrapper around SimpleMessage so we can persist throwables, if any.
 	 */
-	@Override
-	public String toSerializable(LogEvent event) {
-		String result = layout.toSerializable(event);
-		if (StringUtils.isNotEmpty(result)) {
-			result = Misc.hideAll(result, globalReplace);
-			result = Misc.hideAll(result, threadLocalReplace.get());
-		}
-		int length = result.length();
-		if (maxLength > 0 && length > maxLength) {
-			int diff = length - maxLength;
-			result = result.substring(0, maxLength) + " " + String.format(moreMessage, diff) + "\r\n";
+	private static class LogMessage extends SimpleMessage {
+		private Throwable throwable;
+
+		public LogMessage(String message, Throwable throwable) {
+			super(message);
+			this.throwable = throwable;
 		}
 
-		return result;
+		@Override
+		public Throwable getThrowable() {
+			return throwable;
+		}
 	}
+
+	private MutableLogEvent convertToMutableLog4jEvent(final LogEvent event) {
+//		LogEvent e = (event instanceof Log4jLogEvent ? event : Log4jLogEvent.createMemento(event));
+		MutableLogEvent mutable = new MutableLogEvent();
+		mutable.initFrom(event);
+		return mutable;
+	}
+
+	/**
+	 * Mutable LogEvent which masks messages using global and local regex strings, 
+	 * and shortens the message to a maximum length, if necessary.
+	 *
+	 * @param event Event to be serialized to a String.
+	 * @return Serialized and masked event.
+	 */
+	protected abstract String serializeEvent(LogEvent event);
 
 	public static void setMaxLength(int maxLength) {
 		IbisMaskingLayout.maxLength = maxLength;

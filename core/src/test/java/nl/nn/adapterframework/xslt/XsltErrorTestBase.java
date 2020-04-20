@@ -1,5 +1,20 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -8,30 +23,12 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.test.appender.ListAppender;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTestBase<P> {
 
-	protected ListAppender testAppender;
+	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
@@ -65,8 +62,11 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	@Before
 	public void init() {
 		// Force reconfigure to clean list appender.
-		Configurator.reconfigure();
-		setTestAppender();
+//		Configurator.reconfigure();
+		testAppender = TestAppender.newBuilder().useIbisPatternLayout("%level %m").build();
+		TestAppender.addToRootLogger(testAppender);
+		Configurator.setLevel("nl.nn.adapterframework", Level.WARN);
+
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr=System.err;
@@ -76,6 +76,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@After
 	public void finalChecks() {
+		TestAppender.removeAppender(testAppender);
+		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
@@ -84,41 +86,10 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 	}
 
-	private void setTestAppender() {
-		Logger logger = (org.apache.logging.log4j.core.Logger) LogUtil.getLogger(pipe.getClass());
-		Map<String, Appender> map = logger.getAppenders();
-		for (String key : map.keySet()) {
-			Appender a = map.get(key);
-			System.out.println(a.getName());
-			if (a.getName().equals("list")) {
-				testAppender = (ListAppender) a;
-			}
-		}
-	}
-
-	private int getNumberOfAlerts() {
-		int numAlerts = 0;
-		for (LogEvent event : testAppender.getEvents()) {
-			if (event.getLevel().intLevel() > Level.WARN.intLevel())
-				continue;
-			numAlerts++;
-		}
-		return numAlerts;
-	}
-
-	private String getAlertMessages() {
-		StringBuilder sb = new StringBuilder();
-		for (LogEvent event : testAppender.getEvents()) {
-			if (event.getLevel().intLevel() > Level.WARN.intLevel())
-				continue;
-			sb.append(event.getMessage()).append("\n");
-		}
-		return sb.toString();
-	}
-
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		assertThat("number of alerts in logging", getNumberOfAlerts(),is(expectedSize));
-		if (expectedString!=null) assertThat(getAlertMessages(),containsString(expectedString));
+		System.out.println("Log Appender:"+testAppender.toString());
+		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(), is(expectedSize));
+		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
 
 	// detect duplicate imports in configure()
@@ -263,8 +234,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
-		assertThat(getNumberOfAlerts(), is(1+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
-
+		assertThat(testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 	}
 
 	@Test

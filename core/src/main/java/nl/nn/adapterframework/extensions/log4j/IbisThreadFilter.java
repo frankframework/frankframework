@@ -43,16 +43,16 @@ public class IbisThreadFilter extends AbstractFilter {
 		this.level = level;
 		setRegex(regex);
 	}
-	
+
 	@Override
 	public Filter.Result filter(LogEvent event) {
-		if (level == null || event.getLevel().isLessSpecificThan(level))
-			return getOnMismatch();
+		if (level == null || event.getLevel().isMoreSpecificThan(level))
+			return Result.NEUTRAL;
 
 		String tn = event.getThreadName();
 
 		if (tn == null || regex == null)
-			return getOnMismatch();
+			return Result.NEUTRAL;
 
 		if (regex.matcher(tn).matches()) {
 			return getOnMatch();
@@ -81,8 +81,8 @@ public class IbisThreadFilter extends AbstractFilter {
 	@PluginFactory
 	public static IbisThreadFilter createFilter(@PluginAttribute(value = "regex") String regex,
 												@PluginAttribute(value = "level", defaultString = "WARN") Level level,
-												@PluginAttribute(value = "onMatch", defaultString = "NEUTRAL") Result onMatch,
-												@PluginAttribute(value = "onMismatch", defaultString = "DENY") Result onMismatch) {
+												@PluginAttribute(value = "onMatch", defaultString = "DENY") Result onMatch,
+												@PluginAttribute(value = "onMismatch", defaultString = "NEUTRAL") Result onMismatch) {
 		return new IbisThreadFilter(level, regex, onMatch, onMismatch);
 	}
 }

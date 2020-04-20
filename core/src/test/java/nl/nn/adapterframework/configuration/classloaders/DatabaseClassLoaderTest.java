@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,10 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
@@ -40,8 +37,8 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.testutil.TestAppender;
 
 public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
 	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
@@ -135,10 +132,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = getLoggerImplementation();
-		logger.setLevel(Level.DEBUG);
-		logger.addAppender(appender);
+		TestAppender appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
 		try {
 			mockDatabase(true);
@@ -151,11 +146,11 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 			assertNull(config);
 		}
 		finally {
-			logger.removeAppender(appender);
+			TestAppender.removeAppender(appender);
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LogEvent> log = appender.getLog();
+		List<LogEvent> log = appender.getLogEvents();
 		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
@@ -170,10 +165,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = getLoggerImplementation();
-		logger.setLevel(Level.DEBUG);
-		logger.addAppender(appender);
+		TestAppender appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
 		try {
 			mockDatabase(true);
@@ -186,11 +179,11 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 			assertNull(config);
 		}
 		finally {
-			logger.removeAppender(appender);
+			TestAppender.removeAppender(appender);
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
-		List<LogEvent> log = appender.getLog();
+		List<LogEvent> log = appender.getLogEvents();
 		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
@@ -205,10 +198,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	 */
 	@Test
 	public void testExceptionHandlingWARN() throws Exception {
-		TestAppender appender = new TestAppender();
-		Logger logger = getLoggerImplementation();
-		logger.setLevel(Level.DEBUG);
-		logger.addAppender(appender);
+		TestAppender appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
 		boolean makeSureNoExceptionIsThrown = false;
 		try {
 			mockDatabase(true);
@@ -221,38 +212,16 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 			assertNull(config);
 		}
 		finally {
-			logger.removeAppender(appender);
+			TestAppender.removeAppender(appender);
 			assertTrue(makeSureNoExceptionIsThrown);
 		}
 
-		List<LogEvent> log = appender.getLog();
+		List<LogEvent> log = appender.getLogEvents();
 		LogEvent firstLogEntry = log.get(log.size()-1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.WARN, firstLogEntry.getLevel());
 		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
-	}
-
-	private static Logger getLoggerImplementation() {
-		 return (Logger) LogUtil.getRootLogger();
-	}
-
-	class TestAppender extends AbstractAppender {
-		private final List<LogEvent> log = new ArrayList<LogEvent>();
-
-		public TestAppender() {
-			super("Test", null, null, false, null);
-			start();
-		}
-
-		@Override
-		public void append(LogEvent LogEvent) {
-			log.add(LogEvent);
-		}
-
-		public List<LogEvent> getLog() {
-			return new ArrayList<LogEvent>(log);
-		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,33 +15,17 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.extensions.log4j.IbisLoggerConfiguration;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.URL;
-
+/**
+ * Log4j can now be started from any LogManager.getLogger() call
+ *
+ */
 public class LogUtil {
-	public static final String[] decprecated = new String[] {"log4j4ibis.xml"};
-
-	static {
-		// Make sure logger configuration is initialised each time servlet starts.
-		IbisLoggerConfiguration.init();
-
-		String message = "You seem to be using our old logger configuration file [%s]. " +
-				"We have upgraded our logger system, and now using log4j2.xml instead. " +
-				"Check out this url for more information: https://logging.apache.org/log4j/2.x/manual/configuration.html";
-		for (String f : decprecated) {
-			URL url = LogUtil.class.getClassLoader().getResource(f);
-			if (url != null)
-				ConfigurationWarnings.getInstance().add(String.format(message, f));
-		}
-	}
 
 	public static Logger getRootLogger() {
 		return LogManager.getRootLogger();
