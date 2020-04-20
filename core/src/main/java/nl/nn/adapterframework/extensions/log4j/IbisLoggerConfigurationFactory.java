@@ -103,9 +103,12 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	}
 	private Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
-		Properties properties = new Properties();
-		properties.load(url.openStream());
-		return properties;
+		if(url != null) {
+			Properties properties = new Properties();
+			properties.load(url.openStream());
+			return properties;
+		}
+		return null;
 	}
 	private static void setInstanceNameLc(Properties log4jProperties) {
 		String instanceNameLowerCase = log4jProperties.getProperty("instance.name");
