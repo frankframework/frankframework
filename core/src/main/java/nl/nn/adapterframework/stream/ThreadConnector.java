@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 
 public class ThreadConnector {
 	protected Logger log = LogUtil.getLogger(this);

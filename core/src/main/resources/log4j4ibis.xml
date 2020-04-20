@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="Log4j-config.xsd" packages="nl.nn.adapterframework.extensions.log4j">
+<log4j2:Configuration name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="Log4j-config.xsd" packages="nl.nn.adapterframework.logging">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 	<CustomLevels>
 		<CustomLevel name="TERSE" intLevel="550" />

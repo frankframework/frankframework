@@ -26,9 +26,10 @@ import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import nl.nn.adapterframework.extensions.log4j.IbisPatternLayout;
-import nl.nn.adapterframework.extensions.log4j.IbisThreadFilter;
-import nl.nn.adapterframework.extensions.log4j.IbisXmlLayout;
+
+import nl.nn.adapterframework.logging.IbisPatternLayout;
+import nl.nn.adapterframework.logging.IbisThreadFilter;
+import nl.nn.adapterframework.logging.IbisXmlLayout;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class TestAppender extends AbstractAppender {

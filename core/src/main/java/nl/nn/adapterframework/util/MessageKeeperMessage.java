@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 
 import java.util.Date;
 import java.util.Set;

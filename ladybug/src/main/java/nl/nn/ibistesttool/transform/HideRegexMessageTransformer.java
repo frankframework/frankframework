@@ -15,7 +15,7 @@
 */
 package nl.nn.ibistesttool.transform;
 
-import nl.nn.adapterframework.extensions.log4j.IbisMaskingLayout;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.testtool.transform.MessageTransformer;
 

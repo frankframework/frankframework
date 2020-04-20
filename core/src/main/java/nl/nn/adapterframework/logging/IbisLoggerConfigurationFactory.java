@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.log4j;
+package nl.nn.adapterframework.logging;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -135,7 +135,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 				if(checkVersionOnlyFirst1024Characters) {
 					//See if log4j2 prefix is somewhere in the first 1024 characters
 					if(!stringWriter.toString().contains("<log4j2:Configuration")) {
-						throw new IllegalStateException("wrong log4j xml version");
+						throw new IllegalStateException("Detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
 					}
 					checkVersionOnlyFirst1024Characters = false;
 				}

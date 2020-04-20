@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.log4j;
+package nl.nn.adapterframework.logging;
 
 import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;

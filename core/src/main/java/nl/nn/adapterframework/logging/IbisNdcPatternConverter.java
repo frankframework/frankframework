@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.extensions.log4j;
+package nl.nn.adapterframework.logging;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
