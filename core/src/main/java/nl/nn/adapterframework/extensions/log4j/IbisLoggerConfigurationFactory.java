@@ -91,14 +91,16 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {
 			System.out.println(LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
-		} else {
-			Properties dsProperties = getProperties(DS_PROPERTIES_FILE);
-			if (dsProperties != null) {
-				log4jProperties.putAll(dsProperties);
-			}
-			log4jProperties.putAll(System.getProperties()); //Set these after reading DeploymentSpecifics as we want to override the properties
-			setInstanceNameLc(log4jProperties); //Set instance.name.lc for log file names
 		}
+
+		Properties dsProperties = getProperties(DS_PROPERTIES_FILE);
+		if (dsProperties != null) {
+			log4jProperties.putAll(dsProperties);
+		}
+
+		log4jProperties.putAll(System.getProperties()); //Set these after reading DeploymentSpecifics as we want to override the properties
+		setInstanceNameLc(log4jProperties); //Set instance.name.lc for log file names
+
 		return log4jProperties;
 	}
 	private Properties getProperties(String filename) throws IOException {

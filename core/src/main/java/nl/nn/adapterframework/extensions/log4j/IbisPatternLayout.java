@@ -42,7 +42,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 	/**
 	 * @param logPattern the pattern to use or DEFAULT when null
 	 * @param alwaysWriteExceptions defaults to true
-	 * @param disableAnsi
+	 * @param disableAnsi defaults to false
 	 * @param noConsoleNoAnsi defaults to false
 	 */
 	IbisPatternLayout(final Configuration config, final String pattern, final Charset charset, final boolean alwaysWriteExceptions, final boolean disableAnsi, final boolean noConsoleNoAnsi) {
@@ -50,7 +50,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 
 		try {
 			final PatternParser parser = PatternLayout.createPatternParser(configuration);
-			final List<PatternFormatter> list = parser.parse(pattern, alwaysWriteExceptions, false, noConsoleNoAnsi);
+			final List<PatternFormatter> list = parser.parse(pattern, alwaysWriteExceptions, disableAnsi, noConsoleNoAnsi);
 			final PatternFormatter[] formatters = list.toArray(new PatternFormatter[0]);
 			serializer = new PatternSerializer(formatters);
 		} catch (final RuntimeException ex) {
@@ -70,8 +70,9 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 			// LOG4J2-783 use platform default by default, so do not specify defaultString for charset
 			@PluginAttribute(value = "charset") final Charset charset,
 			@PluginAttribute(value = "alwaysWriteExceptions", defaultBoolean = true) final boolean alwaysWriteExceptions,
-			@PluginAttribute(value = "noConsoleNoAnsi") final boolean noConsoleNoAnsi) {
-		return new IbisPatternLayout(config, pattern, charset, alwaysWriteExceptions, false, noConsoleNoAnsi);
+			@PluginAttribute(value = "noConsoleNoAnsi") final boolean noConsoleNoAnsi,
+			@PluginAttribute(value = "disableAnsi") final boolean disableAnsi) {
+		return new IbisPatternLayout(config, pattern, charset, alwaysWriteExceptions, disableAnsi, noConsoleNoAnsi);
 	}
 
 	private static class PatternSerializer implements Serializer, Serializer2, LocationAware {

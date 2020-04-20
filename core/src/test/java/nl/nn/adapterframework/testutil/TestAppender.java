@@ -48,7 +48,7 @@ public class TestAppender extends AbstractAppender {
 
 		//Default pattern: %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n
 		public B useIbisPatternLayout(String pattern) {
-			IbisPatternLayout layout = IbisPatternLayout.createLayout(pattern, getConfiguration(), null, true, false);
+			IbisPatternLayout layout = IbisPatternLayout.createLayout(pattern, getConfiguration(), null, true, false, false);
 			return setLayout(layout);
 		}
 
