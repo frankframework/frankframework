@@ -198,27 +198,27 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, F file, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		try {
 			if (StringUtils.isNotEmpty(getLogFolder())) {
-				FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
 				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					FileSystemUtils.moveFile(fileSystem, file, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+					FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 					return;
 				}
 			}
 			if (isDelete()) {
-				fileSystem.deleteFile(file);
+				fileSystem.deleteFile(rawMessage);
 				return;
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				FileSystemUtils.moveFile(fileSystem, file, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 		} catch (FileSystemException e) {
-			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(file)+"]",e);
+			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
 		}
 	}
 

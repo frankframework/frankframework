@@ -62,8 +62,6 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		String processedFolder = "processedFolder";
 		String logFolder = "logFolder";
 		String recipient=mailaddress;
-		String from=recipient;
-		String subject="With Attachements";
 //		String subfolder="Basic";
 //		String filename = "readFile";
 //		String contents = "Tekst om te lezen";

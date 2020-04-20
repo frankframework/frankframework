@@ -41,7 +41,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	
 //	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
-	private Properties properties;
 	protected ExchangeMailListener mailListener;
 
 	@Override
@@ -51,7 +50,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	
 	@Override
 	public void setUp() throws Exception {
-		properties=new Properties();
+		Properties properties=new Properties();
 		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		username = properties.getProperty("username");
