@@ -175,7 +175,7 @@ public class OpenApiTestBase extends Mockito {
 			IPipe pipe = new EchoPipe();
 			pipe.setName("echo");
 			pipeline.addPipe(pipe);
-			
+
 			adapter.registerPipeLine(pipeline);
 			adapter.registerReceiver(receiver);
 

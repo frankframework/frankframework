@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -22,9 +21,9 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	public void petStore() throws Exception {
-		Adapter getPets = new AdapterBuilder("listPets", "List all pets").setListener("pets", "get").setValidator("petstore.xsd", null, "Pets").build(true);
-		Adapter postPet = new AdapterBuilder("createPets", "Create a pet").setListener("pets", "post").setValidator("petstore.xsd", "Pet", "Pet").build(true);
-		Adapter getPet  = new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
+		new AdapterBuilder("listPets", "List all pets").setListener("pets", "get").setValidator("petstore.xsd", null, "Pets").build(true);
+		new AdapterBuilder("createPets", "Create a pet").setListener("pets", "post").setValidator("petstore.xsd", "Pet", "Pet").build(true);
+		new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
 		//getPets.start(getPets, postPet, getPet); //Async start
 
 		//Make sure all adapters have been registered on the dispatcher

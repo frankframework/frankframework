@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 Integration Partners B.V.
+Copyright 2017-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -149,10 +149,12 @@ public class ApiServiceDispatcher {
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				ApiListener listener = config.getApiListener(method);
-				IAdapter adapter = listener.getReceiver().getAdapter();
-				methodBuilder.add("summary", listener.getReceiver().getAdapter().getDescription());
-				methodBuilder.add("operationId", adapter.getName());
-				methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
+				if(listener != null) {
+					IAdapter adapter = listener.getReceiver().getAdapter();
+					methodBuilder.add("summary", listener.getReceiver().getAdapter().getDescription());
+					methodBuilder.add("operationId", adapter.getName());
+					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
+				}
 
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
@@ -218,5 +220,18 @@ public class ApiServiceDispatcher {
 			responses.add(""+exitCode, exit);
 		}
 		return responses;
+	}
+
+	public void removeInstance() {
+		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
+			String uriPattern = it.next();
+			ApiDispatchConfig config = patternClients.remove(uriPattern);
+			if(config != null) config.clear();
+		}
+		if(!patternClients.isEmpty()) {
+			log.warn("unable to gracefully unregister "+patternClients.size()+" DispatchConfigs");
+			patternClients.clear();
+		}
+		self = null;
 	}
 }

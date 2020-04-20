@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 Integration Partners B.V.
+Copyright 2017-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonWriter;
@@ -79,6 +80,16 @@ public class ApiListenerServlet extends HttpServletBase {
 			cache = ApiCacheManager.getInstance();
 		}
 		super.init();
+	}
+
+	@Override
+	public void destroy() {
+		if(dispatcher != null) {
+			dispatcher.removeInstance();
+			dispatcher = null;
+		}
+
+		super.destroy();
 	}
 
 	@Override
