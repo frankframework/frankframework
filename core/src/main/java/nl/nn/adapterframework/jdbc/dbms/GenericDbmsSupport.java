@@ -20,21 +20,18 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * @author  Gerrit van Brakel
@@ -269,102 +266,91 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
-	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
-		String query="select count(*) from "+tablesTable+" where upper("+tableNameColumn+")=?";
+	public boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
+		boolean isPresent = Boolean.FALSE;
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
-				query+=" and upper("+schemaColumn+")='"+schemaName.toUpperCase()+"'";
+				isPresent = this.isTablePresent(conn, tablesTable, schemaColumn);
 			} else {
 				throw new JdbcException("no schemaColumn present in table ["+tablesTable+"] to test for presence of table ["+tableName+"] in schema ["+schemaName+"]");
 			}
 		}
 		try {
-			return JdbcUtil.executeIntQuery(conn, query, tableName.toUpperCase())>=1;
+			isPresent = this.isTablePresent(conn, tablesTable);
 		} catch (Exception e) {
 			log.warn("could not determine presence of table ["+tableName+"]",e);
-			return false;
 		}
+		return isPresent;
 	}
 
-	private final boolean useMetaDataForTableExists=false;
+	
 	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-		try {
-			PreparedStatement stmt = null;
-			if (useMetaDataForTableExists) {
-				DatabaseMetaData dbmeta = conn.getMetaData();
-				ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
-				return !tableset.isAfterLast();
-			} 
-			String query=null;
+	    return isTablePresent(conn, tableName, null);
+	}
+	
+	private boolean isTablePresent(Connection conn, String tableName, String schemaName) throws JdbcException {
+		boolean tExists = Boolean.FALSE;
+		ResultSet rs = null;
+	    try {
+	    	rs = conn.getMetaData().getTables(null, schemaName, tableName, null);
+	    	tExists = rs.next();
+	    }catch(SQLException e) {
+	    	log.error("exception checking for existence of table ["+tableName+"]", e);
+	    	throw new JdbcException(e);
+	    }finally {
 			try {
-				query="select count(*) from "+tableName;
-				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
-				stmt = conn.prepareStatement(query);
-				log.debug("execute statement");
-				ResultSet rs = stmt.executeQuery();
-				log.debug("statement executed");
 				rs.close();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
-				return false;
-			} finally {
-				if (stmt!=null) {
-					stmt.close();
-				}
+			} catch (Exception e) {
+				if (log.isDebugEnabled()) log.debug("there was an error closing the resulset", e);
 			}
 		}
-		catch(SQLException e) {
-			throw new JdbcException(e);
+	    return tExists;
+	}
+
+	
+	private boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws SQLException {
+		ResultSet rs = null;
+		boolean cExists = Boolean.FALSE;
+		try {
+			rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName);
+			cExists = rs.next();
+		}catch(SQLException e) {
+			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]", e);
+		}finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				if (log.isDebugEnabled()) log.debug("there was an error closing the resulset", e);
+			}
 		}
+		return cExists;
 	}
 
 	@Override
 	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws SQLException {
-		PreparedStatement stmt = null;
-		String query=null;
-		try {
-			query = "SELECT count(" + columnName + ") FROM " + tableName;
-			stmt = conn.prepareStatement(query);
-
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
-				return false;
-			} finally {
-				if (rs != null) {
-					rs.close();
-				}
-			}
-		} catch (SQLException e) {
-			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
+		return this.isColumnPresent(conn, null, tableName, columnName);
 	}
 
 	protected boolean doIsTableColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
-		String query="select count(*) from "+columnsTable+" where upper("+tableNameColumn+")=? and upper("+columnNameColumn+")=?";
+		boolean isPresent = Boolean.FALSE;
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
-				query+=" and upper("+schemaColumn+")='"+schemaName.toUpperCase()+"'";
+				try {
+					isPresent = this.isColumnPresent(conn, schemaColumn, tableName, columnName);
+				} catch (SQLException e) {
+					log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"] with schema ["+schemaColumn+"]",e);
+				}
 			} else {
 				throw new JdbcException("no schemaColumn present in table ["+columnsTable+"] to test for presence of column ["+columnName+"] of table ["+tableName+"] in schema ["+schemaName+"]");
 			}
 		}
 		try {
-			return JdbcUtil.executeIntQuery(conn, query, tableName.toUpperCase(), columnName.toUpperCase())>=1;
+			isPresent = this.isColumnPresent(conn, tableName, columnName);
 		} catch (Exception e) {
 			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
-			return false;
 		}
+		return isPresent;
 	}
 
 	@Override
