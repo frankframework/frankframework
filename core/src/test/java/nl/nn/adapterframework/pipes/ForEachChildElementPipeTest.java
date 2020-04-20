@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -27,11 +29,12 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
-public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
+public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
 
 	private boolean TEST_CDATA=false;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
@@ -114,12 +117,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		return getElementRenderer(null, e);
 	}
 
-    protected ISender getElementRenderer(final SwitchCounter sc) {
+	protected ISender getElementRenderer(final SwitchCounter sc) {
 		return getElementRenderer(sc, null);
 	}
 
 	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
-    	EchoSender sender = new EchoSender() {
+		EchoSender sender = new EchoSender() {
 
 			@Override
 			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
@@ -138,6 +141,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		return sender;
 	}
 
+	@Override
+	public void setup() throws ConfigurationException {
+		assumeFalse(provideStreamForInput);
+		super.setup();
+	}
+	
 	@Test
 	public void testBasic() throws Exception {
 		pipe.setSender(getElementRenderer());
@@ -572,9 +581,9 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
 
+		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
-		assertEquals(expectedBasicNoNSFirstElement, actual);
 	}
 
 	@Test
@@ -589,9 +598,9 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
 
+		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
-		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 	}
 
 	@Test

@@ -35,12 +35,13 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
 
 /**
  * JMS sender which will add an IMS header to the message and call the MQ specific logic.
  *
- * <p>See {@link JMSSender} for configuration</p>
+ * <p>See {@link JmsSender} for configuration</p>
  *
  * @author Ricardo van Holst
  */
@@ -80,11 +81,11 @@ public class IMSSender extends MQSender {
 	 * The transaction code that should be added in the header, must be 8 characters
 	 */
 	@IbisDoc({"transaction code that should be added to the header, must be 8 characters", ""})
-	public String getTransactionCode() {
-		return transactionCode;
-	}
 	public void setTransactionCode(String transactionCode) {
 		this.transactionCode = transactionCode;
+	}
+	public String getTransactionCode() {
+		return transactionCode;
 	}
 
 	@Override

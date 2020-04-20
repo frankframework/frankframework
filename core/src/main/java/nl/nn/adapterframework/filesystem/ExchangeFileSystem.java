@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -360,6 +360,18 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		try {
 			emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
+			return emailMessage;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public Item copyFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		EmailMessage emailMessage;
+		try {
+			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			emailMessage = (EmailMessage) emailMessage.copy(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
 			throw new FileSystemException(e);

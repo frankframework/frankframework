@@ -13,7 +13,7 @@ import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase{

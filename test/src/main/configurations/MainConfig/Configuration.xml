@@ -1,8 +1,8 @@
 <!DOCTYPE configuration [
-    <!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
-    <!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
-    <!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
-    <!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
+	<!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
+	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
+	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
+	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
 	<!ENTITY SkipEmptyTags SYSTEM "./ConfigurationSkipEmptyTags.xml">
@@ -50,6 +50,8 @@
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
+	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
+	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -87,7 +89,6 @@
 	&ForEachChildElementPipe;
 	&ResultSetIteratingPipe;
 	&InputOutputWrapper;
-
 	&EsbSoapValidator;
 	&WsdlGeneratorPipe;
 	&FxF3;
@@ -104,4 +105,6 @@
 	&Javascript;
 	&Parameters;
 	&MessageStore;
+	&BlockEnabledSenders;
+	&SoapValidator;
 </configuration>

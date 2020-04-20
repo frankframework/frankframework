@@ -3,7 +3,9 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -175,6 +177,30 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			getFolders().put(destinationFolderName,destFolder);
 		}
 		destFolder.getFiles().put(f.getName(), f.getOwner().getFiles().remove(f.getName()));
+		f.setOwner(destFolder);
+		return f;
+	}
+
+	@Override
+	public M copyFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
+		//checkOpenAndExists(f.getOwner().getName(),f);
+		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
+		if (destFolder==null) {
+			if (!createFolder) {
+				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+			} 
+			destFolder = new MockFolder(destinationFolderName,this);
+			getFolders().put(destinationFolderName,destFolder);
+		}
+		MockFile fileDuplicate = new MockFile(f.getName(), destFolder);
+		fileDuplicate.setContents(Arrays.copyOf(f.getContents(),f.getContents().length));
+		if (f.getAdditionalProperties()!=null) {
+			Map<String,Object> propDup = new HashMap<String,Object>();
+			propDup.putAll(f.getAdditionalProperties());
+			fileDuplicate.setAdditionalProperties(propDup);
+		}
+		fileDuplicate.setLastModified(f.getLastModified());
+		destFolder.getFiles().put(fileDuplicate.getName(), fileDuplicate);
 		f.setOwner(destFolder);
 		return f;
 	}

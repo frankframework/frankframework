@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSender {
+public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H>, IStreamingSender {
 
 	private int timeout = 0;
 
@@ -109,38 +110,22 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	
 
 	@Override
+	// implements ISender.sendMessage()
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(message, session, null);
-		return Message.asMessage(result.getResult());
-	}
-
-	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
-		if (isConnectionsArePooled()) {
-			Connection c = null;
-			try {
-				c = getConnectionWithTimeout(getTimeout());
-				return new PipeRunResult(null,sendMessage(c, message, session));
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			} finally {
-				if (c!=null) {
-					try {
-						c.close();
-					} catch (SQLException e) {
-						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
-					}
-				}
-			}
-			
-		} 
-		synchronized (connection) {
-			return new PipeRunResult(null,sendMessage(connection, message, session));
+		H blockHandle = openBlock(session);
+		try {
+			return sendMessage(blockHandle, message, session);
+		} finally {
+			closeBlock(blockHandle, session);
 		}
 	}
 
-	protected abstract String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
+	@Override
+	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
+	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+		return new PipeRunResult(null, sendMessage(message, session));
+	}
 
 	@Override
 	public String toString() {

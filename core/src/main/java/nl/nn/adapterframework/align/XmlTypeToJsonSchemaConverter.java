@@ -510,7 +510,7 @@ public class XmlTypeToJsonSchemaConverter  {
 							don't we need to try and parse?
 						*/
 
-						if(lexicalFacetValues.getLength()>1){
+						if(facet == XSSimpleTypeDefinition.FACET_ENUMERATION){
 							JsonArrayBuilder enumBuilder = Json.createArrayBuilder();
 							for (int x=0; x<lexicalFacetValues.getLength(); x++) {
 								lexicalFacetValue = lexicalFacetValues.item(x); 
@@ -519,7 +519,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	
 							builder.add(key, enumBuilder.build());
 						}
-						else {
+						else if(facet == XSSimpleTypeDefinition.FACET_PATTERN){
 							builder.add(key, lexicalFacetValues.item(0));
 						}
 					}

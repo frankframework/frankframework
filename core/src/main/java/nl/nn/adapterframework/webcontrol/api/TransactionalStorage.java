@@ -506,19 +506,26 @@ public class TransactionalStorage extends Base {
 		}
 
 		String msg = null;
-		if(rawmsg instanceof MessageWrapper) {
-			MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-			msg = msgsgs.getText();
-		} else {
-			try {
-				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg, null);
-				} else {
-					msg = Message.asString(rawmsg);
+		if (rawmsg != null) {
+			if(rawmsg instanceof MessageWrapper) {
+				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+				msg = msgsgs.getText();
+			} else {
+				try {
+					if (listener!=null) {
+						msg = listener.getStringFromRawMessage(rawmsg, null);
+					} 
+				} catch (Exception e) {
+					log.warn("Exception reading value raw message", e);
 				}
-			} catch (Exception e) {
-				log.warn("Exception reading value raw message", e);
-				msg = (String) rawmsg;
+				try {
+					if (StringUtils.isEmpty(msg)) {
+						msg = Message.asString(rawmsg);
+					}
+				} catch (Exception e) {
+					log.warn("Cannot convert message", e);
+					msg = rawmsg.toString();
+				}
 			}
 		}
 		if (StringUtils.isEmpty(msg)) {
@@ -613,7 +620,7 @@ public class TransactionalStorage extends Base {
 					iterator.close();
 			}
 		}
-		catch (ListenerException e) {
+		catch (ListenerException|IOException e) {
 			throw new ApiException(e);
 		}
 
@@ -655,7 +662,7 @@ public class TransactionalStorage extends Base {
 			return sortOrder;
 		}
 
-		public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
+		public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 			int count = 0;
 			int matches = 0;
 
@@ -737,14 +744,14 @@ public class TransactionalStorage extends Base {
 				comment = commentMask;
 		}
 
-		public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException {
+		public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 			if(message != null) {
 				Object rawmsg = storage.browseMessage(iterItem.getId());
 				String msg = null;
 				if (listener != null) {
 					msg = listener.getStringFromRawMessage(rawmsg, new HashMap<String, Object>());
 				} else {
-					msg = (String) rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (msg == null || msg.indexOf(message)<0) {
 					return false;

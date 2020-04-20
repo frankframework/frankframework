@@ -15,23 +15,22 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Enables the use of programmatically adding servlets to the given ServletContext<br/>
@@ -93,19 +92,9 @@ public class ServletManager {
 			return;
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servletClass);
-
-		ServletSecurity.TransportGuarantee transportGuarantee = ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
 		String stage = appConstants.getString("dtap.stage", null);
-		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
-			transportGuarantee = ServletSecurity.TransportGuarantee.NONE;
-		}
-
-		String constraintType = appConstants.getString(propertyPrefix+"transportGuarantee", null);
-		if (StringUtils.isNotEmpty(constraintType)) {
-			transportGuarantee = ServletSecurity.TransportGuarantee.valueOf(constraintType);
-		}
-
 		String[] rolesCopy = new String[0];
 		if(roles != null && !stage.equalsIgnoreCase("LOC"))
 			rolesCopy = roles;
@@ -153,5 +142,19 @@ public class ServletManager {
 			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
 
 		registerServlet(servlet.getName(), servlet.getServlet(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
+	}
+
+	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
+		AppConstants appConstants = AppConstants.getInstance();
+		String constraintType = appConstants.getString(propertyName, null);
+		if (StringUtils.isNotEmpty(constraintType))
+			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
+
+		String stage = appConstants.getString("dtap.stage", null);
+		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
+			return ServletSecurity.TransportGuarantee.NONE;
+		}
+		return ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+
 	}
 }

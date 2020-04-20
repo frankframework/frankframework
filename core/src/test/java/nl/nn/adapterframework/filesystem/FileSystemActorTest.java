@@ -612,7 +612,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction("move");
-		thrown.expectMessage("the move action requires the parameter [destination] to be present");
+		thrown.expectMessage("the move action requires the parameter [destination] or the attribute [destination] to be present");
 		actor.configure(fileSystem,null,owner);
 	}
 	
@@ -686,6 +686,51 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //		fileSystemSenderMoveActionTest("folder1","folder2");
 //	}
 
+	public void fileSystemActorCopyActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "sendermove" + FILE1;
+		String contents = "Tekst om te lezen";
+		
+		if (folder1!=null) {
+			_createFolder(folder1);
+		}
+		if (folderExists && folder2!=null) {
+			_createFolder(folder2);
+		}
+		createFile(folder1, filename, contents);
+//		deleteFile(folder2, filename);
+		waitForActionToFinish();
+
+		actor.setAction("copy");
+		actor.setDestination(folder2);
+		ParameterList params = new ParameterList();
+		if (setCreateFolderAttribute) {
+			actor.setCreateFolder(true);
+		}
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message message = new Message(filename);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = actor.doAction(message, pvl, session);
+		
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+		
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+		
+		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
+		assertTrue("file should still exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
+	}
+
+	@Test
+	public void fileSystemActorCopyActionTestRootToFolder() throws Exception {
+		fileSystemActorCopyActionTest(null,"folder",true,false);
+	}
+
+	
 	@Test
 	public void fileSystemActorMkdirActionTest() throws Exception {
 		String folder = "mkdir" + DIR1;

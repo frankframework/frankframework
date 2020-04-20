@@ -9,6 +9,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 
 public class LdapFindMemberPipeTest {
 
@@ -58,7 +59,7 @@ public class LdapFindMemberPipeTest {
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		String input = bindDN;
 		
-		PipeRunResult prr = pipe.doPipe(input, session);
+		PipeRunResult prr = pipe.doPipe(new Message(input), session);
 		
 		
 	}

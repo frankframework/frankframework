@@ -15,14 +15,15 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.net.URL;
-import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToMap;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.xml.sax.SAXException;
 
 import org.apache.logging.log4j.Logger;
 import javax.annotation.security.RolesAllowed;
@@ -35,14 +36,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.ResultSet;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Path("/")
 public final class BrowseJdbcTable extends Base {
@@ -189,7 +191,11 @@ public final class BrowseJdbcTable extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = XmlQueryResult2Map(result);
+			try {
+				resultMap = new QueryOutputToMap().parseString(result);
+			} catch (IOException | SAXException e) {
+				throw new ApiException("Query result could not be parsed.", e);
+			}
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result [null].", 400);

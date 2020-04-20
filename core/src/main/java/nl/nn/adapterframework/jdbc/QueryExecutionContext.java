@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,21 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import nl.nn.adapterframework.parameters.ParameterList;
 
-public class QueryContext {
+public class QueryExecutionContext {
+
 	private String query;
 	private String queryType;
 	private ParameterList parameterList;
+	private Connection connection; 
 	private PreparedStatement statement;
+	private PreparedStatement resultQueryStatement;
 
-	public QueryContext(String query, String queryType, ParameterList parameterList) {
+	public QueryExecutionContext(String query, String queryType, ParameterList parameterList) {
 		this.query = query;
 		this.queryType = queryType;
 		this.parameterList = parameterList;
@@ -34,7 +38,6 @@ public class QueryContext {
 	public String getQuery() {
 		return query;
 	}
-
 	public void setQuery(String query) {
 		this.query = query;
 	}
@@ -42,7 +45,6 @@ public class QueryContext {
 	public String getQueryType() {
 		return queryType;
 	}
-
 	public void setQueryType(String queryType) {
 		this.queryType = queryType;
 	}
@@ -51,12 +53,26 @@ public class QueryContext {
 		return parameterList;
 	}
 
+	
+	public Connection getConnection() {
+		return connection;
+	}
+	public void setConnection(Connection connection) {
+		this.connection = connection;
+	}
+
 	public PreparedStatement getStatement() {
 		return statement;
 	}
-
 	public void setStatement(PreparedStatement statement) {
 		this.statement = statement;
+	}
+
+	public PreparedStatement getResultQueryStatement() {
+		return resultQueryStatement;
+	}
+	public void setResultQueryStatement(PreparedStatement resultQueryStatement) {
+		this.resultQueryStatement = resultQueryStatement;
 	}
 
 }

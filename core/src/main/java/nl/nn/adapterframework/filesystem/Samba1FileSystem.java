@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -231,18 +231,41 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		}
 	}
 
-	@Override
-	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	protected SmbFile getDestinationFile(SmbFile f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
 		SmbFile dest;
 		try {
 			dest = new SmbFile(smbContext, destinationFolder+"/"+f.getName());
 			if (!exists(dest)) {
-				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exists.");
+				// should createFolder if createFolder==true
+				throw new FileSystemException("Cannot "+action+" file. Destination ["+destinationFolder+"] does not exists.");
 			}
 			if (!isFolder(dest)) {
-				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] is not a folder.");
+				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] is not a folder.");
 			}
+			return dest;
+		} catch (FileSystemException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		SmbFile dest = getDestinationFile(f, destinationFolder, createFolder, "move");
+		try {
 			f.renameTo(dest);
+			return dest;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		SmbFile dest = getDestinationFile(f, destinationFolder, createFolder, "copy");
+		try {
+			f.copyTo(dest);
 			return dest;
 		} catch (Exception e) {
 			throw new FileSystemException(e);

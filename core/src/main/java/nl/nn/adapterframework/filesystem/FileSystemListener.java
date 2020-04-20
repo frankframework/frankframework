@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private String inProcessFolder;
 	private String processedFolder;
 	private String errorFolder;
+	private String logFolder;
 
 	private boolean createFolders=false;
 	private boolean delete = false;
@@ -85,6 +86,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			checkForExistenceOfFolder("processedFolder", getProcessedFolder());
 			checkForExistenceOfFolder("errorFolder",getErrorFolder());
+			checkForExistenceOfFolder("logFolder",getLogFolder());
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot open fileSystem",e);
 		}
@@ -135,7 +137,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public String getPhysicalDestinationName() {
 		String result=getFileSystem() instanceof HasPhysicalDestination?((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName()+" ":"";
 		result+= "inputFolder [" + (getInputFolder() == null ? "" : getInputFolder()) + "] inProcessFolder [" + (getInProcessFolder() == null ? "" : getInProcessFolder()) +
-				"] processedFolder [" + (getProcessedFolder() == null ? "" : getProcessedFolder()) + "] errorFolder [" + (getErrorFolder() == null ? "" : getErrorFolder()) + "]";
+				"] processedFolder [" + (getProcessedFolder() == null ? "" : getProcessedFolder()) + "] errorFolder [" + (getErrorFolder() == null ? "" : getErrorFolder()) + "] logFolder [" + (getLogFolder() == null ? "" : getLogFolder()) + "]";
 		return result;
 	}
 
@@ -208,6 +210,30 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
+	protected F copyFile(F file, String destinationFolder) throws ListenerException {
+		FS fileSystem=getFileSystem();
+
+		String filename=null;
+		try {
+			if (isOverwrite()) {
+				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
+				if (fileSystem.exists(destinationFile)) {
+					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
+					fileSystem.deleteFile(destinationFile);
+				}
+			}
+			filename=fileSystem.getName(file);
+			F newFile = fileSystem.copyFile(file, destinationFolder, isCreateFolders());
+			if (newFile == null) {
+				throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]");
+			}
+			return newFile;
+		} catch(FileSystemException e) {
+			throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]", e);
+		}
+	}
+
+
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
@@ -236,6 +262,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public String getStringFromRawMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
+			if (StringUtils.isNotEmpty(getLogFolder())) {
+				copyFile(rawMessage, getLogFolder());
+			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
 				return getFileSystem().getName(rawMessage);
 			}
@@ -350,6 +379,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 	public String getErrorFolder() {
 		return errorFolder;
+	}
+
+	@IbisDoc({"5", "folder where a copy of every files that is received is stored", ""})
+	public void setLogFolder(String logFolder) {
+		this.logFolder = logFolder;
+	}
+	public String getLogFolder() {
+		return logFolder;
 	}
 
 	@IbisDoc({"6", "when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -471,7 +472,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 		if(requiresDatabase) {
 			//Try to create a new transaction to check if there is a connection to the database
-			this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+			if(status != null) { //If there is a transaction (read connection) close it!
+				this.transactionManager.commit(status);
+			}
 		}
 	}
 }

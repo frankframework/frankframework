@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -128,5 +129,34 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		assertEquals(expected, prr.getResult());
+	}
+	
+	@Test
+	public void testWithParametersNestedElement() throws Exception {
+		pipe.setName("Find with Nested Element");
+		pipe.setSchema("/Align/NestedValue/nestedValue.xsd");
+		pipe.setRoot("NestedValue");
+		pipe.setThrowException(true);
+
+		Parameter param = new Parameter();
+		param.setName("Id");
+		param.setValue("3242343");
+		pipe.addParameter(param);
+		
+		pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input="";
+		String expected = TestFileUtils.getTestFile("/Align/NestedValue/nestedValue.xml");
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 }
