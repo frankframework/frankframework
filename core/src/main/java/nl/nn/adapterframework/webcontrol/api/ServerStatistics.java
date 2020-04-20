@@ -41,6 +41,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -55,14 +58,11 @@ import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
-import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 
 /**
  * Collection of server and application statistics and information.
@@ -336,14 +336,13 @@ public class ServerStatistics extends Base {
 		}
 
 		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			msg.append(", logMaxMessageLength changed from [")
-					.append(IbisMaskingLayout.getMaxLength())
-					.append("] to [")
-					.append(maxMessageLength)
-					.append("]");
-
+			if(msg.length() > 0)
+				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			else
+				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
 			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
+
 		if (enableDebugger!=null) {
 			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {

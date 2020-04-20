@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.cache;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.TransformerPool;
-import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
+import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Baseclass for caching.

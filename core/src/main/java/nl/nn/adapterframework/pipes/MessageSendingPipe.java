@@ -139,6 +139,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
+	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -886,7 +887,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					} else {
 						duration = Misc.getDurationInMs(startTime);
 					}
-					msgLog.log(Level.toLevel("TERSE"), String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+
+					if(msgLog.getLevel().isMoreSpecificThan(MSGLOG_LEVEL_TERSE)) {
+						msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Sender [%s] class [%s] duration [%s] got exit-state [%s]", sender.getName(), ClassUtils.nameOf(sender), duration, exitState));
+					}
 				}
 			}
 		}

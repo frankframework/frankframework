@@ -49,6 +49,11 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+
+	/**
+	 * Hierarchy of log directories to search for. Strings will be split by "/".
+	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
+	 */
 	private static String[] logDirectoryHierarchy = new String[] {
 			"site.logdir",
 			"user.dir/logs",

@@ -15,12 +15,10 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JmxUtils;
-import org.apache.commons.lang.StringUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -35,10 +33,14 @@ import javax.management.modelmbean.ModelMBeanInfo;
 import javax.management.modelmbean.ModelMBeanInfoSupport;
 import javax.management.modelmbean.ModelMBeanOperationInfo;
 import javax.management.modelmbean.RequiredModelMBean;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JmxUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Jmx helper class, to make JMX MBeans from {@link nl.nn.adapterframework.core.Adapter Adapters}.

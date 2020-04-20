@@ -15,19 +15,21 @@
  */
 package nl.nn.adapterframework.extensions.svn;
 
+import java.io.IOException;
+
+import javax.xml.xpath.XPathExpressionException;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
+import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Some utilities for working with SVN.
  * 

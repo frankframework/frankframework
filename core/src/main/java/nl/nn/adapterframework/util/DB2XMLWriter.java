@@ -21,10 +21,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
-import nl.nn.adapterframework.core.SenderException;
-
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
