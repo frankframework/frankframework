@@ -20,7 +20,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	@IsolatedThread
 	public void simpleEndpointTest() throws Exception {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
-		dispatcher.clear();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
 		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "get").setValidator("simple.xsd", null, "user").build(true);
@@ -37,7 +36,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	public void petStore() throws Exception {
 		//Make sure all adapters have been registered on the dispatcher
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
-		dispatcher.clear();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
 		new AdapterBuilder("listPets", "List all pets").setListener("pets", "get").setValidator("petstore.xsd", null, "Pets").build(true);

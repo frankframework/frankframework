@@ -36,7 +36,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -65,7 +67,7 @@ public class ApiListenerServletTest extends Mockito {
 	private ApiListenerServlet servlet;
 	private Map<String, Object> session = null;
 
-	@BeforeClass
+	@Before
 	public void setUp() throws ServletException {
 		servlet = spy(ApiListenerServlet.class);
 		ServletConfig servletConfig = new MockServletConfig();
@@ -75,7 +77,7 @@ public class ApiListenerServletTest extends Mockito {
 		session = null;
 	}
 
-	@AfterClass
+	@After
 	public void tearDown() {
 		for(ApiListener listener : listeners) {
 			listener.close();
@@ -84,6 +86,16 @@ public class ApiListenerServletTest extends Mockito {
 
 		servlet.destroy();
 		servlet = null;
+	}
+
+	@BeforeClass
+	public static void beforeClass() {
+		ApiServiceDispatcher.getInstance().clear();
+	}
+
+	@AfterClass
+	public static void afterClass() {
+		ApiServiceDispatcher.getInstance().clear();
 	}
 
 	private void addListener(String uri, Methods method) throws ListenerException, ConfigurationException {

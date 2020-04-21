@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.mockito.Mockito;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -40,6 +42,11 @@ public class OpenApiTestBase extends Mockito {
 	private Configuration configuration;
 	private ThreadLocalServlet servlets = new ThreadLocalServlet();
 
+	@BeforeClass
+	public static void beforeClass() {
+		ApiServiceDispatcher.getInstance().clear();
+	}
+
 	@Before
 	public void setUp() throws ServletException {
 		configuration = mock(Configuration.class);
@@ -50,6 +57,11 @@ public class OpenApiTestBase extends Mockito {
 		servlets.remove();
 
 		configuration = null;
+	}
+
+	@AfterClass
+	public static void afterClass() {
+		ApiServiceDispatcher.getInstance().clear();
 	}
 
 	private static class ThreadLocalServlet extends ThreadLocal<ApiListenerServlet> {
