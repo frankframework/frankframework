@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 
 import static org.junit.Assert.assertEquals;
@@ -69,13 +69,15 @@ public class ApiListenerServletTest extends Mockito {
 		when(servlet.getServletConfig()).thenReturn(servletConfig);
 		servlet.init();
 
-		//Cleanup Dispather
-		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
-		for(String pattern : dispatcher.getPatternClients().keySet()) {
-			ApiDispatchConfig dispatchConfig = dispatcher.getPatternClients().get(pattern);
-			dispatchConfig.clear();
-		}
 		session = null;
+	}
+
+	@After
+	public void tearDown() {
+		servlet.destroy();
+		servlet = null;
+
+		ApiServiceDispatcher.getInstance().removeInstance();
 	}
 
 	private void addListener(String uri, Methods method) throws ListenerException, ConfigurationException {
