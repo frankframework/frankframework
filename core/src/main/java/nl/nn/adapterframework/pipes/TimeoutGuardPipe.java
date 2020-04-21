@@ -100,9 +100,8 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		Future future = service.submit(doPipe);
 		String result = null;
 		try {
-			log.debug(getLogPrefix(session) + "setting timeout of ["
-					+ timeout_work + "] s");
-			result = (String) future.get(timeout_work, TimeUnit.SECONDS);
+			log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
+			result = Message.asString(future.get(timeout_work, TimeUnit.SECONDS));
 		} catch (Exception e) {
 			String msg;
 			if (e instanceof TimeoutException) {
