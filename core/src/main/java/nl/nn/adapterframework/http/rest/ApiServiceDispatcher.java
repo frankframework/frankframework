@@ -149,9 +149,9 @@ public class ApiServiceDispatcher {
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				ApiListener listener = config.getApiListener(method);
-				if(listener != null) {
+				if(listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
-					methodBuilder.add("summary", listener.getReceiver().getAdapter().getDescription());
+					methodBuilder.add("summary", adapter.getDescription());
 					methodBuilder.add("operationId", adapter.getName());
 					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				}

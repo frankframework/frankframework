@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2019 Integration Partners B.V.
+Copyright 2017-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -239,8 +239,14 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public String toString() {
-		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
-				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+		final StringBuilder builder = new StringBuilder();
+		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
+		builder.append(" uriPattern["+getUriPattern()+"]");
+		builder.append(" produces["+getProduces()+"]");
+		builder.append(" consumes["+getConsumes()+"]");
+		builder.append(" contentType["+getContentType()+"]");
+		builder.append(" updateEtag["+getUpdateEtag()+"]");
+		return builder.toString();
 	}
 
 	@Override
