@@ -85,8 +85,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	public void destroy() {
 		if(dispatcher != null) {
-			dispatcher.removeInstance();
-			dispatcher = null;
+			dispatcher.clear();
 		}
 
 		super.destroy();

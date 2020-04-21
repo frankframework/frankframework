@@ -17,7 +17,10 @@ package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -50,6 +53,7 @@ import org.springframework.mock.web.MockServletConfig;
 
 public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
+	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<ApiListener>());
 
 	enum Methods {
 		GET,POST,PUT,DELETE,OPTIONS
@@ -74,10 +78,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@After
 	public void tearDown() {
+		for(ApiListener listener : listeners) {
+			listener.close();
+		}
+		listeners.clear();
+
 		servlet.destroy();
 		servlet = null;
-
-		ApiServiceDispatcher.getInstance().removeInstance();
 	}
 
 	private void addListener(String uri, Methods method) throws ListenerException, ConfigurationException {
@@ -112,6 +119,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		listener.configure();
 		listener.open();
+
+		listeners.add(listener);
 		log.info("created ApiListener "+listener.toString());
 	}
 

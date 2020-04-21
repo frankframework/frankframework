@@ -222,7 +222,7 @@ public class ApiServiceDispatcher {
 		return responses;
 	}
 
-	public void removeInstance() {
+	public void clear() {
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
 			ApiDispatchConfig config = patternClients.remove(uriPattern);
@@ -232,6 +232,5 @@ public class ApiServiceDispatcher {
 			log.warn("unable to gracefully unregister "+patternClients.size()+" DispatchConfigs");
 			patternClients.clear();
 		}
-		self = null;
 	}
 }
