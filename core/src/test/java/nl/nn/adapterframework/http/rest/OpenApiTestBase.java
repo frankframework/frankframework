@@ -13,6 +13,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
@@ -102,9 +103,21 @@ public class OpenApiTestBase extends Mockito {
 	}
 
 	protected String service(HttpServletRequest request) throws ServletException, IOException {
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		servlets.get().service(request, response);
-		return response.getContentAsString();
+		try {
+			MockHttpServletResponse response = new MockHttpServletResponse();
+			ApiListenerServlet servlet = servlets.get();
+			assertNotNull("Servlet cannot be found!??", servlet);
+
+			servlet.service(request, response);
+
+			return response.getContentAsString();
+		} catch (Throwable t) {
+			//Silly hack to try and make the error visible in Travis.
+			assertTrue(ExceptionUtils.getStackTrace(t), false);
+		}
+
+		//This should never happen because of the assertTrue(false) statement in the catch cause.
+		return null;
 	}
 
 	public class AdapterBuilder {
