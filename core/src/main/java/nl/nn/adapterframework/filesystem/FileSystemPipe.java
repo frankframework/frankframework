@@ -20,6 +20,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -30,7 +31,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -110,8 +110,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		MessageOutputStream result = actor.provideOutputStream(session, getNextPipe());
 		if (result!=null && result.getForward()==null) {
 			result.setForward(getForward());
 		}
@@ -120,7 +120,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 
 	@Override
-	public PipeRunResult doPipe (Message message, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {

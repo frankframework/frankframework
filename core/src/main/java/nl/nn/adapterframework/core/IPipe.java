@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
-public interface IPipe extends INamedObject {
+public interface IPipe extends INamedObject, IForwardTarget {
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
 	 * at the {@link Adapter}. Purpose of this method is to reduce

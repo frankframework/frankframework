@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author Johan Verrips
  * @author Niels Meijer
  */
-public class PipeLineExit {
+public class PipeLineExit implements IForwardTarget {
 	
 	public static final String EXIT_STATE_SUCCESS = "success";
 	
@@ -60,6 +60,10 @@ public class PipeLineExit {
 
 	public String getPath() {
 		return path;
+	}
+	@Override
+	public String getName() {
+		return getPath();
 	}
 
 	@IbisDoc({"name of the pipeline exit", ""})

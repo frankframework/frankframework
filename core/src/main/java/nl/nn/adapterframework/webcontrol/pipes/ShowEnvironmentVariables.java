@@ -51,12 +51,12 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
+			return Message.asMessage(doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return doPost(session);
+			return Message.asMessage(doPost(session));
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET'");

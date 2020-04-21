@@ -23,6 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -30,7 +31,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -123,7 +123,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 	@Override
 	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
-	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		return new PipeRunResult(null, sendMessage(message, session));
 	}
 

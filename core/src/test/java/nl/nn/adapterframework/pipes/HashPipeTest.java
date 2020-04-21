@@ -63,7 +63,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash = (String) prr.getResult();
+		String hash=prr.getResult().asString();
 		assertEquals("KZAvcWh5wSTeoBWty9MHZl+L4ApUjbWnJNaVq6xftAo=", hash);
 	}
 
@@ -75,7 +75,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash = (String) prr.getResult();
+		String hash=prr.getResult().asString();
 		assertEquals("TwGD5U8BwKoLn8u/F+4R/g==", hash);
 	}
 
@@ -87,7 +87,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash = (String) prr.getResult();
+		String hash=prr.getResult().asString();
 		assertEquals("56V9GhAPU9NPP76zJ5KVLrfMaCherC8JcY16PTPEO3W+yxNnoXwmLS+Ic61J3gqZyeUfc0VZzzgg23WqesXm2g==", hash);
 	}
 }

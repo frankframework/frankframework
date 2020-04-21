@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationListener;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -52,6 +53,7 @@ import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -133,7 +135,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		if (preserveInput) {
 			pipeRunResult.setResult(ibisDebugger.preserveInput(messageId, preservedInput));
 		}
-		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, pipe, messageId, Message.asMessage(pipeRunResult.getResult())));
+		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, pipe, messageId, pipeRunResult.getResult()));
 		return pipeRunResult;
 	}
 
@@ -240,7 +242,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 		if (result!=null && result instanceof PipeRunResult) {
 			PipeRunResult prr = (PipeRunResult)result;
-			prr.setResult(ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(prr.getResult())));
+			prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
 			return result;
 		}
 		return ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
@@ -254,20 +256,18 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	/**
-	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next)}
+	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, IPipeLineSession session, IForwardTarget next)}
 	 */
-	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IOutputStreamingSupport next) throws Throwable {
+	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IForwardTarget nexte) throws Throwable {
 		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
 	}
 	 
 	/**
-	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider)}
+	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(IPipeLineSession session, IForwardTarget next)}
 	 */
-//	@Pointcut("execution( * nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport)) " +
-//				"and args(correlationId, session, nextProvider)")
-	public PipeRunResult debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws Throwable {
+	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session, IForwardTarget next) throws Throwable {
 		if (!isEnabled()) {
-			return (PipeRunResult)proceedingJoinPoint.proceed();
+			return (MessageOutputStream)proceedingJoinPoint.proceed();
 		}
 		String correlationId = session == null ? null : session.getMessageId();
 		if (log.isDebugEnabled()) log.debug("debugProvideOutputStream thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
@@ -276,7 +276,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			ISender sender = (ISender)proceedingJoinPoint.getTarget();
 			ibisDebugger.senderInput(sender, correlationId, new Message("--> provide outputstream"));
 			//System.out.println("--> provide outputstream of sender ["+sender.getName()+"]");
-			PipeRunResult result = (PipeRunResult)proceedingJoinPoint.proceed();
+			MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
 			//System.out.println("<-- provide outputstream of sender ["+sender.getName()+"]: ["+result+"]");
 			ibisDebugger.senderOutput(sender, correlationId, new Message(result==null?null:result.toString()));
 			return result;
@@ -286,14 +286,14 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
 				PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
 				ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new Message("--> provide outputstream"));
-				PipeRunResult result = (PipeRunResult)proceedingJoinPoint.proceed();
+				MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
 				//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
 				ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, new Message(result==null?null:result.toString()));
 				return result;
 			}
 		}
 		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
-		return (PipeRunResult)proceedingJoinPoint.proceed();
+		return (MessageOutputStream)proceedingJoinPoint.proceed();
 	}
 
 	/**

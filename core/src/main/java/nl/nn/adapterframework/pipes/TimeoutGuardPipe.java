@@ -51,7 +51,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 	private boolean throwException = true;
 	private int timeout = 30;
 
-	public class DoPipe implements Callable<String> {
+	public class DoPipe implements Callable<Message> {
 		private Message input;
 		private IPipeLineSession session;
 		private String threadName;
@@ -65,7 +65,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		}
 
 		@Override
-		public String call() throws Exception {
+		public Message call() throws Exception {
 			String ctName = Thread.currentThread().getName();
 			try {
 				Thread.currentThread().setName(threadName+"["+ctName+"]");
@@ -129,8 +129,8 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
-		return input.toString();
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+		return input;
 	}
 
 	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
