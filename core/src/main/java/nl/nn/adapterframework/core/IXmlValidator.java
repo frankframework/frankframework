@@ -14,4 +14,5 @@ public interface IXmlValidator extends IPipe {
 	public String getSchema();
 	public String getSchemaLocation();
 	public Set<XSD> getXsds() throws ConfigurationException;
+	public String getInfo();
 }

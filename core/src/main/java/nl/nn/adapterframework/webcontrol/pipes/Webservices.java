@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -196,7 +197,7 @@ public class Webservices extends TimeoutGuardPipe {
 			wsdl.setUseIncludes(StringUtils.equalsIgnoreCase(useIncludes,
 					"true"));
 		}
-		wsdl.setDocumentation(getDocumentation(wsdl, session));
+		wsdl.setDocumentation(getDocumentation(wsdl, adapter, session));
 		wsdl.init();
 		wsdl.wsdl(RestListenerUtils.retrieveServletOutputStream(session),
 				RestListenerUtils.retrieveSOAPRequestURL(session));
@@ -207,16 +208,21 @@ public class Webservices extends TimeoutGuardPipe {
 			NamingException {
 		Wsdl wsdl = new Wsdl(adapter.getPipeLine());
 		wsdl.setUseIncludes(true);
-		wsdl.setDocumentation(getDocumentation(wsdl, session));
+		wsdl.setDocumentation(getDocumentation(wsdl, adapter, session));
 		wsdl.init();
 		wsdl.zip(RestListenerUtils.retrieveServletOutputStream(session),
 				RestListenerUtils.retrieveSOAPRequestURL(session));
 	}
 
-	private String getDocumentation(Wsdl wsdl, IPipeLineSession session)
+	private String getDocumentation(Wsdl wsdl, Adapter adapter, IPipeLineSession session)
 			throws IOException {
-		return "Generated at " + RestListenerUtils.retrieveRequestURL(session)
+		String doc = "Generated at " + RestListenerUtils.retrieveRequestURL(session)
 				+ " as " + wsdl.getFilename() + getWsdlExtention() + " on "
 				+ DateUtils.getIsoTimeStamp() + ".";
+		String info = ((IXmlValidator)adapter.getPipeLine().getInputValidator()).getInfo();
+		if (info!=null) {
+			doc = doc + info;
+		}
+		return doc;
 	}
 }
