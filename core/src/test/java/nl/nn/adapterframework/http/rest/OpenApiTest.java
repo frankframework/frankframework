@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,8 +45,10 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
 		//getPets.start(getPets, postPet, getPet); //Async start
 
-		assertEquals("not all adapters are registered on the dispatcher", 2, dispatcher.findConfigForUri("pets").getMethods().size());
-		assertEquals("adapter [showPetById] not registered on the dispatcher", 1, dispatcher.findConfigForUri("pets/a").getMethods().size());
+		assertNotNull("unable to find DispatchConfig for uri [pets]", dispatcher.findConfigForUri("pets"));
+		assertEquals("not all listener uri [pets] are registered on the dispatcher", 2, dispatcher.findConfigForUri("pets").getMethods().size());
+		assertNotNull("unable to find DispatchConfig for uri [pets/a]", dispatcher.findConfigForUri("pets/a"));
+		assertEquals("listener uri [pets/a] not registered on dispatcher", 1, dispatcher.findConfigForUri("pets/a").getMethods().size());
 
 		String result = callOpenApi();
 

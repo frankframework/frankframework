@@ -15,6 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -28,28 +35,20 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
@@ -66,7 +65,7 @@ public class ApiListenerServletTest extends Mockito {
 	private ApiListenerServlet servlet;
 	private Map<String, Object> session = null;
 
-	@Before
+	@BeforeClass
 	public void setUp() throws ServletException {
 		servlet = spy(ApiListenerServlet.class);
 		ServletConfig servletConfig = new MockServletConfig();
@@ -76,7 +75,7 @@ public class ApiListenerServletTest extends Mockito {
 		session = null;
 	}
 
-	@After
+	@AfterClass
 	public void tearDown() {
 		for(ApiListener listener : listeners) {
 			listener.close();
