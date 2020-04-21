@@ -37,20 +37,44 @@ public class OpenApiTestBase extends Mockito {
 
 	private static TaskExecutor taskExecutor;
 	private Configuration configuration;
-	private ApiListenerServlet servlet;
+	private ThreadLocalServlet servlets = new ThreadLocalServlet();
 
 	@Before
 	public void setUp() throws ServletException {
-		servlet = new ApiListenerServlet();
-		servlet.init();
 		configuration = mock(Configuration.class);
 	}
 
 	@After
 	public void tearDown() {
-		servlet.destroy();
-		servlet = null;
+		servlets.remove();
+
 		configuration = null;
+	}
+
+	private static class ThreadLocalServlet extends ThreadLocal<ApiListenerServlet> {
+		@Override
+		public ApiListenerServlet get() {
+			ApiListenerServlet servlet = super.get();
+			if(servlet == null) {
+				servlet = new ApiListenerServlet();
+				try {
+					servlet.init();
+				} catch (ServletException e) {
+					throw new RuntimeException("error starting servlet");
+				}
+				set(servlet);
+			}
+			return servlet;
+		}
+
+		@Override
+		public void remove() {
+			ApiListenerServlet servlet = super.get();
+			if(servlet != null) {
+				servlet.destroy();
+			}
+			super.remove();
+		}
 	}
 
 	/**
@@ -79,7 +103,7 @@ public class OpenApiTestBase extends Mockito {
 
 	protected String service(HttpServletRequest request) throws ServletException, IOException {
 		MockHttpServletResponse response = new MockHttpServletResponse();
-		servlet.service(request, response);
+		servlets.get().service(request, response);
 		return response.getContentAsString();
 	}
 
