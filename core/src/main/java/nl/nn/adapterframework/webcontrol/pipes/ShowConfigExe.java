@@ -86,70 +86,54 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		return "ok";
 	}
 
-	private boolean deactivate(IbisContext ibisContext, String name,
-			String jmsRealm, IPipeLineSession session) throws PipeRunException {
-		Connection conn = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
+	private boolean deactivate(IbisContext ibisContext, String name, String jmsRealm, IPipeLineSession session) throws PipeRunException {
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"
-					+ (qs.getDbmsSupport().getBooleanValue(false))
-					+ "' WHERE NAME=?");
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, name);
-			return (stmt.executeUpdate() > 0) ? true : false;
+			try (Connection conn = qs.getConnection()) {
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"
+						+ (qs.getDbmsSupport().getBooleanValue(false))
+						+ "' WHERE NAME=?");
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					return (stmt.executeUpdate() > 0) ? true : false;
+				}
+			}
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Error occured on deactivating config", e);
 		} finally {
 			qs.close();
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
 		}
 	}
 
-	private boolean activate(IbisContext ibisContext, String name,
-			String jmsRealm, IPipeLineSession session) throws PipeRunException {
-		Connection conn = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
+	private boolean activate(IbisContext ibisContext, String name, String jmsRealm, IPipeLineSession session) throws PipeRunException {
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"
-					+ (qs.getDbmsSupport().getBooleanValue(true))
-					+ "' WHERE NAME=? AND CRE_TYDST=(SELECT MAX(CRE_TYDST) FROM IBISCONFIG WHERE NAME=?)");
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, name);
-			stmt.setString(2, name);
-			return (stmt.executeUpdate() > 0) ? true : false;
+			try (Connection conn = qs.getConnection()) {
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"
+						+ (qs.getDbmsSupport().getBooleanValue(true))
+						+ "' WHERE NAME=? AND CRE_TYDST=(SELECT MAX(CRE_TYDST) FROM IBISCONFIG WHERE NAME=?)");
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					stmt.setString(2, name);
+					return (stmt.executeUpdate() > 0) ? true : false;
+				}
+			}
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Error occured on activating config", e);
 		} finally {
 			qs.close();
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
 		}
 	}
 }

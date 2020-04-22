@@ -227,8 +227,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -289,8 +289,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -325,8 +325,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -378,8 +378,8 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -421,8 +421,8 @@ public class ConfigurationUtils {
 				return stmt.executeUpdate() > 0;
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -510,8 +510,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 

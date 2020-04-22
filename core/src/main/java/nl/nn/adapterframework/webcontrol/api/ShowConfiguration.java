@@ -405,34 +405,34 @@ public final class ShowConfiguration extends Base {
 			}
 		}
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, configurationName);
-			rs = stmt.executeQuery();
-			while (rs.next()) {
-				Map<String, Object> config = new HashMap<String, Object>();
-				config.put("name", rs.getString(1));
-				config.put("version", rs.getString(2));
-				config.put("filename", rs.getString(3));
-				config.put("user", rs.getString(4));
-				config.put("active", rs.getBoolean(5));
-				config.put("autoreload", rs.getBoolean(6));
-				config.put("created", rs.getString(7));
-				returnMap.add(config);
+			try (Connection conn = qs.getConnection()) {
+				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, configurationName);
+					try (ResultSet rs = stmt.executeQuery()) {
+						while (rs.next()) {
+							Map<String, Object> config = new HashMap<String, Object>();
+							config.put("name", rs.getString(1));
+							config.put("version", rs.getString(2));
+							config.put("filename", rs.getString(3));
+							config.put("user", rs.getString(4));
+							config.put("active", rs.getBoolean(5));
+							config.put("autoreload", rs.getBoolean(6));
+							config.put("created", rs.getString(7));
+							returnMap.add(config);
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			throw new ApiException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 		return returnMap;
