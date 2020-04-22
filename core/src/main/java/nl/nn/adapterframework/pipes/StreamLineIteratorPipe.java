@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class StreamLineIteratorPipe extends IteratingPipe<String> {
+public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private String endOfLineString;
 	

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -180,9 +180,15 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				try {
 					basefolderId=findFolder(inboxId,getBaseFolder());
 				} catch (Exception e) {
-					log.debug("Could not get folder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
+					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+				}	
+				if (basefolderId==null) {
+					log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
 					basefolderId=findFolder(null,getBaseFolder());
-				}				
+				}
+				if (basefolderId==null) {
+					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
+				}
 			} else {
 				basefolderId=inboxId;
 			}
@@ -208,8 +214,10 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
 			}
 			if (findFoldersResultsIn.getTotalCount() == 0) {
-				throw new ConfigurationException("no folder found with name ["	+ folderName + "] in basefolder ["+baseFolderId+"]");
-			} else if (findFoldersResultsIn.getTotalCount() > 1) {
+				if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
+				return null;
+			} 
+			if (findFoldersResultsIn.getTotalCount() > 1) {
 				if (log.isDebugEnabled()) {
 					for (Folder folder:findFoldersResultsIn.getFolders()) {
 						log.debug("found folder ["+folder.getDisplayName()+"]");
@@ -303,7 +311,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				return findResults.getItems().iterator();
 			}
 		} catch (Exception e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
 		}
 	}
 
@@ -360,6 +368,18 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		try {
 			emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
+			return emailMessage;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public Item copyFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		EmailMessage emailMessage;
+		try {
+			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			emailMessage = (EmailMessage) emailMessage.copy(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
@@ -553,7 +573,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	
 	public FolderId getFolderIdByFolderName(String folderName) throws Exception{
 		FindFoldersResults findResults;
-		findResults = exchangeService.findFolders(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		if (log.isDebugEnabled()) {
 			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
 			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
@@ -567,7 +587,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
-			folder.save(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())));
+			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -591,8 +611,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	@Override
 	public String getPhysicalDestinationName() {
 		if (exchangeService != null) {
-			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl())
-					+ "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
+			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl()) + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
 		}
 		return null;
 	}
@@ -614,7 +633,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
 
-	@IbisDoc({"3", "url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
+	@IbisDoc({"3", "Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
 	public void setUrl(String url) {
 		this.url = url;
 	}
@@ -622,7 +641,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return url;
 	}
 
-	@IbisDoc({"4", "username for authentication to exchange mail server", ""})
+	@IbisDoc({"4", "Username for authentication to exchange mail server", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -630,7 +649,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return username;
 	}
 
-	@IbisDoc({"5", "password for authentication to exchange mail server", ""})
+	@IbisDoc({"5", "Password for authentication to exchange mail server", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -638,7 +657,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return password;
 	}
 	
-	@IbisDoc({"6", "alias used to obtain credentials for authentication to exchange mail server", ""})
+	@IbisDoc({"6", "Alias used to obtain credentials for authentication to exchange mail server", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -647,7 +666,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	}
 
 	
-	@IbisDoc({"7", "folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
+	@IbisDoc({"7", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
 	}
@@ -737,7 +756,5 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	public ExchangeService getExchangeService() {
 		return exchangeService;
 	}
-
-
 
 }

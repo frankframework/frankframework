@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlQuerySender extends JdbcQuerySenderBase {
+public class XmlQuerySender extends DirectQuerySender {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -234,12 +234,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String getQuery(Message message) {
-		return message.toString();
-	}
-
-	@Override
-	protected String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
@@ -322,8 +317,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryContext queryContext = new QueryContext(query, "select", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "select", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -364,10 +359,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryContext queryContext = new QueryContext(query, "delete", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "delete", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
@@ -399,8 +394,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -411,17 +406,17 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryContext = new QueryContext(q, "other", null);
-					statement = getStatement(connection, queryContext);
+					queryExecutionContext = new QueryExecutionContext(q, "other", null);
+					statement = getStatement(connection, queryExecutionContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, statement, q, null, null, null));
+						result.append(executeOtherQuery(connection, statement, q, null, null, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(connection, statement, query, null, null, null);
+				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
@@ -445,13 +440,13 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryContext queryContext;
+						QueryExecutionContext queryExecutionContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryContext = new QueryContext(query, "updateBlob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateBlob", null);
 						} else {
-							queryContext = new QueryContext(query, "updateClob", null);
+							queryExecutionContext = new QueryExecutionContext(query, "updateClob", null);
 						}
-						PreparedStatement statement = getStatement(connection, queryContext);
+						PreparedStatement statement = getStatement(connection, queryExecutionContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -463,11 +458,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			QueryContext queryContext = new QueryContext(query, "other", null);
-			PreparedStatement statement = getStatement(connection, queryContext);
+			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}

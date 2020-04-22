@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Integration Partners
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -100,12 +100,10 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 			throw new ConfigurationException(" empty credential fields, please prodive aws credentials");
 
 		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion()))
-			throw new ConfigurationException(" invalid region [" + getClientRegion()
-					+ "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
 
 		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName()))
-			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName()
-					+ "] please visit AWS to see correct bucket naming");
+			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
 	}
 
 	@Override
@@ -270,19 +268,31 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	}
 
 	@Override
-	public S3Object renameFile(S3Object f, String newName, boolean force) throws FileSystemException {
-		if(s3Client.doesObjectExist(bucketName, newName))
+	public S3Object renameFile(S3Object f, String destinationFile, boolean force) throws FileSystemException {
+		if(s3Client.doesObjectExist(bucketName, destinationFile)) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, newName);
+		}
+		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
 		s3Client.deleteObject(bucketName, f.getKey());
-		return toFile(newName);
+		return toFile(destinationFile);
 	}
 
 	@Override
-	public S3Object moveFile(S3Object f, String destination, boolean createFolder) throws FileSystemException {
-		return renameFile(f,destination+"/"+f.getKey(), false);
+	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		String destinationFile = destinationFolder+"/"+f.getKey();
+		if(s3Client.doesObjectExist(bucketName, destinationFile)) {
+			throw new FileSystemException("Cannot copy file. Destination file already exists.");
+		}
+		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
+		return toFile(destinationFile);
 	}
-	
+
+	@Override
+	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return renameFile(f,destinationFolder+"/"+f.getKey(), false);
+	}
+
+
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<String, Object>();

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.xml.transform.Source;
 import javax.xml.validation.ValidatorHandler;
@@ -264,6 +265,12 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return createJsonSchema(getResponseRoot());
  	}
 	
+	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
+		List<XSModel> models = validator.getXSModels();
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), schemaLocation, definitionsPath);
+		JsonObject jsonschema = converter.getDefinitions();
+		return jsonschema;
+	}
 	public JsonStructure createJsonSchema(String elementName) {
 		return createJsonSchema(elementName, getTargetNamespace());
 	}

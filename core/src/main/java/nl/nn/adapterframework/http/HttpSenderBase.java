@@ -251,6 +251,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
 		URIBuilder uri = new URIBuilder(url);
 
+		if (!uri.getScheme().matches("(?i)https?"))
+			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
+
 		if (uri.getPath()==null) {
 			uri.setPath("/");
 		}
@@ -258,8 +261,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		// Encode query param values.
 		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
 		for(NameValuePair pair : uri.getQueryParams()) {
-			String encoded = URLEncoder.encode(pair.getValue(), getCharSet());
-			pairs.add(new BasicNameValuePair(pair.getName(), encoded));
+			String paramValue = pair.getValue(); //May be NULL
+			if(StringUtils.isNotEmpty(paramValue)) {
+				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
+			}
+			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
 		}
 		if(pairs.size() > 0) {
 			uri.clearParameters();
