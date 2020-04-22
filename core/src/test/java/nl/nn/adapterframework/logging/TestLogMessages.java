@@ -58,7 +58,7 @@ public class TestLogMessages {
 	}
 
 	@Test
-	public void dontLogDebugAndInfoWhenThreadNameEqualsX() {
+	public void dontLogDebugAndInfoLevelsWhenThreadFilterIsActive() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).useIbisThreadFilter("HIDE-HERE").build();
 		TestAppender.addToRootLogger(appender);
 		String threadName = Thread.currentThread().getName();
