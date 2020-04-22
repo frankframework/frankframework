@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import com.opencsv.CSVReader;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -22,12 +23,18 @@ public class SqlTranslator {
 	private static final String TARGET_CSV = "src/main/resources/dbms/target.csv";
 	public Map<String, String> target;
 	public Map<String, Pattern> source;
+	private boolean translate = AppConstants.getInstance().getBoolean("jdbc.translate", true);
 
 	public SqlTranslator(String source, String target) throws Exception {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
 			logger.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
+			return;
+		}
+		translate = AppConstants.getInstance().getBoolean("jdbc.translate." + source + "." + target, translate);
+		if (!translate) {
+			logger.warn("Query translation from [" + source + "] to [" + target + "] is disabled. Skipping pattern generation.");
 			return;
 		}
 		readSource(source);
@@ -42,8 +49,8 @@ public class SqlTranslator {
 	 * @return Translated query.
 	 */
 	public String translate(String query) throws NullPointerException {
-		if (source == null || target == null || StringUtils.isEmpty(query)) {
-			logger.info("Same source and target for SqlTranslator. Skipping translation.");
+		if (!translate || source == null || target == null || StringUtils.isEmpty(query)) {
+			logger.info("Skipping SQL translation from [" + source + "] to [" + target + "]");
 			return query;
 		}
 		for (String key : source.keySet()) {
@@ -85,8 +92,10 @@ public class SqlTranslator {
 		int index = getIndex(reader, name);
 		logger.debug(String.format("Reading SqlTranslator source values for database [%s] from index [%d]", name, index));
 		String[] values;
-		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
-			source.put(values[0], toPattern(values[index]));
+		while (((values = reader.readNext()) != null)) {
+			if (StringUtils.isEmpty(values[index]))
+				continue;
+			source.put(values[0].trim(), toPattern(values[index].trim()));
 		}
 	}
 
@@ -102,8 +111,10 @@ public class SqlTranslator {
 		int index = getIndex(reader, name);
 		logger.debug(String.format("Reading SqlTranslator target values for database [%s] from index [%d]", name, index));
 		String[] values;
-		while (((values = reader.readNext()) != null) && StringUtils.isNotEmpty(values[index])) {
-				target.put(values[0], values[index]);
+		while (((values = reader.readNext()) != null)) {
+			if (StringUtils.isEmpty(values[index]))
+				continue;
+				target.put(values[0].trim(), values[index].trim());
 		}
 	}
 
@@ -118,7 +129,7 @@ public class SqlTranslator {
 	private int getIndex(CSVReader reader, String name) throws Exception {
 		String[] firstline = reader.readNext();
 		for (int i = 0; i < firstline.length; i++) {
-			if (firstline[i].equalsIgnoreCase(name))
+			if (firstline[i].trim().equalsIgnoreCase(name))
 				return i;
 		}
 		throw new IllegalArgumentException("Database name not found");

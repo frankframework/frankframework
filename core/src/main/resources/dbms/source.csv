@@ -1,10 +1,10 @@
-LABEL,ORACLE,MSSQL,MYSQL,H2,POSTGRESQL
-NEXTVAL,(\\w+).NEXTVAL,NEXT VALUE FOR (\\w+),,NEXT VALUE FOR (\\w+),NEXTVAL\('\\w+'\)
-CURRVAL,(\\w+)\\.CURRVAL,SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME\\s+=\\s+'(\\w+)',,CURRENT VALUE FOR (\\w+),CURRVAL\('\\w+'\)
-EMPTY_BLOB,EMPTY_BLOB\\(\\),,,,,
-EMPTY_CLOB,EMPTY_CLOB\\(\\),,,,,
-SYSDATE,SYSDATE,GETDATE(),SYSDATE(),CURRENT_DATE,CURRENT_DATE
-SYSTIMESTAMP,SYSTIMESTAMP,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-DUAL,FROM DUAL,,,,,
-FOR UPDATE,FOR UPDATE,"WITH (UPDLOCK, ROWLOCK)",FOR UPDATE,,FOR UPDATE
-LIMIT,FETCH FIRST ([0-9]+) ROWS ONLY,LIMIT ([0-9]+),LIMIT ([0-9]+),LIMIT ([0-9]+),LIMIT ([0-9]+)
+LABEL       ,ORACLE                        ,MSSQL                                                              ,MYSQL              ,H2                      ,POSTGRESQL
+NEXTVAL     ,(\\w+).NEXTVAL                ,NEXT VALUE FOR (\\w+)                                              ,                   ,NEXT VALUE FOR (\\w+)   ,NEXTVAL\('\\w+'\)
+CURRVAL     ,(\\w+)\\.CURRVAL              ,SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME\\s+=\\s+'(\\w+)',                   ,CURRENT VALUE FOR (\\w+),CURRVAL\('\\w+'\)
+EMPTY_BLOB  ,EMPTY_BLOB\\(\\)              ,                                                                   ,                   ,                        ,
+EMPTY_CLOB  ,EMPTY_CLOB\\(\\)              ,                                                                   ,                   ,                        ,
+SYSDATE     ,SYSDATE                       ,GETDATE()                                                          ,SYSDATE()          ,CURRENT_DATE            ,CURRENT_DATE
+SYSTIMESTAMP,SYSTIMESTAMP                  ,CURRENT_TIMESTAMP                                                  ,CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP       ,CURRENT_TIMESTAMP
+DUAL        ,FROM DUAL                     ,                                                                   ,                   ,                        ,
+FOR UPDATE  ,FOR UPDATE                    ,FOR UPDATE                                                         ,FOR UPDATE         ,                        ,FOR UPDATE
+LIMIT       ,FETCH FIRST ([0-9]+) ROWS ONLY,LIMIT ([0-9]+)                                                     ,LIMIT ([0-9]+)     ,LIMIT ([0-9]+)          ,LIMIT ([0-9]+)

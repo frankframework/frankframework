@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Level;
 import org.junit.Assert;
@@ -32,8 +33,13 @@ public class SqlTranslatorTest {
 				{"oracle", null, null, "java.lang.IllegalArgumentException"},
 				{"not-a-db", "mssql", null, "java.lang.IllegalArgumentException"},
 				{"", "mssql", null, "java.lang.IllegalArgumentException"},
-				{"oracle", "mssql", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES ((NEXT VALUE FOR SEQ_IBISTEMP),0x);"},
-				{"oracle", "mssql", "SELECT SEQ_IBISTEMP.NEXTVAL FROM DuaL", "SELECT (NEXT VALUE FOR SEQ_IBISTEMP)"},
+				{"oracle", "mssql", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (NEXT VALUE FOR SEQ_IBISTEMP,0x);"},
+				{"oracle", "mssql", "SELECT SEQ_IBISTEMP.NEXTVAL FROM DuaL", "SELECT NEXT VALUE FOR SEQ_IBISTEMP"},
+				{"oracle", "mysql", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;"},
+				{"oracle", "mysql", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NULL,NULL,SYSDATE(), CURRENT_TIMESTAMP());"},
+				{"postgresql", "oracle", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;"},
+				{"oracle", "postgresql", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NEXTVAL('SEQ_IBISTEMP'),NULL,CURRENT_DATE, CURRENT_TIMESTAMP);"},
+				{"oracle", "H2", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NEXT VALUE FOR SEQ_IBISTEMP,NULL,CURRENT_DATE, CURRENT_TIMESTAMP);"},
 		});
 	}
 
