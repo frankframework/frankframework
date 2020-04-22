@@ -35,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -88,6 +90,9 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
+	private String proxyHost = null;
+	private Integer proxyPort = null;
+	
 	@Override
 	public void configure() throws ConfigurationException {
 
@@ -108,7 +113,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
 				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled()).withRegion(getClientRegion())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+				.withClientConfiguration(this.getProxyConfig());
 		s3Client = s3ClientBuilder.build();
 	}
 
@@ -613,5 +619,33 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	public boolean isBucketExistsThrowException() {
 		return bucketExistsThrowException;
 	}
+
+	public ClientConfiguration getProxyConfig() {
+		ClientConfiguration proxyConfig = null;
+		if (this.getProxyHost() != null && this.getProxyPort() != null) {
+			proxyConfig = new ClientConfiguration();
+			proxyConfig.setProtocol(Protocol.HTTPS);
+			proxyConfig.setProxyHost(this.getProxyHost());
+			proxyConfig.setProxyPort(this.getProxyPort());
+		}
+		return proxyConfig;
+	}
+
+	public String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	public Integer getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(Integer proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+
 	
 }

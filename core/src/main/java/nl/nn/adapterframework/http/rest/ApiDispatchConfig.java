@@ -53,6 +53,10 @@ public class ApiDispatchConfig {
 		return methods.keySet();
 	}
 
+	public void clear() {
+		methods.clear();
+	}
+
 	public boolean hasMethod(String method) {
 		method = method.toUpperCase();
 		return methods.containsKey(method);
