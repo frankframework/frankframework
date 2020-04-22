@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -54,7 +55,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Shows the configuration (with resolved variables).

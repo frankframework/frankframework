@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 import org.apache.commons.lang.StringUtils;
 

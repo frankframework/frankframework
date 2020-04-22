@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,27 +43,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.scheduler.ConfiguredJob;
-import nl.nn.adapterframework.scheduler.DatabaseJobDef;
-import nl.nn.adapterframework.scheduler.IbisJobDetail;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -79,6 +58,26 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.scheduler.ConfiguredJob;
+import nl.nn.adapterframework.scheduler.DatabaseJobDef;
+import nl.nn.adapterframework.scheduler.IbisJobDetail;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
