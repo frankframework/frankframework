@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.Before;
+
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
@@ -30,10 +32,9 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 	
 	@Override
+	@Before
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
-		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(domain, username, password);
-		context = new SmbFile(share, auth);
-		
+		System.out.println("");
 	}
 
 	@Override

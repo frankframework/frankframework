@@ -115,7 +115,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		try {
 			AuthenticationContext auth = authenticate();
 			client = new SMBClient();
-			connection = client.connect(domain);
+			connection = client.connect(domain, 139);
 			if(connection.isConnected()) {
 				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
 			}
