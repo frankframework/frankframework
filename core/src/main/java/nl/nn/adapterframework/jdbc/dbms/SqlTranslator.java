@@ -4,14 +4,11 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -24,13 +21,14 @@ import java.util.regex.Pattern;
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
 public class SqlTranslator {
-	Logger logger = LogUtil.getLogger(this);
 	private static final String SOURCE_CSV = "dbms/source.csv";
 	private static final String TARGET_CSV = "dbms/target.csv";
-	public Map<String, String> target;
-	public Map<String, Pattern> source;
+	private static final Pattern spaceReplacer = Pattern.compile("\\s+(?=((\\\\[\\\\\"]|[^\\\\\"])*\"(\\\\[\\\\\"]|[^\\\\\"])*\")*(\\\\[\\\\\"]|[^\\\\\"])*$)");
+
+	private final Logger logger = LogUtil.getLogger(this);
+	private Map<String, String> target;
+	private Map<String, Pattern> source;
 	private boolean translate = AppConstants.getInstance().getBoolean("jdbc.translate", true);
-	private static Map<String, String> logs = new HashMap<>();
 
 	public SqlTranslator(String source, String target) throws IOException, CsvValidationException {
 		LogUtil.getRootLogger().setLevel(Level.ALL);
@@ -53,15 +51,15 @@ public class SqlTranslator {
 	 * Translates the given query to the target language.
 	 * Uses the translation rules set by this and the target translators.
 	 *
-	 * @param query Query to be translated.
+	 * @param original Original query to be translated.
 	 * @return Translated query.
 	 */
-	public String translate(String query) throws NullPointerException {
-		if (!translate || source == null || target == null || StringUtils.isEmpty(query)) {
+	public String translate(String original) throws NullPointerException {
+		if (!translate || source == null || target == null || StringUtils.isEmpty(original)) {
 			logger.info("Skipping SQL translation from [" + source + "] to [" + target + "]");
-			return query;
+			return original;
 		}
-
+		String query = original;
 		for (String key : source.keySet()) {
 			Matcher matcher = source.get(key).matcher(query);
 			if (matcher.find()) {
@@ -74,7 +72,7 @@ public class SqlTranslator {
 				}
 			}
 		}
-		return query.trim();
+		return cleanSpaces(query);
 	}
 
 	/**
@@ -84,9 +82,9 @@ public class SqlTranslator {
 	 */
 	protected Pattern toPattern(String str) {
 		// Make sure there are no greedy matchers.
-		str = str.replaceAll("\\.\\*", ".*?");
-		logger.trace("Compiling pattern [" + str + "]");
-		return Pattern.compile(str, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+		String pattern = str.replaceAll("\\.\\*", ".*?");
+		logger.trace("Compiling pattern [" + pattern + "]");
+		return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 
 	/**
@@ -144,5 +142,16 @@ public class SqlTranslator {
 				return i;
 		}
 		throw new IllegalArgumentException("Database name not found");
+	}
+
+	/**
+	 * Replaces all multiple space characters with single space,
+	 * as long as they are not enclosed within quotes.
+	 * Then trims the ends from white spaces.
+	 * @param str String to be cleaned.
+	 * @return Cleaned string that does not contain multiple spaces, or spaces in either end.
+	 */
+	private String cleanSpaces(String str) {
+		return spaceReplacer.matcher(str).replaceAll(" ").trim();
 	}
 }
