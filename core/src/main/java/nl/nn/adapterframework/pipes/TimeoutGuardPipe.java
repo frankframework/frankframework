@@ -22,12 +22,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.log4j.NDC;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import org.apache.logging.log4j.ThreadContext;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -69,7 +68,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 			String ctName = Thread.currentThread().getName();
 			try {
 				Thread.currentThread().setName(threadName+"["+ctName+"]");
-				NDC.push(threadNDC);
+				ThreadContext.push(threadNDC);
 				return doPipeWithTimeoutGuarded(input, session);
 			} finally {
 				Thread.currentThread().setName(ctName);
@@ -95,7 +94,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		DoPipe doPipe = new DoPipe(message, session, Thread.currentThread().getName(), NDC.peek());
+		DoPipe doPipe = new DoPipe(message, session, Thread.currentThread().getName(), ThreadContext.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future future = service.submit(doPipe);
 		String result = null;

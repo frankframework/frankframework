@@ -20,9 +20,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -154,8 +154,8 @@ public class IbisTester {
 	}
 
 	public String testStartAdapters() {
-		BasicConfigurator.configure();
-		Logger.getRootLogger().setLevel(Level.INFO);
+		// Log4J2 will automatically create a console appender and basic pattern layout.
+		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
@@ -344,11 +344,11 @@ public class IbisTester {
 			ScenarioRunner scenarioRunner = new ScenarioRunner(
 					scenariosRootDir, scenario);
 			ExecutorService service = Executors.newSingleThreadExecutor();
-			Future future = service.submit(scenarioRunner);
+			Future<String> future = service.submit(scenarioRunner);
 			long timeout = 60;
 			try {
 				try {
-					resultString = (String) future.get(timeout, TimeUnit.SECONDS);
+					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
 				} catch (Exception e) {

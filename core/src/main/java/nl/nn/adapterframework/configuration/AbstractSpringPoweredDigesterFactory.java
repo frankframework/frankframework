@@ -17,21 +17,20 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
