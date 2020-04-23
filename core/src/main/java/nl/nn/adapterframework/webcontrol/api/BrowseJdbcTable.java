@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -129,57 +130,67 @@ public final class BrowseJdbcTable extends Base {
 				qs.configure(true);
 				qs.open();
 
-				ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, tableName, null);
-				if (!rs.isBeforeFirst()) {
-					rs = qs.getConnection().getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
+				try (Connection conn =qs.getConnection()) {
+					ResultSet rs = null;
+					try {
+						rs = conn.getMetaData().getColumns(null, null, tableName, null);
+						if (!rs.isBeforeFirst()) {
+							rs.close();
+							rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
+						}
+		
+						String fielddefinition = "<fielddefinition>";
+						while(rs.next()) {
+							String field = "<field name=\""
+									+ rs.getString(4)
+									+ "\" type=\""
+									+ DB2XMLWriter.getFieldType(rs.getInt(5))
+									+ "\" size=\""
+									+ rs.getInt(7)
+									+ "\"/>";
+							fielddefinition = fielddefinition + field;
+							fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+						}
+						fielddefinition = fielddefinition + "</fielddefinition>";
+		
+						String browseJdbcTableExecuteREQ =
+							"<browseJdbcTableExecuteREQ>"
+								+ "<dbmsName>"
+								+ qs.getDbmsSupport().getDbmsName()
+								+ "</dbmsName>"
+								+ "<tableName>"
+								+ tableName
+								+ "</tableName>"
+								+ "<where>"
+								+ XmlUtils.encodeChars(where)
+								+ "</where>"
+								+ "<numberOfRowsOnly>"
+								+ rowNumbersOnly
+								+ "</numberOfRowsOnly>"
+								+ "<order>"
+								+ order
+								+ "</order>"
+								+ "<rownumMin>"
+								+ minRow
+								+ "</rownumMin>"
+								+ "<rownumMax>"
+								+ maxRow
+								+ "</rownumMax>"
+								+ fielddefinition
+								+ "<maxColumnSize>1000</maxColumnSize>"
+								+ "</browseJdbcTableExecuteREQ>";
+						URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
+						if (url != null) {
+							Transformer t = XmlUtils.createTransformer(url);
+							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+						}
+						result = qs.sendMessage(new Message(query), null).asString();
+					} finally {
+						if (rs!=null) {
+							rs.close();
+						}
+					}
 				}
-
-				String fielddefinition = "<fielddefinition>";
-				while(rs.next()) {
-					String field = "<field name=\""
-							+ rs.getString(4)
-							+ "\" type=\""
-							+ DB2XMLWriter.getFieldType(rs.getInt(5))
-							+ "\" size=\""
-							+ rs.getInt(7)
-							+ "\"/>";
-					fielddefinition = fielddefinition + field;
-					fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
-				}
-				fielddefinition = fielddefinition + "</fielddefinition>";
-
-				String browseJdbcTableExecuteREQ =
-					"<browseJdbcTableExecuteREQ>"
-						+ "<dbmsName>"
-						+ qs.getDbmsSupport().getDbmsName()
-						+ "</dbmsName>"
-						+ "<tableName>"
-						+ tableName
-						+ "</tableName>"
-						+ "<where>"
-						+ XmlUtils.encodeChars(where)
-						+ "</where>"
-						+ "<numberOfRowsOnly>"
-						+ rowNumbersOnly
-						+ "</numberOfRowsOnly>"
-						+ "<order>"
-						+ order
-						+ "</order>"
-						+ "<rownumMin>"
-						+ minRow
-						+ "</rownumMin>"
-						+ "<rownumMax>"
-						+ maxRow
-						+ "</rownumMax>"
-						+ fielddefinition
-						+ "<maxColumnSize>1000</maxColumnSize>"
-						+ "</browseJdbcTableExecuteREQ>";
-				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
-				if (url != null) {
-					Transformer t = XmlUtils.createTransformer(url);
-					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-				}
-				result = qs.sendMessage(new Message(query), null).asString();
 			//} else {
 				//error("errors.generic","This function only supports oracle databases",null);
 			//}
