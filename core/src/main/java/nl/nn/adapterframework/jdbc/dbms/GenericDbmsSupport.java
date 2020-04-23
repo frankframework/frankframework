@@ -453,8 +453,14 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
+		try {
+			SqlTranslator translator = new SqlTranslator(sqlDialectFrom, getDbmsName());
+			String converted = translator.translate(queryContext.getQuery());
+			queryContext.setQuery(converted);
+		} catch (IllegalArgumentException e) {
 			warnConvertQuery(sqlDialectFrom);
+		} catch (Exception e) {
+			throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
 		}
 	}
 	
