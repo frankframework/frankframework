@@ -1,13 +1,19 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -19,13 +25,15 @@ import java.util.regex.Pattern;
  */
 public class SqlTranslator {
 	Logger logger = LogUtil.getLogger(this);
-	private static final String SOURCE_CSV = "src/main/resources/dbms/source.csv";
-	private static final String TARGET_CSV = "src/main/resources/dbms/target.csv";
+	private static final String SOURCE_CSV = "dbms/source.csv";
+	private static final String TARGET_CSV = "dbms/target.csv";
 	public Map<String, String> target;
 	public Map<String, Pattern> source;
 	private boolean translate = AppConstants.getInstance().getBoolean("jdbc.translate", true);
+	private static Map<String, String> logs = new HashMap<>();
 
-	public SqlTranslator(String source, String target) throws Exception {
+	public SqlTranslator(String source, String target) throws IOException, CsvValidationException {
+		LogUtil.getRootLogger().setLevel(Level.ALL);
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
@@ -53,6 +61,7 @@ public class SqlTranslator {
 			logger.info("Skipping SQL translation from [" + source + "] to [" + target + "]");
 			return query;
 		}
+
 		for (String key : source.keySet()) {
 			Matcher matcher = source.get(key).matcher(query);
 			if (matcher.find()) {
@@ -76,7 +85,7 @@ public class SqlTranslator {
 	protected Pattern toPattern(String str) {
 		// Make sure there are no greedy matchers.
 		str = str.replaceAll("\\.\\*", ".*?");
-		logger.trace(String.format("Compiling pattern [%s]", str));
+		logger.trace("Compiling pattern [" + str + "]");
 		return Pattern.compile(str, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 
@@ -86,9 +95,10 @@ public class SqlTranslator {
 	 * @param name Name of the target database
 	 * @throws Exception If database name can not be found or file can not be read.
 	 */
-	private void readSource(String name) throws Exception {
+	private void readSource(String name) throws IOException, CsvValidationException {
 		source = new HashMap<>();
-		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(SOURCE_CSV)));
+		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), SOURCE_CSV);
+		CSVReader reader = new CSVReader(ClassUtils.urlToReader(resourceUrl, 1000));
 		int index = getIndex(reader, name);
 		logger.debug(String.format("Reading SqlTranslator source values for database [%s] from index [%d]", name, index));
 		String[] values;
@@ -105,9 +115,10 @@ public class SqlTranslator {
 	 * @param name Name of the target database
 	 * @throws Exception If database name can not be found or file can not be read.
 	 */
-	private void readTarget(String name) throws Exception {
+	private void readTarget(String name) throws IOException, CsvValidationException {
 		target = new HashMap<>();
-		CSVReader reader = new CSVReader(new BufferedReader(new FileReader(TARGET_CSV)));
+		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), TARGET_CSV);
+		CSVReader reader = new CSVReader(ClassUtils.urlToReader(resourceUrl, 1000));
 		int index = getIndex(reader, name);
 		logger.debug(String.format("Reading SqlTranslator target values for database [%s] from index [%d]", name, index));
 		String[] values;
@@ -126,7 +137,7 @@ public class SqlTranslator {
 	 * @return Index at which that database's regex values are stored.
 	 * @throws Exception If database name is not found in file.
 	 */
-	private int getIndex(CSVReader reader, String name) throws Exception {
+	private int getIndex(CSVReader reader, String name) throws IOException, CsvValidationException, IllegalArgumentException {
 		String[] firstline = reader.readNext();
 		for (int i = 0; i < firstline.length; i++) {
 			if (firstline[i].trim().equalsIgnoreCase(name))

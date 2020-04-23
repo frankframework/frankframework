@@ -1,4 +1,4 @@
-LABEL       ,ORACLE                        ,MSSQL                                                              ,MYSQL              ,H2                      ,POSTGRESQL
+LABEL       ,ORACLE                        ,MS SQL                                                              ,MYSQL              ,H2                      ,POSTGRESQL
 NEXTVAL     ,(\\w+).NEXTVAL                ,NEXT VALUE FOR (\\w+)                                              ,                   ,NEXT VALUE FOR (\\w+)   ,NEXTVAL\('\\w+'\)
 CURRVAL     ,(\\w+)\\.CURRVAL              ,SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME\\s+=\\s+'(\\w+)',                   ,CURRENT VALUE FOR (\\w+),CURRVAL\('\\w+'\)
 EMPTY_BLOB  ,EMPTY_BLOB\\(\\)              ,                                                                   ,                   ,                        ,
