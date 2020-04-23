@@ -65,4 +65,9 @@ public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> {
 		getFileSystem().setRealm(realm);
 	}
 
+	@IbisDoc({ "9", "port", "" })
+	public void setPort(Integer port) {
+		getFileSystem().setPort(port);
+	}
+
 }
