@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -54,7 +55,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -374,34 +374,34 @@ public final class ShowConfiguration extends Base {
 			}
 		}
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, configurationName);
-			rs = stmt.executeQuery();
-			while (rs.next()) {
-				Map<String, Object> config = new HashMap<String, Object>();
-				config.put("name", rs.getString(1));
-				config.put("version", rs.getString(2));
-				config.put("filename", rs.getString(3));
-				config.put("user", rs.getString(4));
-				config.put("active", rs.getBoolean(5));
-				config.put("autoreload", rs.getBoolean(6));
-				config.put("created", rs.getString(7));
-				returnMap.add(config);
+			try (Connection conn = qs.getConnection()) {
+				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, configurationName);
+					try (ResultSet rs = stmt.executeQuery()) {
+						while (rs.next()) {
+							Map<String, Object> config = new HashMap<String, Object>();
+							config.put("name", rs.getString(1));
+							config.put("version", rs.getString(2));
+							config.put("filename", rs.getString(3));
+							config.put("user", rs.getString(4));
+							config.put("active", rs.getBoolean(5));
+							config.put("autoreload", rs.getBoolean(6));
+							config.put("created", rs.getString(7));
+							returnMap.add(config);
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			throw new ApiException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 		return returnMap;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.protocol.commons.EnumWithValue;
+import com.hierynomus.protocol.commons.buffer.Buffer.BufferException;
+import com.hierynomus.protocol.transport.TransportException;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.auth.GSSAuthenticationContext;
@@ -316,22 +318,39 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		return newName;
 	}
 
-	@Override
-	public String moveFile(String f, String to, boolean createFolder) throws FileSystemException {
-		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			if (exists(to)) {
-				if (!isFolder(to)) {
-					throw new FileSystemException("Cannot move file. Destination file ["+to+"] is not a folder.");
-				}
-			} else {
-				if (createFolder) {
-					createFolder(to);
-				} else {
-					throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
-				}
+	protected String getDestinationFile(String f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
+		if (exists(destinationFolder)) {
+			if (!isFolder(destinationFolder)) {
+				throw new FileSystemException("Cannot "+action+" file. Destination ["+destinationFolder+"] is not a folder.");
 			}
-			String destination = to+"\\"+f;
-			file.rename(destination, createFolder);
+		} else {
+			if (createFolder) {
+				createFolder(destinationFolder);
+			} else {
+				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
+			}
+		}
+		return destinationFolder+"\\"+f;
+	}
+
+	@Override
+	public String moveFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			String destination = getDestinationFile(f, destinationFolder, createFolder, "move");
+			file.rename(destination, false);
+			return destination;
+		}
+	}
+
+	@Override
+	public String copyFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			String destination = getDestinationFile(f, destinationFolder, createFolder, "copy");
+			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
+				file.remoteCopyTo(destinationFile);
+			} catch (TransportException | BufferException e) {
+				throw new FileSystemException("cannot copy file ["+f+"] to ["+destinationFolder+"]",e);
+			}
 			return destination;
 		}
 	}

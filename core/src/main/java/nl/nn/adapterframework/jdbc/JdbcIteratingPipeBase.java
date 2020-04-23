@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
 	
-	protected class MixedQuerySender extends JdbcQuerySenderBase {
+	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
 		
@@ -56,11 +56,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			if (query!=null) {
 				return query;
 			}
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
+			return super.getQuery(message);
 		}
 
 		public void setQuery(String query) {
@@ -92,12 +88,6 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	@Override
-	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
-		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
-	}
-
-
 	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
 	@SuppressWarnings("finally")
@@ -108,8 +98,9 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, message, session);
-			statement=queryContext.getStatement();
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");

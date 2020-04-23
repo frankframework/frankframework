@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 
 public class LdapFindMembershipsPipeTest {
 
@@ -62,7 +63,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		String input="CN=ck08pu,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
-		PipeRunResult prr = pipe.doPipe(input, null);
+		PipeRunResult prr = pipe.doPipe(new Message(input), null);
 		
 		System.out.println("result:"+prr.getResult());
 		
@@ -78,7 +79,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		String input="CN=ck08pu,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
-		PipeRunResult prr = pipe.doPipe(input, null);
+		PipeRunResult prr = pipe.doPipe(new Message(input), null);
 		
 		System.out.println("result:"+prr.getResult());
 		
@@ -99,13 +100,13 @@ public class LdapFindMembershipsPipeTest {
 		String input="CN=ni83nz,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
 		long time0=System.currentTimeMillis();
-		PipeRunResult prr1 = pipe.doPipe(input, null);
+		PipeRunResult prr1 = pipe.doPipe(new Message(input), null);
 		long time1=System.currentTimeMillis();
 		
 		System.out.println("result:"+prr1.getResult());
 		
 		long time2=System.currentTimeMillis();
-		PipeRunResult prr2 = pipe.doPipe(input, null);
+		PipeRunResult prr2 = pipe.doPipe(new Message(input), null);
 		long time3=System.currentTimeMillis();
 		
 		System.out.println("first  duration ["+(time1-time0)+"] ms");

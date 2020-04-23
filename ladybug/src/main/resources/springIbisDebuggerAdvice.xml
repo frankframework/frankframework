@@ -70,39 +70,56 @@
 				method="debugPipeGetInputFrom"
 				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							nl.nn.adapterframework.stream.Message, 
-	 							nl.nn.adapterframework.core.IPipeLineSession
-	 						)
-	 					)
-	 					and
-	 					args(message, session)
-	 					"
-	 				method="debugSenderInputOutputAbort"
-	 				arg-names="message, session"
-	 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-	 							nl.nn.adapterframework.stream.Message, 
-	 							nl.nn.adapterframework.core.IPipeLineSession, 
-	 							nl.nn.adapterframework.stream.IOutputStreamingSupport
-	 						)
-	 					)
-	 					and
-	 					args(message, session, next)
-	 					"
-	 				method="debugStreamingSenderInputOutputAbort"
-	 				arg-names="message, session, next"
-	 			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.ISender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(message, session)
+					"
+				method="debugSenderInputOutputAbort"
+				arg-names="message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
+							*,
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(blockHandle, message, session)
+					"
+				method="debugBlockEnabledSenderInputOutputAbort"
+				arg-names="blockHandle, message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession, 
+							nl.nn.adapterframework.stream.IOutputStreamingSupport
+						)
+					)
+					and
+					args(message, session, next)
+					"
+				method="debugStreamingSenderInputOutputAbort"
+				arg-names="blockHandle, message, session, next"
+			/>
 			<aop:around
 				pointcut=
 					"

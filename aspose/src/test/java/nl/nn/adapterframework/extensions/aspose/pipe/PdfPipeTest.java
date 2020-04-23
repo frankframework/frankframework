@@ -257,13 +257,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void Txt2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
 	}
-
-	@Ignore
-	@Test()
-	public void Xml2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		expectSuccessfullConversion("Xml2Pdf", "/PdfPipe/xml.xml", "/PdfPipe/xml-results/xml.xml", "/PdfPipe/results/xml.pdf");
-	}
-
+	
 	@Ignore
 	@Test()
 	public void Zip2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {

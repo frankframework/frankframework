@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,27 +43,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.scheduler.ConfiguredJob;
-import nl.nn.adapterframework.scheduler.DatabaseJobDef;
-import nl.nn.adapterframework.scheduler.IbisJobDetail;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -79,6 +58,26 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.scheduler.ConfiguredJob;
+import nl.nn.adapterframework.scheduler.DatabaseJobDef;
+import nl.nn.adapterframework.scheduler.IbisJobDetail;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
@@ -580,39 +579,40 @@ public final class ShowScheduler extends Base {
 			if(principal != null)
 				user = principal.getName();
 
-			Connection conn = null;
 			try {
 				qs.open();
-				conn = qs.getConnection();
+				try (Connection conn = qs.getConnection()) {
 
-				if(overwrite) {
-					String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
-					deleteStatement.setString(1, name);
-					deleteStatement.setString(2, jobGroup);
-					deleteStatement.executeUpdate();
+					if(overwrite) {
+						String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery)) {
+							deleteStatement.setString(1, name);
+							deleteStatement.setString(2, jobGroup);
+							deleteStatement.executeUpdate();
+						}
+					}
+	
+					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
+							+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+						stmt.setString(1, name);
+						stmt.setString(2, jobGroup);
+						stmt.setString(3, adapterName);
+						stmt.setString(4, listenerName);
+						stmt.setString(5, cronExpression);
+						stmt.setInt(6, interval);
+						stmt.setClob(7, new StringReader(message));
+						stmt.setBoolean(8, hasLocker);
+						stmt.setString(9, lockKey);
+						stmt.setString(10, user);
+		
+						success = stmt.executeUpdate() > 0;
+					}
 				}
-
-				String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-						+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
-				PreparedStatement stmt = conn.prepareStatement(insertQuery);
-				stmt.setString(1, name);
-				stmt.setString(2, jobGroup);
-				stmt.setString(3, adapterName);
-				stmt.setString(4, listenerName);
-				stmt.setString(5, cronExpression);
-				stmt.setInt(6, interval);
-				stmt.setClob(7, new StringReader(message));
-				stmt.setBoolean(8, hasLocker);
-				stmt.setString(9, lockKey);
-				stmt.setString(10, user);
-
-				success = stmt.executeUpdate() > 0;
 			} catch (SenderException | SQLException | JdbcException e) {
 				throw new ApiException("error saving job in database", e);
 			} finally {
 				qs.close();
-				JdbcUtil.close(conn);
 			}
 
 			if(!success)
@@ -655,22 +655,22 @@ public final class ShowScheduler extends Base {
 					throw new ApiException("Error creating FixedQuerySender bean to remove job from database", e);
 				}
 
-				Connection conn = null;
 				try {
 					qs.open();
-					conn = qs.getConnection();
+					try (Connection conn = qs.getConnection()) {
 
-					String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement stmt = conn.prepareStatement(query);
-					stmt.setString(1, jobKey.getName());
-					stmt.setString(2, jobKey.getGroup());
-
-					success = stmt.executeUpdate() > 0;
+						String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement stmt = conn.prepareStatement(query)) {
+							stmt.setString(1, jobKey.getName());
+							stmt.setString(2, jobKey.getGroup());
+		
+							success = stmt.executeUpdate() > 0;
+						}
+					}
 				} catch (SenderException | SQLException | JdbcException e) {
 					throw new ApiException("error removing job from database", e);
 				} finally {
 					qs.close();
-					JdbcUtil.close(conn);
 				}
 				if(!success) {
 					throw new ApiException("failed to remove job from database");
