@@ -46,6 +46,7 @@ import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -166,7 +167,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
-		
+		if (!(fileSystem instanceof IWritableFileSystem)) {
+			if (getNumberOfBackups()>0) {
+				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
+			}
+			if (getRotateDays()>0) {
+				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
+			}
+		}
 	}
 	
 	
@@ -277,7 +285,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
 				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
-					rolloverByNumber(file);
+					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, file, getNumberOfBackups());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -287,11 +295,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_APPEND)) {
 				F file=getFile(input, pvl);
 				if (getRotateDays()>0 && fileSystem.exists(file)) {
-					rolloverByDay(file);
+					FileSystemUtils.rolloverByDay((IWritableFileSystem<F>)fileSystem, file, getInputFolder(), getRotateDays());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				if (getRotateSize()>0 && fileSystem.exists(file)) {
-					rolloverBySize(file);
+					FileSystemUtils.rolloverBySize((IWritableFileSystem<F>)fileSystem, file, getRotateSize(), getNumberOfBackups());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -180,9 +180,15 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				try {
 					basefolderId=findFolder(inboxId,getBaseFolder());
 				} catch (Exception e) {
-					log.debug("Could not get folder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
+					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+				}	
+				if (basefolderId==null) {
+					log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
 					basefolderId=findFolder(null,getBaseFolder());
 				}				
+				if (basefolderId==null) {
+					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
+				}
 			} else {
 				basefolderId=inboxId;
 			}
@@ -208,8 +214,10 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
 			}
 			if (findFoldersResultsIn.getTotalCount() == 0) {
-				throw new ConfigurationException("no folder found with name ["	+ folderName + "] in basefolder ["+baseFolderId+"]");
-			} else if (findFoldersResultsIn.getTotalCount() > 1) {
+				if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
+				return null;
+			} 
+			if (findFoldersResultsIn.getTotalCount() > 1) {
 				if (log.isDebugEnabled()) {
 					for (Folder folder:findFoldersResultsIn.getFolders()) {
 						log.debug("found folder ["+folder.getDisplayName()+"]");
@@ -303,7 +311,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				return findResults.getItems().iterator();
 			}
 		} catch (Exception e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
 		}
 	}
 
@@ -553,7 +561,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	
 	public FolderId getFolderIdByFolderName(String folderName) throws Exception{
 		FindFoldersResults findResults;
-		findResults = exchangeService.findFolders(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		if (log.isDebugEnabled()) {
 			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
 			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
@@ -567,7 +575,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
-			folder.save(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())));
+			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -591,8 +599,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	@Override
 	public String getPhysicalDestinationName() {
 		if (exchangeService != null) {
-			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl())
-					+ "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
+			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl()) + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
 		}
 		return null;
 	}

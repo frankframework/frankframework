@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -54,6 +55,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean createFolders=false;
 	private boolean delete = false;
 	private boolean overwrite = false;
+	private int numberOfBackups=0;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
 
@@ -72,6 +74,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
 		fileSystem.configure();
+		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
+			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
+		}
 	}
 
 	@Override
@@ -166,7 +171,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					F inprocessFile = moveFile(file, getInProcessFolder());
+					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				} 
 				return file;
@@ -214,7 +219,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		try {
 			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
 				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					moveFile(rawMessage, getErrorFolder());
+					FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 					return;
 				}
 			}
@@ -223,7 +228,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return;
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				moveFile(rawMessage, getProcessedFolder());
+				FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 		} catch (FileSystemException e) {
 			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -391,13 +396,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	}
 
 	
-//	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
-//	public void setNumberOfBackups(int i) {
-//		numberOfBackups = i;
-//	}
-//	public int getNumberOfBackups() {
-//		return numberOfBackups;
-//	}
+	@IbisDoc({"8", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
 
 	@IbisDoc({"8", "when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
