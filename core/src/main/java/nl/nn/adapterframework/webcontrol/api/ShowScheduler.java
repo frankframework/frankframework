@@ -580,39 +580,40 @@ public final class ShowScheduler extends Base {
 			if(principal != null)
 				user = principal.getName();
 
-			Connection conn = null;
 			try {
 				qs.open();
-				conn = qs.getConnection();
+				try (Connection conn = qs.getConnection()) {
 
-				if(overwrite) {
-					String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
-					deleteStatement.setString(1, name);
-					deleteStatement.setString(2, jobGroup);
-					deleteStatement.executeUpdate();
+					if(overwrite) {
+						String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery)) {
+							deleteStatement.setString(1, name);
+							deleteStatement.setString(2, jobGroup);
+							deleteStatement.executeUpdate();
+						}
+					}
+	
+					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
+							+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+						stmt.setString(1, name);
+						stmt.setString(2, jobGroup);
+						stmt.setString(3, adapterName);
+						stmt.setString(4, listenerName);
+						stmt.setString(5, cronExpression);
+						stmt.setInt(6, interval);
+						stmt.setClob(7, new StringReader(message));
+						stmt.setBoolean(8, hasLocker);
+						stmt.setString(9, lockKey);
+						stmt.setString(10, user);
+		
+						success = stmt.executeUpdate() > 0;
+					}
 				}
-
-				String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-						+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
-				PreparedStatement stmt = conn.prepareStatement(insertQuery);
-				stmt.setString(1, name);
-				stmt.setString(2, jobGroup);
-				stmt.setString(3, adapterName);
-				stmt.setString(4, listenerName);
-				stmt.setString(5, cronExpression);
-				stmt.setInt(6, interval);
-				stmt.setClob(7, new StringReader(message));
-				stmt.setBoolean(8, hasLocker);
-				stmt.setString(9, lockKey);
-				stmt.setString(10, user);
-
-				success = stmt.executeUpdate() > 0;
 			} catch (SenderException | SQLException | JdbcException e) {
 				throw new ApiException("error saving job in database", e);
 			} finally {
 				qs.close();
-				JdbcUtil.close(conn);
 			}
 
 			if(!success)
@@ -655,22 +656,22 @@ public final class ShowScheduler extends Base {
 					throw new ApiException("Error creating FixedQuerySender bean to remove job from database", e);
 				}
 
-				Connection conn = null;
 				try {
 					qs.open();
-					conn = qs.getConnection();
+					try (Connection conn = qs.getConnection()) {
 
-					String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement stmt = conn.prepareStatement(query);
-					stmt.setString(1, jobKey.getName());
-					stmt.setString(2, jobKey.getGroup());
-
-					success = stmt.executeUpdate() > 0;
+						String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement stmt = conn.prepareStatement(query)) {
+							stmt.setString(1, jobKey.getName());
+							stmt.setString(2, jobKey.getGroup());
+		
+							success = stmt.executeUpdate() > 0;
+						}
+					}
 				} catch (SenderException | SQLException | JdbcException e) {
 					throw new ApiException("error removing job from database", e);
 				} finally {
 					qs.close();
-					JdbcUtil.close(conn);
 				}
 				if(!success) {
 					throw new ApiException("failed to remove job from database");

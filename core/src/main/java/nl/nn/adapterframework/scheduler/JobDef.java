@@ -788,8 +788,8 @@ public class JobDef {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				qs.close();
 				JdbcUtil.fullClose(conn, rs);
+				qs.close();
 			}
 
 			if (!configsToReload.isEmpty()) {
@@ -937,8 +937,8 @@ public class JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!

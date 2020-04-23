@@ -165,50 +165,51 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		addPeriodIndicator(nameList,valueList,now,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"s",mainMark);
 		addPeriodIndicator(nameList,valueList,now,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"s",mainMark);
 		try {
-			Connection connection = getConnection();
-			sessionInfo.connection=connection;
-			String hostname=Misc.getHostname();
-			int hostKey=hosts.findOrInsert(connection,hostname);	
-			sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);		
-			
-			String insertEventQuery=null;
-			try {
-				String insertClause=insertEventQueryInsertClause;
-				String valuesClause=insertEventQueryValuesClause;
-				for(Iterator it=nameList.iterator();it.hasNext();) {
-					String name=(String)it.next();
-					insertClause+=","+name;
-					valuesClause+=",?";
-				}
-				insertEventQuery=insertClause+valuesClause+")";
-				if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
-				stmt = connection.prepareStatement(insertEventQuery);
-				int pos=1;
-				stmt.setInt(pos++,sessionInfo.eventKey);
-				stmt.setInt(pos++,instanceKey);
-				stmt.setInt(pos++,hostKey);
-				stmt.setLong(pos++,totalMem-freeMem);
-				stmt.setLong(pos++,totalMem);
-				stmt.setTimestamp(pos++,new Timestamp(now.getTime()));
-				stmt.setTimestamp(pos++,new Timestamp(mainMark.getTime()));
-				for(Iterator it=valueList.iterator();it.hasNext();) {
-					String value=(String)it.next();
-					stmt.setString(pos++,value);
-				}
-				stmt.execute();
-			} catch (Exception e) {
-				throw new JdbcException("could not execute query ["+insertEventQuery+"]",e);
-			} finally {
-				if (stmt!=null) {
-					try {
-						stmt.close();
-					} catch (Exception e) {
-						throw new JdbcException("could not close statement for query ["+insertEventQuery+"]",e);
+			try (Connection connection = getConnection()) {
+				sessionInfo.connection=connection;
+				String hostname=Misc.getHostname();
+				int hostKey=hosts.findOrInsert(connection,hostname);	
+				sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);		
+				
+				String insertEventQuery=null;
+				try {
+					String insertClause=insertEventQueryInsertClause;
+					String valuesClause=insertEventQueryValuesClause;
+					for(Iterator it=nameList.iterator();it.hasNext();) {
+						String name=(String)it.next();
+						insertClause+=","+name;
+						valuesClause+=",?";
+					}
+					insertEventQuery=insertClause+valuesClause+")";
+					if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
+					stmt = connection.prepareStatement(insertEventQuery);
+					int pos=1;
+					stmt.setInt(pos++,sessionInfo.eventKey);
+					stmt.setInt(pos++,instanceKey);
+					stmt.setInt(pos++,hostKey);
+					stmt.setLong(pos++,totalMem-freeMem);
+					stmt.setLong(pos++,totalMem);
+					stmt.setTimestamp(pos++,new Timestamp(now.getTime()));
+					stmt.setTimestamp(pos++,new Timestamp(mainMark.getTime()));
+					for(Iterator it=valueList.iterator();it.hasNext();) {
+						String value=(String)it.next();
+						stmt.setString(pos++,value);
+					}
+					stmt.execute();
+				} catch (Exception e) {
+					throw new JdbcException("could not execute query ["+insertEventQuery+"]",e);
+				} finally {
+					if (stmt!=null) {
+						try {
+							stmt.close();
+						} catch (Exception e) {
+							throw new JdbcException("could not close statement for query ["+insertEventQuery+"]",e);
+						}
 					}
 				}
+				
+				return sessionInfo;
 			}
-			
-			return sessionInfo;
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
