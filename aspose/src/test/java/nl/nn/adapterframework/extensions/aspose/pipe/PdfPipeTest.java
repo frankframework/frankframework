@@ -162,91 +162,103 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return result;
 	}
 
+	@Ignore
 	@Test()
 	public void Bmp2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Bmp2Pdf", "/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void DocWord2016Macro2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("DocWord2016Macro2Pdf", "/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void DocWord20032Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("DocWord20032Pdf", "/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Dot2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Dot2Pdf", "/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void EmlFromGroupmailbox2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Gif2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Gif2Pdf", "/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Htm2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Htm2Pdf", "/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Html2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Html2Pdf", "/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Jpeg2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Jpeg2Pdf", "/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Jpg2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Jpg2Pdf", "/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Log2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Log2Pdf", "/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Png2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Png2Pdf", "/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Ppt2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Rtf2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Tiff2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
 	}
 
+	@Ignore
 	@Test()
 	public void Txt2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
 	}
-
-	@Test()
-	public void Xml2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		expectSuccessfullConversion("Xml2Pdf", "/PdfPipe/xml.xml", "/PdfPipe/xml-results/xml.xml", "/PdfPipe/results/xml.pdf");
-	}
-
+	
+	@Ignore
 	@Test()
 	public void Zip2Pdf() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		expectUnsuccessfullConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
