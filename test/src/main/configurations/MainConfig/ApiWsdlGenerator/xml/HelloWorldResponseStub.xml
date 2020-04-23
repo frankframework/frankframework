@@ -1,8 +1,8 @@
-<HiUniverseRLY xmlns="http://iaf.com/HiUniverse">
+<HelloWorld_Response xmlns="http://ibissource.org/HelloWorld">
 	<Body>
 		<Text1>Hello</Text1>
 		<Text2>to</Text2>
 		<Text3>you</Text3>
 		<Text4>too</Text4>
 	</Body>
-</HiUniverse_RLY>
+</HelloWorld_Response>
