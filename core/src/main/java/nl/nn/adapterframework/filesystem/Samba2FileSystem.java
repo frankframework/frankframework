@@ -92,6 +92,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	private String username = null;
 	private String password = null;
 	private String authAlias = null;
+	private Integer port = null; 
 
 	private boolean listHiddenFiles = false;
 
@@ -115,7 +116,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		try {
 			AuthenticationContext auth = authenticate();
 			client = new SMBClient();
-			connection = client.connect(domain, 139);
+			connection = client.connect(domain, port);
 			if(connection.isConnected()) {
 				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
 			}
@@ -159,7 +160,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	private AuthenticationContext authenticate() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
-			if(StringUtils.equalsIgnoreCase(authType, "NTLM")) {
+			if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
 				return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
 			}else if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
 
@@ -601,6 +602,14 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 				log.error("Unable to close disk share after deleting the file",e);
 			}
 		}
+	}
+
+	public Integer getPort() {
+		return port;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
 	}
 
 }

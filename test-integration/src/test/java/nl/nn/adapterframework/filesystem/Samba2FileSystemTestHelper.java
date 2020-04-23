@@ -17,18 +17,22 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
 public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
-	private String shareName = "Share";
-	private String username = "";
-	private String password = "";
-	private String domain = "";
+	private String shareName = null;
+	private String username = null;
+	private String password = null;
+	private String domain = null;
 	private SmbFile context;
-	private String share = "smb://" + domain + "/" + shareName + "/"; // the path of smb network must start with "smb://"
+	private String share = null; // the path of smb network must start with "smb://"
+	private Integer port;
+	
 		
-	public Samba2FileSystemTestHelper(String shareName, String username, String password, String domain) {
+	public Samba2FileSystemTestHelper(String shareName, String username, String password, String domain, Integer port) {
 		this.shareName=shareName;
 		this.username=username;
 		this.password=password;
 		this.domain=domain;
+		this.port = port;
+		this.share = "smb://" + domain + ":" + port + "/" + shareName + "/"; // the path of smb network must start with "smb://"
 	}
 	
 	@Override
@@ -44,7 +48,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
-		String path=folder==null?filename:folder+"/"+filename;
+		String path = folder==null ? filename : folder+"/"+filename;
 		return new SmbFile(context, path).exists();
 	}
 

@@ -1,23 +1,15 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import jcifs.smb.NtlmPasswordAuthentication;
-import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
-import jcifs.smb.SmbFileInputStream;
-import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.Samba2Sender;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  *  This test class is created to test both SambaFileSystem and SambaFileSystemSender classes.
@@ -26,11 +18,12 @@ import nl.nn.adapterframework.senders.Samba2Sender;
  */
 
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<Samba2Sender, String, Samba2FileSystem> {
-	private String shareName = "share";
-	private String username = "carlo";
-	private String password = "carlo";
-	private String domain = "172.17.0.2";
 
+	private String shareName = "share";
+	private String username = "wearefrank";
+	private String password = "pass_123";
+	private String host = "localhost";
+	private Integer port = 139;
 
 	@Override
 	@Before
@@ -40,7 +33,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<Samba2Sende
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName,username,password,domain);
+		return new Samba2FileSystemTestHelper(shareName,username,password,host,port);
 	}
 
 	@Override
@@ -49,35 +42,21 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<Samba2Sende
 		result.setShare(shareName);
 		result.setUsername(username);
 		result.setPassword(password);
-		result.setDomain(domain);
-		
+		result.setDomain(host);
+		result.setPort(port);
 		return result;
-	}
-	
-	public void writeToNDM(String textToWrite) throws MalformedURLException, SmbException, UnknownHostException, IOException {
-	    
-		NtlmPasswordAuthentication authentication = new NtlmPasswordAuthentication(domain, username, password);
-		String url = "sdm://localhost:139/share";
-	    try (OutputStream out = new SmbFileOutputStream(new SmbFile(url, authentication))) {
-	        byte[] bytesToWrite = textToWrite.getBytes();
-	        if (out != null && bytesToWrite != null && bytesToWrite.length > 0) {
-	            out.write(bytesToWrite);
-	        }
-	    }
-	    ;
 	}
 
 	@Test
-	public void sambaSenderTest() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
-
-		writeToNDM("textToWrite");
-		
-		fileSystemSender.setAction("list");
+	public void createFile() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
+		fileSystemSender.setAction("upload");
+		fileSystemSender.setFilename("text6.txt");
 		fileSystemSender.configure();
 		fileSystemSender.getFileSystem().open();
-		fileSystemSender.getFileSystem().exists("text.txt");
-		
-		//String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
+		fileSystemSender.sendMessage(new Message("text6.txt"), null);
+		System.out.println("exist file text5.txt = " + fileSystemSender.getFileSystem().exists("text5.txt"));
+		System.out.println("exist folder folder1 = " + fileSystemSender.getFileSystem().exists("folder1"));
+		System.out.println("exist folder folder2 = " + fileSystemSender.getFileSystem().exists("folder2"));
 	}
 
 
