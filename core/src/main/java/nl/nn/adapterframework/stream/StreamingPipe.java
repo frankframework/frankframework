@@ -70,12 +70,17 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	/**
 	 * provide the outputstream, or null if a stream cannot be provided.
-	 * If nextProvider is null, then descendants must replace it with getStreamTarget().
+	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
-	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		return null;
 	}
+
+	@Override
+	public final MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		return provideOutputStream(session);
+	}
+	
 
 
 	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})

@@ -54,6 +54,7 @@ import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -264,8 +265,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	 
 	/**
 	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(IPipeLineSession session, IForwardTarget next)}
+	 * Provides advice for {@link StreamingPipe#provideOutputStream(IPipeLineSession session)}
 	 */
-	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session, IForwardTarget next) throws Throwable {
+	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return (MessageOutputStream)proceedingJoinPoint.proceed();
 		}

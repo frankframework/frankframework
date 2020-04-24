@@ -435,7 +435,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
 	}
 

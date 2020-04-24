@@ -464,24 +464,23 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return false; // TODO to be implemented!
 	}
 
-	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 
 		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
 			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
 			return null;
 		}
-		
+		MessageOutputStream result=null;
 		if (sender instanceof IOutputStreamingSupport) {
 			// TODO insert output validator
 			// TODO insert output wrapper
 			IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
-			MessageOutputStream result = streamingSender.provideOutputStream(session, getNextPipe());
+			result = streamingSender.provideOutputStream(session, getNextPipe());
 			// TODO insert input wrapper
 			// TODO insert input validator
 		}
-		return null;
+		return result;
 	}
 
 	protected void preserve(Message input, IPipeLineSession session) throws PipeRunException {

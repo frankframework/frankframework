@@ -110,7 +110,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		MessageOutputStream result = actor.provideOutputStream(session, getNextPipe());
 		if (result!=null && result.getForward()==null) {
 			result.setForward(getForward());
