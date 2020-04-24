@@ -555,8 +555,15 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
 
-	public IForwardTarget getForward(IPipe pipe, String path) throws PipeRunException {
-		if ((null==path) || (path.length()==0)){
+	/**
+	 * Find the destination of the forward, i.e. the {@link IForwardTarget object} (Pipe or PipeLineExit) where the forward points to.
+	 */
+	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
+		if (forward==null){
+			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a null forward from pipe ["+pipe.getName()+"].");
+		}
+		String path = forward.getPath();
+		if (StringUtils.isEmpty(path)){
 			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a path that equals null or has a zero-length value from pipe ["+pipe.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
 		}
 		PipeLineExit plExit= getPipeLineExits().get(path);

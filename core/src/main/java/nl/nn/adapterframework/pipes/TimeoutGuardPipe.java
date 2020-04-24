@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.NDC;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -45,7 +46,8 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Peter Leeuwenburgh
  */
-
+@Deprecated
+@ConfigurationWarning("TimeoutGuardPipe does not abort it's job after a timeout occurs, it only lets the originating thread continue.")
 public class TimeoutGuardPipe extends FixedForwardPipe {
 
 	private boolean throwException = true;
@@ -97,17 +99,15 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 
 		DoPipe doPipe = new DoPipe(message, session, Thread.currentThread().getName(), NDC.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
-		Future future = service.submit(doPipe);
-		String result = null;
+		Future<Message> future = service.submit(doPipe);
+		Object result = null;
 		try {
 			log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
-			result = Message.asString(future.get(timeout_work, TimeUnit.SECONDS));
+			result = future.get(timeout_work, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			String msg;
 			if (e instanceof TimeoutException) {
-				String errorMsg = getLogPrefix(session)
-						+ "exceeds timeout of [" + timeout_work
-						+ "] s, interupting";
+				String errorMsg = getLogPrefix(session) + "exceeds timeout of [" + timeout_work + "] s, interupting";
 				future.cancel(true);
 				msg = e.getClass().getName() + ": " + errorMsg;
 			} else {

@@ -58,18 +58,20 @@ public class PipeLineExit implements IForwardTarget {
 	private int exitCode = 0;
 	private boolean emptyResult = false;
 
-	public String getPath() {
-		return path;
-	}
-	@Override
-	public String getName() {
-		return getPath();
-	}
-
 	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
 		path = newPath;
 	}
+	public String getPath() {
+		return path;
+	}
+	@Override
+	// getName() is required by {@link IForwardTarget}. It is required that it returns the path,
+	// this way PipeForwards can be resolved to either Pipes or PipeLineExits.
+	public String getName() {
+		return getPath();
+	}
+
 
 	public String getState() {
 		return state;

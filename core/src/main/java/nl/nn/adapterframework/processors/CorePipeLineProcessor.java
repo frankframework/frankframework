@@ -191,8 +191,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+pipeLine.getOwner().getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
 				}
 				// get the next pipe to run
-				String nextPath=pipeForward.getPath();
-				IForwardTarget forwardTarget = pipeLine.getForward(pipeToRun, nextPath);
+				IForwardTarget forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
 
 				if (forwardTarget instanceof PipeLineExit) {
 					PipeLineExit plExit= (PipeLineExit)forwardTarget;

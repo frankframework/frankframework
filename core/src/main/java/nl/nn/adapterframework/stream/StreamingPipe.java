@@ -32,19 +32,6 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
 	
-	private boolean determinedStreamTarget=false;
-	private IOutputStreamingSupport streamTarget;
-
-
-	@Override
-	public void start() throws PipeStartException {
-		super.start();
-	}
-
-	@Override
-	public void stop() {
-		super.stop();
-	}
 
 	public IForwardTarget getNextPipe() {
 		if (getPipeLine()==null) {
@@ -53,7 +40,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		
 		PipeForward forward = getForward();
 		try {
-			return getPipeLine().getForward(this, forward.getPath());
+			return getPipeLine().resolveForward(this, forward);
 		} catch (PipeRunException e) {
 			log.warn("no next pipe found",e);
 			return null;
