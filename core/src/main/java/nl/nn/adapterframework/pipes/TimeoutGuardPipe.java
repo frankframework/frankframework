@@ -46,8 +46,8 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Peter Leeuwenburgh
  */
-@Deprecated
-@ConfigurationWarning("TimeoutGuardPipe does not abort it's job after a timeout occurs, it only lets the originating thread continue.")
+//@Deprecated
+//@ConfigurationWarning("TimeoutGuardPipe does not abort it's job after a timeout occurs, it only lets the originating thread continue.")
 public class TimeoutGuardPipe extends FixedForwardPipe {
 
 	private boolean throwException = true;
