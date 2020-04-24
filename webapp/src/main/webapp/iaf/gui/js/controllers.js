@@ -1861,6 +1861,7 @@ angular.module('iaf.beheerconsole')
 		Api.Get(url, function(data) {
 			$scope.alert = false;
 			$.extend($scope, data);
+			$scope.path = data.directory;
 			if(data.count > 500) {
 				$scope.alert = "Total number of items ("+data.count+") exceeded maximum number, only showing first 500 items!";
 			}
@@ -1883,6 +1884,7 @@ angular.module('iaf.beheerconsole')
 		var file = $stateParams.file;
 
 		$scope.directory = directory;
+		$scope.path = directory+"/"+file;
 		openFile({path: directory+"/"+file, name: file});
 	}
 	else {
