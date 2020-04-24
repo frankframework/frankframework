@@ -1837,8 +1837,7 @@ angular.module('iaf.beheerconsole')
 				iframeBody.css({"background-color": "rgb(243, 243, 244)"});
 				iframe.css({"height": iframeBody.height() + 50});
 			};
-		}, 50);
-		$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+		});
 	};
 
 	$scope.closeFile = function () {
@@ -1871,10 +1870,11 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.open = function(file) {
-		if(file.type == "directory")
+		if(file.type == "directory") {
 			$state.transitionTo('pages.logging', {directory: file.path});
-		else
-			openFile(file);
+		} else {
+			$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+		}
 	};
 
 	//This is only false when the user opens the logging page
