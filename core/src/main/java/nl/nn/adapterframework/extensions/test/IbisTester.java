@@ -67,8 +67,7 @@ public class IbisTester {
 			request.setServletPath("/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
-				String ibisContextKey = appConstants
-						.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
+				String ibisContextKey = appConstants.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;
@@ -83,8 +82,7 @@ public class IbisTester {
 			Writer writer = new StringWriter();
 			runScenarios(application, request, writer, silent);
 			if (scenario == null) {
-				String htmlString = "<html><head/><body>" + writer.toString()
-						+ "</body></html>";
+				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(htmlString);
 			} else {
 				return writer.toString();
@@ -352,6 +350,7 @@ public class IbisTester {
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
 				} catch (Exception e) {
+					e.printStackTrace();
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
 			} finally {
@@ -434,6 +433,7 @@ public class IbisTester {
 						}
 					}
 				} catch (AccessControlException e) {
+					error(e.getMessage());
 					return null;
 				}
 			}
