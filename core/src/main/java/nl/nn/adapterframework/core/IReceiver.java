@@ -44,7 +44,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
  *  @see PipeLineResult
  *
  */
-public interface IReceiver extends IManagable, HasStatistics {
+public interface IReceiver<M> extends IManagable, HasStatistics {
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the
@@ -75,5 +75,8 @@ public interface IReceiver extends IManagable, HasStatistics {
      * @see nl.nn.adapterframework.core.IAdapter
      */
     public void setAdapter(IAdapter adapter);
+    public IAdapter getAdapter();
+
+	public IListener<M> getListener();
 
 }

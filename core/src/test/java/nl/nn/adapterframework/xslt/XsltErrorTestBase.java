@@ -9,12 +9,8 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +23,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTestBase<P> {
 
@@ -63,53 +59,14 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 	}
 
-	protected class TestAppender extends AppenderSkeleton {
-		public List<String> alerts = new ArrayList<String>();
-
-		@Override
-		public void doAppend(LoggingEvent event) {
-			if (event.getLevel().toInt() >= Level.WARN_INT) {
-				String msg=event.getLevel() + " " + event.getMessage().toString();
-				alerts.add(msg);
-//				System.out.println("recording alert: "+msg);
-//				IllegalStateException e = new IllegalStateException(msg);
-//				e.fillInStackTrace();
-//				e.printStackTrace(System.out);
-			}
-		}
-
-		@Override
-		public void close() {
-		}
-
-		@Override
-		public boolean requiresLayout() {
-			return false;
-		}
-
-		@Override
-		protected void append(LoggingEvent event) {
-		}
-
-		public int getNumberOfAlerts() {
-			return alerts.size();
-		}
-
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			for (String alert : alerts) {
-				sb.append(alert);
-				sb.append("\n");
-			}
-			return sb.toString();
-		}
-	}
-
 	@Before
 	public void init() {
-		testAppender = new TestAppender();
-		LogUtil.getRootLogger().addAppender(testAppender);
+		// Force reconfigure to clean list appender.
+//		Configurator.reconfigure();
+		testAppender = TestAppender.newBuilder().useIbisPatternLayout("%level %m").build();
+		TestAppender.addToRootLogger(testAppender);
+		Configurator.setLevel("nl.nn.adapterframework", Level.WARN);
+
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
 			prevStdErr=System.err;
@@ -119,6 +76,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@After
 	public void finalChecks() {
+		TestAppender.removeAppender(testAppender);
+		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
@@ -129,7 +88,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
-		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
+		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(), is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
 
@@ -275,8 +234,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
-		assertThat(testAppender.getNumberOfAlerts(),is(1+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
-
+		assertThat(testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 	}
 
 	@Test

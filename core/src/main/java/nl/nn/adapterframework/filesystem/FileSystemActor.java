@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,7 +30,7 @@ import java.util.Set;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -57,6 +59,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
@@ -88,6 +91,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_INFO="info";
 	public final String ACTION_READ1="read";
 	public final String ACTION_READ2="download";
+	public final String ACTION_READ_DELETE="readDelete";
 	public final String ACTION_MOVE="move";
 	public final String ACTION_COPY="copy";
 	public final String ACTION_DELETE="delete";
@@ -107,7 +111,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String BASE64_ENCODE="encode";
 	public final String BASE64_DECODE="decode";
 	
-	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
+	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_READ_DELETE, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
 
 	private String action;
@@ -169,7 +173,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
-		
+		if (!(fileSystem instanceof IWritableFileSystem)) {
+			if (getNumberOfBackups()>0) {
+				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
+			}
+			if (getRotateDays()>0) {
+				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
+			}
+		}
 	}
 	
 	
@@ -282,6 +293,35 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
 				}
 				return in;
+			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
+				F file=getFile(input, pvl);
+				InputStream in = new FilterInputStream(fileSystem.readFile(file)) {
+
+					@Override
+					public void close() throws IOException {
+						super.close();
+						try {
+							fileSystem.deleteFile(file);
+						} catch (FileSystemException e) {
+							throw new IOException("Could not delete file", e);
+						}
+					}
+
+					@Override
+					protected void finalize() throws Throwable {
+						try {
+							close();
+						} catch (Exception e) {
+							log.warn("Could not close file", e);
+						}
+						super.finalize();
+					}
+					
+				};
+				if (StringUtils.isNotEmpty(getBase64())) {
+					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+				}
+				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = determineInputFoldername(input, pvl);
 				if (folder!=null && !folder.equals(getInputFolder()) && !fileSystem.folderExists(folder)) {
@@ -310,7 +350,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
 				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
-					rolloverByNumber(file);
+					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, file, getNumberOfBackups());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -320,11 +360,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_APPEND)) {
 				F file=getFile(input, pvl);
 				if (getRotateDays()>0 && fileSystem.exists(file)) {
-					rolloverByDay(file);
+					FileSystemUtils.rolloverByDay((IWritableFileSystem<F>)fileSystem, file, getInputFolder(), getRotateDays());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				if (getRotateSize()>0 && fileSystem.exists(file)) {
-					rolloverBySize(file);
+					FileSystemUtils.rolloverBySize((IWritableFileSystem<F>)fileSystem, file, getRotateSize(), getNumberOfBackups());
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
@@ -377,67 +417,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return input;
 	}
 	
-	private void rolloverByNumber(F file) throws FileSystemException {
-		IWritableFileSystem<F> wfs = (IWritableFileSystem<F>)fileSystem;
-		
-		if (!fileSystem.exists(file)) {
-			return;
-		}
-		
-		String srcFilename = fileSystem.getName(file);
-		int number = getNumberOfBackups();
-		
-		log.debug("Rotating files with a name starting with ["+srcFilename+"] and keeping ["+number+"] backups");
-		F lastFile=fileSystem.toFile(srcFilename+"."+number);
-		if (fileSystem.exists(lastFile)) {
-			log.debug("deleting file  ["+srcFilename+"."+number+"]");
-			fileSystem.deleteFile(lastFile);
-		}
-		
-		for(int i=number-1;i>0;i--) {
-			F source=fileSystem.toFile(srcFilename+"."+i);
-			if (fileSystem.exists(source)) {
-				log.debug("moving file ["+srcFilename+"."+i+"] to file ["+srcFilename+"."+(i+1)+"]");
-				wfs.renameFile(source, srcFilename+"."+(i+1), true);
-			} else {
-				log.debug("file ["+srcFilename+"."+i+"] does not exist, no need to move");
-			}
-		}
-		log.debug("moving file ["+srcFilename+"] to file ["+srcFilename+".1]");
-		wfs.renameFile(file, srcFilename+".1", true);
-	}
-	
-	private void rolloverBySize(F file) throws FileSystemException {
-		if (fileSystem.getFileSize(file)>getRotateSize()) {
-			rolloverByNumber(file);
-		}
-	}
-
-	private void rolloverByDay(F file) throws FileSystemException {
-		final long millisPerDay = 24 * 60 * 60 * 1000;
-		
-		Date lastModified = fileSystem.getModificationTime(file);
-		Date sysTime = new Date();
-		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
-			return;
-		}
-		String srcFilename = fileSystem.getName(file);
-		
-		log.debug("Deleting files in folder ["+getInputFolder()+"] that have a name starting with ["+srcFilename+"] and are older than ["+getRotateDays()+"] days");
-		long threshold = sysTime.getTime()- getRotateDays()*millisPerDay;
-		Iterator<F> it = fileSystem.listFiles(getInputFolder());
-		while(it.hasNext()) {
-			F f=it.next();
-			String filename=fileSystem.getName(f);
-			if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
-				log.debug("deleting file ["+filename+"]");
-				fileSystem.deleteFile(f);
-			}
-		}
-
-		String tgtFilename = srcFilename+"."+DateUtils.format(fileSystem.getModificationTime(file), DateUtils.shortIsoFormat);
-		((IWritableFileSystem<F>)fileSystem).renameFile(file, tgtFilename, true);
-	}
 
 	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;

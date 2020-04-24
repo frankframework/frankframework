@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;

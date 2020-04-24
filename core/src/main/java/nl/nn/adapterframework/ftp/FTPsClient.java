@@ -36,7 +36,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPCommand;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
 import nl.nn.adapterframework.util.ClassUtils;

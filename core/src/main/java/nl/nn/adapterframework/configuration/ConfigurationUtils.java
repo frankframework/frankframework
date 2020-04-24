@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -240,8 +240,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -401,8 +401,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -437,8 +437,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -490,8 +490,8 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -533,8 +533,8 @@ public class ConfigurationUtils {
 				return stmt.executeUpdate() > 0;
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -639,8 +639,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 

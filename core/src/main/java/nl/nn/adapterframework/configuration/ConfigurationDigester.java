@@ -33,7 +33,7 @@ import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;

@@ -19,9 +19,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -55,6 +57,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean createFolders=false;
 	private boolean delete = false;
 	private boolean overwrite = false;
+	private int numberOfBackups=0;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
 
@@ -73,6 +76,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
 		fileSystem.configure();
+		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
+			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
+		}
 	}
 
 	@Override
@@ -92,14 +98,22 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 	
-	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws ListenerException, FileSystemException {
+	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws ListenerException {
 		FS fileSystem = getFileSystem();
 		if (StringUtils.isNotEmpty(folderName)) {
-			if (fileSystem.folderExists(folderName)) {
-				return true;
+			try {
+				if (fileSystem.folderExists(folderName)) {
+					return true;
+				}
+			} catch (FileSystemException e) {
+				throw new ListenerException("Cannot determine presence of  " +attributeName + " [" + folderName + "]",e);
 			}
 			if (isCreateFolders()) {
-				fileSystem.createFolder(folderName);
+				try {
+					fileSystem.createFolder(folderName);
+				} catch (FileSystemException e) {
+					throw new ListenerException("Cannot create " +attributeName + " [" + folderName + "]",e);
+				}
 				return true;
 			} else { 
 				String canonicalNameClause;
@@ -168,7 +182,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					F inprocessFile = moveFile(file, getInProcessFolder());
+					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				} 
 				return file;
@@ -180,67 +194,19 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	/**
-	 * Used to be: Moves a file to another directory and places a UUID in the name.
-	 * Now is:  Moves a file
-	 * @return String with the name of the (renamed and moved) file
-	 * 
-	 */
-	protected F moveFile(F file, String destinationFolder) throws ListenerException {
-		FS fileSystem=getFileSystem();
 
-		String filename=null;
-		try {
-			if (isOverwrite()) {
-				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
-				if (fileSystem.exists(destinationFile)) {
-					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
-					fileSystem.deleteFile(destinationFile);
-				}
-			}
-			filename=fileSystem.getName(file);
-			F newFile = fileSystem.moveFile(file, destinationFolder, isCreateFolders());
-			if (newFile == null) {
-				throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]");
-			}
-			return newFile;
-		} catch(FileSystemException e) {
-			throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]", e);
-		}
-	}
-
-
-	protected F copyFile(F file, String destinationFolder) throws ListenerException {
-		FS fileSystem=getFileSystem();
-
-		String filename=null;
-		try {
-			if (isOverwrite()) {
-				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
-				if (fileSystem.exists(destinationFile)) {
-					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
-					fileSystem.deleteFile(destinationFile);
-				}
-			}
-			filename=fileSystem.getName(file);
-			F newFile = fileSystem.copyFile(file, destinationFolder, isCreateFolders());
-			if (newFile == null) {
-				throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]");
-			}
-			return newFile;
-		} catch(FileSystemException e) {
-			throw new ListenerException(getName() + " was unable to copy file [" + filename + "] to [" + destinationFolder + "]", e);
-		}
-	}
 
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		try {
+			if (StringUtils.isNotEmpty(getLogFolder())) {
+				FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+			}
 			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
 				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					moveFile(rawMessage, getErrorFolder());
+					FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 					return;
 				}
 			}
@@ -249,7 +215,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return;
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				moveFile(rawMessage, getProcessedFolder());
+				FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 		} catch (FileSystemException e) {
 			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -262,9 +228,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public String getStringFromRawMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (StringUtils.isNotEmpty(getLogFolder())) {
-				copyFile(rawMessage, getLogFolder());
-			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
 				return getFileSystem().getName(rawMessage);
 			}
@@ -324,15 +287,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return name;
 	}
 
-	/**
-	 * @deprecated replaced by inProcessFolder
-	 */
+	@Deprecated
+	@ConfigurationWarning("attribute 'inputDirectory' has been replaced by 'inputFolder'")
 	public void setInputDirectory(String inputDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'inputDirectory' has been replaced by 'inputFolder'");
 		setInputFolder(inputDirectory);
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files. When not set, the root is scanned", ""})
+	@IbisDoc({"1", "Folder that is scanned for files. If not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -341,15 +302,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	/**
-	 * @deprecated replaced by inProcessFolder
-	 */
+	@Deprecated
+	@ConfigurationWarning("attribute 'outputDirectory' has been replaced by 'inProcessFolder'")
 	public void setOutputDirectory(String outputDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'outputDirectory' has been replaced by 'inProcessFolder'");
 		setInProcessFolder(outputDirectory);
 	}
 
-	@IbisDoc({"3", "folder where files are stored <i>while</i> being processed", ""})
+	@IbisDoc({"2", "Folder where files are stored <i>while</i> being processed", ""})
 	public void setInProcessFolder(String inProcessFolder) {
 		this.inProcessFolder = inProcessFolder;
 	}
@@ -357,15 +316,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return inProcessFolder;
 	}
 
-	/**
-	 * @deprecated replaced by processedFolder
-	 */
+	@Deprecated
+	@ConfigurationWarning("attribute 'processedDirectory' has been replaced by 'processedFolder'")
 	public void setProcessedDirectory(String processedDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'processedDirectory' has been replaced by 'processedFolder'");
 		setProcessedFolder(processedDirectory);
 	}
 
-	@IbisDoc({"4", "folder where files are stored <i>after</i> being processed", ""})
+	@IbisDoc({"3", "Folder where files are stored <i>after</i> being processed", ""})
 	public void setProcessedFolder(String processedFolder) {
 		this.processedFolder = processedFolder;
 	}
@@ -373,7 +330,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return processedFolder;
 	}
 
-	@IbisDoc({"5", "folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	@IbisDoc({"4", "Folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
 	public void setErrorFolder(String errorFolder) {
 		this.errorFolder = errorFolder;
 	}
@@ -381,7 +338,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return errorFolder;
 	}
 
-	@IbisDoc({"5", "folder where a copy of every files that is received is stored", ""})
+	@IbisDoc({"5", "Folder where a copy of every files that is received is stored", ""})
 	public void setLogFolder(String logFolder) {
 		this.logFolder = logFolder;
 	}
@@ -389,7 +346,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return logFolder;
 	}
 
-	@IbisDoc({"6", "when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	@IbisDoc({"6", "If set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
 	}
@@ -397,12 +354,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return createFolders;
 	}
 	
+	@Deprecated
+	@ConfigurationWarning("attribute 'createInputDirectory' has been replaced by 'createFolders'")
 	public void setCreateInputDirectory(boolean createInputDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'createInputDirectory' has been replaced by 'createFolders'");
 		setCreateFolders(createInputDirectory);
 	}
 
-	@IbisDoc({"7", "when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	@IbisDoc({"7", "If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}
@@ -428,15 +386,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	}
 
 	
-//	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
-//	public void setNumberOfBackups(int i) {
-//		numberOfBackups = i;
-//	}
-//	public int getNumberOfBackups() {
-//		return numberOfBackups;
-//	}
+	@IbisDoc({"8", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
 
-	@IbisDoc({"8", "when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	@IbisDoc({"8", "If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
@@ -445,7 +403,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	@IbisDoc({"9", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	@IbisDoc({"9", "If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
@@ -453,7 +411,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileTimeSensitive;
 	}
 
-	@IbisDoc({"10", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
+	@IbisDoc({"10", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
@@ -462,7 +420,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	@IbisDoc({"11", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
+	@IbisDoc({"11", "Minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
