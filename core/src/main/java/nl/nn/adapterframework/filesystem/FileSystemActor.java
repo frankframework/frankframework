@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -182,7 +183,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 		}
 	}
-	
 	
 	
 	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
@@ -454,7 +454,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
@@ -475,7 +475,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, null, nextProvider);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, null, next);
 			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
 			return stream;
 		} catch (FileSystemException | IOException e) {

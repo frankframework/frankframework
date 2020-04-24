@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,32 +37,34 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeRunResult {
 
-    private PipeForward pipeForward;
-    private Object result;
-    public PipeRunResult() {
-        super();
-    }
-    public PipeRunResult(PipeForward forward, Object result){
-        this.pipeForward=forward;
-        this.result=result;
-    }
-    public PipeForward getPipeForward() {
-        return pipeForward;
-    }
-    public Object getResult() {
-        return result;
-    }
-    public void setPipeForward(PipeForward pipeForward) {
-        this.pipeForward = pipeForward;
-    }
-    public void setResult(Object result) {
-        this.result = result;
-    }
-    /**
-     * uses reflection to create the ToString
-     */
-    @Override
-	public String toString(){
-      return ToStringBuilder.reflectionToString(this);
-    }
+	private PipeForward pipeForward;
+	private Message result;
+
+	public PipeRunResult() {
+		super();
+	}
+
+	public PipeRunResult(PipeForward forward, Object result) {
+		this.pipeForward = forward;
+		this.result = Message.asMessage(result);
+	}
+
+	public void setPipeForward(PipeForward pipeForward) {
+		this.pipeForward = pipeForward;
+	}
+	public PipeForward getPipeForward() {
+		return pipeForward;
+	}
+
+	public void setResult(Object result) {
+		this.result = Message.asMessage(result);
+	}
+	public Message getResult() {
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

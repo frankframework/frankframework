@@ -19,6 +19,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -26,7 +27,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -99,12 +99,12 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		return actor.provideOutputStream(session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		return actor.provideOutputStream(session, next);
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {

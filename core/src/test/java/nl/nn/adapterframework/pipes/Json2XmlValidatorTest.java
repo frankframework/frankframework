@@ -89,7 +89,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
-		assertEquals(expected, prr.getResult());
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
-		assertEquals(expected, prr.getResult());
+		assertEquals(expected, prr.getResult().asString());
 	}
 	
 	@Test

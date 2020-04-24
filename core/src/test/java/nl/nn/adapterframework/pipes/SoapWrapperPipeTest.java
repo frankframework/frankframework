@@ -47,7 +47,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -72,7 +72,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -97,7 +97,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -123,7 +123,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -148,7 +148,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -173,7 +173,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSessionBase());
 		
-		String actual = (String)prr.getResult();
+		String actual = prr.getResult().asString();
 		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
