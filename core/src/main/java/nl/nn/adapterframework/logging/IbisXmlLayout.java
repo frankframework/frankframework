@@ -106,7 +106,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		public void setElementContent(String value) {
 			if (value != null) {
-				element.setText(XmlUtils.encodeChars(value));
+				element.setText(value);
 			}
 		}
 
