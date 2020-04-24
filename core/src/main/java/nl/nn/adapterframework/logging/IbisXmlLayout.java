@@ -15,6 +15,11 @@
 */
 package nl.nn.adapterframework.logging;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -24,17 +29,11 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.message.Message;
 import org.jdom2.Attribute;
-import org.jdom2.CDATA;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.util.List;
 
 /**
  * Implementation of {@link IbisMaskingLayout} to serialize given log events 
@@ -65,7 +64,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		Message message = event.getMessage();
 		XmlBuilder messageBuilder = XmlBuilder.create("message");
-		messageBuilder.setCdataValue(message.getFormattedMessage());
+		messageBuilder.setElementContent(message.getFormattedMessage());
 		eventBuilder.setSubElement(messageBuilder);
 
 		Throwable t = message.getThrowable();
@@ -75,7 +74,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			if(t != null) {
 				t.printStackTrace(new PrintWriter(sw));
 			}
-			throwableBuilder.setCdataValue(sw.toString());
+			throwableBuilder.setElementContent(sw.toString());
 			eventBuilder.setSubElement(throwableBuilder);
 		}
 
@@ -101,16 +100,10 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 		private XmlBuilder(String tagName) {
 			element = new Element(tagName);
 		}
-/*
-		public void setValue(String value) {
+
+		public void setElementContent(String value) {
 			if (value != null) {
 				element.setText(value);
-			}
-		}
-*/
-		public void setCdataValue(String value) {
-			if (value != null) {
-				element.setContent(new CDATA(value));
 			}
 		}
 
