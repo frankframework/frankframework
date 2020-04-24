@@ -31,6 +31,8 @@ import org.jdom2.Namespace;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import nl.nn.adapterframework.util.XmlUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -65,7 +67,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		Message message = event.getMessage();
 		XmlBuilder messageBuilder = XmlBuilder.create("message");
-		messageBuilder.setCdataValue(message.getFormattedMessage());
+		messageBuilder.setElementContent(message.getFormattedMessage());
 		eventBuilder.setSubElement(messageBuilder);
 
 		Throwable t = message.getThrowable();
@@ -75,7 +77,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			if(t != null) {
 				t.printStackTrace(new PrintWriter(sw));
 			}
-			throwableBuilder.setCdataValue(sw.toString());
+			throwableBuilder.setElementContent(sw.toString());
 			eventBuilder.setSubElement(throwableBuilder);
 		}
 
@@ -101,16 +103,10 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 		private XmlBuilder(String tagName) {
 			element = new Element(tagName);
 		}
-/*
-		public void setValue(String value) {
+
+		public void setElementContent(String value) {
 			if (value != null) {
-				element.setText(value);
-			}
-		}
-*/
-		public void setCdataValue(String value) {
-			if (value != null) {
-				element.setContent(new CDATA(value));
+				element.setText(XmlUtils.encodeChars(value));
 			}
 		}
 
