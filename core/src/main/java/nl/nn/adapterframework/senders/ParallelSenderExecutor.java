@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
@@ -24,6 +22,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);

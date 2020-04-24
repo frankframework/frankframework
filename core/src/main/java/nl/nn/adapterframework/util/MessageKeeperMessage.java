@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.util.Date;
-
 import org.apache.commons.lang.StringUtils;
 
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
+
+import java.util.Date;
+import java.util.Set;
 /**
  * A message for the MessageKeeper. <br/>
  * Although this could be an inner class of the MessageKeeper,
@@ -58,15 +58,11 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			String hideRegex = LogUtil.getLog4jHideRegex();
-			if (StringUtils.isNotEmpty(hideRegex)) {
-				message = Misc.hideAll(message, hideRegex);
-			}
+			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
+			message = Misc.hideAll(message, hideRegex);
 
-			String threadHideRegex = LogUtil.getThreadHideRegex();
-			if (StringUtils.isNotEmpty(threadHideRegex)) {
-				message = Misc.hideAll(message, threadHideRegex);
-			}
+			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
+			message = Misc.hideAll(message, threadHideRegex);
 		}
 		return message;
 	}

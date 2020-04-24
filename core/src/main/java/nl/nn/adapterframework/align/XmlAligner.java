@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Stack;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;

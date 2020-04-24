@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;

@@ -18,10 +18,6 @@ package nl.nn.adapterframework.lifecycle;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
@@ -32,6 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Enables the use of programmatically adding servlets to the given ServletContext<br/>
@@ -130,11 +129,11 @@ public class ServletManager {
 		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servletClass+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
 	}
 
-	private void log(String msg, Priority priority) {
+	private void log(String msg, Level level) {
 		if(log.isInfoEnabled() )
 			getServletContext().log(msg);
 
-		log.log(priority, msg);
+		log.log(level, msg);
 	}
 
 	public void register(DynamicRegistration.Servlet servlet) {

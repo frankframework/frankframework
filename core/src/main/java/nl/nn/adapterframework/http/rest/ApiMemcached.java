@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactory;

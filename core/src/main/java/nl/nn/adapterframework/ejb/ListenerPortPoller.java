@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.lang.ref.WeakReference;

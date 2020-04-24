@@ -27,7 +27,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
