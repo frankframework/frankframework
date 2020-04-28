@@ -178,7 +178,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+				throw new FileSystemException("destination folder ["+destinationFolderName+"] does not exist");
 			} 
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
