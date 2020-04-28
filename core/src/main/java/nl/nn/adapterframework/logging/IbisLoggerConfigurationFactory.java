@@ -82,8 +82,10 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
-				String value = resolveRecursivly(properties, key);
-				substitutions.put(key, value);
+				String value = resolveValueRecursively(properties, key);
+
+				if(value != null)
+					substitutions.put(key, value);
 			}
 			ThreadContext.putAll(substitutions); //Only add the substituted variables to the ThreadContext
 
@@ -95,7 +97,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		}
 	}
 
-	private String resolveRecursivly(Properties properties, String key) {
+	private String resolveValueRecursively(Properties properties, String key) {
 		String value = properties.getProperty(key);
 		if(StringUtils.isEmpty(value)) {
 			return null;
@@ -155,6 +157,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 				if(checkVersionOnlyFirst1024Characters) {
 					//See if log4j2 prefix is somewhere in the first 1024 characters
 					if(!stringWriter.toString().contains("<log4j2:Configuration")) {
+						System.err.println(LOG_PREFIX + "detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
 						throw new IllegalStateException("Detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
 					}
 					checkVersionOnlyFirst1024Characters = false;
