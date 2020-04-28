@@ -93,10 +93,10 @@ public class TestLogMessages {
 		String threadName = Thread.currentThread().getName();
 		try {
 			Thread.currentThread().setName("HIDE-HERE");
-			log.debug("my beautiful debug message");
-			log.info("my beautiful info message");
-			log.warn("my beautiful warning message");
-			log.error("my beautiful error message");
+			log.debug("my beautiful debug <![CDATA[message]]> for me & you --> \"world\"");
+			log.info("my beautiful info <![CDATA[message]]> for me & you --> \"world\"");
+			log.warn("my beautiful warning <![CDATA[message]]> for me & you --> \"world\"");
+			log.error("my beautiful error <![CDATA[message]]> for me & you --> \"world\"");
 
 			Thread.currentThread().setName("LOG-ALL");
 			log.debug("some message");
@@ -108,11 +108,11 @@ public class TestLogMessages {
 			assertEquals(6, logEvents.size());
 
 			String expectedWarn = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
-			"  <message><![CDATA[my beautiful warning message]]></message>\n" + 
+			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
 			"  <throwable />\n" + 
 			"</event>";
 			String expectedError = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
-			"  <message><![CDATA[my beautiful error message]]></message>\n" + 
+			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
 			"  <throwable />\n" + 
 			"</event>";
 

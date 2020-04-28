@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -58,6 +60,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
@@ -89,6 +92,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_INFO="info";
 	public final String ACTION_READ1="read";
 	public final String ACTION_READ2="download";
+	public final String ACTION_READ_DELETE="readDelete";
 	public final String ACTION_MOVE="move";
 	public final String ACTION_COPY="copy";
 	public final String ACTION_DELETE="delete";
@@ -108,7 +112,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String BASE64_ENCODE="encode";
 	public final String BASE64_DECODE="decode";
 	
-	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
+	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_READ_DELETE, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
 
 	private String action;
@@ -179,7 +183,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 		}
 	}
-	
 	
 	
 	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
@@ -286,6 +289,35 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
 				InputStream in = fileSystem.readFile(file);
+				if (StringUtils.isNotEmpty(getBase64())) {
+					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+				}
+				return in;
+			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
+				F file=getFile(input, pvl);
+				InputStream in = new FilterInputStream(fileSystem.readFile(file)) {
+
+					@Override
+					public void close() throws IOException {
+						super.close();
+						try {
+							fileSystem.deleteFile(file);
+						} catch (FileSystemException e) {
+							throw new IOException("Could not delete file", e);
+						}
+					}
+
+					@Override
+					protected void finalize() throws Throwable {
+						try {
+							close();
+						} catch (Exception e) {
+							log.warn("Could not close file", e);
+						}
+						super.finalize();
+					}
+					
+				};
 				if (StringUtils.isNotEmpty(getBase64())) {
 					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
 				}
@@ -422,7 +454,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@SuppressWarnings("resource")
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
@@ -443,7 +475,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, null, nextProvider);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, null, next);
 			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
 			return stream;
 		} catch (FileSystemException | IOException e) {

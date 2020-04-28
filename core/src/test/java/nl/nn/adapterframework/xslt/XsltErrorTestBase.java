@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,6 +13,7 @@ import java.io.PrintStream;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -151,6 +153,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
+		} catch (AssumptionViolatedException e) {
+			assumeTrue("assumption violated:"+e.getMessage(),false);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
@@ -177,6 +181,8 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		try {
 			doPipe(pipe, input, session);
 			fail("Expected to run into an exception");
+		} catch (AssumptionViolatedException e) {
+			assumeTrue("assumption violated:"+e.getMessage(),false);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));

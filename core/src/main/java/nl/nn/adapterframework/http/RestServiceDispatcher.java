@@ -360,7 +360,7 @@ public class RestServiceDispatcher  {
 			IPipeLineSession session = new PipeLineSessionBase();
 			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = Message.asString(pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult());
+			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
 			pipe.stop();
 			return result;
 		} catch (Exception e) {
