@@ -527,8 +527,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	protected void addActions(List<String> specificActions) {
 		actions.addAll(specificActions);
 	}
-
-	@IbisDoc({"1", "Possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	
+	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME, "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
