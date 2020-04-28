@@ -72,7 +72,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
-	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
+	private static final String CANONINICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
@@ -99,13 +99,11 @@ public class ConfigurationUtils {
 		return getTweakedConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getUglifiedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return getTweakedConfiguration(configuration, originalConfig, UGLIFY_XSLT, null);
+	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		return getTweakedConfiguration(configuration, originalConfig, CANONINICALIZE_XSLT, null);
 	}
 
-	public static String getTweakedConfiguration(Configuration configuration,
-			String originalConfig, String tweakXslt,
-			Map<String, Object> parameters) throws ConfigurationException {
+	public static String getTweakedConfiguration(Configuration configuration, String originalConfig, String tweakXslt, Map<String, Object> parameters) throws ConfigurationException {
 		URL tweak_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), tweakXslt);
 		if (tweak_xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + tweakXslt + "]");

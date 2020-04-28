@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xsd:element name="configuration" type="ConfigurationType"/>
-	<xsd:element name="IOS-Adaptering" type="ConfigurationType"/>
 	<xsd:element name="module" type="ConfigurationType"/>
 	<xsd:complexType name="ConfigurationType">
 		<xsd:sequence minOccurs="0" maxOccurs="unbounded">
 			<xsd:choice>
 				<xsd:element name="jmsRealms" type="JmsRealmsType"/>
+				<xsd:element name="sapSystems" type="SapSystemsType"/>
 				<xsd:element name="adapter" type="AdapterType"/>
 				<xsd:element name="module" type="ConfigurationType"/>
 				<xsd:element name="configuration" type="ConfigurationType"/>
 				<xsd:element name="ibis" type="ConfigurationType"/>
 				<xsd:element name="scheduler" type="SchedulerType"/>
+				<xsd:element name="monitoring" type="MonitoringType"/>
 			</xsd:choice>
 		</xsd:sequence>
 		<xsd:attribute name="name"/>
@@ -20,6 +21,11 @@
 	<xsd:complexType name="JmsRealmsType">
 		<xsd:sequence>
 			<xsd:element name="jmsRealm" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SapSystemsType">
+		<xsd:sequence>
+			<xsd:element name="sapSystem" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="AdapterType">
@@ -91,8 +97,7 @@
 		<xsd:attribute name="description"/>
 	</xsd:complexType>
 	<xsd:complexType name="LockerType">
-		<xsd:sequence>
-		</xsd:sequence>
+		<xsd:sequence/>
 		<xsd:attribute name="jmsRealm"/>
 		<xsd:attribute name="objectId"/>
 		<xsd:attribute name="ignoreTableNotExist"/>
@@ -133,4 +138,54 @@
 		<xsd:attribute name="name"/>
 		<xsd:attribute name="value"/>
 	</xsd:complexType>
+	
+	<xsd:complexType name="MonitoringType">
+		<xsd:sequence>
+			<xsd:element name="destinations" minOccurs="0" >
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="destination" type="MonitorDestinationType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="monitors" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="monitor" type="MonitorType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="enabled"/>
+	</xsd:complexType>
+	<xsd:complexType name="MonitorDestinationType">
+		<xsd:attribute name="name"/>
+		<xsd:attribute name="className"/>
+	</xsd:complexType>
+	<xsd:complexType name="MonitorType">
+		<xsd:sequence>
+			<xsd:element name="alarm" type="MonitorStateSwitchType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="clearing" type="MonitorStateSwitchType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="name"/>
+		<xsd:attribute name="type"/>
+		<xsd:attribute name="destinations"/>
+	</xsd:complexType>
+	<xsd:complexType name="MonitorStateSwitchType">
+		<xsd:sequence>
+			<xsd:element name="events" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="event" minOccurs="1" maxOccurs="unbounded" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="filters" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="eventCode"/>
+		<xsd:attribute name="severity"/>
+		<xsd:attribute name="threshold"/>
+		<xsd:attribute name="period"/>
+	</xsd:complexType>
+
 </xsd:schema>
