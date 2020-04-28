@@ -24,11 +24,5 @@ package nl.nn.adapterframework.core;
  */
 public interface IErrorMessageFormatter {
 
-	public String format(
-	String errorMessage,
-    Throwable t,
-    INamedObject location,
-    String originalMessage,
-    String messageId,
-    long receivedTime);
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime);
 }

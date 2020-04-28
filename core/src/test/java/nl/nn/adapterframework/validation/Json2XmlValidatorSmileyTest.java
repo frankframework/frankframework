@@ -18,6 +18,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.FilePipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.stream.Message;
 
 public class Json2XmlValidatorSmileyTest extends TestCase {
 
@@ -36,7 +37,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 	public String smileyJson="\"😊\"";
 	
 
-	public String jsonToXmlViaPipe(String json) throws ConfigurationException, PipeStartException, PipeRunException {
+	public String jsonToXmlViaPipe(String json) throws Exception {
 		Json2XmlValidator json2xml = new Json2XmlValidator();
 		json2xml.setWarn(false);
 		json2xml.setSchema(xsd);
@@ -46,15 +47,15 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.configure();
 		json2xml.start();
 		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-		PipeRunResult prr = json2xml.doPipe(json,pipeLineSession);
-		return (String)prr.getResult();
+		PipeRunResult prr = json2xml.doPipe(new Message(json),pipeLineSession);
+		return prr.getResult().asString();
 	}
 
 	public String jsonToXml(String json) throws SAXException, IOException {
 		return Json2Xml.translate(json, FilePipe.class.getResource("/"+xsd), true, "x", "");
 	}
 
-	public String xmlToJsonViaPipe(String xml) throws ConfigurationException, PipeStartException, PipeRunException {
+	public String xmlToJsonViaPipe(String xml) throws Exception {
 		Json2XmlValidator json2xml = new Json2XmlValidator();
 		json2xml.setWarn(false);
 		json2xml.setSchema(xsd);
@@ -65,8 +66,8 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.configure();
 		json2xml.start();
 		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-		PipeRunResult prr = json2xml.doPipe(xml,pipeLineSession);
-		return (String)prr.getResult();
+		PipeRunResult prr = json2xml.doPipe(new Message(xml),pipeLineSession);
+		return prr.getResult().asString();
 	}
 
 	public String xmlToJson(String xml) throws SAXException, IOException {
@@ -92,7 +93,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertEquals(expectedXmlNoNewline,xml);
 	}
 
-	public void testJson2XmlViaPipe() throws IOException, ConfigurationException, PipeStartException, PipeRunException {
+	public void testJson2XmlViaPipe() throws Exception {
 		String json=getTestFile(jsonFile);
 		System.out.println("testJson2XmlViaPipe: json ["+json+"]");
 		assertJsonEqual(expectedJson,json);
@@ -111,7 +112,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertEquals(smileyJson,json);
 	}
 
-	public void testXml2JsonViaPipe() throws IOException, ConfigurationException, PipeStartException, PipeRunException {
+	public void testXml2JsonViaPipe() throws Exception {
 		String xml=getTestFile(xmlFile);
 		System.out.println("testReadAndJson2Xml: xml ["+xml+"]");
 		assertEquals(expectedXml,xml);

@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -69,18 +69,19 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		//TODO look into NamespaceHandlerResolver
 		Bus bus = (Bus) applicationContext.getBean("cxf");
 		if(bus instanceof SpringBus) {
 			log.debug("default CXF SpringBus ["+bus.getId()+"]");
 
 			log.info("registering NamespaceURI Provider with JAX-WS CXF Dispatcher");
-			EndpointImpl namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
+			namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
 			namespaceRouter.publish("/rpcrouter");
 
 			if(namespaceRouter.isPublished()) {
-				log.info("published NamespaceURI Provider on CXF endpoint[rpcrouter] on SpringBus ["+namespaceRouter.getBus().getId()+"]");
+				log.info("published NamespaceURI Provider on CXF endpoint [rpcrouter] on SpringBus ["+namespaceRouter.getBus().getId()+"]");
 			} else {
-				throw new IllegalStateException("unable to NamespaceURI Service Provider on CXF endpoint[rpcrouter]");
+				throw new IllegalStateException("unable to NamespaceURI Service Provider on CXF endpoint [rpcrouter]");
 			}
 		} else {
 			throw new IllegalStateException("CXF bus ["+bus+"] not instance of [SpringBus]");

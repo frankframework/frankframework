@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 /**
  * Perform a call to a RekenBox.
  *
@@ -132,12 +134,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	/**
 	 * positie 1 t/m 8 bepalen de naam van de executable, of tot aan de ':' (wat het eerst komt)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-	    if (!(input instanceof String))
-	        throw new PipeRunException(this, 
-	            getLogPrefix(session)+"expected java.lang.String, got [" + input.getClass().getName() + "], value ["+input+"]");
-	    String sInput = (String) input;
-	//	log.debug("Pipe ["+name+"] got input ["+sInput+"]");
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		String sInput;
+		try {
+			sInput = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 	
 	
 		String rekenboxName=getRekenBoxName();

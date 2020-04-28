@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.Rule;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -35,18 +38,22 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
+	/**
+	 * Returns the name of the object. In case a Spring proxy is being used, 
+	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
+	 * ClassUtils.getUserClass() makes sure the original class will be returned.
+	 */
 	private String getObjectName(Object o) {
-		String result=o.getClass().getName();
+		String result = ClassUtils.getUserClass(o).getSimpleName();
 		if (o instanceof INamedObject) {
 			result+=" ["+((INamedObject)o).getName()+"]";
 		}
 		return result;
 	}
 
+	@Override
 	public void begin(String uri, String elementName, Attributes attributes) throws Exception {
-
 		Object top = digester.peek();
 
 		for (int i = 0; i < attributes.getLength(); i++) {
@@ -55,9 +62,9 @@ public class AttributeCheckingRule extends Rule {
 				name = attributes.getQName(i);
 			}
 			if (name!=null && !name.equals("className")) {
-//				if (log.isDebugEnabled()) {
-//					log.debug(getObjectName(top)+" checking for setter for attribute ["+name+"]");
-//				}
+				if (log.isTraceEnabled()) {
+					log.trace(getObjectName(top)+" checking for setter for attribute ["+name+"]");
+				}
 				PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(top, name);
 				Method m=null;
 				if (pd!=null) {
@@ -65,13 +72,25 @@ public class AttributeCheckingRule extends Rule {
 				}
 				if (m==null) {
 					Locator loc = digester.getDocumentLocator();
-					String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
-					configWarnings.add(log, msg);
+					String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
+					ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
+				} else {
+					ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
+					if(warning != null) {
+						Locator loc = digester.getDocumentLocator();
+						String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" attribute ["+name+"]";
+
+						if(AnnotationUtils.findAnnotation(m, Deprecated.class) != null) {
+							msg += " is deprecated";
+						}
+
+						if(StringUtils.isNotEmpty(warning.value())) {
+							msg += ": " + warning.value();
+						}
+						ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
+					}
 				}
 			}
 		}
-		
 	}
-
-
 }

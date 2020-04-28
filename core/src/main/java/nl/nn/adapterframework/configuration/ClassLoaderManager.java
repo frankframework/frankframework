@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
@@ -117,7 +117,7 @@ public class ClassLoaderManager {
 						ibisContext.log(configurationName, null, msg, MessageKeeperMessage.INFO_LEVEL, ce);
 						break;
 					case WARN:
-						ConfigurationWarnings.getInstance().add(LOG, msg, ce);
+						ConfigurationWarnings.add(LOG, msg, ce);
 						break;
 					case ERROR:
 					default:
@@ -184,7 +184,7 @@ public class ClassLoaderManager {
 		classLoaders.put(configurationName, classLoader);
 		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
 			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
-			ConfigurationWarnings.getInstance().add(LOG, msg, true);
+			ConfigurationWarnings.add(LOG, msg);
 		}
 		return classLoader;
 	}

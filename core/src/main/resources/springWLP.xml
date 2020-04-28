@@ -24,6 +24,7 @@
 		factory-method="getTransactionManager"
 	/>
 
+<!-- Disable WebSphereMsSqlServerDbmsSupport temporarily, to see if BLOB/CLOB handling can be supported without temporary files
 	<bean id="dbmsSupportFactory" 
 		parent="dbmsSupportFactoryDefault"
 	>
@@ -34,5 +35,5 @@
 		</property>
 		
 	</bean>
-
+ -->
 </beans>

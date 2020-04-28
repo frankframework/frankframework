@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 
 import nl.nn.adapterframework.core.Adapter;
@@ -67,11 +67,11 @@ public class IbisContext extends IbisApplicationContext {
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+			ConfigurationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ConfigurationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
 	private IbisManager ibisManager;
@@ -336,6 +336,9 @@ public class IbisContext extends IbisApplicationContext {
 		if (classLoader != null) {
 			Thread.currentThread().setContextClassLoader(classLoader);
 			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+			if(StringUtils.isEmpty(currentConfigurationVersion)) {
+				LOG.info("unable to determine [configuration.version] for configuration ["+currentConfigurationName+"]");
+			}
 		}
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");

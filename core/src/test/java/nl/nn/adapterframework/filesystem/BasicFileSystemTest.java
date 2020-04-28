@@ -178,33 +178,72 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	
 	@Test
 	public void basicFileSystemTestMoveFile() throws Exception {
-		String fileName = "fileTobeMoved.txt";
+		String filename = "fileTobeMoved.txt";
+		String contents = "tja";
+		String srcFolder = "srcFolder";
+		String dstFolder = "dstFolder";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null,fileName, "tja");
+		_createFolder(srcFolder);
+		createFile(srcFolder,filename, contents);
 		waitForActionToFinish();
 		
-		assertTrue(_fileExists(fileName));
+		assertFileExistsWithContents(srcFolder, filename, contents);
 		
-		String destinationFolder = "destinationFolder";
-		_createFolder(destinationFolder);
+		_createFolder(dstFolder);
 		waitForActionToFinish();
 
-		assertTrue(_fileExists(fileName));
-		assertTrue(_folderExists(destinationFolder));
+		assertTrue(_folderExists(dstFolder));
+		assertFileDoesNotExist(dstFolder, filename);
 
-		F f = fileSystem.toFile(fileName);
-		F movedFile =fileSystem.moveFile(f, destinationFolder, false);
+		F f = fileSystem.toFile(srcFolder, filename);
+		F movedFile =fileSystem.moveFile(f, dstFolder, false);
 		waitForActionToFinish();
+
+		assertEquals(filename,fileSystem.getName(movedFile));
 		
-		
-		assertTrue("Destination folder must exist",_folderExists(destinationFolder));
-		assertTrue("Destination must exist ["+fileSystem.getName(movedFile)+"]",fileSystem.exists(movedFile));
+		assertTrue("Destination folder must exist",_folderExists(dstFolder));
+		assertFileExistsWithContents(dstFolder, fileSystem.getName(movedFile), contents);
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+		assertFileDoesNotExist(srcFolder, filename);
+	}
+
+	@Test
+	public void basicFileSystemTestCopyFile() throws Exception {
+		String filename = "fileTobeCopied.txt";
+		String contents = "tja";
+		String srcFolder = "srcFolder";
+		String dstFolder = "dstFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(srcFolder);
+		createFile(srcFolder,filename, contents);
+		waitForActionToFinish();
+		
+		assertFileExistsWithContents(srcFolder, filename, contents);
+		
+		_createFolder(dstFolder);
+		waitForActionToFinish();
+
+		assertTrue(_folderExists(dstFolder));
+		assertFileDoesNotExist(dstFolder, filename);
+
+		F f = fileSystem.toFile(srcFolder, filename);
+		F copiedFile =fileSystem.copyFile(f, dstFolder, false);
+		waitForActionToFinish();
+		
+		assertEquals(filename,fileSystem.getName(copiedFile));
+		
+		assertTrue("Destination folder must exist",_folderExists(dstFolder));
+		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents);
+		//TODO: test that contents of file has remained the same
+		//TODO: test that file timestamp has not changed
+		assertFileExistsWithContents(srcFolder, filename, contents);
 	}
 
 

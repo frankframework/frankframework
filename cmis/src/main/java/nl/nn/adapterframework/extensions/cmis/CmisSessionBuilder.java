@@ -36,7 +36,7 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
@@ -368,7 +368,7 @@ public class CmisSessionBuilder {
 	}
 
 	/**
-	 * @param bindingType See {@link BindingTypes BindingTypes} for possible binding types
+	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
 	public CmisSessionBuilder setBindingType(String bindingType) throws ConfigurationException {
 		try {

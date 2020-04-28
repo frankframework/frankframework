@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -63,7 +63,7 @@ import javax.xml.namespace.QName;
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
-    private String soapBodyNamespace  = "";
+	private String soapBodyNamespace = "";
 
 	private static final WSDLFactory FACTORY;
 	static {
@@ -114,16 +114,13 @@ public class WsdlXmlValidator extends SoapValidator {
 		addSoapEnvelopeToSchemaLocation = false;
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
-			String msg = getLogPrefix(null) + "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true";
-			addConfigWarning(log, msg);
+			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyNamespace()) && StringUtils.isNotEmpty(getSchemaLocation())) {
-			String msg = getLogPrefix(null) + "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when attribute [soapBodyNamespace] is not set";
-			addConfigWarning(log, msg);
+			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when attribute [soapBodyNamespace] is not set");
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyNamespace()) && !isAddNamespaceToSchema()) {
-			String msg = getLogPrefix(null) + "attribute [soapBodyNamespace] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true";
-			addConfigWarning(log, msg);
+			ConfigurationWarnings.add(this, log, "attribute [soapBodyNamespace] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -183,14 +180,12 @@ public class WsdlXmlValidator extends SoapValidator {
 			if (StringUtils.isNotEmpty(getSchemaLocation()) && isAddNamespaceToSchema()) {
 				String formattedSchemaLocation = getFormattedSchemaLocation(getSchemaLocation());
 				if (formattedSchemaLocation.equals(wsdlSchemaLocation)) {
-					String msg = getLogPrefix(null) + "attribute [schemaLocation] for wsdl [" + getWsdl() + "] already has a default value [" + wsdlSchemaLocation + "]";
-					addConfigWarning(log, msg);
+					ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] already has a default value [" + wsdlSchemaLocation + "]");
 				} else {
 					if (soapBodyFoundCounter == 1) {
 						String wsdlSchemaLocationRegex = sbx.toString();
 						if (formattedSchemaLocation.matches(wsdlSchemaLocationRegex)) {
-							String msg = getLogPrefix(null) + "use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [" + wsdlSchemaLocation + "] for wsdl [" + getWsdl() + "]";
-							addConfigWarning(log, msg);
+							ConfigurationWarnings.add(this, log, "use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [" + wsdlSchemaLocation + "] for wsdl [" + getWsdl() + "]");
 						}
 					}
 				}
@@ -203,10 +198,6 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.configure();
 	}
 
-	private void addConfigWarning(Logger log, String msg) {
-		ConfigurationWarnings.getInstance().add(log, msg, null, true, (getAdapter()==null) ? null : getAdapter().getConfiguration());
-	}
-	
 	private static String getFormattedSchemaLocation(String schemaLocation) {
 		List<SchemaLocation> schemaLocationList = new ArrayList<SchemaLocation>();
 		String[] schemaLocationArray = schemaLocation.trim().split("\\s+");
@@ -341,14 +332,14 @@ public class WsdlXmlValidator extends SoapValidator {
 		return schemaLocationToAdd;
 	}
 
-	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " "})
-    public void setSoapBodyNamespace(String soapBodyNamespace) {
-        this.soapBodyNamespace = soapBodyNamespace;
-    }
+	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
+	public void setSoapBodyNamespace(String soapBodyNamespace) {
+		this.soapBodyNamespace = soapBodyNamespace;
+	}
 
-    public String getSoapBodyNamespace() {
-        return soapBodyNamespace;
-    }
+	public String getSoapBodyNamespace() {
+		return soapBodyNamespace;
+	}
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator {
@@ -372,14 +363,17 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 		return ioException;
 	}
 
+	@Override
 	public InputSource getBaseInputSource() {
 		return getInputSource(url);
 	}
 
+	@Override
 	public String getBaseURI() {
 		return wsdl;
 	}
 
+	@Override
 	public InputSource getImportInputSource(String parentLocation, String importLocation) {
 		if (parentLocation == null) {
 			parentLocation = wsdl;
@@ -393,10 +387,12 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 		return getInputSource(latestImportURI);
 	}
 
+	@Override
 	public String getLatestImportURI() {
 		return latestImportURI;
 	}
 
+	@Override
 	public void close() {
 	}
 

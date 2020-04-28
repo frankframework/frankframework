@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.util.Map;
 
@@ -24,8 +22,8 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ReaderLineIterator;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
@@ -33,27 +31,24 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class StreamLineIteratorPipe extends IteratingPipe<String> {
+public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private String endOfLineString;
 	
-	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected Reader getReader(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
-			throw new SenderException("input is null. Must supply stream as input");
-		}
-		if (!(input instanceof InputStream)) {
-			throw new SenderException("input must be of type InputStream");
+			throw new SenderException("cannot obtain reader from null input");
 		}
 		try {
-			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream)input);
-		} catch (IOException e) {
-			throw new SenderException(e);
+			return input.asReader();
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
 		}
 	}
 
 	@Override
-	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
-		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
+	protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+		return new ReaderLineIterator(getReader(input,session, threadContext));
 	}
 
 	@Override

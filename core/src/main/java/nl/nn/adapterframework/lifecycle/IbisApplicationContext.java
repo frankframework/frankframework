@@ -28,8 +28,9 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -108,6 +109,11 @@ public class IbisApplicationContext {
 			if(parentContext != null) {
 				log.debug("found Spring rootContext ["+parentContext+"]");
 				applicationContext.setParent(parentContext);
+
+				// We need to set the SpringBus here, because on WebSphere the IbisApplicationInitalizer is ran from a different ClassLoader.
+				// This causes the WebServiceListeners register them selves on a different (newly created) SpringBus instead of the Ibis one.
+				SpringBus bus = (SpringBus) parentContext.getBean("cxf");
+				BusFactory.setDefaultBus(bus);
 			}
 			applicationContext.refresh();
 		} catch (BeansException be) {
@@ -134,7 +140,7 @@ public class IbisApplicationContext {
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
 			String file = locationTokenizer.nextToken();
-			log.info("found spring configuration file to load ["+file+"]");
+			if(log.isDebugEnabled()) log.debug("found spring configuration file to load ["+file+"]");
 
 			URL fileURL = classLoader.getResource(file);
 			if(fileURL == null) {
@@ -187,7 +193,7 @@ public class IbisApplicationContext {
 		return applicationContext.getBean(beanName);
 	}
 
-	public Object getBean(String beanName, Class<?> beanClass) {
+	public <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 

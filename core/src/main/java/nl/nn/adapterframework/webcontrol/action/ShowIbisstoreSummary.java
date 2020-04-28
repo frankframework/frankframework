@@ -28,6 +28,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
@@ -38,14 +43,10 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * Show counts per day of each slot in the ibisstore.
@@ -152,7 +153,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.setBlobSmartGet(true);
 					qs.configure(true);
 					qs.open();
-					result = qs.sendMessage("dummy", qs.getDbmsSupport().getIbisStoreSummaryQuery());
+					result = qs.sendMessage(new Message(qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 				} catch (Throwable t) {
 					error("error occured on executing jdbc query",t);
 				} finally {

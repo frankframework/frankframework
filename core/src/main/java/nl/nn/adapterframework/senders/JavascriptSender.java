@@ -15,25 +15,27 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.extensions.javascript.J2V8;
-import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
-import nl.nn.adapterframework.extensions.javascript.Rhino;
-
+import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.extensions.javascript.J2V8;
+import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.Rhino;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Sender used to run javascript code using J2V8 or Rhino
@@ -63,6 +65,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	//Open function used to load the JavascriptFile
+	@Override
 	public void open() throws SenderException {
 		super.open();
 
@@ -97,41 +100,49 @@ public class JavascriptSender extends SenderSeries {
 		}
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
 		JavascriptEngine<?> jsInstance;
 
 		//Create a Parameter Value List
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		try {
-			pvl = prc.getValues(getParameterList());
+			if (getParameterList() !=null) {
+				pvl=getParameterList().getValues(message, session);
+			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+" exception extracting parameters", e);
 		}
-		if(pvl != null)
+		if(pvl != null) {
 			numberOfParameters = pvl.size();
+		}
 
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
 		for (int i=0; i<numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
-			jsParameters[i] = pv.getValue();
+			Object value = pv.getValue();
+			try {
+				jsParameters[i] = value instanceof Message ? ((Message)value).asString() : value;
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
+			}
 		}
 
 		//Start using an engine
 		if(engine.equalsIgnoreCase("Rhino")) {
 			jsInstance = new Rhino();
 			jsInstance.startRuntime();
-		}
-		else {
+		} else {
 			jsInstance = new J2V8();
 			jsInstance.startRuntime();
 
 			for (Iterator<ISender> iterator = getSenderIterator(); iterator.hasNext();) {
 				ISender sender = iterator.next();
-				jsInstance.registerCallback(sender, prc);
+				jsInstance.registerCallback(sender, session);
 			} 
 		}
 
@@ -143,14 +154,14 @@ public class JavascriptSender extends SenderSeries {
 
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
-		return jsResult.toString();
+		return new Message(jsResult.toString());
 	}
 
 	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-		public String getJsFileName() {
+	public String getJsFileName() {
 		return jsFileName;
 	}
 

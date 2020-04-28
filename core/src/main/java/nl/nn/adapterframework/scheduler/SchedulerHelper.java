@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;

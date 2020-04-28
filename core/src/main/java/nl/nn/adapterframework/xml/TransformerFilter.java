@@ -23,6 +23,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class TransformerFilter extends FullXmlFilter {
@@ -30,10 +31,10 @@ public class TransformerFilter extends FullXmlFilter {
 	private FullXmlFilter lastFilter;
 	private TransformerHandler transformerHandler;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID, boolean expectChildThreads) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads) {
 		super();
 		if (expectChildThreads) {
-			lastFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, correlationID);
+			lastFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session);
 		} else {
 			lastFilter = new FullXmlFilter();
 		}

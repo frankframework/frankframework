@@ -16,13 +16,14 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -65,14 +66,8 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String result;
-		if (sender instanceof ISenderWithParameters) {
-			result = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
-		} else {
-			result = sender.sendMessage(correlationID,message);
-		}
-		return result;
+	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		return sender.sendMessage(message,session);
 	}
 
 	@Override

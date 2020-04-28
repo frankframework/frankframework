@@ -16,12 +16,13 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -54,8 +55,14 @@ public abstract class SenderBase implements ISender {
 		return true;
 	}
 
+	/**
+	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
+	 * {@link ClassUtils#getUserClass(Class)} makes sure the original class will be used.
+	 * 
+	 * @return className + name of the ISender
+	 */
 	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
+		return ClassUtils.nameOf(this) +" ["+getName()+"] ";
 	}
 
 	@IbisDoc({"name of the sender", ""})

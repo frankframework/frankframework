@@ -21,14 +21,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 public class SchedulerSenderTest extends SchedulerTestBase {
 
@@ -55,19 +57,19 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testConfigure() throws ConfigurationException, SenderException, SchedulerException {
+	public void testConfigure() throws ConfigurationException, SenderException, SchedulerException, IOException {
 		schedulerSender.setJavaListener("dummyJavaListener");
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 
 		schedulerSender.configure();
-		schedulerSender.sendMessage("", "message", new ParameterResolutionContext());
+		schedulerSender.sendMessage(new Message("message"), null);
 		assertNull(schedulerSender.getParameterList().findParameter("_jobname"));
 
 		assertTrue(schedulerHelper.contains(JOB_NAME));
 	}
 
 	@Test
-	public void testJobGroup() throws ConfigurationException, SenderException, SchedulerException {
+	public void testJobGroup() throws ConfigurationException, SenderException, SchedulerException, IOException {
 		schedulerSender.setJavaListener("dummyJavaListener");
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 		schedulerSender.setJobGroup("test");
@@ -76,8 +78,8 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		String name = schedulerSender.sendMessage("", "message", new ParameterResolutionContext());
-		assertEquals(JOB_NAME, name);
+		Message name = schedulerSender.sendMessage(new Message("message"), null);
+		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));
 		assertFalse(schedulerHelper.contains(JOB_NAME));

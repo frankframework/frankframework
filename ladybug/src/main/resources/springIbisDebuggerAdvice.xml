@@ -41,15 +41,16 @@
 						*
 						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, String, Object,
+							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeInputOutputAbort"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=
@@ -58,75 +59,82 @@
 						*
 						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, String, Object,
+							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeGetInputFrom"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							String, String
-	 						)
-	 					)
-	 					and
-	 					args(correlationId, message)
-	 					"
-	 				method="debugSenderInputOutputAbort"
-	 				arg-names="correlationId, message"
-	 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
-	 							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
-	 						)
-	 					)
-	 					and
-	 					args(correlationId, message, parameterResolutionContext)
-	 					"
-	 				method="debugSenderWithParametersInputOutputAbort"
-	 				arg-names="correlationId, message, parameterResolutionContext"
-	 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-	 							String, nl.nn.adapterframework.stream.Message, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.IOutputStreamingSupport
-	 						)
-	 					)
-	 					and
-	 					args(correlationId, message, parameterResolutionContext, next)
-	 					"
-	 				method="debugStreamingSenderInputOutputAbort"
-	 				arg-names="correlationId, message, parameterResolutionContext, next"
-	 			/>
 			<aop:around
 				pointcut=
 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 							String, nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport
-	 						)
+					execution(
+						*
+						nl.nn.adapterframework.core.ISender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(message, session)
+					"
+				method="debugSenderInputOutputAbort"
+				arg-names="message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
+							*,
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(blockHandle, message, session)
+					"
+				method="debugBlockEnabledSenderInputOutputAbort"
+				arg-names="blockHandle, message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession, 
+							nl.nn.adapterframework.core.IForwardTarget
+						)
+					)
+					and
+					args(message, session, next)
+					"
+				method="debugStreamingSenderInputOutputAbort"
+				arg-names="blockHandle, message, session, next"
+			/>
+			<aop:around
+				pointcut=
+					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
+	 						nl.nn.adapterframework.core.IPipeLineSession, 
+	 						..
 	 					)
-	 					and
-	 					args(correlationId, session, nextProvider)
-	 					"
+	 				)
+	 				and
+	 				args(session, ..)
+	 				"
 				method="debugProvideOutputStream"
-				arg-names="correlationId, session, nextProvider"
+				arg-names="session"
 			/>
 			<aop:around
 				pointcut=
@@ -134,14 +142,16 @@
 					execution(
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							nl.nn.adapterframework.senders.SenderWrapperBase, String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+							nl.nn.adapterframework.senders.SenderWrapperBase, 
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.IPipeLineSession
 						)
 					)
 					and
-					args(senderWrapperBase, correlationId, message, parameterResolutionContext)
+					args(senderWrapperBase, message, session)
 					"
 				method="debugSenderGetInputFrom"
-				arg-names="senderWrapperBase, correlationId, message, parameterResolutionContext"
+				arg-names="senderWrapperBase, message, session"
 			/>
 			<aop:around
 				pointcut=
@@ -181,14 +191,16 @@
 						*
 						nl.nn.adapterframework.parameters.Parameter.getValue(
 							nl.nn.adapterframework.parameters.ParameterValueList,
-							nl.nn.adapterframework.parameters.ParameterResolutionContext
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.IPipeLineSession,
+							boolean
 						)
 					)
 					and
-					args(alreadyResolvedParameters, parameterResolutionContext)
+					args(alreadyResolvedParameters, message, session, namespaceAware)
 					"
 				method="debugParameterResolvedTo"
-				arg-names="alreadyResolvedParameters, parameterResolutionContext"
+				arg-names="alreadyResolvedParameters, message, session, namespaceAware"
 			/>
 		</aop:aspect>
 	</aop:config>

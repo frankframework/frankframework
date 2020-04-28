@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
  * 

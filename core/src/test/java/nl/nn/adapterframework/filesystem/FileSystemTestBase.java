@@ -1,13 +1,14 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
@@ -135,6 +136,16 @@ public abstract class FileSystemTestBase {
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 	}
+	
+	protected void assertFileExistsWithContents(String folder, String filename, String contents) throws Exception {
+		String actualContents = readFile(folder, filename);
+		assertEquals(filename, contents, actualContents.trim());
+	}
+
+	protected void assertFileDoesNotExist(String folder, String filename) throws Exception {
+		assertFalse(filename+" should not exist", _fileExists(folder, filename));
+	}
+	
 
 
 	public void setWaitMillis(long waitMillis) {

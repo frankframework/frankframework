@@ -19,11 +19,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
 /**
@@ -35,17 +33,19 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  */
 public class Result2StringWriter extends ResultWriter {
 	
-	private Map openWriters = Collections.synchronizedMap(new HashMap());
+	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 	
-	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	@Override
+	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
 		Writer writer=new StringWriter();
-		openWriters.put(streamId,writer);
+		openWriters.put(streamId,writer); // this map is never read...
 		return writer;
 	}
 	
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
-		super.finalizeResult(session,streamId, error, prc);
-		StringWriter writer = (StringWriter)getWriter(session,streamId,false, prc);
+	@Override
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+		super.finalizeResult(session,streamId, error);
+		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
 		String result=null;
 		if (writer!=null) {
 			result = (writer).getBuffer().toString();

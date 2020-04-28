@@ -16,7 +16,8 @@
 package nl.nn.adapterframework.extensions.aspose;
 
 public enum ConversionOption {
-	SINGLEPDF(0), SEPARATEPDF(1);
+    SINGLEPDF(0), SEPERATEPDF(1);
+    // Written as "SEPERATEPDF" instead of "SEPARATEPDF" because Aspose libary expects "SEPERATEPDF"
 
 	private final int value;
 

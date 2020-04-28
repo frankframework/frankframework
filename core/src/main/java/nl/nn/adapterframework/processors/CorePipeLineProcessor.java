@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import java.util.Iterator;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -36,6 +37,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,14 +50,13 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private PipeProcessor pipeProcessor;
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
-		Object object = (Object) message;
 		PipeRunResult pipeRunResult;
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
 
-		if (object == null || (object instanceof String && StringUtils.isEmpty(object.toString()))) {
+		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
 				IAdapter adapter = pipeLine
@@ -66,13 +67,18 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+					String input;
+					try {
+						input = message.asString();
+					} catch (IOException e) {
+						throw new PipeRunException(null, "cannot open stream", e);
+					}
+					PipeLineResult plr = adapter.processMessage(messageId, input, pipeLineSession);
 					if (plr == null || !plr.getState().equals("success")) {
 						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
-					message = plr.getResult();
+					message = new Message(plr.getResult());
 					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
-					object = (Object) message;
 				}
 			}
 		}
@@ -87,7 +93,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		IPipe inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
-			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, message, pipeLineSession);
+			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
 			if (validationResult!=null) {
 				if (!validationResult.getPipeForward().getName().equals("success")) {
 					PipeForward validationForward=validationResult.getPipeForward();
@@ -101,10 +107,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
 					}
 				}
-				Object validatedMessage = validationResult.getResult();
-				if (validatedMessage!=null) {
-					object=validatedMessage;
-					message=validatedMessage.toString();
+				Message validatedMessage = validationResult.getResult();
+				if (!validatedMessage.isEmpty()) {
+					message=validatedMessage;
 				}
 			}
 		}
@@ -113,7 +118,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			IPipe inputWrapper = pipeLine.getInputWrapper();
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
-				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, messageId, message, pipeLineSession);
+				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
 				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 					PipeForward wrapForward=wrapResult.getPipeForward();
 					if (wrapForward.getPath()==null) {
@@ -125,17 +130,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
 					}
 				} else {
-					message = wrapResult.getResult().toString();
+					message = wrapResult.getResult();
 				}
 				log.debug("input after wrapping [" + message + "]");
-				object = (Object) message;
 			}
 		}
 
-		pipeLine.getRequestSizeStats().addValue(message.length());
-
+		if (message.asObject() instanceof String) {
+			pipeLine.getRequestSizeStats().addValue(((String)message.asObject()).length());
+		}
+		
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
-			if (XmlUtils.isWellFormed(message)) {
+			String input;
+			try {
+				input = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(null, "cannot open stream", e);
+			}
+			if (XmlUtils.isWellFormed(input)) {
 				try{
 					TransformerPool tpRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,true);
 					String xsltResult = tpRemoveNamespaces.transform(message,null);
@@ -159,15 +171,15 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
-				object=pipeRunResult.getResult();
+				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
+				message=pipeRunResult.getResult();
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
 				if (!(pipeToRun instanceof AbstractPipe)) {
-					if (object!=null && object instanceof String) {
+					if (!message.isEmpty() && message.asObject() instanceof String) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
 						if (sizeStat!=null) {
-							sizeStat.addValue(((String)object).length());
+							sizeStat.addValue(((String)message.asObject()).length());
 						}
 					}
 				}
@@ -179,18 +191,15 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+pipeLine.getOwner().getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
 				}
 				// get the next pipe to run
-				String nextPath=pipeForward.getPath();
-				if ((null==nextPath) || (nextPath.length()==0)){
-					throw new PipeRunException(pipeToRun, "Pipeline of ["+pipeLine.getOwner().getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
-				}
+				IForwardTarget forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
 
-				PipeLineExit plExit= pipeLine.getPipeLineExits().get(nextPath);
-				if (null!=plExit) {
+				if (forwardTarget instanceof PipeLineExit) {
+					PipeLineExit plExit= (PipeLineExit)forwardTarget;
 					boolean outputWrapError = false;
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
 					if (outputWrapper !=null) {
 						log.debug("wrapping PipeLineResult");
-						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, messageId, object, pipeLineSession);
+						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
 						if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 							PipeForward wrapForward=wrapResult.getPipeForward();
 							if (wrapForward.getPath()==null) {
@@ -204,9 +213,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							}
 						} else {
 							log.debug("wrap succeeded");
-							object = wrapResult.getResult();
+							message = wrapResult.getResult();
 						}
-						log.debug("PipeLineResult after wrapping [" + object.toString() + "]");
+						log.debug("PipeLineResult after wrapping [" + message.toString() + "]");
 					}
 
 					if (!outputWrapError) {
@@ -215,7 +224,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {
@@ -228,7 +237,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								}
 							} else {
 								log.debug("validation succeeded");
-								object = validationResult.getResult();
+								message = validationResult.getResult();
 								ready=true;
 							}
 						} else {
@@ -241,34 +250,29 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (object!=null && !plExit.getEmptyResult()) {
-							pipeLineResult.setResult(object.toString());
-						}
-						else {
+						if (message.asObject()!=null && !plExit.getEmptyResult()) {
+							try {
+								pipeLineResult.setResult(message.asString());
+							} catch (IOException e) {
+								throw new PipeRunException(null, "cannot open result stream", e);
+							}
+						} else {
 							pipeLineResult.setResult(null);
 						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
 							String skString = "";
-							for (Iterator it = pipeLineSession.keySet()
-									.iterator(); it.hasNext();) {
-								String key = (String) it.next();
+							for (Iterator<String> it = pipeLineSession.keySet().iterator(); it.hasNext();) {
+								String key = it.next();
 								Object value = pipeLineSession.get(key);
-								skString = skString + "\n " + key + "=["
-										+ value + "]";
+								skString = skString + "\n " + key + "=[" + value + "]";
 							}
-							log.debug("Available session keys at finishing pipeline of adapter ["
-									+ pipeLine.getOwner().getName()
-									+ "]:"
-									+ skString);
-							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object+ "] with exit-state ["+state+"]");
+							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
+							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ (message.asObject()==null?"<null>":"("+message.asObject().getClass().getSimpleName()+") ["+message.asObject() +"]" )+ "] with exit-state ["+state+"]");
 						}
 					}
 				} else {
-					pipeToRun=pipeLine.getPipe(pipeForward.getPath());
-					if (pipeToRun==null) {
-						throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
-					}
+					pipeToRun=(IPipe)forwardTarget;
 				}
 			}
 		} finally {

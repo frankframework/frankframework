@@ -28,7 +28,7 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -49,26 +49,32 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if (handler==null) {
 			throw new ConfigurationException("handler has not been set");
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		setRunning(true);
 	}
+	@Override
 	public void close() {
 		setRunning(false);
 	}
 
 
+	@Override
 	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
 		return null;
 	}
+	@Override
 	public String getStringFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
 		return (String) rawMessage;
 	}
+	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String, Object> threadContext) throws ListenerException {
 	}
 
@@ -88,22 +94,27 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	}
 
 
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	@IbisDoc({"name of the listener as known to the adapter", ""})
 	public void setName(String name) {
 		this.name=name;
 	}
 
+	@Override
 	public void setHandler(IMessageHandler<M> handler) {
 		this.handler=handler;
 	}
+	@Override
 	public void setExceptionListener(IbisExceptionListener exceptionListener) {
 //		this.exceptionListener=exceptionListener;
 	}

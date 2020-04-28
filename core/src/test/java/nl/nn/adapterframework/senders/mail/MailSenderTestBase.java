@@ -28,11 +28,11 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class MailSenderTestBase<S extends ISenderWithParameters> extends SenderTestBase<S> {
 
@@ -48,7 +48,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 
 		sender.configure();
 		sender.open();
-		sender.sendMessage(null, mailInput);
+		sender.sendMessage(new Message(mailInput), session);
 	}
 
 	private void validateAuthentication(Session session) {
@@ -80,7 +80,8 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 			rawResult = rawResult.replace(boundary, "BOUNDARY");
 		}
 
-		TestAssertions.assertEqualsIgnoreCRLF(expected, rawResult);
+		//Make sure there is always a newline, otherwise test assertions may sometimes fail
+		TestAssertions.assertEqualsIgnoreCRLF(expected, rawResult.replace("/mixed; boundary", "/mixed; \n\tboundary"));
 	}
 
 	private void appendParameters(ISenderWithParameters sender) {
@@ -151,13 +152,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithMultipleRecipients.txt", message);
 	}
 
@@ -185,9 +185,8 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
 		exception.expectMessage("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')");
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(new Message(mailInput), session);
 	}
 
 	@Test
@@ -208,13 +207,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithBase64Message.txt", message);
 	}
 
@@ -236,8 +234,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(new Message(mailInput), session);
 	}
 
 	@Test
@@ -260,13 +257,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithAttachment.txt", message);
 	}
 
@@ -291,13 +287,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithBase64Attachment.txt", message);
 	}
 
@@ -322,13 +317,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithBase64MessageAndAttachment.txt", message);
 	}
 
@@ -353,13 +347,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithBase64MessageAndAttachmentWithContentType.txt", message);
 	}
 	
@@ -384,9 +377,8 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
 		exception.expectMessage("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')");
-		sender.sendMessage(null, mailInput, prc);
+		sender.sendMessage(new Message(mailInput), session);
 	}
 	
 	@Test
@@ -398,13 +390,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithPRC.txt", message);
 	}
 
@@ -421,14 +412,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
-
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithRPCAttachments.txt", message);
 	}
 
@@ -447,7 +436,6 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
 		session.put("attachment1", "This is a text message.");
 		session.put("attachment2", "VGhpcyBpcyBhIHRlc3QgZmlsZS4=");
 		byte[] bytes = "This is a test file too.".getBytes();
@@ -455,12 +443,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		session.put("attachment3", new ByteArrayInputStream(bytes));
 		session.put("attachment4", new ByteArrayInputStream(base64Bytes));
 
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		compare("mailWithPRCAttachmentsFromSession.txt", message);
 	}
 
@@ -487,14 +475,13 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
-		validateNDR(session, "my@bounce.nl");
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
+		validateNDR(mailSession, "my@bounce.nl");
 		compare("mailWithNDR.txt", message);
 	}
 
@@ -518,13 +505,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.configure();
 		sender.open();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
-		sender.sendMessage(null, mailInput, prc);
-		Session session = (Session) prc.getSession().get("mailSession");
-		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+		sender.sendMessage(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
 
-		SMTPMessage message = (SMTPMessage) session.getProperties().get("MimeMessage");
-		validateAuthentication(session);
+		SMTPMessage message = (SMTPMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
 		assertEquals("my@bounce.nl", message.getEnvelopeFrom());
 		compare("mailWithNDR.txt", message);
 	}
@@ -559,19 +545,19 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 					sender2.configure();
 					sender2.open();
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
-					sender2.sendMessage(null, mailInput, prc);
-					Session session = (Session) prc.getSession().get("mailSession");
-					session.getProperties().setProperty("bounce", bounce);
+					IPipeLineSession session1 = new PipeLineSessionBase();
+					sender2.sendMessage(new Message(mailInput), session1);
+					Session mailSession1 = (Session) session1.get("mailSession");
+					mailSession1.getProperties().setProperty("bounce", bounce);
 
-					ParameterResolutionContext prc2 = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
-					sender2.sendMessage(null, mailInput, prc2);
-					Session session2 = (Session) prc.getSession().get("mailSession");
-					assertEquals("same session should be used", session, session2);
-					validateNDR(session, bounce);
-					validateNDR(session2, bounce);
+					IPipeLineSession session2 = new PipeLineSessionBase();
+					sender2.sendMessage(new Message(mailInput), session2);
+					Session mailSession2 = (Session) session2.get("mailSession");
+					assertEquals("same session should be used", mailSession1, mailSession2);
+					validateNDR(mailSession1, bounce);
+					validateNDR(mailSession2, bounce);
 
-					return session;
+					return mailSession1;
 				}
 			};
 			futures.add(service.submit(task));

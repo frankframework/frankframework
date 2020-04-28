@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,68 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
+import java.io.Writer;
 
+import org.xml.sax.ContentHandler;
+
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeForward;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
-	public MessageOutputStreamCap(INamedObject owner, IOutputStreamingSupport nextProvider) {
-		super(owner, new StringWriter(), null, nextProvider);
-		try {
-			setResponse((StringWriter)asWriter());
-		} catch (StreamingException e) {
-			log.warn(e);
+	public MessageOutputStreamCap(INamedObject owner, PipeForward forward) {
+		super(owner, null, forward);
+	}
+
+	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
+		super(owner, null, next);
+	}
+
+	@Override
+	public Object asNative() {
+		if (super.asNative()==null) {
+			setRequestStream(new StringWriter());
+		}
+		return super.asNative();
+	}
+
+	@Override
+	public OutputStream asStream() throws StreamingException {
+		if (super.asNative()==null) {
+			setRequestStream(new ByteArrayOutputStream());
+		}
+		return super.asStream();
+	}
+
+	@Override
+	public Writer asWriter() throws StreamingException {
+		if (super.asNative()==null) {
+			setRequestStream(new StringWriter());
+		}
+		return super.asWriter();
+	}
+
+	@Override
+	public ContentHandler asContentHandler() throws StreamingException {
+		if (super.asNative()==null) {
+			setRequestStream(new StringWriter());
+		}
+		return super.asContentHandler();
+	}
+
+	@Override
+	public Object getResponse() {
+		Object buffer = super.asNative();
+		if (buffer==null) {
+			return null;
+		} else if (buffer instanceof ByteArrayOutputStream) {
+			return ((ByteArrayOutputStream)buffer).toByteArray();
+		} else {
+			return buffer.toString();
 		}
 	}
 	

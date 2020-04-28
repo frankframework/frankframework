@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,18 +22,20 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Send a test message to an IFSA Service.
@@ -43,13 +45,13 @@ import org.apache.commons.lang.StringUtils;
 
 public class TestIfsaService extends TimeoutGuardPipe {
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
+			return Message.asMessage(doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return doPost(session);
+			return Message.asMessage(doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method
@@ -172,7 +174,7 @@ public class TestIfsaService extends TimeoutGuardPipe {
 
 	private String processMessage(String applicationId, String serviceId,
 			String messageProtocol, String message)
-			throws ConfigurationException, SenderException, TimeOutException {
+			throws ConfigurationException, SenderException, TimeOutException, IOException {
 		IfsaRequesterSender sender;
 		sender = new IfsaRequesterSender();
 		sender.setName("testIfsaServiceAction");
@@ -181,7 +183,9 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		sender.setMessageProtocol(messageProtocol);
 		sender.configure();
 		sender.open();
-		return sender.sendMessage("testmsg_" + Misc.createUUID(), message);
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		session.put(IPipeLineSession.messageIdKey, "testmsg_" + Misc.createUUID());
+		return sender.sendMessage(new Message(message), session).asString();
 	}
 
 	private String retrieveFormInput(IPipeLineSession session) {

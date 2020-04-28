@@ -66,8 +66,7 @@ public class SoapValidator extends Json2XmlValidator {
 			super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " " : "") + StringUtils.join(versions, " "));
 		}
 		if (StringUtils.isEmpty(soapBody)) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "soapBody not specified");
+			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
 		addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
 		if (StringUtils.isNotEmpty(outputSoapBody)) {

@@ -26,12 +26,14 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public interface IMessageBrowser extends IXAEnabled {
 
+	enum SortOrder { NONE, ASC, DESC };
+
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
 	 */
 	IMessageBrowsingIterator getIterator() throws ListenerException;
-	IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException;
-	
+	IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException;
+
 	/**
 	 * Retrieves the message context as an iteratorItem.
 	 * The result can be used in the methods above that use an iteratorItem as 

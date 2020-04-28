@@ -19,14 +19,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.apache.http.Header;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class RestSender extends HttpSender {
 
-	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
-		String responseString = super.extractResult(responseHandler, prc);
+	@Override
+	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+		String responseString = super.extractResult(responseHandler, session);
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 		XmlBuilder result = new XmlBuilder("result");
 

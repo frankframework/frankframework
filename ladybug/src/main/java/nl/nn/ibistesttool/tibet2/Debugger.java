@@ -78,5 +78,4 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 		}
 		return errorMessage;
 	}
-
 }

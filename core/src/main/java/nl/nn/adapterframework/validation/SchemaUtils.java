@@ -54,7 +54,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Michiel Meeuwissen

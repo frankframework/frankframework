@@ -21,13 +21,6 @@ import java.net.SocketTimeoutException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import jcifs.ntlmssp.NtlmFlags;
-import jcifs.ntlmssp.Type1Message;
-import jcifs.ntlmssp.Type2Message;
-import jcifs.ntlmssp.Type3Message;
-import jcifs.util.Base64;
-
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -51,12 +44,19 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
+import jcifs.ntlmssp.NtlmFlags;
+import jcifs.ntlmssp.Type1Message;
+import jcifs.ntlmssp.Type2Message;
+import jcifs.ntlmssp.Type3Message;
+import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 
@@ -91,29 +91,23 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 				| NtlmFlags.NTLMSSP_NEGOTIATE_ALWAYS_SIGN
 				| NtlmFlags.NTLMSSP_REQUEST_TARGET;
 
-		public String generateType1Msg(final String domain,
-				final String workstation) throws NTLMEngineException {
-			final Type1Message type1Message = new Type1Message(TYPE_1_FLAGS,
-					domain, workstation);
+		@Override
+		public String generateType1Msg(final String domain, final String workstation) throws NTLMEngineException {
+			final Type1Message type1Message = new Type1Message(TYPE_1_FLAGS, domain, workstation);
 			return Base64.encode(type1Message.toByteArray());
 		}
 
-		public String generateType3Msg(final String username,
-				final String password, final String domain,
-				final String workstation, final String challenge)
-				throws NTLMEngineException {
+		@Override
+		public String generateType3Msg(final String username, final String password, final String domain, final String workstation, final String challenge) throws NTLMEngineException {
 			Type2Message type2Message;
 			try {
 				type2Message = new Type2Message(Base64.decode(challenge));
 			} catch (final IOException exception) {
-				throw new NTLMEngineException("Invalid NTLM type 2 message",
-						exception);
+				throw new NTLMEngineException("Invalid NTLM type 2 message", exception);
 			}
 			final int type2Flags = type2Message.getFlags();
-			final int type3Flags = type2Flags
-					& (0xffffffff ^ (NtlmFlags.NTLMSSP_TARGET_TYPE_DOMAIN | NtlmFlags.NTLMSSP_TARGET_TYPE_SERVER));
-			final Type3Message type3Message = new Type3Message(type2Message,
-					password, domain, username, workstation, type3Flags);
+			final int type3Flags = type2Flags & (0xffffffff ^ (NtlmFlags.NTLMSSP_TARGET_TYPE_DOMAIN | NtlmFlags.NTLMSSP_TARGET_TYPE_SERVER));
+			final Type3Message type3Message = new Type3Message(type2Message, password, domain, username, workstation, type3Flags);
 			return Base64.encode(type3Message.toByteArray());
 		}
 	}
@@ -124,6 +118,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		}
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -132,24 +127,21 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		HttpConnectionParams.setSoTimeout(httpParameters, getTimeout());
 		httpClient = new DefaultHttpClient(connectionManager, httpParameters);
 		httpClient.getAuthSchemes().register("NTLM", new NTLMSchemeFactory());
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(),
-				getUserName(), getPassword());
-		httpClient.getCredentialsProvider().setCredentials(
-				new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-				new NTCredentials(cf.getUsername(), cf.getPassword(), Misc
-						.getHostname(), getAuthDomain()));
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new NTCredentials(cf.getUsername(), cf.getPassword(), Misc.getHostname(), getAuthDomain()));
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
-			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
-					proxy);
+			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 	}
 
+	@Override
 	public void open() {
 		connectionManager = new PoolingClientConnectionManager();
 		connectionManager.setMaxTotal(getMaxConnections());
 	}
 
+	@Override
 	public void close() {
 //		httpClient.getConnectionManager().shutdown();
 		connectionManager.shutdown();
@@ -157,22 +149,19 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 	}
 
 
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
-			StringEntity se = new StringEntity(message);
+			StringEntity se = new StringEntity(message.asString());
 			httpPost.setEntity(se);
 			if (StringUtils.isNotEmpty(getContentType())) {
-				log.debug(getLogPrefix() + "setting Content-Type header ["
-						+ getContentType() + "]");
+				log.debug(getLogPrefix() + "setting Content-Type header [" + getContentType() + "]");
 				httpPost.addHeader("Content-Type", getContentType());
 			}
 			if (StringUtils.isNotEmpty(getSoapAction())) {
-				log.debug(getLogPrefix() + "setting SOAPAction header ["
-						+ getSoapAction() + "]");
+				log.debug(getLogPrefix() + "setting SOAPAction header [" + getSoapAction() + "]");
 				httpPost.addHeader("SOAPAction", getSoapAction());
 			}
 			log.debug(getLogPrefix() + "executing method");
@@ -185,19 +174,16 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 				int statusCode = statusLine.getStatusCode();
 				String statusMessage = statusLine.getReasonPhrase();
 				if (statusCode == HttpServletResponse.SC_OK) {
-					log.debug(getLogPrefix() + "status code [" + statusCode
-							+ "] message [" + statusMessage + "]");
+					log.debug(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
 				} else {
-					throw new SenderException(getLogPrefix() + "status code [" + statusCode
-							+ "] message [" + statusMessage + "]");
+					throw new SenderException(getLogPrefix() + "status code [" + statusCode + "] message [" + statusMessage + "]");
 				}
 			}
 			HttpEntity httpEntity = httpresponse.getEntity();
 			if (httpEntity == null) {
 				log.warn(getLogPrefix() + "no response found");
 			} else {
-				log.debug(getLogPrefix() + "response content length ["
-						+ httpEntity.getContentLength() + "]");
+				log.debug(getLogPrefix() + "response content length [" + httpEntity.getContentLength() + "]");
 				result = EntityUtils.toString(httpEntity);
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
@@ -212,9 +198,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		} finally {
 			httpPost.releaseConnection();
 		}
-		return result;
+		return new Message(result);
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return getUrl();
 	}

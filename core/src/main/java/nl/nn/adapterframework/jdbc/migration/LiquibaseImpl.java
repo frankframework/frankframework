@@ -17,7 +17,7 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import java.util.List;
 import java.util.ArrayList;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -87,10 +87,9 @@ public class LiquibaseImpl {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
+			String errorMsg = "Error running LiquiBase update for configuration ["+configurationName+"]. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.getInstance().add(log, errorMsg, e);
+			ConfigurationWarnings.add(log, errorMsg, e);
 		}
 	}
 

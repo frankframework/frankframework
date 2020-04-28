@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -37,11 +40,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.MessageOutputStreamCap;
+import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -71,12 +76,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
- * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
- * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
- * <tr><td>{@link #setStartPosition(int) startPosition}</td><td>When <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender</td><td>-1</td></tr>
- * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>When <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record</td><td>-1</td></tr>
- * <tr><td>{@link #setLinePrefix(String) linePrefix}</td><td>this string is inserted at the start of each line</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLineSuffix(String) lineSuffix}</td><td>this string is inserted at the end of each line</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAddInputToResult(boolean) addInputToResult}</td><td>when <code>true</code> the input is added to the result in an input element</td><td>false</td></tr>
  * <tr><td>{@link #setRemoveDuplicates(boolean) removeDuplicates}</td><td>when <code>true</code> duplicate input elements are removed</td><td>false</td></tr>
@@ -145,13 +144,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private boolean parallel = false;
 	
 	private int blockSize=0;
-	private String blockPrefix="<block>";
-	private String blockSuffix="</block>";
-	private String linePrefix="";
-	private String lineSuffix="";
-
-	private int startPosition=-1;
-	private int endPosition=-1;
 
 	private TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
@@ -178,46 +170,115 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator<I> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<I> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		return null;
 	}
 
-	protected String itemToMessage(I item) throws SenderException {
-		return (String)item;
+	protected ItemCallback createItemCallBack(IPipeLineSession session, ISender sender, Writer out) {
+		return new ItemCallback(session, sender, out);
 	}
 	
-	/**
-	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
-	 * For each item in the input callback.handleItem(item) is called.
-	 */
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
-		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
+	protected Message itemToMessage(I item) throws SenderException {
+		return Message.asMessage(item);
+	}
+
+	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
+		IDataIterator<I> it=null;
+		try {
+			it = getIterator(input,session, threadContext);
+			if (it==null) {
+				 throw new SenderException("Could not obtain iterator");
+			} else {
+				try {
+					callback.startIterating();
+					boolean keepGoing = true;
+					while (keepGoing && (it.hasNext())) {
+						if (Thread.currentThread().isInterrupted()) {
+							throw new TimeOutException("Thread has been interrupted");
+						}
+ 						keepGoing = callback.handleItem(getItem(it));
+					}
+				} finally {
+					callback.endIterating();
+				}
+			}
+		} finally {
+			if (it!=null) {
+				try {
+					if (isCloseIteratorOnExit()) {
+						it.close();
+					}
+				} catch (Exception e) {
+					log.warn("Exception closing iterator", e);
+				} 
+			}
+		}
 	}
 
 	protected class ItemCallback {
 		private IPipeLineSession session;
-		private String correlationID;
 		private ISender sender; 
-		private ISenderWithParameters psender=null;
-		private StringBuffer results = new StringBuffer();
-		int count=0;
+		private Writer results;
+		private int itemsInBlock=0;
+		private int totalItems=0;
+		private boolean blockOpen=false;
+		private Object blockHandle;
 		private Vector<I> inputItems = new Vector<I>();
 		private Guard guard;
-		List<ParallelSenderExecutor> executorList;
+		private List<ParallelSenderExecutor> executorList;
 
-		public ItemCallback(IPipeLineSession session, String correlationID, ISender sender) {
+		public ItemCallback(IPipeLineSession session, ISender sender, Writer out) {
 			this.session=session;
-			this.correlationID=correlationID;
 			this.sender=sender;
-			if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
-				psender = (ISenderWithParameters) sender;
-			}
+			this.results=out;
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
 				executorList = new ArrayList<ParallelSenderExecutor>();
 			}
 		}
-		public boolean handleItem(I item) throws SenderException, TimeOutException {
+		
+		public void startIterating() throws SenderException, TimeOutException, IOException {
+			if (isCollectResults()) {
+				results.append("<results>\n");
+			}
+			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
+				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+				blockOpen=true;
+			}
+		}
+		public void endIterating() throws SenderException, TimeOutException, IOException {
+			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
+				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
+			}
+			if (isCollectResults()) {
+				waitForResults();
+				results.append("</results>");
+			} else {
+				results.append("<results count=\""+getCount()+"\"/>");
+			}
+		}
+		public void startBlock() throws SenderException, TimeOutException, IOException {
+			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
+				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+				blockOpen=true;
+			}
+		}
+		/**
+		 * @return true when looping should continue, false when stop is required. 
+		 */
+		public boolean endBlock() throws SenderException, TimeOutException, IOException {
+			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
+				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
+				blockOpen=false;
+			}
+			itemsInBlock=0;
+			return true;
+		}
+		
+		/**
+		 * @return true when looping should continue, false when stop is required. 
+		 */
+		public boolean handleItem(I item) throws SenderException, TimeOutException, IOException {
 			if (isParallel() && isCollectResults()) {
 				guard.addResource();
 			}
@@ -230,25 +291,22 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 			String itemResult=null;
-			count++;
+			totalItems++;
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
-				session.put(getItemNoSessionKey(),""+count);
+				session.put(getItemNoSessionKey(),""+totalItems);
 			}
-			ParameterResolutionContext prc=null;
-			String message=itemToMessage(item);
+			Message message=itemToMessage(item);
 			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
-			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
-				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-				prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			}
 			if (msgTransformerPool!=null) {
 				try {
 					long preprocessingStartTime = System.currentTimeMillis();
-					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
+					
+					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
+					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
+						log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
-					message=transformedMsg;
+					message=new Message(transformedMsg);
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
 					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
@@ -257,26 +315,33 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)+"iteration ["+count+"] item ["+message+"]");
+					log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] item ["+message+"]");
 				} 
 			}
 			try {
 				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, message, prc, guard, senderStatisticsKeeper);
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, guard, senderStatisticsKeeper);
 					if (isCollectResults()) {
 						executorList.add(pse);
 					}
 					getTaskExecutor().execute(pse);
 				} else {
+					if (getBlockSize()>0 && itemsInBlock==0) {
+						startBlock();
+					}
 					long senderStartTime= System.currentTimeMillis();
-					if (psender!=null) {
-						itemResult = psender.sendMessage(correlationID, message, prc);
+					if (sender instanceof IBlockEnabledSender<?>) {
+						itemResult = ((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session).asString();
 					} else {
-						itemResult = sender.sendMessage(correlationID, message);
+						itemResult = sender.sendMessage(message, session).asString();
 					}
 					long senderEndTime = System.currentTimeMillis();
 					long senderDuration = senderEndTime - senderStartTime;
 					senderStatisticsKeeper.addValue(senderDuration);
+					if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
+						itemsInBlock=0;
+						endBlock();
+					}
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
@@ -301,10 +366,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			try {
 				if (isCollectResults() && !isParallel()) {
-					addResult(count, message, itemResult);
+					addResult(totalItems, message, itemResult);
 				}
-				if (getMaxItems()>0 && count>=getMaxItems()) {
-					log.debug(getLogPrefix(session)+"count ["+count+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+				if (getMaxItems()>0 && totalItems>=getMaxItems()) {
+					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
 					return false;
 				}
 				if (getStopConditionTp()!=null) {
@@ -329,7 +394,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
 		}
-		private void addResult(int count, String message, String itemResult) {
+		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
@@ -337,13 +402,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
 			String itemInput="";
 			if (isAddInputToResult()) {
-				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message):message)+"</input>";
+				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
 			}
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
 		}
 		
-		public StringBuffer getResults() throws SenderException {
+		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
 				try {
 					guard.waitForAllResources();
@@ -356,119 +421,42 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						} else {
 							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}
-						addResult(count, pse.getRequest().toString(), itemResult);
+						addResult(count, pse.getRequest(), itemResult);
 					}
 				} catch (InterruptedException e) {
 					throw new SenderException(getLogPrefix(session)+"was interupted",e);
 				}
 			}
-			return results;
 		}
 		
 		public int getCount() {
-			return count;
+			return totalItems;
 		}
 	}
+	
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
+	}
+
 
 	@Override
-	protected PipeRunResult sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		boolean keepGoing = true;
-		IDataIterator<I> it=null;
 		try {
-			ItemCallback callback = new ItemCallback(session,correlationID,sender);
-			it = getIterator(input,session, correlationID,threadContext);
-			if (it==null) {
-				iterateOverInput(input,session,correlationID, threadContext, callback);
-			} else {
-				String nextItemStored = null;
-				while (keepGoing && (it.hasNext() || nextItemStored!=null)) {
-					if (Thread.currentThread().isInterrupted()) {
-						throw new TimeOutException("Thread has been interrupted");
-					}
-					StringBuffer items = new StringBuffer();
-					if (getBlockSize()>0) { // blockSize>0 requires item type 'I' to be String
-						items.append(getBlockPrefix());
-						for (int i=0; i<getBlockSize() && it.hasNext(); i++) {
-							String item = (String)it.next();
-							items.append(getLinePrefix());
-							items.append(item);
-							items.append(getLineSuffix());
-						}
-						items.append(getBlockSuffix());
- 						keepGoing = callback.handleItem((I)items.toString());  // cannot just cast to I, but anyhow....
-						
-					} else {
-						if (getStartPosition()>=0 && getEndPosition()>getStartPosition()) {
-							items.append(getBlockPrefix());
-							String keyPreviousItem = null;
-							boolean sameKey = true;
-							while (sameKey && (it.hasNext() || nextItemStored!=null)) {
-								String item;
-								if (nextItemStored==null) {
-									item = (String)it.next();
-								} else {
-									item = nextItemStored;
-									nextItemStored = null;
-								}
-								String key;
-								if (getEndPosition() >= item.length()) {
-									key = item.substring(getStartPosition());
-								}
-								else {
-									key = item.substring(getStartPosition(), getEndPosition());
-								}
-								if (keyPreviousItem==null || key.equals(keyPreviousItem)) {
-									items.append(getLinePrefix());
-									items.append(item);
-									items.append(getLineSuffix());
-									if (keyPreviousItem==null) {
-										keyPreviousItem = key;
-									}
-								} else {
-									sameKey = false;
-									nextItemStored = item;
-								}
-							}
-							items.append(getBlockSuffix());
-	 						keepGoing = callback.handleItem((I)items.toString()); // cannot just cast to I, but anyhow....
-						} else {
-							I item = getItem(it);
-							items.append(getLinePrefix());
-							items.append(item);
-							items.append(getLineSuffix());
-							keepGoing = callback.handleItem(item); 
-						}
-					}
+			IForwardTarget forwardTarget = getNextPipe();
+			try (MessageOutputStream target=isCollectResults()?MessageOutputStream.getTargetStream(this, session, forwardTarget):new MessageOutputStreamCap(this, forwardTarget)) { 
+				try (Writer resultWriter = target.asWriter()) {
+					ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+					iterateOverInput(input,session,threadContext, callback);
 				}
+				return target.getPipeRunResult();
 			}
-			String results = "";
-			if (isCollectResults()) {
-				StringBuffer callbackResults = callback.getResults();
-				callbackResults.insert(0, "<results>\n");
-				callbackResults.append("</results>");
-				results = callbackResults.toString();
-			} else {
-				results = "<results count=\""+callback.getCount()+"\"/>";
-			}
-			return new PipeRunResult(getForward(), results);
-		} finally {
-			if (it!=null) {
-				try {
-					if (isCloseIteratorOnExit()) {
-						it.close();
-					}
-				} catch (Exception e) {
-					log.warn("Exception closing iterator", e);
-				} 
-			}
+		} catch (SenderException | TimeOutException | IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix(session)+"Exception on transforming input", e);
 		}
-	}
-
-	@Override
-	public boolean requiresOutputStream() {
-		//return super.requiresOutputStream();
-		return false; // TODO must modify result collection to support output streaming 
 	}
 
 	protected I getItem(IDataIterator<I> it) throws SenderException {
@@ -564,7 +552,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@IbisDoc({"7", "Expression evaluated on each result if set. "
 	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
 	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
-	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected.", ""})
+	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead", ""})
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
 	}
@@ -630,61 +618,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 
-	
 	@IbisDoc({"14", "Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}
 	public int getBlockSize() {
 		return blockSize;
-	}
-
-	@IbisDoc({"15", "When <code>blocksize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
-	public void setBlockPrefix(String string) {
-		blockPrefix = string;
-	}
-	public String getBlockPrefix() {
-		return blockPrefix;
-	}
-
-	@IbisDoc({"16", "When <code>blocksize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
-	public void setBlockSuffix(String string) {
-		blockSuffix = string;
-	}
-	public String getBlockSuffix() {
-		return blockSuffix;
-	}
-
-	@IbisDoc({"17", "This string is inserted at the start of each line", ""})
-	public void setLinePrefix(String string) {
-		linePrefix = string;
-	}
-	public String getLinePrefix() {
-		return linePrefix;
-	}
-
-	@IbisDoc({"18", "This string is inserted at the end of each line", ""})
-	public void setLineSuffix(String string) {
-		lineSuffix = string;
-	}
-	public String getLineSuffix() {
-		return lineSuffix;
-	}
-
-	@IbisDoc({"19", "When <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
-	public void setStartPosition(int i) {
-		startPosition = i;
-	}
-	public int getStartPosition() {
-		return startPosition;
-	}
-
-	@IbisDoc({"20", "When <code>endposition &gt;= startposition</code>, this field contains the end position of the key in the current record", "-1"})
-	public void setEndPosition(int i) {
-		endPosition = i;
-	}
-	public int getEndPosition() {
-		return endPosition;
 	}
 
 }

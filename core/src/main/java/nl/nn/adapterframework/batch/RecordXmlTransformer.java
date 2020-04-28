@@ -20,14 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -50,12 +50,11 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	private String endOfRecord;
 
 	private TransformerPool transformerPool; 
-	private ParameterList parameterList = new ParameterList();
 
-	private List outputFields; 
+	private List<String> outputFields; 
 
 	public RecordXmlTransformer() {
-		outputFields = new LinkedList();
+		outputFields = new LinkedList<String>();
 	}
 
 	@Override
@@ -77,24 +76,26 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
+	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Transformer ["+getName()+"] record before XSL transformation ["+xml+"]");
 			}
-			return transformerPool.transform(xml, prc.getValueMap(paramList));
+			Message message = new Message(xml);
+			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);
+			return transformerPool.transform(message.asSource(), pvl);
 		} else {
 			return xml;
 		}
 	}
 	
-	protected String getXml(List parsedRecord) {
+	protected String getXml(List<String> parsedRecord) {
 		XmlBuilder record=new XmlBuilder(getRootTag());
 		int ndx = 0;
-		for (Iterator it = outputFields.iterator(); it.hasNext();) {
+		for (Iterator<String> it = outputFields.iterator(); it.hasNext();) {
 			// get tagname
-			String tagName = (String) it.next();
+			String tagName = it.next();
 			// get value
 			String value = "";
 			if (ndx < parsedRecord.size()) {

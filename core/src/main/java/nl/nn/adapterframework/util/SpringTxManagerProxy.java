@@ -15,7 +15,8 @@
 */
 package nl.nn.adapterframework.util;
 
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class CmisSenderTest {
@@ -125,15 +125,13 @@ public class CmisSenderTest {
 		int index=i % numSenders;
 		
 		if (testViaHttpSender) {
-			String message=""; 
+			Message message=new Message(""); 
 
-			ParameterResolutionContext prc= new ParameterResolutionContext(message, session);
-			result=httpSenders[index].sendMessage(null, message,prc);
+			result=httpSenders[index].sendMessage(message, session).asString();
 			
 		} else {
-			String message="<cmis><id>"+id+"</id></cmis>";
-			ParameterResolutionContext prc= new ParameterResolutionContext(message, session);
-			result=cmisSenders[index].sendMessage(null, message,prc);
+			Message message=new Message("<cmis><id>"+id+"</id></cmis>");
+			result=cmisSenders[index].sendMessage(message, session).asString();
 		}
 		
 		assertNotNull(result);

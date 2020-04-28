@@ -30,13 +30,12 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,6 +45,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -72,8 +72,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -82,6 +82,7 @@ import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
@@ -535,7 +536,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (this.errorSender == null && this.errorStorage == null) {
 					this.errorStorage = this.tmpInProcessStorage;
 					info(getLogPrefix()+"has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-					errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
+					errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
 				} else {
 					info(getLogPrefix()+"has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
 				}
@@ -589,8 +590,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (getListener() instanceof ITransactionRequirements) {
 				ITransactionRequirements tr=(ITransactionRequirements)getListener();
 				if (tr.transactionalRequired() && !isTransacted()) {
-					String msg=getLogPrefix()+"listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing";
-					ConfigurationWarnings.getInstance().add(msg);
+					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing");
 					//throw new ConfigurationException(msg);
 				}
 			}
@@ -640,9 +640,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
@@ -657,9 +655,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
 						int stt = Integer.parseInt(systemTransactionTimeout);
 						if (getTransactionTimeout()>stt) {
-							ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-							String msg = getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]";
-							configWarnings.add(log, msg);
+							ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
 						}
 					}
 				}
@@ -774,7 +770,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 		tellResourcesToStop();
-		NDC.remove();
+		ThreadContext.removeStack();
 	}
 
 	protected void startProcessingMessage(long waitingDuration) {
@@ -814,7 +810,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		plr.setState("ERROR");
 		if (getSender()!=null) {
 			// TODO correlationId should be technical correlationID!
-			String sendMsg = sendResultToSender(correlationId, result);
+			String sendMsg = sendResultToSender(correlationId, new Message(result));
 			if (sendMsg != null) {
 				log.warn("problem sending result:"+sendMsg);
 			}
@@ -842,7 +838,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 		try {
 			if (errorSender!=null) {
-				errorSender.sendMessage(correlationId, message);
+				errorSender.sendMessage(new Message(message), null);
 			}
 			Serializable sobj;
 			if (rawMessage instanceof Serializable) {
@@ -939,9 +935,30 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (threadContext==null) {
 			threadContext = new HashMap();
 		}
-		
-		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+
+		String message = null;
+		String technicalCorrelationId = null;
+		try {
+			message = origin.getStringFromRawMessage(rawMessage, threadContext);
+		} catch (Exception e) {
+			if(rawMessage instanceof MessageWrapper) { 
+				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+				// like JdbcListener
+				message = ((MessageWrapper)rawMessage).getText();
+			} else {
+				throw new ListenerException(e);
+			}
+		}
+		try {
+			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		} catch (Exception e) {
+			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
+			} else {
+				throw new ListenerException(e);
+			}
+		}
 		String messageId = (String)threadContext.get("id");
 		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
@@ -1198,7 +1215,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				responseSizeStatistics.addValue(result.length());
 //			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(technicalCorrelationId, result);
+				String sendMsg = sendResultToSender(technicalCorrelationId,new Message(result));
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1220,7 +1237,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				} else {
 					afterMessageProcessedMap=pipelineSession;
 				}
-				origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+				try {
+					origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+				} catch (Exception e) {
+					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+					// this might cause class cast exceptions.
+					// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+					// like JdbcListener
+					log.warn("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]");
+				}
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
@@ -1664,15 +1689,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
 	}
+
 	/**
 	 * Sets the inProcessStorage.
 	 * @param inProcessStorage The inProcessStorage to set
 	 * @deprecated
 	 */
+	@Deprecated
+	@ConfigurationWarning("In-Process Storage no longer exists")
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"In-Process Storage is not used anymore. Please remove from configuration.";
-		configWarnings.add(log, msg);
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1708,7 +1733,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
 				errorStorage.setSlotId(getName());
 			}
-			errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
+			errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
 		}
 	}
 	
@@ -1722,7 +1747,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
+			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
@@ -1791,14 +1816,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
@@ -1969,12 +1991,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 
-	private String sendResultToSender(String correlationId, String result) {
+	private String sendResultToSender(String correlationId, Message result) {
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
 				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(correlationId, result);
+				getSender().sendMessage(result, null);
 			}
 		} catch (Exception e) {
 			String msg = "receiver [" + getName() + "] caught exception in message post processing";

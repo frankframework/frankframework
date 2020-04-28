@@ -15,19 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.StringReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletConfig;
-import javax.ws.rs.core.Context;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -38,15 +25,16 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+
+import javax.servlet.ServletConfig;
+import javax.ws.rs.core.Context;
+import javax.xml.transform.Transformer;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -138,37 +126,6 @@ public abstract class Base {
 		catch (Exception e) {
 			throw new ApiException(e);
 		}
-	}
-
-	protected List<Map<String, String>> XmlQueryResult2Map(String xml) {
-		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
-		Document xmlDoc = null;
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(xml));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
-		}
-		catch (Exception e) {
-			return null;
-		}
-		NodeList rowset = xmlDoc.getElementsByTagName("row");
-		for (int i = 0; i < rowset.getLength(); i++) {
-			Element row = (Element) rowset.item(i);
-			NodeList fieldsInRowset = row.getChildNodes();
-			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				Map<String, String> tmp = new HashMap<String, String>();
-				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
-					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
-						Element field = (Element) fieldsInRowset.item(j);
-						tmp.put(field.getAttribute("name"), field.getTextContent());
-					}
-				}
-				resultList.add(tmp);
-			}
-		}
-		return resultList;
 	}
 
 	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {

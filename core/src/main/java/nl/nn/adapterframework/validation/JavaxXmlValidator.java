@@ -18,8 +18,8 @@ package nl.nn.adapterframework.validation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -67,7 +68,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 //		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
 //	}
 
-	private Map<String, Schema> javaxSchemas = new HashMap<String, Schema>();
+	private Map<String, Schema> javaxSchemas = new LinkedHashMap<String, Schema>();
 
 	@Override
 	public void configure(String logPrefix) throws ConfigurationException {
@@ -179,6 +180,11 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			result.add(xsModel);
 		}
 		return result;
+	}
+
+	@Override
+	public List<XSModel> getXSModels() {
+		throw new NotImplementedException("getXSModels()");
 	}
 }
 

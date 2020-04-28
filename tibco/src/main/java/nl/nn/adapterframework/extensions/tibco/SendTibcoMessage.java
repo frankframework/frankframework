@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden
+   Copyright 2013-2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,32 +15,34 @@
  */
 package nl.nn.adapterframework.extensions.tibco;
 
+import java.io.IOException;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
+//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Sends a message to a Tibco queue.
@@ -98,7 +100,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String soapAction;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
 		MessageProducer msgProducer = null;
@@ -114,16 +116,17 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		String soapAction_work;
 
 		String result = null;
-
+		try {
+			input.preserve();
+		} catch (IOException e) {
+			throw new PipeRunException(this,"cannot preserve input",e);
+		}
 		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
+		if (getParameterList()!=null) {
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
 		}
 
@@ -179,7 +182,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				Resource resource = Resource.getResource(getConfigurationClassLoader(), "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
-				soapAction_work = tp.transform(input.toString(), null);
+				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {
 				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");
 			}
@@ -236,7 +239,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			
 			msgProducer = jSession.createProducer(destination);
 			TextMessage msg = jSession.createTextMessage();
-			msg.setText(input.toString());
+			msg.setText(input.asString());
 			Destination replyQueue = null;
 			if (messageProtocol_work.equalsIgnoreCase(REQUEST_REPLY)) {
 				replyQueue = jSession.createTemporaryQueue();
@@ -280,8 +283,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 						+ replyTimeout_work + "] ms");
 				try {
 					connection.start();
-					Message rawReplyMsg = msgConsumer
-							.receive(replyTimeout_work);
+					javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
 					if (rawReplyMsg == null) {
 						throw new PipeRunException(this, getLogPrefix(session)
 								+ "did not receive reply on [" + replyQueue
@@ -296,9 +298,8 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			} else {
 				result = msg.getJMSMessageID();
 			}
-		} catch (JMSException e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " exception on sending message to Tibco queue", e);
+		} catch (IOException|JMSException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+ " exception on sending message to Tibco queue", e);
 		} finally {
 			if (connection != null) {
 				try {
@@ -309,7 +310,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return result;
+		return Message.asMessage(result);
 	}
 
 	public String getUrl() {

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,13 +35,15 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -52,7 +54,7 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -72,6 +74,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
+	@Context Request request;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
@@ -110,6 +113,7 @@ public class ServerStatistics extends Base {
 				configurations.add(cfg);
 		}
 
+		//TODO Replace this with java.util.Collections!
 		Collections.sort(configurations, new Comparator<Map<String, String>>() {
 			@Override
 			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
@@ -226,7 +230,21 @@ public class ServerStatistics extends Base {
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		Response.ResponseBuilder response = null;
+
+		//Calculate the ETag on last modified date of user resource 
+		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
+
+		//Verify if it matched with etag available in http request
+		response = request.evaluatePreconditions(etag);
+
+		//If ETag matches the response will be non-null; 
+		if (response != null) {
+			return response.tag(etag).build();
+		}
+
+		response = Response.status(Response.Status.OK).entity(returnMap).tag(etag);
+		return response.build();
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {
@@ -257,15 +275,7 @@ public class ServerStatistics extends Base {
 		Map<String, Object> logSettings = new HashMap<String, Object>(3);
 		Logger rootLogger = LogUtil.getRootLogger();
 
-		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-			logSettings.put("maxMessageLength", iaw.getMaxMessageLength());
-		}
-		else {
-			logSettings.put("maxMessageLength", -1);
-		}
+		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
@@ -293,12 +303,6 @@ public class ServerStatistics extends Base {
 
 		Logger rootLogger = LogUtil.getRootLogger();
 
-		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-		}
-
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -317,7 +321,7 @@ public class ServerStatistics extends Base {
 		}
 
 		if(loglevel != null && rootLogger.getLevel() != loglevel) {
-			rootLogger.setLevel(loglevel);
+			Configurator.setLevel(rootLogger.getName(), loglevel);
 			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
 		}
 
@@ -331,14 +335,12 @@ public class ServerStatistics extends Base {
 				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
 		}
 
-		if (iaw != null) {
-			if(iaw.getMaxMessageLength() != maxMessageLength) {
-				if(msg.length() > 0)
-					msg.append(", logMaxMessageLength from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				else
-					msg.append("logMaxMessageLength changed from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				iaw.setMaxMessageLength(maxMessageLength);
-			}
+		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
+			if(msg.length() > 0)
+				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			else
+				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
 
 		if (enableDebugger!=null) {

@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<repositories>
 		<repository>
@@ -12,7 +11,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.5-SNAPSHOT</version>
+		<version>7.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>ibis-adapterframework-aspose</artifactId>
 	<name>Ibis AdapterFramework support for Aspose</name>
@@ -21,6 +20,22 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<version>7.6-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+			<version>3.0.1</version>
 		</dependency>
 		
 		<!-- Libraries -->
@@ -200,16 +215,18 @@
 
 		<!-- Logging -->
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-1.2-api</artifactId>
+			<version>2.13.0</version>
 		</dependency>
 			
 		<!-- Bridge required for ehcache -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.7</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.13.0</version>
 		</dependency>
+
 		<!-- ASPOSE LIBRARIES -->
 		<dependency>
 			<groupId>com.aspose</groupId>

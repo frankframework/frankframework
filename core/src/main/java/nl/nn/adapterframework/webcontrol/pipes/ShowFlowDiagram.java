@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.File;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -38,11 +39,11 @@ public class ShowFlowDiagram extends TimeoutGuardPipe {
 	private File configFlowDir = new File(AppConstants.getInstance()
 			.getResolvedProperty("flow.config.dir"));
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
+			return Message.asMessage(doGet(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method

@@ -15,20 +15,20 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -42,14 +42,14 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled, ConfigurationAware {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String>, ConfigurationAware {
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey; 
 	private boolean preserveInput=false; 
 	protected SenderWrapperProcessor senderWrapperProcessor;
-	private ICacheAdapter cache=null;
+	private ICacheAdapter<String,String> cache=null;
 	private Configuration configuration;
 
 	@Override
@@ -87,14 +87,14 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
+	public abstract Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException; 
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		if (senderWrapperProcessor!=null) {
-			return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
+			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
-		return doSendMessage(correlationID, message, prc);
+		return doSendMessage(message, session);
 	}
 
 	@Override
@@ -103,11 +103,11 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void registerCache(ICacheAdapter cache) {
+	public void registerCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter getCache() {
+	public ICacheAdapter<String,String> getCache() {
 		return cache;
 	}
 
