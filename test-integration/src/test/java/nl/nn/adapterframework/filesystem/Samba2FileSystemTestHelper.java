@@ -97,7 +97,6 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	public void setUp() throws Exception {
-		System.out.println("open connection for for Samba2FileSystemTestHelper");
 		open();
 	}
 
