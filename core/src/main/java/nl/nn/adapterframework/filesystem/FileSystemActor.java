@@ -393,10 +393,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
-				if (!isCreateFolder() && !fileSystem.folderExists(destinationFolder)) {
-					throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
-				}
-				F moved=fileSystem.moveFile(file, destinationFolder, isCreateFolder());
+				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(moved);
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
@@ -404,10 +401,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
-				if (!isCreateFolder() && !fileSystem.folderExists(destinationFolder)) {
-					throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
-				}
-				F copied=fileSystem.copyFile(file, destinationFolder, isCreateFolder());
+				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(copied);
 			}
 		} catch (Exception e) {
