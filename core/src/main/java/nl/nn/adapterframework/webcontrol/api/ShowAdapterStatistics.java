@@ -230,11 +230,21 @@ public final class ShowAdapterStatistics extends Base {
 						if(item instanceof Long) {
 							tmp.put(key, item);
 						} else {
-							tmp.put(key, new BigDecimal((Double) item).setScale(1, BigDecimal.ROUND_HALF_EVEN));
+							Double val = (Double) item;
+							if(val == Double.NaN) {
+								tmp.put(key, null);
+							} else {
+								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
+							}
 						}
 						break;
 					case ItemList.ITEM_TYPE_FRACTION:
-						tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
+						Double val = (Double) item;
+						if(val == Double.NaN) {
+							tmp.put(key, null);
+						} else {
+							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
+						}
 						break;
 				}
 			}
