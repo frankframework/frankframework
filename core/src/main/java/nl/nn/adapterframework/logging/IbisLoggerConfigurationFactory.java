@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -35,6 +36,7 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringResolver;
 
 /**
  * This ConfigurationFactory is loaded after the log4j2.properties file has been initialised.
@@ -76,11 +78,15 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{ctx:([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
+			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
-				substitutions.put(key, properties.getProperty(key));
+				String value = resolveValueRecursively(properties, key);
+
+				if(value != null) {
+					substitutions.put(key, value);
+				}
 			}
 			ThreadContext.putAll(substitutions); //Only add the substituted variables to the ThreadContext
 
@@ -90,6 +96,18 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			System.err.println(LOG_PREFIX + "unable to configure Log4J2");
 			throw new IllegalStateException(LOG_PREFIX + "unable to configure Log4J2", e);
 		}
+	}
+
+	private String resolveValueRecursively(Properties properties, String key) {
+		String value = properties.getProperty(key);
+		if(StringUtils.isEmpty(value)) {
+			return null;
+		}
+
+		if(StringResolver.needsResolution(value)) {
+			value = StringResolver.substVars(value, properties);
+		}
+		return value;
 	}
 
 	private Properties getProperties() throws IOException {
@@ -140,7 +158,8 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 				if(checkVersionOnlyFirst1024Characters) {
 					//See if log4j2 prefix is somewhere in the first 1024 characters
 					if(!stringWriter.toString().contains("<log4j2:Configuration")) {
-						throw new IllegalStateException("Detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
+						System.err.println(LOG_PREFIX + "did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
+						throw new IllegalStateException("Did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
 					}
 					checkVersionOnlyFirst1024Characters = false;
 				}
@@ -179,7 +198,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 */
 	private static void setLevel() {
 		if (System.getProperty("log.level") == null) {
-			// In the log4j2.xml the rootlogger contains the loglevel: ${log.level}
+			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can startup if no log.level property has been found, it has to be explicitly set
 			String stage = System.getProperty("dtap.stage");
