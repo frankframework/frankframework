@@ -78,14 +78,15 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{ctx:([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
+			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
 				String value = resolveValueRecursively(properties, key);
 
-				if(value != null)
+				if(value != null) {
 					substitutions.put(key, value);
+				}
 			}
 			ThreadContext.putAll(substitutions); //Only add the substituted variables to the ThreadContext
 
@@ -157,8 +158,8 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 				if(checkVersionOnlyFirst1024Characters) {
 					//See if log4j2 prefix is somewhere in the first 1024 characters
 					if(!stringWriter.toString().contains("<log4j2:Configuration")) {
-						System.err.println(LOG_PREFIX + "detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
-						throw new IllegalStateException("Detected obsolete configuration format. Please use the log4j2 layout in file log4j4ibis.xml");
+						System.err.println(LOG_PREFIX + "did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
+						throw new IllegalStateException("Did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
 					}
 					checkVersionOnlyFirst1024Characters = false;
 				}
