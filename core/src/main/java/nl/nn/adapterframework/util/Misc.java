@@ -15,20 +15,13 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -51,13 +44,6 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
-
-import javax.xml.transform.TransformerException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -961,7 +947,30 @@ public class Misc {
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}
-	
+
+	/**
+	 * Hide all characters matching the given Regular Expression.
+	 * If the set of expressions is null or empty it will return the raw message
+	 */
+	public static String hideAll(String message, Collection<String> collection) {
+		return hideAll(message, collection, 0);
+	}
+
+	/**
+	 * Hide all characters matching the given Regular Expression.
+	 * If the set of expressions is null or empty it will return the raw message
+	 */
+	public static String hideAll(String message, Collection<String> collection, int mode) {
+		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
+			return message; //Nothing to do!
+
+		for (String regex : collection) {
+			if (StringUtils.isNotEmpty(regex))
+				message = hideAll(message, regex, mode);
+		}
+		return message;
+	}
+
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
 	}

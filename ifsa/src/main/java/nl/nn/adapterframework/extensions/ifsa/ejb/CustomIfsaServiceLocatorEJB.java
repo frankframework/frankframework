@@ -27,7 +27,7 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Override the IFSA SeriveLocatorEJB implementation to return the IBIS

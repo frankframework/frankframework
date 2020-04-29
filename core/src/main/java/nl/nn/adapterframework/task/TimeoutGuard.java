@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * TimeoutGuard interrupts running thread when timeout is exceeded.

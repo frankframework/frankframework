@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
@@ -21,10 +20,11 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class SenderBase<S extends ISender> extends Mockito {
 
-	protected Log log = LogFactory.getLog(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
 
 	@Mock
