@@ -88,10 +88,12 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
-- Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
-- Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
-- Window, Open Perspective, Other..., Java EE.
+- Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml.
+- Open a command prompt. Browse to the directory of your Eclipse workspace. Clone the IAF project from GitHub: `git clone https://github.com/ibissource/iaf` (you may need to install and configure Git before you can use it from the command-line). Within your Eclipse workspace directory, you should have created a subdirectory "iaf".
+- Turn back to Eclipse. In the main menu, choose File | Import... . You get a tree view with options how to import. Expand "Maven" and select "Existing Maven Projects".
+- Browse to your Eclipse workspace directory. As a subdirectory you should see the directory of your IAF checkout; select it. Then press "Select folder".
+- Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
+- From the main menu, do Window, Open Perspective, Other..., Java EE.
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
