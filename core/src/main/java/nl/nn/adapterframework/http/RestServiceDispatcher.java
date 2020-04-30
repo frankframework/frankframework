@@ -38,7 +38,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -360,7 +360,7 @@ public class RestServiceDispatcher  {
 			IPipeLineSession session = new PipeLineSessionBase();
 			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = Message.asString(pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult());
+			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
 			pipe.stop();
 			return result;
 		} catch (Exception e) {

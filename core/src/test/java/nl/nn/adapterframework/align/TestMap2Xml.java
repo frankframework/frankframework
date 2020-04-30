@@ -41,6 +41,7 @@ public class TestMap2Xml extends AlignTestBase {
 	    		fail("could not convert to xml");
 	    	}
 	       	assertTrue("converted XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
+	       	MatchUtils.assertXmlEquals(null, xmlIn, xmlAct, true);
 	       	if (checkRoundTrip) {
 		       	Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
 				System.out.println("mapIn:\n"+mapInStr);
@@ -74,13 +75,14 @@ public class TestMap2Xml extends AlignTestBase {
 		if (mapString==null) {
 			fail("no map input files found for ["+inputFile+"]");
 		}
-		testStrings(xmlString,mapString,   schemaUrl,namespace, rootElement,  true, expectedFailureReason);
+		testStrings(xmlString,mapString, schemaUrl,namespace, rootElement,  true, expectedFailureReason);
 	}
 
 	@Test
     public void testNestedValue() throws Exception {
     	testFiles("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue");
     }
+
 
 	
     @Override

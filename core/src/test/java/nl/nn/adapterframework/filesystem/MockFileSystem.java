@@ -3,11 +3,13 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -56,6 +58,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			throw new IllegalStateException("Not yet open");
 		}
 		
+	}
+
+	private void checkOpenAndExists(MockFile f) throws FileSystemException {
+		checkOpen();
+		MockFolder folder = f.getOwner();
+		String folderName = folder instanceof MockFileSystem ? null : folder.getName();
+		checkOpenAndExists(folderName, f);
 	}
 
 	private void checkOpenAndExists(String folderName, MockFile f) throws FileSystemException {
@@ -121,7 +130,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public OutputStream createFile(MockFile f) throws FileSystemException, IOException {
 		checkOpen();
-		getFiles().put(f.getName(), f);
+		f.getOwner().getFiles().put(f.getName(), f);
 		f.setOwner(this);
 		return f.getOutputStream(true);
 	}
@@ -129,10 +138,10 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public OutputStream appendFile(MockFile f) throws FileSystemException, IOException {
 		checkOpen();
-		if (getOwner()!=null && getOwner().getFiles().containsKey(f.getName())) {
-			f=getFiles().get(f.getName()); // append to existing file
+		if (f.getOwner()!=null && f.getOwner().getFiles().containsKey(f.getName())) {
+			f=f.getOwner().getFiles().get(f.getName()); // append to existing file
 		} else {
-			getFiles().put(f.getName(), f); // create new file
+			f.getOwner().getFiles().put(f.getName(), f); // create new file
 			f.setOwner(this);
 		}
 		return f.getOutputStream(false);
@@ -140,36 +149,36 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public InputStream readFile(MockFile f) throws FileSystemException, IOException {
-		checkOpenAndExists(null,f);
+		checkOpenAndExists(f);
 		return f.getInputStream();
 	}
 
 	@Override
 	public void deleteFile(MockFile f) throws FileSystemException {
-		checkOpenAndExists(null,f);
-		getFiles().remove(f.getName());
+		checkOpenAndExists(f);
+		f.getOwner().getFiles().remove(f.getName());
 		f.setOwner(null);
 	}
 
 	@Override
 	public M renameFile(M f, String newName, boolean force) throws FileSystemException {
-		checkOpenAndExists(null,f);
-		if (getFiles().containsKey(newName)) {
+		checkOpenAndExists(f);
+		if (f.getOwner().getFiles().containsKey(newName)) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
 		
-		getFiles().put(newName,getFiles().remove(f.getName()));
+		f.getOwner().getFiles().put(newName,f.getOwner().getFiles().remove(f.getName()));
 		f.setName(newName);
 		return f;
 	}
 
 	@Override
 	public M moveFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
-		//checkOpenAndExists(f.getOwner().getName(),f);
+		checkOpenAndExists(f);
 		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+				throw new FileSystemException("destination folder ["+destinationFolderName+"] does not exist");
 			} 
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
@@ -180,8 +189,32 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	public M copyFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
+		checkOpenAndExists(f);
+		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
+		if (destFolder==null) {
+			if (!createFolder) {
+				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+			} 
+			destFolder = new MockFolder(destinationFolderName,this);
+			getFolders().put(destinationFolderName,destFolder);
+		}
+		M fileDuplicate = (M)new MockFile(f.getName(), destFolder);
+		fileDuplicate.setContents(Arrays.copyOf(f.getContents(),f.getContents().length));
+		if (f.getAdditionalProperties()!=null) {
+			Map<String,Object> propDup = new HashMap<String,Object>();
+			propDup.putAll(f.getAdditionalProperties());
+			fileDuplicate.setAdditionalProperties(propDup);
+		}
+		fileDuplicate.setLastModified(f.getLastModified());
+		destFolder.getFiles().put(fileDuplicate.getName(), fileDuplicate);
+		fileDuplicate.setOwner(destFolder);
+		return fileDuplicate;
+	}
+
+	@Override
 	public long getFileSize(M f) throws FileSystemException {
-//		checkOpenAndExists(f);
+		checkOpenAndExists(f);
 		byte[] contents = f.getContents();
 		return contents==null?0:contents.length;
 	}

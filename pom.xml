@@ -8,6 +8,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <log4j2.version>2.13.1</log4j2.version>
   </properties>
 
   <name>Ibis AdapterFramework parent</name>
@@ -115,7 +116,7 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-test-integration</artifactId>
-        <version>7.4-SNAPSHOT</version>
+        <version>7.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
@@ -138,9 +139,15 @@
         <version>2.6</version>
       </dependency>
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.16</version>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <!-- Servlet support for multiple contexts -->
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-web</artifactId>
+        <version>${log4j2.version}</version>
       </dependency>
       <dependency>
         <groupId>javax.ejb</groupId>

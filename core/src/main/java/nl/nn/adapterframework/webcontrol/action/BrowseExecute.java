@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -158,7 +159,7 @@ public class BrowseExecute extends Browse {
 				if (listener!=null) {
 					msg = listener.getStringFromRawMessage(rawmsg,context);
 				} else {
-					msg=(String)rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";

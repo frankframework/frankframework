@@ -30,8 +30,8 @@ import java.net.URL;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -305,10 +305,7 @@ public class Message implements Serializable {
 	}
 
 	public static Message asMessage(Object object) {
-		if (object==null) {
-			return null;
-		}
-		if (object instanceof Message) {
+		if (object!=null && object instanceof Message) {
 			return (Message)object;
 		}
 		return new Message(object);

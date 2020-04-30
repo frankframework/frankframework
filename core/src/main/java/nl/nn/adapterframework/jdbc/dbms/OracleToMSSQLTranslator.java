@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -38,8 +38,8 @@ public class OracleToMSSQLTranslator {
 	
 	private static Logger log = LogUtil.getLogger(OracleToMSSQLTranslator.class);
 
-	public static String convertQuery(QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
-		if (StringUtils.isEmpty(queryContext.getQuery()))
+	public static String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {
+		if (StringUtils.isEmpty(queryExecutionContext.getQuery()))
 			return null;
 
 		// query can start with comment (multiple lines) which should not be
@@ -47,7 +47,7 @@ public class OracleToMSSQLTranslator {
 		StringBuilder queryComment = new StringBuilder();
 		StringBuilder queryStatement = new StringBuilder();
 		boolean comment = true;
-		String[] lines = queryContext.getQuery().split("\\r?\\n");
+		String[] lines = queryExecutionContext.getQuery().split("\\r?\\n");
 		for (String line : lines) {
 			// ignore empty lines
 			if (line.trim().length() > 0) {
@@ -78,7 +78,7 @@ public class OracleToMSSQLTranslator {
 		}
 		if (compareStringArrays(split, newSplit)) {
 			log.debug("oracle query [" + queryComment.toString() + originalQuery + "] not converted");
-			return queryContext.getQuery();
+			return queryExecutionContext.getQuery();
 		} else {
 			String convertedQuery = getConvertedQueryAsString(newSplit, removedEOS);
 			log.debug("converted oracle query [" + queryComment.toString() + originalQuery + "] to [" + queryComment.toString() + convertedQuery + "]");

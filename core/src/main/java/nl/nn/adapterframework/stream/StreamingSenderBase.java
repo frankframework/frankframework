@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,23 +24,15 @@ import nl.nn.adapterframework.senders.SenderWithParametersBase;
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
-	@Override
-	public abstract MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
-
-	
-	@Override
-	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
+	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		PipeRunResult result = sendMessage(message, session, null);
-		return Message.asMessage(result.getResult());
+		return result.getResult();
 	}
 
-	
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
 	
-
 }

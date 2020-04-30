@@ -45,7 +45,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private final static String ME_END = "}";
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		Object preservedObject = message;
 		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
@@ -78,7 +78,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		
 		if (pipeRunResult==null){
-			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		}
 		if (pipeRunResult==null){
 			throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
@@ -87,10 +87,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe !=null) {
 			if (pe.isRestoreMovedElements()) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
+				Message result = pipeRunResult.getResult();
+				if (!result.isEmpty()) {
 					try {
-						String resultString = Message.asString(result);
+						String resultString = result.asString();
 						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
 					} catch (IOException e) {
 						throw new PipeRunException(pipe, "cannot open stream of result", e);
@@ -100,11 +100,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
-					String resultString = (String)result;
+				Message result = pipeRunResult.getResult();
+				if (result!=null && !result.isEmpty()) {
 					try {
-						InputStream xmlInput = IOUtils.toInputStream(resultString, "UTF-8");
+						String resultString = result.asString();
+						InputStream xmlInput = result.asInputStream();
 						CompactSaxHandler handler = new CompactSaxHandler();
 						handler.setChompCharSize(pe.getChompCharSize());
 						handler.setElementToMove(pe.getElementToMove());
@@ -122,17 +122,17 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 							log.warn("Pipeline of adapter ["+owner.getName()+"] could not compact received message: " + e.getMessage());
 						}
 						handler = null;
+						pipeRunResult.setResult(resultString);
 					} catch (Exception e) {
 						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
 					}
-					pipeRunResult.setResult(resultString);
 				}
 			}
 			
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-				Object result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				Message result = pipeRunResult.getResult();
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.setResult(preservedObject);

@@ -16,22 +16,23 @@
 
 package nl.nn.adapterframework.http.rest;
 
-import java.io.IOException;
-import java.rmi.server.UID;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+
+import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.rmi.server.UID;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
 
 /**
 * Pipe to manage the ApiPrincipal handling
@@ -94,17 +95,21 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		if(getAction().equals("create")) {
 			//TODO type of token? (jwt, saml)
 			String uidString = (new UID()).toString();
-			Random random = new Random();
+			SecureRandom random = new SecureRandom();
 			String token = random.nextInt() + uidString + Integer.toHexString(uidString.hashCode()) + random.nextInt(8);
 
 			ApiPrincipal userPrincipal = new ApiPrincipal(authTTL);
 			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
-
 			if(getAuthenticationMethod().equals("cookie")) {
 				Cookie cookie = new Cookie("authenticationToken", token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
+				cookie.setHttpOnly(true);
+
+				ServletSecurity.TransportGuarantee currentGuarantee = ServletManager.getTransportGuarantee("servlet.ApiListenerServlet.transportGuarantee");
+				cookie.setSecure(currentGuarantee == ServletSecurity.TransportGuarantee.CONFIDENTIAL);
+
 				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				response.addCookie(cookie);
 			}

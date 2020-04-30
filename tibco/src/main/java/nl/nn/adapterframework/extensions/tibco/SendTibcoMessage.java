@@ -100,7 +100,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String soapAction;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
 		MessageProducer msgProducer = null;
@@ -310,7 +310,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return result;
+		return Message.asMessage(result);
 	}
 
 	public String getUrl() {

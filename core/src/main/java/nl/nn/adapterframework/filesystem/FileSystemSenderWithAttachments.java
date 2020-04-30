@@ -24,11 +24,11 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -54,7 +54,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 	
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
 			return super.sendMessage(message, session, next);
 		} else {

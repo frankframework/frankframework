@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
+import java.sql.Connection;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class DirectQuerySender extends JdbcQuerySenderBase {
+public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -57,6 +60,41 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
+	}
+
+
+	@Override
+	public Connection openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			return super.getConnectionForSendMessage(null);
+		} catch (JdbcException e) {
+			throw new SenderException("cannot get Connection",e);
+		}
+	}
+
+	@Override
+	public void closeBlock(Connection connection, IPipeLineSession session) throws SenderException {
+		try {
+			super.closeConnectionForSendMessage(connection, session);
+		} catch (JdbcException | TimeOutException e) {
+			throw new SenderException("cannot close Connection",e);
+		}
+	}
+	
+	@Override
+	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeOutException {
+		return blockHandle;
+	}
+
+	@Override
+	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
+		// postpone close to closeBlock()
+	}
+
+
+	@Override
+	public Message sendMessage(Connection blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		return new Message(sendMessageOnConnection(blockHandle, message, session));
 	}
 
 }

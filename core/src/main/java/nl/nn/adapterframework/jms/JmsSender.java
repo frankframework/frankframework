@@ -184,7 +184,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			Destination replyQueue = null;
 
 			// create message
-			javax.jms.Message msg = createTextMessage(s, correlationID, message);
+			javax.jms.Message msg = createMessage(s, correlationID, message);
 
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());

@@ -33,7 +33,6 @@ import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -160,7 +159,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
@@ -168,11 +167,10 @@ public class CreateRestViewPipe extends XsltPipe {
 		int countSrcPrefix = StringUtils.countMatches(uri, "/");
 		String srcPrefix = StringUtils.repeat("../", countSrcPrefix);
 		session.put(SRCPREFIX, srcPrefix);
-		log.debug(getLogPrefix(session) + "stored [" + srcPrefix
-				+ "] in pipeLineSession under key [" + SRCPREFIX + "]");
+		log.debug(getLogPrefix(session) + "stored [" + srcPrefix + "] in pipeLineSession under key [" + SRCPREFIX + "]");
 
-		PipeRunResult prr = super.doPipe(input, session, next);
-		String result = (String) prr.getResult();
+		PipeRunResult prr = super.doPipe(input, session);
+		Message result = prr.getResult();
 
 		log.debug("transforming page [" + result + "] to view");
 
@@ -181,15 +179,13 @@ public class CreateRestViewPipe extends XsltPipe {
 
 		try {
 			Map<String,Object> parameters = retrieveParameters(httpServletRequest, servletContext, srcPrefix);
-			newResult = XmlUtils.getAdapterSite(result, parameters);
+			newResult = XmlUtils.getAdapterSite(result.asString(), parameters);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on transforming page to view", e);
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming page to view", e);
 		}
 
 		session.put(CONTENTTYPE, getContentType());
-		log.debug(getLogPrefix(session) + "stored [" + getContentType()
-				+ "] in pipeLineSession under key [" + CONTENTTYPE + "]");
+		log.debug(getLogPrefix(session) + "stored [" + getContentType() + "] in pipeLineSession under key [" + CONTENTTYPE + "]");
 
 		return new PipeRunResult(getForward(), newResult);
 	}

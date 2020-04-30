@@ -43,7 +43,7 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

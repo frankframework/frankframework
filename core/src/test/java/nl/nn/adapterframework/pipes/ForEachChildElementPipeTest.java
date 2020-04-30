@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
@@ -23,18 +24,17 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
-public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
+public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
 
 	private boolean TEST_CDATA=false;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
@@ -117,12 +117,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		return getElementRenderer(null, e);
 	}
 
-    protected ISender getElementRenderer(final SwitchCounter sc) {
+	protected ISender getElementRenderer(final SwitchCounter sc) {
 		return getElementRenderer(sc, null);
 	}
 
 	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
-    	EchoSender sender = new EchoSender() {
+		EchoSender sender = new EchoSender() {
 
 			@Override
 			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
@@ -141,20 +141,26 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		return sender;
 	}
 
+	@Override
+	public void setup() throws ConfigurationException {
+		assumeFalse(provideStreamForInput);
+		super.setup();
+	}
+	
 	@Test
-	public void testBasic() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasic() throws Exception {
 		pipe.setSender(getElementRenderer());
 		configurePipe();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
 	@Test
-	public void testBlockSize() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBlockSize() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setBlockSize(2);
 		pipe.setBlockPrefix("<block>");
@@ -163,13 +169,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSBlock, actual);
 	}
 
 	@Test
-	public void testError() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testError() throws Exception {
 		Exception targetException = new NullPointerException("FakeException");
 		pipe.setSender(getElementRenderer(targetException));
 		configurePipe();
@@ -184,7 +190,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testErrorXpath() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testErrorXpath() throws Exception {
 		Exception targetException = new NullPointerException("FakeException");
 		pipe.setSender(getElementRenderer(targetException));
 		pipe.setElementXPathExpression("/root/sub");
@@ -210,33 +216,33 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testBasicRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicRemoveNamespacesNonPrefixed() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(true);
 		configurePipe();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNS1, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
 	@Test
-	public void testBasicRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicRemoveNamespacesPrefixed() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(true);
 		configurePipe();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNS2, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
 	@Test
-	public void testBasicNoRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicNoRemoveNamespacesNonPrefixed() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(false);
 		pipe.setNamespaceDefs("ns=urn:test");
@@ -244,13 +250,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNS1, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 	}
 
 	@Test
-	public void testBasicNoRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicNoRemoveNamespacesPrefixed() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setRemoveNamespaces(false);
 		pipe.setNamespaceDefs("ns=urn:test");
@@ -258,14 +264,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, messageBasicNS2, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS2, actual);
 	}
 
 
 	@Test
-	public void testXPath() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPath() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/root/sub");
 		// pipe.setNamespaceAware(true);
@@ -275,7 +281,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -283,7 +289,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathRemoveNamespacesNonPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
 		pipe.setNamespaceDefs("ns=urn:test");
@@ -295,7 +301,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -303,7 +309,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathRemoveNamespacesPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
 		pipe.setNamespaceDefs("ns=urn:test");
@@ -315,7 +321,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -323,7 +329,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathNoRemoveNamespacesNonPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathNoRemoveNamespacesNonPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/*[local-name()='root']/*[local-name()='sub']");
 		pipe.setNamespaceAware(false);
@@ -334,7 +340,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -342,7 +348,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathNoRemoveNamespacesPrefixed() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathNoRemoveNamespacesPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/*[local-name()='root']/*[local-name()='sub']");
 		pipe.setNamespaceAware(false);
@@ -353,7 +359,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS2, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -361,7 +367,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathNoRemoveNamespacesWithNamespaceDefs() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathNoRemoveNamespacesWithNamespaceDefs() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/nstest:root/nstest:sub");
 		pipe.setNamespaceDefs("nstest=urn:test");
@@ -372,7 +378,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -380,7 +386,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testXPathWithSpecialChars() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testXPathWithSpecialChars() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/root/sub[position()<3]");
 		pipe.setNamespaceAware(true);
@@ -390,7 +396,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
@@ -398,7 +404,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	} 
 
 	@Test
-	public void testContainerElement() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testContainerElement() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setContainerElement("root");
 		// pipe.setNamespaceAware(true);
@@ -410,14 +416,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testContaineElementRemoveNamespaces() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testContaineElementRemoveNamespaces() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setContainerElement("root");
 		pipe.setRemoveNamespaces(true);
@@ -430,14 +436,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testContaineElementNoRemoveNamespaces() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testContaineElementNoRemoveNamespaces() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setContainerElement("root");
 		pipe.setNamespaceDefs("urn:test");
@@ -451,7 +457,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(wrappedMessage.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
@@ -459,7 +465,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 
 	@Test
-	public void testTargetElement() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElement() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		// pipe.setNamespaceAware(true);
@@ -469,14 +475,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testTargetElementRemoveNamespaces() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementRemoveNamespaces() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		pipe.setRemoveNamespaces(true);
@@ -487,14 +493,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testTargetElementNoRemoveNamespaces() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementNoRemoveNamespaces() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		pipe.setRemoveNamespaces(false);
@@ -504,14 +510,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testTargetElementNoRemoveNamespacesDuplicateNamespaceDefsDefaultNamespace() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementNoRemoveNamespacesDuplicateNamespaceDefsDefaultNamespace() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		pipe.setRemoveNamespaces(false);
@@ -522,14 +528,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testTargetElementNoRemoveNamespacesDuplicateNamespaceDefsPrefixedNamespace() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementNoRemoveNamespacesDuplicateNamespaceDefsPrefixedNamespace() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		pipe.setRemoveNamespaces(false);
@@ -540,14 +546,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS2, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
 	@Test
-	public void testBasicWithStopExpression() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicWithStopExpression() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setStopConditionXPathExpression("*[@name='p & Q']");
@@ -556,7 +562,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
@@ -564,7 +570,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testBasicMaxItems1() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicMaxItems1() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(1);
@@ -573,15 +579,15 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
+		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
-		assertEquals(expectedBasicNoNSFirstElement, actual);
 	}
 
 	@Test
-	public void testBasicMaxItems2() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testBasicMaxItems2() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(2);
@@ -590,15 +596,15 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
+		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
-		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 	}
 
 	@Test
-	public void testTargetElementMaxItems1() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementMaxItems1() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		// pipe.setNamespaceAware(true);
@@ -609,7 +615,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
@@ -617,7 +623,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testTargetElementMaxItems2() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testTargetElementMaxItems2() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		// pipe.setNamespaceAware(true);
@@ -628,7 +634,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(20));
@@ -636,7 +642,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testNamespacedTargetElement1() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testNamespacedTargetElement1() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		// pipe.setNamespaceAware(true);
@@ -647,7 +653,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 //        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
@@ -655,7 +661,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testNamespacedTargetElement2() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testNamespacedTargetElement2() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("sub");
 		// pipe.setNamespaceAware(true);
@@ -666,7 +672,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 //        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
@@ -674,7 +680,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testPrefixedNamespacedTargetElement1() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testPrefixedNamespacedTargetElement1() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("x:sub");
 		// pipe.setNamespaceAware(true);
@@ -685,7 +691,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 //        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
@@ -693,7 +699,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testPrefixedNamespacedTargetElement2() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testPrefixedNamespacedTargetElement2() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setTargetElement("x:sub");
 		// pipe.setNamespaceAware(true);
@@ -704,7 +710,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 //        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
@@ -713,7 +719,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	
 	@Test
-	public void testNoDuplicateNamespaces() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+	public void testNoDuplicateNamespaces() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setRemoveNamespaces(false);
@@ -723,13 +729,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/xdocs.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/ForEachChildElementPipe-Result.txt");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void testBulk2() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+	public void testBulk2() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setBlockSize(4);
@@ -740,13 +746,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2out.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void testRemoveNamespacesInAttributes() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+	public void testRemoveNamespacesInAttributes() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		configurePipe();
@@ -755,13 +761,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseIn.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseOut.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void testNamespacedXPath() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+	public void testNamespacedXPath() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setElementXPathExpression("//x:directoryUrl");
 		pipe.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
@@ -771,7 +777,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/input.xml");
 		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespacedXPath/expected.xml");
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = prr.getResult().toString();
+		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
 	}

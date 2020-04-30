@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Date;

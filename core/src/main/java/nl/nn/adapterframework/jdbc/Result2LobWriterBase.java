@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,9 +87,10 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
-		Message msg = new Message(streamId);
-		QueryContext queryContext = querySender.getQueryExecutionContext(connection, msg, session);
-		PreparedStatement statement=queryContext.getStatement();
+		Message message = new Message(streamId);
+		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+		PreparedStatement statement=queryExecutionContext.getStatement();
+		JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();

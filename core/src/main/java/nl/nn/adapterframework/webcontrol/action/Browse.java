@@ -36,6 +36,7 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -205,7 +206,7 @@ public class Browse extends ActionBase {
 				} else if (listener!=null) {
 					msg = listener.getStringFromRawMessage(rawmsg, null);
 				} else {
-					msg=(String)rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
@@ -279,7 +280,7 @@ public class Browse extends ActionBase {
 								if (listener!=null) {
 									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
 								} else {
-									msg=(String)rawmsg;
+									msg = Message.asString(rawmsg);
 								}
 								if (msg==null || msg.indexOf(messageTextMask)<0) {
 									continue;

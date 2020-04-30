@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Jaco de Groot
@@ -37,7 +37,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult = null;
 
 		IExtendedPipe pe=null;
@@ -52,6 +52,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			StringBuffer sb=new StringBuffer();
 			String ownerName=pipeLine.getOwner()==null?"<null>":pipeLine.getOwner().getName();
 			String pipeName=pipe==null?"<null>":pipe.getName();
+			String messageId = pipeLineSession==null?null:pipeLineSession.getMessageId();
 			sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeName+"]");
 
 			boolean lir = false;
@@ -77,7 +78,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		long pipeDuration = -1;
 			
 		try {
-			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		} catch (PipeRunException pre) {
 			if (pe!=null) {
 				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);

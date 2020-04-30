@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -279,10 +279,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	public TextMessage createTextMessage(Session session, String correlationID, String message)
+	public Message createMessage(Session session, String correlationID, String message)
 			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
+		setMessageCorrelationID(textMessage, correlationID);
+		textMessage.setText(message);
+		return textMessage;
+	}
+
+	public void setMessageCorrelationID(Message message, String correlationID) 
+			throws JMSException {
 		if (null != correlationID) {
 			if (correlationIdMaxLength>=0) {
 				int cidlen;
@@ -306,12 +313,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				correlationID = hexCorrelationID;
 				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}
-			textMessage.setJMSCorrelationID(correlationID);
+			message.setJMSCorrelationID(correlationID);
 		}
-		textMessage.setText(message);
-		return textMessage;
 	}
-
+	
 	public Destination getDestination() throws NamingException, JMSException, JmsException {
 		if (destination == null) {
 			String destinationName = getDestinationName();
@@ -520,7 +525,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
-		TextMessage msg = createTextMessage(session, correlationId, message);
+		Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
 			if (useJms102()) {
@@ -571,8 +576,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
-
-
 	/**
 	 * Send a message
 	 * @param messageProducer
@@ -617,6 +620,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			}
 		}
 	}
+	
 	/**
 	 * Send a message
 	 * @param session
