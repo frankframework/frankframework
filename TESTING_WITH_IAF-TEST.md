@@ -37,7 +37,11 @@ To make sure our database can be used, we'll have to run an ant script. Navigate
 * _/setupDB/Oracle/create_user.xml_
 * _/setupDir/setupDir.xml_
 
-## 4. Running the test scenarios
+## 4. In ibis-adapterframework-test, select Oracle database
+
+The ibis-adapterframeworkt-test project supports multiple databases. In your local checkout, please edit the code to select Oracle as the database. Please edit file "src/main/resources/DeploymentSpecifics.properties". Update the line `jdbc.datasource.default=${jdbc.datasource.h2}` to make it `jdbc.datasource.default=${jdbc.datasource.oracle}`. This change should not be checked in!
+
+## 5. Running the test scenarios
 
 Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
 
