@@ -12,6 +12,15 @@
 	<import resource="springJms.xml"/>
 
 	<bean
+		name="jndiDataSource"
+		class="org.springframework.jndi.JndiObjectFactoryBean"
+		>
+		<property name="lookupOnStartup" value="${jdbc.required}"/>
+		<property name="ProxyInterface" value="javax.sql.XADataSource"/>
+		<property name="jndiName" value="${jndiContextPrefix}${jdbc.datasource.default}"/>
+	</bean>
+
+	<bean
 		name="esbFFConnectionFactory,esbRRConnectionFactory"
 		class="org.apache.activemq.ActiveMQXAConnectionFactory"
 		scope="singleton"
