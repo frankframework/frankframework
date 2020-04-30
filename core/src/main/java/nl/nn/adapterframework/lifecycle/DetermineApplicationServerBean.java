@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
 
 @IbisInitializer
-public class DetermineApplicationServer implements ServletContextAware {
+public class DetermineApplicationServerBean implements ServletContextAware {
 
 	private ServletContext servletContext;
 	private Logger log = LogUtil.getLogger(this);
