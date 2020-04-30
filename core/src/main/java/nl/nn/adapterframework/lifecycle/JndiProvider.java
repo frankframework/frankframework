@@ -23,7 +23,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 @IbisInitializer
-@DependsOn("determineApplicationServer")
+@DependsOn("determineApplicationServerBean")
 public class JndiProvider implements ApplicationContextAware, InitializingBean {
 
 	private Logger log = LogUtil.getLogger(this);
