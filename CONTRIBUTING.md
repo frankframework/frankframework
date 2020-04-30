@@ -25,9 +25,7 @@ After modifying a project file:
 - ctrl-c
 - cd .. ; mvn clean install ; cd example ; mvn jetty:run
 
-The jetty-maven-plugin requires Maven 3 and Java 1.7.
-
-
+In the past, it was observed that the jetty-maven-plugin required Maven 3 and Java 1.7. Presently, we work with Java 8 and Eclipse 2019-03. Working with Jetty has to be tested. At WeAreFrank!, development happens with Eclipse as is described below.
 
 ## Submitting changes
 
@@ -83,8 +81,8 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 
 ## Developing with Eclipse
 
-- Download and unzip [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2) (64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message)).
-- Start Eclipse with Java 7. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
+- Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
+- Start Eclipse with Java 8. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
