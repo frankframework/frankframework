@@ -381,7 +381,7 @@ public class FtpSession {
 			if (ftpClient.isConnected()) {
 				try {
 					ftpClient.quit();
-					log.debug(ftpClient.getReplyString());
+					//log.debug(ftpClient.getReplyString());
 					ftpClient.disconnect();
 				}
 				catch(Exception e) {

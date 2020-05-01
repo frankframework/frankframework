@@ -15,6 +15,21 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+/**
+ * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
+ * 
+ * Instructions to create a share on a windows system:
+ * - First create a directory you want to share (location doesn't matter)
+ * - Right click to that directory -> properties -> Sharing Tab -> Advanced Sharing Options -> Check Share this Folder option -> 
+ * Click Permissions -> Set users to be shared if necessary -> Set permissions(Full Control, read, write) -> Click Apply.
+ * To verify share:
+ * - open file explorer -> write \\localhost on address bar. You will see the share.
+ * 
+ * @author alisihab
+ *
+ */
+
+
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -88,12 +103,14 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private String authAlias = null;
 
 		
-	public Samba2FileSystemTestHelper(String shareFolder, String userName, String password, String host, Integer port) {
+	public Samba2FileSystemTestHelper(String shareFolder, String userName, String password, String host, Integer port, String kdc, String realm) {
 		this.shareName = shareFolder;
 		this.userName = userName;
 		this.password = password;
 		this.host = host;
 		this.port = port;
+		this.kdc = kdc;
+		this.realm = realm;
 	}
 
 	public void setUp() throws Exception {
@@ -152,7 +169,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private AuthenticationContext authenticate() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
-			if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
+			if(StringUtils.equalsIgnoreCase(authType, "NTLM")) {
 				return new AuthenticationContext(getUserName(), password.toCharArray(), getDomain());
 			}else if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
 
@@ -305,11 +322,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		
+		if (!folderExists(folderName)) {
+			throw new FileSystemException("Remove directory for [" + folderName + "] has failed. Directory does not exist.");
+		} else {
+			diskShare.rmdir(folderName, true);
+		}
 	}
-	
-	
 	
 	private File getFile(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();

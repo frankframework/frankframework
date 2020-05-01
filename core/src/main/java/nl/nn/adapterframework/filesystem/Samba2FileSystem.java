@@ -160,7 +160,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	private AuthenticationContext authenticate() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
-			if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
+			if(StringUtils.equalsIgnoreCase(authType, "NTLM")) {
 				return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
 			}else if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
 
@@ -472,8 +472,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		return "domain ["+getDomain()+"] share ["+getShare()+"]";
 	}
 
-
-	
 	public String getShare() {
 		return shareName;
 	}
@@ -514,10 +512,19 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		this.domain = domain;
 	}
 
+	public Integer getPort() {
+		return port;
+	}
+
+	@IbisDoc({ "10", "set port to connect with samba server", "" })
+	public void setPort(Integer port) {
+		this.port = port;
+	}
 
 	public String getAuthType() {
 		return authType;
 	}
+	
 	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
 	public void setAuthType(String authType) {
 		this.authType = authType;
@@ -526,6 +533,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	public String getKdc() {
 		return kdc;
 	}
+	
 	@IbisDoc({ "7", "Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
@@ -542,6 +550,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	public boolean isListHiddenFiles() {
 		return listHiddenFiles;
 	}
+	
 	@IbisDoc({ "9", "controls whether hidden files are seen or not", "false" })
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
@@ -602,14 +611,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 				log.error("Unable to close disk share after deleting the file",e);
 			}
 		}
-	}
-
-	public Integer getPort() {
-		return port;
-	}
-
-	public void setPort(Integer port) {
-		this.port = port;
 	}
 
 }

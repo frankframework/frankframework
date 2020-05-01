@@ -16,10 +16,13 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> {
+
+	private final static String SAMBA_2_FILE_SYSTEM = "nl.nn.adapterframework.filesystem.Samba2FileSystem";
 
 	public Samba2Sender() {
 		setFileSystem(new Samba2FileSystem());
@@ -65,7 +68,7 @@ public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> {
 		getFileSystem().setRealm(realm);
 	}
 
-	@IbisDoc({ "9", "port", "" })
+	@IbisDocRef({"10", SAMBA_2_FILE_SYSTEM})
 	public void setPort(Integer port) {
 		getFileSystem().setPort(port);
 	}
