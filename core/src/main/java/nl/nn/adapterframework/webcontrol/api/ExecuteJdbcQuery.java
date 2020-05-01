@@ -65,9 +65,12 @@ public final class ExecuteJdbcQuery extends Base {
 		if (jmsRealms.size() == 0) {
 			datasources.add("no datasources found in jmsRealms");
 		} else {
-			for (String jmsRealm:jmsRealms) {
-				JmsRealm realm =  realmFactory.getJmsRealm(jmsRealm);
-				datasources.add(realm.getDatasourceName());
+			for (String jmsRealm : jmsRealms) {
+				JmsRealm realm = realmFactory.getJmsRealm(jmsRealm);
+				String datasourceName = realm.getDatasourceName();
+				if(!datasources.contains(datasourceName)) { //It's possible multiple realms use the same datasourceName
+					datasources.add(datasourceName);
+				}
 			}
 		}
 		
