@@ -2196,8 +2196,8 @@ angular.module('iaf.beheerconsole')
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
 		}, function(returnData) {
-			$scope.addNote("danger", returnData.state);
-			$scope.result = (returnData.result);
+			$scope.addNote("danger", returnData.error);
+			$scope.result = "";
 			$scope.processingMessage = false;
 		});
 	};
