@@ -1059,7 +1059,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				}
 				handler = null;
 			} catch (Exception e) {
-				throw new ListenerException("error during compacting received message to more compact format: " + e.getMessage());
+				String msg=getLogPrefix()+"error during compacting received message to more compact format";
+				error(msg, e);
+				throw new ListenerException(msg, e);
 			}
 		}
 		
@@ -1103,19 +1105,25 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				log.warn(getLogPrefix()+"could not extract label: ("+ClassUtils.nameOf(e)+") "+e.getMessage());
 			}
 		}
-		if (hasProblematicHistory(messageId, manualRetry, rawMessage, message, threadContext, businessCorrelationId)) {
-			if (!isTransacted()) {
-				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
+		try {
+			if (hasProblematicHistory(messageId, manualRetry, rawMessage, message, threadContext, businessCorrelationId)) {
+				if (!isTransacted()) {
+					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
+				}
+				numRejected.increase();
+				return result;
 			}
-			numRejected.increase();
-			return result;
-		}
-		if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
-			numRejected.increase();
-			return result;
-		}
-		if (getCachedProcessResult(messageId)!=null) {
-			numRetried.increase();
+			if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
+				numRejected.increase();
+				return result;
+			}
+			if (getCachedProcessResult(messageId)!=null) {
+				numRetried.increase();
+			}
+		} catch (Exception e) { 
+			String msg=getLogPrefix()+"exception while checking history";
+			error(msg, e);
+			throw wrapExceptionAsListenerException(e);
 		}
 
 		int txOption = this.getTransactionAttributeNum();
@@ -1140,6 +1148,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				} catch (Throwable t) {
 					errorMessage = t.getMessage();
 					messageInError = true;
+					error(getLogPrefix()+"exception retrieving bulk data", t);
 					ListenerException l = wrapExceptionAsListenerException(t);
 					throw l;
 				}
@@ -1199,6 +1208,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 							(txStatus.isRollbackOnly()?"already":"not yet") +
 							" marked for rollback-only");
 				}
+				error(getLogPrefix()+"Exception in message processing", t);
 				errorMessage = t.getMessage();
 				messageInError = true;
 				if (pipeLineResult==null) {
@@ -1248,7 +1258,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					// this might cause class cast exceptions.
 					// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 					// like JdbcListener
-					log.warn("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]");
+					error(getLogPrefix()+"Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+					throw wrapExceptionAsListenerException(e);
 				}
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
@@ -1260,7 +1271,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					//txManager.commit(txStatus);
 					itx.commit();
 				} else {
-					throw new ListenerException(getLogPrefix()+"Transaction already completed; we didn't expect this");
+					String msg=getLogPrefix()+"Transaction already completed; we didn't expect this";
+					warn(msg);
+					throw new ListenerException(msg);
 				}
 			}
 		}
