@@ -25,7 +25,7 @@ After modifying a project file:
 - ctrl-c
 - cd .. ; mvn clean install ; cd example ; mvn jetty:run
 
-In the past, it was observed that the jetty-maven-plugin required Maven 3 and Java 1.7. Presently, we work with Java 8 and Eclipse 2019-03. Working with Jetty has to be tested. At WeAreFrank!, development happens with Eclipse as is described below.
+The jetty-maven-plugin requires Maven 3 and Java 1.8.
 
 ## Submitting changes
 
