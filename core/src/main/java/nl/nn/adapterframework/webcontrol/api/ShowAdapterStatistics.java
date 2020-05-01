@@ -231,7 +231,7 @@ public final class ShowAdapterStatistics extends Base {
 							tmp.put(key, item);
 						} else {
 							Double val = (Double) item;
-							if(val == Double.NaN) {
+							if(val.isNaN() || val.isInfinite()) {
 								tmp.put(key, null);
 							} else {
 								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
@@ -240,7 +240,7 @@ public final class ShowAdapterStatistics extends Base {
 						break;
 					case ItemList.ITEM_TYPE_FRACTION:
 						Double val = (Double) item;
-						if(val == Double.NaN) {
+						if(val.isNaN() || val.isInfinite()) {
 							tmp.put(key, null);
 						} else {
 							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
