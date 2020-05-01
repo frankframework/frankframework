@@ -26,14 +26,17 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jndi.JndiObjectFactoryBean;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -42,18 +45,19 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 @IbisInitializer
+@Scope("singleton")
 @DependsOn("determineApplicationServerBean")
 public class JndiProvider implements ApplicationContextAware, InitializingBean {
 
 	private Logger log = LogUtil.getLogger(this);
-	private ApplicationContext applicationContext;
 	private String jndiContextPrefix = "java:";
 	private String applicationServerType = null;
 	private InitialContext rootContext;
+	private ConfigurableListableBeanFactory beanFactory;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
+		this.beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
 	}
 
 	@Override
@@ -71,7 +75,11 @@ public class JndiProvider implements ApplicationContextAware, InitializingBean {
 
 		rootContext = new InitialContext();
 
-		printContextList(); //traverse through the JNDI context
+		AppConstants appConstants = AppConstants.getInstance();
+		boolean traverseJndiContext = appConstants.getBoolean("jndi.scanContext", false);
+		if(traverseJndiContext) {
+			traverseJndiContext();
+		}
 	}
 
 	private enum ContextPrefix {
@@ -97,11 +105,31 @@ public class JndiProvider implements ApplicationContextAware, InitializingBean {
 		this.applicationServerType = applicationServer.getApplicationServerType();
 	}
 
-	private void printContextList() throws Exception {
+	/**
+	 *  Traverses through the JNDI context, starting at the root (JNDIContextPrefix)
+	 */
+	private void traverseJndiContext() throws Exception {
 		traverseJndiContext(getJndiContextPrefix());
 	}
 
-	public JndiObjectFactoryBean lookup(String jndiName) throws NamingException {
+	/**
+	 * Lookup a JNDI resource and return it as a bean
+	 */
+	public synchronized JndiObjectFactoryBean get(String jndiName) throws NamingException {
+		if(jndiName.startsWith(jndiContextPrefix)) 
+			jndiName = jndiName.substring(getJndiContextPrefix().length() + 1);
+
+		JndiObjectFactoryBean bean = null;
+		try {
+			bean = beanFactory.getBean(jndiName, JndiObjectFactoryBean.class);
+		} catch(NoSuchBeanDefinitionException e) {
+			bean = lookupJndi(jndiName);
+		}
+
+		return bean;
+	}
+
+	private JndiObjectFactoryBean lookupJndi(String jndiName) throws NamingException {
 		if(!jndiName.startsWith(jndiContextPrefix)) 
 			jndiName = getJndiContextPrefix() + "/" + jndiName;
 
@@ -119,7 +147,7 @@ public class JndiProvider implements ApplicationContextAware, InitializingBean {
 		JndiObjectFactoryBean bean = new JndiObjectFactoryBean();
 		String beanName = jndiName.substring(jndiContextPrefix.length()+1);
 		bean.setJndiName(jndiName);
-		log.info("found JNDI on path ["+jndiName+"], wiring as bean ["+beanName+"]");
+		log.info("found JNDI ["+jndiName+"], wiring as bean ["+beanName+"]");
 
 		Class<?> jndiClass = lookup.getClass().getClass();
 		if(DataSource.class.isAssignableFrom(jndiClass)) {
@@ -130,21 +158,10 @@ public class JndiProvider implements ApplicationContextAware, InitializingBean {
 			bean.setLookupOnStartup(false);
 		}
 
-//		JmsRealm jmsRealm = new JmsRealm();
-//		jmsRealm.setRealmName(beanName);
-//		jmsRealm.setDatasourceName(beanName);
-//		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
-
-		registerAndInitializeBean(beanName, bean);
-
-		return bean;
-	}
-
-	private void registerAndInitializeBean(String beanName, Object bean) {
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
-
 		beanFactory.registerSingleton(beanName, bean);
 		beanFactory.initializeBean(bean, beanName); //Why are these 2 arguments inverted?
+
+		return bean;
 	}
 
 	private void traverseJndiContext(String jndiName) throws NamingException {
@@ -167,7 +184,7 @@ public class JndiProvider implements ApplicationContextAware, InitializingBean {
 				}
 			}
 		} else {
-			lookup(jndiName);
+			get(jndiName);
 		}
 	}
 }
