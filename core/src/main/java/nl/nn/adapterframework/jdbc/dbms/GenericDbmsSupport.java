@@ -25,13 +25,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
+import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * @author  Gerrit van Brakel
@@ -267,33 +268,28 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
-		boolean isPresent = Boolean.FALSE;
+		String query="select count(*) from "+tablesTable+" where upper("+tableNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
-				isPresent = this.isTablePresent(conn, tablesTable, schemaColumn);
+				query+=" and upper("+schemaColumn+")='"+schemaName.toUpperCase()+"'";
 			} else {
 				throw new JdbcException("no schemaColumn present in table ["+tablesTable+"] to test for presence of table ["+tableName+"] in schema ["+schemaName+"]");
 			}
 		}
 		try {
-			isPresent = this.isTablePresent(conn, tablesTable);
+			return JdbcUtil.executeIntQuery(conn, query, tableName.toUpperCase())>=1;
 		} catch (Exception e) {
 			log.warn("could not determine presence of table ["+tableName+"]",e);
+			return false;
 		}
-		return isPresent;
 	}
 
-	
 	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-	    return isTablePresent(conn, tableName, null);
-	}
-	
-	private boolean isTablePresent(Connection conn, String tableName, String schemaName) throws JdbcException {
 		boolean tExists = Boolean.FALSE;
 		ResultSet rs = null;
 	    try {
-	    	rs = conn.getMetaData().getTables(null, schemaName, tableName, null);
+	    	rs = conn.getMetaData().getTables(null, null, tableName, null);
 	    	tExists = rs.isAfterLast();
 	    }catch(SQLException e) {
 	    	log.error("exception checking for existence of table ["+tableName+"]", e);
@@ -314,7 +310,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		boolean cExists = Boolean.FALSE;
 		try {
 			rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName);
-			cExists = rs.next();
+			cExists = rs.isAfterLast();
 		}catch(SQLException e) {
 			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]", e);
 		}finally {
