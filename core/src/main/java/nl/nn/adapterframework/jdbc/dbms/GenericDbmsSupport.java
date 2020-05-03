@@ -266,7 +266,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
-	public boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
+	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
 		boolean isPresent = Boolean.FALSE;
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
@@ -294,7 +294,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		ResultSet rs = null;
 	    try {
 	    	rs = conn.getMetaData().getTables(null, schemaName, tableName, null);
-	    	tExists = rs.next();
+	    	tExists = rs.isAfterLast();
 	    }catch(SQLException e) {
 	    	log.error("exception checking for existence of table ["+tableName+"]", e);
 	    	throw new JdbcException(e);
