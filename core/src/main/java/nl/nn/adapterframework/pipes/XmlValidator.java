@@ -736,7 +736,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
 		@Override
-		public String getInfo() {
+		public String getDocumentation() {
 			return null;
 		}
 	}
@@ -898,7 +898,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public String getInfo() {
+	public String getDocumentation() {
 		return null;
 	}
 }

@@ -70,8 +70,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Could not determine adapter name", e); 
 		}
 		try {
-			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine());
-			wsdl.setDocumentation("Generated at " + dtapStage + "-" + dtapSide + " on " + DateUtils.getIsoTimeStamp() + ".");
+			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine(), session);
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			wsdl.wsdl(outputStream, null);

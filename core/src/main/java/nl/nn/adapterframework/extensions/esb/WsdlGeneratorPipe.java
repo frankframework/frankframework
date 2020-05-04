@@ -125,9 +125,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			adapter.registerReceiver(genericReceiver);
 			pipeLine.setAdapter(adapter);
 			Wsdl wsdl = null;
-			wsdl = new Wsdl(pipeLine);
+			wsdl = new Wsdl(pipeLine, session);
 			wsdl.setIndent(true);
-			wsdl.setDocumentation(getWsdlDocumentation(wsdl.getFilename()));
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);
 			// zip (with includes)

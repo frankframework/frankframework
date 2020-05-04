@@ -14,5 +14,11 @@ public interface IXmlValidator extends IPipe {
 	public String getSchema();
 	public String getSchemaLocation();
 	public Set<XSD> getXsds() throws ConfigurationException;
-	public String getInfo();
+
+	/**
+	 * Provide additional generic documentation on the validation of the
+	 * subsequent processing. This documentation will be included in generated
+	 * schema's like WSDL or OpenApi
+	 */
+	public String getDocumentation();
 }

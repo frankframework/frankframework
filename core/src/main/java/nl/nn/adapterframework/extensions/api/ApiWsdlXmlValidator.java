@@ -62,7 +62,7 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 	}
 
 	@Override
-	public String getInfo() {
+	public String getDocumentation() {
 		if (multipart) {
 			return "<br/>"
 					+ "<b>Note: </b>this service is not a SOAP service but a REST service."
