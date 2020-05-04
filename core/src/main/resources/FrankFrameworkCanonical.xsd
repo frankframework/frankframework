@@ -60,6 +60,7 @@
 		<xsd:attribute name="elementToMoveChain"/>
 		<xsd:attribute name="elementToMove"/>
 		<xsd:attribute name="removeCompactMsgNamespaces"/>
+		<xsd:anyAttribute processContents="lax"/>
 	</xsd:complexType>
 	<xsd:complexType name="TransactionalStorageType">
 		<xsd:all/>
@@ -68,6 +69,7 @@
 		<xsd:attribute name="jmsRealm"/>
 		<xsd:attribute name="slotId"/>
 		<xsd:attribute name="retention"/>
+		<xsd:anyAttribute processContents="lax"/>
 	</xsd:complexType>
 	<xsd:complexType name="ErrorMessageFormatterType">
 		<xsd:sequence>
@@ -95,12 +97,14 @@
 		<xsd:attribute name="function"/>
 		<xsd:attribute name="cronExpression"/>
 		<xsd:attribute name="description"/>
+		<xsd:anyAttribute processContents="lax"/>
 	</xsd:complexType>
 	<xsd:complexType name="LockerType">
 		<xsd:sequence/>
 		<xsd:attribute name="jmsRealm"/>
 		<xsd:attribute name="objectId"/>
 		<xsd:attribute name="ignoreTableNotExist"/>
+		<xsd:anyAttribute processContents="lax"/>
 	</xsd:complexType>
 	<xsd:complexType name="ListenerType">
 		<xsd:all/>
@@ -137,11 +141,11 @@
 	<xsd:complexType name="ParamType">
 		<xsd:attribute name="name"/>
 		<xsd:attribute name="value"/>
+		<xsd:anyAttribute processContents="lax"/>
 	</xsd:complexType>
-	
 	<xsd:complexType name="MonitoringType">
 		<xsd:sequence>
-			<xsd:element name="destinations" minOccurs="0" >
+			<xsd:element name="destinations" minOccurs="0">
 				<xsd:complexType>
 					<xsd:sequence>
 						<xsd:element name="destination" type="MonitorDestinationType" minOccurs="0" maxOccurs="unbounded"/>
@@ -176,7 +180,7 @@
 			<xsd:element name="events" minOccurs="0" maxOccurs="1">
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:element name="event" minOccurs="1" maxOccurs="unbounded" />
+						<xsd:element name="event" minOccurs="1" maxOccurs="unbounded"/>
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
@@ -187,5 +191,4 @@
 		<xsd:attribute name="threshold"/>
 		<xsd:attribute name="period"/>
 	</xsd:complexType>
-
 </xsd:schema>
