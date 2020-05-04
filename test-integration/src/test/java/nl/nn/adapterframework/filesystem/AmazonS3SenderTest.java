@@ -39,6 +39,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	
 	private String accessKey = "";
 	private String secretKey = "";
+	private String proxyHost = null;
+	private Integer proxyPort = null;
 
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
@@ -68,7 +70,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
+		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
+				forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
 	
 	@Override
@@ -77,6 +80,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
+		s3.setProxyHost(proxyHost);
+		s3.setProxyPort(proxyPort);
 		return s3;
 	}
 

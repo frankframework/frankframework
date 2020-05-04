@@ -165,4 +165,14 @@ public abstract class AlignTestBase {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
 
+	@Test
+	public void testPetstorePet() throws Exception {
+		testFiles("Petstore/petstore.xsd", "", "Pet", "Petstore/pet");
+	}
+
+//	@Test
+//	public void testPetstorePets() throws Exception {
+//		testFiles("Petstore/petstore.xsd", "", "Pets", "Petstore/petstore", true);
+//	}
+
 }
