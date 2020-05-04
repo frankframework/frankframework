@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 
 /**

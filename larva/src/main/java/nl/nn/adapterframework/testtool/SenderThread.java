@@ -1,9 +1,5 @@
 package nl.nn.adapterframework.testtool;
 
-import java.io.IOException;
-
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -11,7 +7,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 /**
  * @author Jaco de Groot
  */

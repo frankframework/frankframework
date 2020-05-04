@@ -88,7 +88,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
-		String result = transformShowConfigurationStatusXml((String) pipeRunResult.getResult());
+		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowConfigurationStatus_all.xml", result);
 	}
@@ -105,7 +105,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
-		String result = transformShowConfigurationStatusXml((String) pipeRunResult.getResult());
+		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowConfigurationStatus_single.xml", result);
 	}
@@ -122,7 +122,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showEnvironmentVariables.doPipe(null, session);
-		String result = transformShowEnvironmentVariablesXml((String) pipeRunResult.getResult());
+		String result = transformShowEnvironmentVariablesXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowEnvironmentVariables.xml", result);
 	}

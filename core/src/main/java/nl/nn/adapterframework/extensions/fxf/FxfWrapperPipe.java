@@ -194,7 +194,12 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			xmlTransferDetails.addSubElement(xmlTransferFlowId);
 			return super.doPipe(new Message(xmlStartTransfer_Action.toXML()), session);
 		} else {
-			String soapBody = (String)super.doPipe(message, session).getResult();
+			String soapBody;
+			try {
+				soapBody = super.doPipe(message, session).getResult().asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this,"cannot convert result",e);
+			}
 			session.put(getSoapBodySessionKey(), soapBody);
 			String transferFlowId;
 			String clientFilename;

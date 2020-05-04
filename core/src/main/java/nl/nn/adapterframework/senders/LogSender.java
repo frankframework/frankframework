@@ -16,8 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-
+import org.apache.logging.log4j.Level;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;

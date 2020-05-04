@@ -27,7 +27,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.ibm.websphere.security.WSSecurityException;
 import com.ibm.websphere.security.auth.CredentialDestroyedException;

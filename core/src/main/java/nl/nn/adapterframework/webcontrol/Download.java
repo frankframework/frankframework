@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSession;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Servlet that redirects a POST that should result in a download to a GET without parameters.

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners, 2020 WeAreFrank!
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
 	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		PipeRunResult result = sendMessage(message, session, null);
-		return Message.asMessage(result.getResult());
+		return result.getResult();
 	}
 
 	@Override

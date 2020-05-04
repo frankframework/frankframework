@@ -17,7 +17,7 @@ package nl.nn.adapterframework.doc.objects;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;

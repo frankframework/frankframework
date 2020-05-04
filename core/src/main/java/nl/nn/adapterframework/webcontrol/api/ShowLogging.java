@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public final class ShowLogging extends Base {
 
 			returnMap.put("list", dir.getList());
 			returnMap.put("count", dir.size());
-			returnMap.put("directory", directory);
+			returnMap.put("directory", dir.getDirectory());
 			returnMap.put("sizeFormat", sizeFormat);
 			returnMap.put("wildcard", wildcard);
 		} catch (IOException e) {
