@@ -39,4 +39,10 @@ public class StringResolverTest {
 		String result = StringResolver.substVars("blalblalab ${key4}", properties);
 		assertEquals("blalblalab value1.value2.value1", result);
 	}
+
+	@Test
+	public void resolveRecursivelyAvoidStackOverflow() {
+		String result = StringResolver.substVars("blalblalab ${key5}", properties);
+		assertEquals("blalblalab ${key5}", result);
+	}
 }
