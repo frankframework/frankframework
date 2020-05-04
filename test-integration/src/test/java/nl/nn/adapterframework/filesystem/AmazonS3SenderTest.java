@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
