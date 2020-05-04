@@ -290,7 +290,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		ResultSet rs = null;
 	    try {
 	    	rs = conn.getMetaData().getTables(null, null, tableName, null);
-	    	tExists = rs.isAfterLast();
+	    	tExists = !rs.isAfterLast();
 	    }catch(SQLException e) {
 	    	log.error("exception checking for existence of table ["+tableName+"]", e);
 	    	throw new JdbcException(e);
@@ -310,7 +310,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		boolean cExists = Boolean.FALSE;
 		try {
 			rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName);
-			cExists = rs.isAfterLast();
+			cExists = !rs.isAfterLast();
 		}catch(SQLException e) {
 			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]", e);
 		}finally {
