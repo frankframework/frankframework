@@ -177,6 +177,8 @@ public class ShowIbisstoreSummary extends ActionBase {
 		String cookieValue = jmsRealm;
 		Cookie cookie =	new Cookie(cookieName, cookieValue);
 		cookie.setMaxAge(Integer.MAX_VALUE);
+		cookie.setHttpOnly(true);
+		cookie.setSecure(true);
 		log.debug("Store cookie for "
 				+ request.getServletPath()
 				+ " cookieName[" + cookieName + "] "
