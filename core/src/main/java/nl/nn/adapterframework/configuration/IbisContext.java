@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -130,8 +131,8 @@ public class IbisContext extends IbisApplicationContext {
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				flowDiagram = new FlowDiagram();
-			} catch (Exception e) { //The IBIS should still start up when Graphviz fails to initialize
+				flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+			} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
 				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
 			}
 
