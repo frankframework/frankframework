@@ -55,6 +55,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private boolean saveSeparate = false;
 	private String pdfOutputLocation = null;
+	private boolean createFolder = false;
 	private String fontsDirectory;
 	private String license = null;
 	private String action = null;
@@ -71,12 +72,15 @@ public class PdfPipe extends FixedForwardPipe {
 		if(StringUtils.isNotEmpty(pdfOutputLocation)) {
 			File outputLocation = new File(pdfOutputLocation);
 			if (!outputLocation.exists()) {
-				throw new ConfigurationException(
-						"Pdf output location does not exist. Please specify an existing location ");
+				if (isCreateFolder() && !outputLocation.mkdir()) {
+					throw new ConfigurationException("Create directory for [" + outputLocation + "] has failed");
+				} else {
+					throw new ConfigurationException("Pdf output location does not exist. Please specify an existing location ");
+				}
 			}
 
 			if (!outputLocation.isDirectory()) {
-				throw new ConfigurationException("Pdf output location is not directory. Please specify a diretory");
+				throw new ConfigurationException("Pdf output location is not directory. Please specify a directory");
 			}
 		}
 		
@@ -234,5 +238,13 @@ public class PdfPipe extends FixedForwardPipe {
 	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
+	}
+
+	public boolean isCreateFolder() {
+		return createFolder;
+	}
+	@IbisDoc({ "when set to true, the folder to save pdf files to is created if it does not exist", "false" })
+	public void setCreateFolder(boolean createFolder) {
+		this.createFolder = createFolder;
 	}
 }
