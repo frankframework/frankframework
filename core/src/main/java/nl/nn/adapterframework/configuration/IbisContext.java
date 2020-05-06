@@ -321,8 +321,8 @@ public class IbisContext extends IbisApplicationContext {
 
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
-		if (!configFound) {
-			log(configurationName, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
+		if (!configFound && configurationName != null) {
+			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 
