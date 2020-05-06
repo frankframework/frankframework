@@ -58,7 +58,10 @@ public class J2V8 implements JavascriptEngine<V8> {
 					file = new File(absPath, directory);
 				}
 			}
-			String fileDir = file.toString();
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			String fileDir = file.getPath();
 			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
 				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
 			}
