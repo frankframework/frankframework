@@ -75,18 +75,6 @@ public class FlowDiagram implements DisposableBean {
 	}
 
 	public FlowDiagram(String format, String version) throws TransformerConfigurationException, IOException {
-		if (!adapterFlowDir.exists()) {
-			if (!adapterFlowDir.mkdirs()) {
-				throw new IllegalStateException(adapterFlowDir.getPath() + " does not exist and could not be created");
-			}
-		}
-
-		if (!configFlowDir.exists()) {
-			if (!configFlowDir.mkdirs()) {
-				throw new IllegalStateException(configFlowDir.getPath() + " does not exist and could not be created");
-			}
-		}
-
 		engine = new GraphvizEngine(version);
 
 		String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", "SVG");
@@ -103,7 +91,6 @@ public class FlowDiagram implements DisposableBean {
 		options = options.format(this.format);
 
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
-
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
@@ -221,8 +208,15 @@ public class FlowDiagram implements DisposableBean {
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
+		if (!parent.exists()) {
+			if (!parent.mkdirs()) {
+				throw new IllegalStateException(parent.getPath() + " does not exist and could not be created");
+			}
+		}
+
 		String name = FileUtils.encodeFileName(fileName) + "." + format.fileExtension;
 		log.debug("retrieve flow file for name["+fileName+"] in folder["+parent.getPath()+"]");
+
 		return new File(parent, name);
 	}
 

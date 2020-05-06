@@ -63,6 +63,7 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private final boolean FLOWDIAGRAM_LAZYLOAD = APP_CONSTANTS.getBoolean("flow.lazyload", true);
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -130,10 +131,12 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			try {
-				flowDiagram = getBean("flowDiagram", FlowDiagram.class);
-			} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
-				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			if(!FLOWDIAGRAM_LAZYLOAD) {
+				try {
+					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
+					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+				}
 			}
 
 			load();
