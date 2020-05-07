@@ -7,13 +7,12 @@ import org.junit.Before;
 import org.junit.After;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * ReplacerPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 5, 2020</pre>
  */
 public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
 
@@ -22,13 +21,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         return new ReplacerPipe();
     }
 
-    @Before
-    public void before() throws Exception {
-    }
-
-    @After
-    public void after() throws Exception {
-    }
 
     @Test
     public void everythingNull() throws Exception {
@@ -36,14 +28,18 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         exception.expectMessage("cannot have a null replace-attribute");
         pipe.setFind("laa");
         pipe.configure();
-        pipe.doPipe("", session);
+        PipeRunResult res = doPipe(pipe, "", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     @Test
     public void getFindEmpty() throws Exception {
         pipe.setFind("");
         pipe.configure();
-        pipe.doPipe("dsf", session);
+        PipeRunResult res = doPipe(pipe, "dsf", session);
+        assertFalse(res.getPipeForward().getName().isEmpty());
+
     }
 
     /**
@@ -56,33 +52,33 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplace("yo");
         pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe(pipe.getFind(), session);
+        doPipe(pipe, pipe.getFind(), session);
         assertEquals("sina\nmurat\nniels", pipe.getFind());
     }
 
     @Test
-    public void ReplaceNonXMLChar() throws Exception{
+    public void replaceNonXMLChar() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
         pipe.setReplaceNonXmlChar("k");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
     @Test
-    public void ReplaceStringSuccess() throws Exception{
+    public void replaceStringSuccess() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
     @Test
-    public void ReplaceNonXMLCharLongerThanOne() throws Exception{
+    public void replaceNonXMLCharLongerThanOne() throws Exception{
         exception.expect(ConfigurationException.class);
         exception.expectMessage("replaceNonXmlChar [klkl] has to be one character");
         pipe.setFind("test");
@@ -90,7 +86,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChar("klkl");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe("<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 

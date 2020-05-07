@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.align;
+/*package nl.nn.adapterframework.align;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -35,7 +35,9 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @see: https://swagger.io/specification
  * @see: https://json-schema.org/understanding-json-schema/reference/
  */
+
 public class TestXmlSchema2JsonSchema extends AlignTestBase {
+
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {

@@ -1,20 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
-import org.junit.Before; 
-import org.junit.After;
 
-import java.nio.channels.Pipe;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ExceptionPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 5, 2020</pre>
  */
 
 public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
@@ -30,7 +27,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
     @Test
     public void testDoesntThrowException() throws Exception {
         pipe.setThrowException(false);
-        assertEquals("no exception", pipe.doPipe("no exception", session).getResult());
+        assertEquals("no exception", doPipe(pipe, "no exception", session).getResult());
     }
 
     @Test
@@ -38,7 +35,8 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expect(PipeRunException.class);
         exception.expectMessage("exception: ExceptionPipe under test");
         pipe.setThrowException(true);
-        pipe.doPipe("", session);
+        PipeRunResult res = doPipe(pipe, "", session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
     }
 
     @Test
@@ -46,7 +44,9 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expect(PipeRunException.class);
         exception.expectMessage("exception thrown with a custom message");
         pipe.setThrowException(true);
-        pipe.doPipe("exception thrown with a custom message", session);
+        PipeRunResult res  = doPipe(pipe, "exception thrown with a custom message", session);
+        assertTrue(!res.getPipeForward().getName().isEmpty());
+
     }
 
 

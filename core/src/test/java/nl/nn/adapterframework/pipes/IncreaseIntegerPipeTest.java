@@ -4,8 +4,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
@@ -14,8 +12,6 @@ import static org.junit.Assert.assertEquals;
  * IncreaseIntegerPipe Tester.
  *
  * @author <Sina Sen>
- * @version 1.0
- * @since <pre>Mar 12, 2020</pre>
  */
 public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 
@@ -38,7 +34,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         pipe.setSessionKey("a");
         pipe.setIncrement(2);
         pipe.configure();
-        pipe.doPipe("doesnt matter", session);
+        doPipe(pipe, "doesnt matter", session);
         assertEquals(session.get("a"), "6");
     }
 
@@ -49,7 +45,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         session.put("a", "4");
         pipe.setIncrement(2);
         pipe.configure();
-        pipe.doPipe("doesnt matter", session);
+        doPipe(pipe, "doesnt matter", session);
         assertEquals(session.get("a"), "6");
     }
 
