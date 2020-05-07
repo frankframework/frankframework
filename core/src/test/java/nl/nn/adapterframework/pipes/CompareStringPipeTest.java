@@ -101,18 +101,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		
 		assertEquals("greaterthan", prr.getPipeForward().getName());
 	}
-	
-	
 
-
-    @Test(expected = ConfigurationException.class)
-    public void emptySessionKeys() throws ConfigurationException {
-        PipeForward forw = new PipeForward("lessthan", "/Users/apollo11/Desktop/iaf2/core/src/test/resources/Pipes");
-        pipe.registerForward(forw);
-        pipe.setSessionKey1("");
-        pipe.setSessionKey2("");
-        pipe.configure();
-    }
 
 
 
