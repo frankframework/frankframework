@@ -11,6 +11,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
@@ -30,8 +31,11 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 			} catch (NumberFormatException | IOException e) {
 				throw new PipeRunException(this, "error parsing input", e);
 			} catch (InterruptedException e) {
-				throw new PipeRunException(this, "timed out");
+				//Verify that pipe run thread has been aborted. 
+//				throw new PipeRunException(this, "timed out");
 			}
+			fail("this should not happen");
+			throw new PipeRunException(this, "not aborted");
 		}
 	}
 
@@ -58,7 +62,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 			fail("an exception should occur!");
 		} catch(PipeRunException e) {
-			assertTrue(e.getMessage().endsWith("timed out"));
+			assertTrue(e.getCause() instanceof TimeOutException);
 		}
 	}
 
@@ -69,7 +73,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 		Message input = new Message("1500");
 		PipeRunResult result = doPipe(input);
 
-		String errorMessage = "<error><![CDATA[nl.nn.adapterframework.core.PipeRunException: Pipe [GuardTestPipe under test] msgId [null] timed out: timed out]]></error>";
+		String errorMessage = "<error><![CDATA[TimeOutException: exceeds timeout of [1] s, interupting]]></error>";
 		assertEquals(errorMessage, result.getResult().asString());
 	}
 }

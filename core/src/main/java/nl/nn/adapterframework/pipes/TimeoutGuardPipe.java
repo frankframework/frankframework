@@ -19,6 +19,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -64,7 +65,8 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
 			protected void kill() {
-				throw new IllegalStateException("exceeds timeout of [" + timeout_work + "] s, interupting");
+				//The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
+				killPipe();
 			}
 		};
 
@@ -72,9 +74,6 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			return doPipeWithTimeoutGuarded(message, session);
 		} catch (Exception e) {
 			String msg = e.getClass().getName();
-			if (tg.threadKilled()) {
-				msg += ": " + getLogPrefix(session) + e.getMessage();
-			}
 
 			if (isThrowException()) {
 				throw new PipeRunException(this, msg, e);
@@ -86,11 +85,34 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				return new PipeRunResult(getForward(), errorMessage);
 			}
 		} finally {
-			tg.cancel();
+			if(tg.cancel()) {
+				//Throw a TimeOutException
+				String msgString = "TimeOutException";
+				Exception e = new TimeOutException("exceeds timeout of [" + timeout_work + "] s, interupting");
+				if (isThrowException()) {
+					throw new PipeRunException(this, msgString, e);
+				} else {
+					//This is used for the old console, where a message is displayed
+					log.error(msgString, e);
+					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
+					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
+					return new PipeRunResult(getForward(), errorMessage);
+				}
+			}
 		}
 	}
 
+	/**
+	 * doPipe wrapped around a TimeoutGuard
+	 */
 	public abstract PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException;
+
+	/**
+	 * optional implementation to kill additional threads if the pipe may have created those.
+	 */
+	protected void killPipe() {
+		//kill other threads
+	}
 
 	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
 	public void setThrowException(boolean b) {
