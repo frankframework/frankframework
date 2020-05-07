@@ -100,10 +100,6 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		
 		assertEquals("greaterthan", prr.getPipeForward().getName());
 	}
-	
-	
-
-
 
 
 

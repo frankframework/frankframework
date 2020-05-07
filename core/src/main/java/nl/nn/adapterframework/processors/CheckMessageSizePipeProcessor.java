@@ -35,8 +35,8 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession ) throws PipeRunException {
 		checkMessageSize(message, pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
-		Object result = pipeRunResult.getResult();
-		checkMessageSize(result, pipeLine, pipe, false);
+		Message result = pipeRunResult.getResult();
+		checkMessageSize(result.asObject(), pipeLine, pipe, false);
 		return pipeRunResult;
 	}
 

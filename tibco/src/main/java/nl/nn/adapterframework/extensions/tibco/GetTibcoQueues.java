@@ -115,7 +115,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String queueRegex;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -174,7 +174,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				boolean countOnly = ("true".equalsIgnoreCase(countOnly_work) ? true
 						: false);
 				if (countOnly) {
-					return getQueueMessageCountOnly(admin, queueName_work);
+					return Message.asMessage(getQueueMessageCountOnly(admin, queueName_work));
 				}
 			}
 
@@ -226,7 +226,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return result;
+		return Message.asMessage(result);
 	}
 
 	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {

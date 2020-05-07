@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -19,9 +18,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class PipeTestBase<P extends IPipe> {
-	protected Log log = LogFactory.getLog(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 
 	@Mock
 	protected IPipeLineSession session;

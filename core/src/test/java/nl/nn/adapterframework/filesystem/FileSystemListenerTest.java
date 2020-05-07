@@ -211,32 +211,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	}
 
 	@Test
-	public void fileListenerTestGetStringFromRawMessageLogFile() throws Exception {
-		String filename="rawMessageFile";
-		String contents="Test Message Contents";
-		String logFolder="logFolder";
-		
-		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setLogFolder(fileAndFolderPrefix+logFolder);
-		fileSystemListener.setCreateFolders(true);
-		fileSystemListener.configure();
-		fileSystemListener.open();
-		
-		createFile(null, filename, contents);
-
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage);
-		
-		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
-		assertThat(message,CoreMatchers.containsString(filename));
-
-		
-		assertThat(message,CoreMatchers.containsString(filename));
-		assertTrue("Log folder must exist",_folderExists(logFolder));
-		assertTrue("File must exist in log folder",_fileExists(logFolder, filename));
-	}
-
-	@Test
 	public void fileListenerTestGetStringFromRawMessageContents() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
@@ -312,15 +286,19 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	}
 	
 	@Test
-	public void fileListenerTestAfterMessageProcessedDelete() throws Exception {
+	public void fileListenerTestAfterMessageProcessedDeleteAndCopy() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
+		String logFolder = "logFolder";
+		String contents = "contents of file";
 		
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+logFolder);
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
-		createFile(null, filename, "maakt niet uit");
+		createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -333,6 +311,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		waitForActionToFinish();
 		// test
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+		assertFileExistsWithContents(logFolder, filename, contents);
 	}
 
 

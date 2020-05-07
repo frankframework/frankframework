@@ -22,7 +22,7 @@ import javax.net.ssl.X509TrustManager;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class AuthSSLConnectionSocket {
 	private static Logger log = LogUtil.getLogger(AuthSSLConnectionSocket.class);

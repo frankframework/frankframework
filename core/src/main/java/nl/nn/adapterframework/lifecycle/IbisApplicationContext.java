@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;

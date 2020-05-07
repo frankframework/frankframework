@@ -39,8 +39,8 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
-		String result;
+	public Message doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
+		Message result;
 
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
@@ -78,7 +78,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		try {
 			eswPipe.configure();
 			PipeRunResult prr = eswPipe.doPipe(message, session);
-			result = (String) prr.getResult();
+			result = prr.getResult();
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "Exception on wrapping input", e);
 		}

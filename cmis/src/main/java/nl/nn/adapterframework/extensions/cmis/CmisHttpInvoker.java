@@ -39,7 +39,7 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class CmisHttpInvoker implements HttpInvoker {
 
