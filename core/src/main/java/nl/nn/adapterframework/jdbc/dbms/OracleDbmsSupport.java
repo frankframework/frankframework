@@ -149,10 +149,12 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "all_tables", "owner", "table_name", schemaName, tableName);
-	}
-
+	/*
+	 * public boolean isTablePresent(Connection conn, String schemaName, String
+	 * tableName) throws JdbcException { return doIsTablePresent(conn, "all_tables",
+	 * "owner", "table_name", schemaName, tableName); }
+	 */
+	
 	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
 		return doIsTableColumnPresent(conn, "all_tab_columns", "owner", "table_name", "column_name", schemaName, tableName, columnName);
 	}

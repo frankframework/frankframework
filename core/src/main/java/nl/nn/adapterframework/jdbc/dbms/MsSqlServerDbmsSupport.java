@@ -135,10 +135,12 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
 	}
 
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName, tableName.toUpperCase());
-	}
-	
+	/*
+	 * public boolean isTablePresent(Connection conn, String schemaName, String
+	 * tableName) throws JdbcException { return doIsTablePresent(conn,
+	 * "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName,
+	 * tableName.toUpperCase()); }
+	 */	
 	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
 		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
 	}
