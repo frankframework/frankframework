@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -170,10 +170,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
-		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,session);
+		return new MessageOutputStream(this, handler, target, null, threadLifeCycleEventListener, session);
 	}
 
 	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
@@ -284,12 +284,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws SenderException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, nextProvider)) {
+			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 				ContentHandler handler = createHandler(message, session, target);
 				InputSource source = message.asInputSource();
 				XMLReader reader = getXmlReader(handler);

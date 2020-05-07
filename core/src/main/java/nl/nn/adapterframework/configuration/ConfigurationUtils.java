@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -72,7 +72,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
-	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
+	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
@@ -92,38 +92,36 @@ public class ConfigurationUtils {
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+		return transformConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
 	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return getTweakedConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+		return transformConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getUglifiedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return getTweakedConfiguration(configuration, originalConfig, UGLIFY_XSLT, null);
+	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
 	}
 
-	public static String getTweakedConfiguration(Configuration configuration,
-			String originalConfig, String tweakXslt,
-			Map<String, Object> parameters) throws ConfigurationException {
-		URL tweak_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), tweakXslt);
-		if (tweak_xsltSource == null) {
-			throw new ConfigurationException("cannot find resource [" + tweakXslt + "]");
+	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
+		URL xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), xslt);
+		if (xsltSource == null) {
+			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}
 		try {
-			Transformer tweak_transformer = XmlUtils.createTransformer(tweak_xsltSource);
-			XmlUtils.setTransformerParameters(tweak_transformer, parameters);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			XmlUtils.setTransformerParameters(transformer, parameters);
 			// Use namespaceAware=true, otherwise for some reason the
 			// transformation isn't working with a SAXSource, in system out it
 			// generates:
 			// jar:file: ... .jar!/xml/xsl/active.xsl; Line #34; Column #13; java.lang.NullPointerException
-			return XmlUtils.transformXml(tweak_transformer, originalConfig, true);
+			return XmlUtils.transformXml(transformer, originalConfig, true);
 		} catch (IOException e) {
-			throw new ConfigurationException("cannot retrieve [" + tweakXslt + "]", e);
+			throw new ConfigurationException("cannot retrieve [" + xslt + "]", e);
 		} catch (SAXException|TransformerConfigurationException e) {
-			throw new ConfigurationException("got error creating transformer from file [" + tweakXslt + "]", e);
+			throw new ConfigurationException("got error creating transformer from file [" + xslt + "]", e);
 		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + tweak_xsltSource.toString() + "] from [" + tweakXslt + "]", te);
+			throw new ConfigurationException("got error transforming resource [" + xsltSource.toString() + "] from [" + xslt + "]", te);
 		}
 	}
 
@@ -240,8 +238,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -401,8 +399,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -437,8 +435,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -490,8 +488,8 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -533,8 +531,8 @@ public class ConfigurationUtils {
 				return stmt.executeUpdate() > 0;
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -639,8 +637,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 

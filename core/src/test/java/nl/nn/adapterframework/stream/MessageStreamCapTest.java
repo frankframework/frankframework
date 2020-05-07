@@ -11,6 +11,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 public class MessageStreamCapTest {
@@ -18,9 +19,9 @@ public class MessageStreamCapTest {
 	@Test
 	public void testStringCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		PipeForward forward = null;
 		String responseMessage = "fakeResponseMessage";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			try (Writer capWriter = cap.asWriter()) {
 			
 				Object capNative = cap.asNative();
@@ -32,16 +33,16 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage,result.getResult());
+			assertEquals(responseMessage,result.getResult().asString());
 		}
 	}
 
 	@Test
 	public void testBytesCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		PipeForward forward = null;
 		byte[] responseMessage = "fakeResponseMessage".getBytes();
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			try (OutputStream capStream = cap.asStream()) {
 			
 				Object capNative = cap.asNative();
@@ -53,8 +54,8 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage.getClass(),result.getResult().getClass());
-			assertEquals(new String(responseMessage),new String((byte[])result.getResult()));
+			assertEquals(responseMessage.getClass(),result.getResult().asObject().getClass());
+			assertEquals(new String(responseMessage),new String((byte[])result.getResult().asObject()));
 		}
 	}
 
@@ -64,9 +65,9 @@ public class MessageStreamCapTest {
 	 */
 	public void testContentHandlerCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		PipeForward forward = null;
 		String expectedResponseMessage = "<root/>";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			ContentHandler capContentHandler = cap.asContentHandler();
 			
 			Object capNative = cap.asNative();
@@ -80,7 +81,7 @@ public class MessageStreamCapTest {
 
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(expectedResponseMessage,result.getResult());
+			assertEquals(expectedResponseMessage,result.getResult().asString());
 		}
 	}
 
@@ -90,9 +91,9 @@ public class MessageStreamCapTest {
 	 */
 	public void testNativeCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		PipeForward forward = null;
 		String responseMessage = "fakeResponseMessage";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			Object capNative = cap.asNative();
 			assertTrue(capNative instanceof Writer);
 
@@ -101,7 +102,7 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage,result.getResult());
+			assertEquals(responseMessage,result.getResult().asString());
 		}
 	}
 

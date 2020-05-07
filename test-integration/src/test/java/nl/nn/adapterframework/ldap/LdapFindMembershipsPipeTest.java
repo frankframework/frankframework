@@ -87,7 +87,7 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void findMembershipsRecursivelyWithCache() throws Exception {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 		
@@ -112,7 +112,7 @@ public class LdapFindMembershipsPipeTest {
 		System.out.println("first  duration ["+(time1-time0)+"] ms");
 		System.out.println("second duration ["+(time3-time2)+"] ms");
 		
-		assertEquals(prr1.getResult(), prr2.getResult());
+		assertEquals(prr1.getResult().asString(), prr2.getResult().asString());
 		
 	}
 }
