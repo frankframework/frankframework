@@ -301,11 +301,11 @@
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
-			<xsl:when test="name()='param' and starts-with(@pattern,'{now,')">
+			<xsl:when test="name()='param' and contains(@pattern,'{now,')">
 				<xsl:element name="param">
 					<xsl:apply-templates select="@*[(name()='pattern')=false()]" />
 					<xsl:attribute name="pattern">
-						<xsl:value-of select="concat('{fixedDate,',substring-after(@pattern,'{now,'))" />
+						<xsl:value-of select="replace(@pattern,'\{now,','{fixedDate,')" />
 					</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
