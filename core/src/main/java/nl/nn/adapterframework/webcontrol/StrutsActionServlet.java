@@ -79,7 +79,7 @@ public class StrutsActionServlet extends ActionServlet implements DynamicRegistr
 
 	@Autowired
 	public void setServletManager(ServletManager servletManager) {
-		boolean enabled = AppConstants.getInstance().getBoolean("legacyConsole.enabled", false);
+		boolean enabled = AppConstants.getInstance().getBoolean("strutsConsole.enabled", false);
 		if(enabled) {
 			servletManager.register(this);
 		}

@@ -80,7 +80,7 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
-					$scope.legacyConsoleEnabled = (appConstants["legacyConsole.enabled"] === 'true');
+					$scope.strutsConsoleEnabled = (appConstants["strutsConsole.enabled"] === 'true');
 					$rootScope.$broadcast('appConstants');
 				}
 			});
@@ -400,10 +400,10 @@ angular.module('iaf.beheerconsole')
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
 
-	$scope.showLegacyConsoleDisabled = function () {
+	$scope.showStrutsConsoleDisabled = function () {
 		SweetAlert.Warning({
 			title: "Legacy Console Disabled",
-			text: "The old console has been disabled. In order to enable it, set te property [legacyConsole.enabled] to true.",
+			text: "The old console has been disabled. In order to enable it, set te property [strutsConsole.enabled] to true.",
 		});
 	}
 }])
