@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -44,7 +45,9 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
@@ -61,6 +64,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
@@ -73,10 +77,12 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -395,9 +401,22 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
+	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
-		return Response.status(Response.Status.OK).entity(getFlow(adapter)).build();
+
+		FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+
+		try {
+			ResponseBuilder response = Response.status(Response.Status.OK);
+			if(dot) {
+				response.entity(flowDiagram.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+			} else {
+				response.entity(flowDiagram.get(adapter)).type("image/svg+xml");
+			}
+			return response.build();
+		} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	private Map<String, Object> addCertificateInfo(WebServiceSender s) {

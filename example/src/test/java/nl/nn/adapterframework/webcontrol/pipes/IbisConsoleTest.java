@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -62,6 +63,7 @@ public class IbisConsoleTest {
 		String testResult=ibisTester.testStartAdapters();
 		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
+		assertNotNull(ibisContext);
 
 		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), SHOW_CONFIGURATION_STATUS_XSLT);
 		if (showConfigurationStatusUrl == null) {
@@ -81,6 +83,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -98,6 +101,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -115,6 +119,7 @@ public class IbisConsoleTest {
 		ShowEnvironmentVariables showEnvironmentVariables = new ShowEnvironmentVariables();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowEnvironmentVariables");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showEnvironmentVariables.registerForward(createPipeSuccessForward());
 		showEnvironmentVariables.configure(pipeLine);

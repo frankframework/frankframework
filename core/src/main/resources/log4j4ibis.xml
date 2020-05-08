@@ -72,6 +72,7 @@
 		<Logger name="org.springframework" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
+		<Logger name="org.aspectj" level="WARN" />
 
 		<Logger name="GALM" additivity="false" level="INFO">
 			<AppenderRef ref="galm"/>

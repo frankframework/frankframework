@@ -107,7 +107,7 @@ public class ServletManager {
 		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
 
 		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
-		if(!urlMappingCopy.startsWith("/")) {
+		if(!urlMappingCopy.startsWith("/") && !urlMappingCopy.startsWith("*")) {
 			urlMappingCopy = "/"+urlMappingCopy;
 		}
 		serv.addMapping(urlMappingCopy);
