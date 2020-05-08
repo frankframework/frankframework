@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.extensions.cxf;
+package nl.nn.adapterframework.http.cxf;
 
 import java.security.Principal;
 import java.util.Collection;
