@@ -47,8 +47,8 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
  * @version 2.0
  */
 
-@IbisInitializer
-@Scope("singleton")
+@IbisInitializer //Create IBIS Bean
+@Scope("singleton") //Make sure it's a singleton bean (aka reusable)
 public class FlowDiagram implements DisposableBean {
 	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
 
@@ -56,8 +56,8 @@ public class FlowDiagram implements DisposableBean {
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
 
-	private static final String ADAPTER2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
+	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
+	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
 
 	private GraphvizEngine engine;
 	private Options options = Options.create();
