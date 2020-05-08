@@ -40,12 +40,10 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbSoapValidator;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
-import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -55,7 +53,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
-
 
 /**
  *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
@@ -140,7 +137,11 @@ public class Wsdl {
 
     private List<String> warnings = new ArrayList<String>();
 
-    public Wsdl(PipeLine pipeLine, IPipeLineSession session) {
+    public Wsdl(PipeLine pipeLine) {
+    	this(pipeLine, null);
+    }
+
+    public Wsdl(PipeLine pipeLine, String generationInfo) {
         this.pipeLine = pipeLine;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
@@ -310,15 +311,7 @@ public class Wsdl {
             soapPrefix = SOAP12_NAMESPACE_PREFIX;
         }
         if (StringUtils.isEmpty(getDocumentation())) {
-    		String requestURL = null;
-    		if (session != null) {
-    			try {
-    				requestURL = RestListenerUtils.retrieveRequestURL(session);
-    			} catch (IOException e) {
-    				log.warn("Could not retrieve request url", e);
-    			}
-    		}
-    		documentation = "Generated" + (requestURL != null ? " at " + requestURL : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getIsoTimeStamp() + ".";
+    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getIsoTimeStamp() + ".";
         }
 		if (inputValidator.getDocumentation() != null) {
 			documentation = documentation + inputValidator.getDocumentation();

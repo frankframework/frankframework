@@ -135,7 +135,7 @@ public class Webservices extends TimeoutGuardPipe {
 			XmlBuilder wsdlXML = new XmlBuilder("wsdl");
 			try {
 				Adapter adapter = (Adapter) a;
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), session);
+				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 				wsdlXML.addAttribute("name", wsdl.getName());
 				wsdlXML.addAttribute("extention", Wsdl.WSDL_EXTENSION);
 			} catch (Exception e) {
@@ -180,10 +180,14 @@ public class Webservices extends TimeoutGuardPipe {
 		return webservicesXML.toXML();
 	}
 
+	private String retrieveGenerationInfo(IPipeLineSession session) throws IOException {
+		return "at " + RestListenerUtils.retrieveRequestURL(session);
+	}
+	
 	private void wsdl(Adapter adapter, IPipeLineSession session, String indent,
 			String useIncludes) throws ConfigurationException,
 			XMLStreamException, IOException, NamingException {
-		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), session);
+		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		if (indent != null) {
 			wsdl.setIndent(StringUtils.equalsIgnoreCase(indent, "true"));
 		}
@@ -199,7 +203,7 @@ public class Webservices extends TimeoutGuardPipe {
 	private void zip(Adapter adapter, IPipeLineSession session)
 			throws ConfigurationException, XMLStreamException, IOException,
 			NamingException {
-		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), session);
+		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		wsdl.setUseIncludes(true);
 		wsdl.init();
 		wsdl.zip(RestListenerUtils.retrieveServletOutputStream(session),

@@ -86,7 +86,7 @@ public final class Webservices extends Base {
 			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
 			try {
 				Adapter adapter = (Adapter) a;
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), null);
+				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
 				wsdlMap.put("name", wsdl.getName());
 				wsdlMap.put("extention", getWsdlExtention());
 			} catch (Exception e) {
