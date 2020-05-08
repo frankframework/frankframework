@@ -403,7 +403,7 @@ angular.module('iaf.beheerconsole')
 	$scope.showStrutsConsoleDisabled = function () {
 		SweetAlert.Warning({
 			title: "Legacy Console Disabled",
-			text: "The old console has been disabled. In order to enable it, set te property [strutsConsole.enabled] to true.",
+			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
 		});
 	}
 }])
