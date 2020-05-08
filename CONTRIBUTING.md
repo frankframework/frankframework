@@ -86,9 +86,18 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
-- Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
+- From the main menu of Eclipse, do Help | Install New Software...
+- In the "Work with" text field, enter the following URL:  https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/0.15.1.201806191431/
+- Uncheck "Group items by category" to the bottom of the dialog.
+- Now you should have "Maven SCM Handler for EGit". Check it.
+- Press "Next". Finish installing this software.
+- On the main menu of Eclipse, do File | Import... .
+- A wizard appears with a tree view. Open the "Maven" node and select "Check out Maven Projects from SCM"
+- Look at the line with label "SCM URL:". From the drop-down, choose "git". In the text field to the right, enter the URL https://github.com/ibissource/iaf.
+- Press Next, then Finish.
+- Wait a long time. Eclipse has to do a lot now. To the bottom-right you will see a green symbol while Eclipse is busy downloading the Git repository and building the Maven project.
+- Delete projects ibis-adapterframework-coolgen, ibis-adapterframework-ibm, ibis-adapterframework-ifsa, ibis-adapterframework-sap, ibis-adapterframework-tibco and ibis-adapterframework-idin (unless you have access to the proprietary repository). You do not have to delete the files from disk, only the projects from Eclipse.
 - Window, Open Perspective, Other..., Java EE.
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
