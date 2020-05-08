@@ -61,6 +61,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -801,10 +802,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
 			adapterMessage.addAttribute("level", level);
 			adapterMessages.addSubElement(adapterMessage);
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperEnum.ERROR_LEVEL.getLevel())) {
 				showConfigurationStatusManager.countMessagesError++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperEnum.WARN_LEVEL.getLevel())) {
 					showConfigurationStatusManager.countMessagesWarn++;
 				} else {
 					showConfigurationStatusManager.countMessagesInfo++;
@@ -823,10 +824,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int cmi = 0;
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperEnum.ERROR_LEVEL.getLevel())) {
 				cme++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperEnum.WARN_LEVEL.getLevel())) {
 					cmw++;
 				} else {
 					cmi++;
@@ -843,8 +844,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
 					.getMessageLevel();
 			adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
-			if (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
-					|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL)) {
+			if (lastMessageLevel.equals(MessageKeeperEnum.ERROR_LEVEL.getLevel())
+					|| lastMessageLevel.equals(MessageKeeperEnum.WARN_LEVEL.getLevel())) {
 				showConfigurationStatusAdapterManager.logAlert = true;
 			}
 		}

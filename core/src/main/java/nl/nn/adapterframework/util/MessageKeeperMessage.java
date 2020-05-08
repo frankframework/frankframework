@@ -29,10 +29,6 @@ import java.util.Set;
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
-
-	public static final String INFO_LEVEL = "INFO";
-	public static final String WARN_LEVEL = "WARN";
-	public static final String ERROR_LEVEL = "ERROR";
 	
 	private Date messageDate=new Date();
 	private String messageText;

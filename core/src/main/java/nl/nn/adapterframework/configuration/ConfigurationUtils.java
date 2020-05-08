@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -567,7 +568,7 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (Exception e) {
-				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperMessage.WARN_LEVEL, e);
+				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperEnum.WARN_LEVEL.getLevel(), e);
 			}
 		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
@@ -588,7 +589,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperMessage.WARN_LEVEL, e);
+				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperEnum.WARN_LEVEL.getLevel(), e);
 			}
 		}
 

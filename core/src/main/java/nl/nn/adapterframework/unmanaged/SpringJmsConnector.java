@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -460,7 +461,7 @@ class PollGuard extends TimerTask {
 
 	private void error(String message) {
 		log.error(springJmsConnector.getLogPrefix() + message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperMessage.ERROR_LEVEL);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperEnum.ERROR_LEVEL.getLevel());
 	}
 
 }

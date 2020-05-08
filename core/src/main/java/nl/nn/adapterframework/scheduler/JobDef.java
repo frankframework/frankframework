@@ -77,6 +77,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
@@ -519,10 +520,10 @@ public class JobDef {
 								}
 								String msg = "error while setting lock: " + e.getMessage();
 								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperEnum.INFO_LEVEL.getLevel());
 									log.info(getLogPrefix()+msg);
 								} else {
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperEnum.ERROR_LEVEL.getLevel());
 									log.error(getLogPrefix()+msg);
 								}
 							}
@@ -543,7 +544,7 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperEnum.WARN_LEVEL.getLevel());
 									log.warn(getLogPrefix()+msg);
 								}
 							}
@@ -562,7 +563,7 @@ public class JobDef {
 			}
 		} else {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperEnum.ERROR_LEVEL.getLevel());
 			log.error(getLogPrefix()+msg);
 		}
 	}
@@ -745,7 +746,7 @@ public class JobDef {
 	private void checkReload(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperEnum.INFO_LEVEL.getLevel());
 			log.info(getLogPrefix() + msg);
 			return;
 		}
@@ -837,7 +838,7 @@ public class JobDef {
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperEnum.ERROR_LEVEL.getLevel());
 			return;
 		}
 
@@ -967,7 +968,7 @@ public class JobDef {
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperEnum.ERROR_LEVEL.getLevel());
 			log.error(getLogPrefix()+msg);
 		} finally {
 			qs.close();
@@ -1006,7 +1007,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperEnum.ERROR_LEVEL.getLevel());
 			log.error(getLogPrefix()+msg, e);
 		}
 	}

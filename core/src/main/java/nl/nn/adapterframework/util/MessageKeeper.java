@@ -38,13 +38,13 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 	
 	public synchronized void add(String message) {
-		add(message, MessageKeeperMessage.INFO_LEVEL);
+		add(message, MessageKeeperEnum.INFO_LEVEL.getLevel());
 	}
 	public synchronized void add(String message, String level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
 	public synchronized void add(String message, Date date) {
-		add(message, date, MessageKeeperMessage.INFO_LEVEL);
+		add(message, date, MessageKeeperEnum.INFO_LEVEL.getLevel());
 	}
 	public synchronized void add(String message, Date date, String level) {
 		super.add(new MessageKeeperMessage(message, date, level));

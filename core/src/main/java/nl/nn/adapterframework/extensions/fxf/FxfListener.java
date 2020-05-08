@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 import org.apache.commons.lang.StringUtils;
@@ -146,7 +147,7 @@ public class FxfListener extends EsbJmsListener {
 				iAdapter.getMessageKeeper().add(
 						"WARNING: " + msg
 								+ (t != null ? ": " + t.getMessage() : ""),
-						MessageKeeperMessage.WARN_LEVEL);
+								MessageKeeperEnum.WARN_LEVEL.getLevel());
 			}
 		}
 	}

@@ -91,6 +91,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperEnum;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -384,7 +385,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void warn(String msg) {
 		log.warn(getLogPrefix()+msg);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperMessage.WARN_LEVEL);
+			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperEnum.WARN_LEVEL.getLevel());
 	}
 
 	/** 
@@ -393,7 +394,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void error(String msg, Throwable t) {
 		log.error(getLogPrefix()+msg, t);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperMessage.ERROR_LEVEL);
+			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperEnum.ERROR_LEVEL.getLevel());
 	}
 
 
