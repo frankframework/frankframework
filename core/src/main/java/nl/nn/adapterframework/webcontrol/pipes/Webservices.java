@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
@@ -56,10 +57,10 @@ import org.apache.commons.lang.StringUtils;
 public class Webservices extends TimeoutGuardPipe {
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return Message.asMessage(doGet(session));
+			return new PipeRunResult(getForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session) + "illegal value for method [" + method + "], must be 'GET'");
 		}
