@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	protected static Logger log = LogUtil.getLogger(StringResolver.class);
+	//protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';
@@ -50,7 +50,9 @@ public class StringResolver {
         try {
             return System.getProperty(key, def);
         } catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-            log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+        	System.out.println("Was not allowed to read system property [" + key + "]: "+ e.getMessage()); // somehow StringResolver use in LogUtil is conflicting, therefor switched to System.out.println()
+            //log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+        	
             return def;
         }
     }
@@ -95,6 +97,7 @@ public class StringResolver {
                     throw new IllegalArgumentException(
                         '[' + val + "] has no closing brace. Opening brace at position ["  + j + "]");
                 } else {
+					String expression = val.substring(j, k + DELIM_STOP_LEN);
                     j += DELIM_START_LEN;
                     String key = val.substring(j, k);
                     // first try in System properties
@@ -130,8 +133,12 @@ public class StringResolver {
                         // the where the properties are
 						// x1=${x2}
                         // x2=p2
+						if (!replacement.equals(expression)) {
                         String recursiveReplacement = substVars(replacement, props1, props2);
                         sbuf.append(recursiveReplacement);
+						} else {
+							sbuf.append(replacement);
+						}
                     }
                     i = k + DELIM_STOP_LEN;
                 }
