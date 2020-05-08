@@ -1,7 +1,8 @@
-package nl.nn.adapterframework.extensions.cxf;
+package nl.nn.adapterframework.http.cxf;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.cxf.SOAPProviderBase;
 
 public class SoapProviderStub extends SOAPProviderBase {
 

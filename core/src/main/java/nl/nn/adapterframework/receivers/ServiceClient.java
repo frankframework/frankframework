@@ -24,5 +24,5 @@ import nl.nn.adapterframework.core.ListenerException;
  */
 public interface ServiceClient {
 	
-	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException;
+	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException;
 }
