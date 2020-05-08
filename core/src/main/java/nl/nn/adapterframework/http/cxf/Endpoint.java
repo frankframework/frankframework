@@ -22,7 +22,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class Endpoint extends EndpointImpl {
 	
-	private static final String CHECK_PUBLISH_PERMISSION_OPTION = "http.publish.checkPermission";
+	private static final String CHECK_PUBLISH_PERMISSION_OPTION = "http.cxf.checkPublishPermission";
 
 	private static boolean checkPublishPermissionOptionSet = AppConstants.getInstance().getBoolean(CHECK_PUBLISH_PERMISSION_OPTION, false);
 
