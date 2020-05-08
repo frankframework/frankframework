@@ -35,7 +35,7 @@ public class Endpoint extends EndpointImpl {
 		// if you really want to check the publishPermission, then set CHECK_PUBLISH_PERMISSION_OPTION in DeploymentSpecifics.properties
 		if (checkPublishPermissionOptionSet) {
 			super.checkPublishPermission();
-		} else {
+		// } else {
 			// skip publish permission check if not explicitly requested, as it fails on WebSphere if the property 
 			// EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER has not been set on the command line.
 			// It does not work if set programmatically in the constructor of Endpoint.
