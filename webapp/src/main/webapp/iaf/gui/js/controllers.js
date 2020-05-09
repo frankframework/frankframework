@@ -1035,15 +1035,24 @@ angular.module('iaf.beheerconsole')
 		$scope.form.loglevel = name;
 	};
 
+	var timeoutPromise = null;
 	$scope.submit = function(formData) {
+		if(timeoutPromise != null) {
+			$timeout.cancel(timeoutPromise);
+		}
+
 		$scope.state = [{type:"info", message: "Updating log configuration..."}];
 		Api.Put("server/log", formData, function() {
 			Api.Get("server/log", function(data) {
 				$scope.form = data;
 				$scope.state = [{type:"success", message: "Successfully updated log configuration!"}];
 			});
+		}, function(data, code) {
+			if(code === 401 || code === 403) {
+				$scope.state = [{type:"danger", message: code+" - Forbidden; you do not have enough access rights to complete this action!"}];
+			}
 		});
-		$timeout(function(){
+		timeoutPromise = $timeout(function(){
 			$scope.state = [];
 		}, 5000);
 	};
