@@ -49,16 +49,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA()");
 	}
 
-//	@Override
-//	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-//		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_SCHEMA", "TABLE_NAME", schemaName, tableName.toUpperCase());
-//	}
-//	
-//	@Override
-//	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-//		return doIsColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
-//	}
-
 	@Override
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";

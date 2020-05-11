@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -172,16 +172,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
 	}
-
-//	@Override
-//	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-//		return doIsTablePresent(conn, "all_tables", "owner", "table_name", schemaName, tableName);
-//	}
-//	
-//	@Override
-//	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-//		return doIsColumnPresent(conn, "all_tab_columns", "owner", "table_name", "column_name", schemaName, tableName, columnName);
-//	}
 
 	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
