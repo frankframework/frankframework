@@ -24,7 +24,7 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * <b>Configuration </b><i>(where deviating from WsdlXmlValidator)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMultipart(String) boolean}</td><td>indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)</td><td>false</td></tr>
+ * <tr><td>{@link #setMultipart(boolean) boolean}</td><td>indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)</td><td>false</td></tr>
  * </table>
  * <p>
  * The SOAP header can only contain the following schema (or it's empty):
@@ -45,11 +45,11 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 
 	private boolean multipart = false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		setSoapHeader("MessageHeader,");
 		setSoapHeaderNamespace(API_NAMESPACE);
-		setSchemaLocationToAdd(API_NAMESPACE
-				+ " /xml/xsd/api/MessageHeader.xsd");
+		setSchemaLocationToAdd(API_NAMESPACE + " /xml/xsd/api/MessageHeader.xsd");
 		setAddNamespaceToSchema(true);
 		super.configure();
 	}
