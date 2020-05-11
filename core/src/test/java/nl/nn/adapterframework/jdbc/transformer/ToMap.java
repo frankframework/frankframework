@@ -1,20 +1,22 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.xml.sax.SAXException;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class ToMap {
@@ -49,7 +51,6 @@ public class ToMap {
 	public void doTest() throws IOException, SAXException {
 		String expected = TestFileUtils.getTestFile(FOLDER + expectedFile.getName());
 		ObjectMapper mapper = new ObjectMapper();
-
 
 		QueryOutputToMap transformer = new QueryOutputToMap();
 		List<Map<String, String>> output = transformer.parseMessage(new Message(xmlFile));
