@@ -47,25 +47,6 @@ The ibis-adapterframeworkt-test project supports multiple databases. You need to
 
 Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
 
-In the console, you may see the following Java exception during start-up:
-
-    Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'jdbc.datasource.oracle' in value "${jdbc.datasource.oracle}"
-	    at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:174)
-	    at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:126)
-	    at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:236)
-	    at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:210)
-	    at org.springframework.context.support.PropertySourcesPlaceholderConfigurer$2.resolveStringValue(PropertySourcesPlaceholderConfigurer.java:172)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.resolveStringValue(BeanDefinitionVisitor.java:282)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.resolveValue(BeanDefinitionVisitor.java:204)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.visitMap(BeanDefinitionVisitor.java:259)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.resolveValue(BeanDefinitionVisitor.java:198)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.visitGenericArgumentValues(BeanDefinitionVisitor.java:159)
-	    at org.springframework.beans.factory.config.BeanDefinitionVisitor.visitBeanDefinition(BeanDefinitionVisitor.java:85)
-	    at org.springframework.beans.factory.config.PlaceholderConfigurerSupport.doProcessProperties(PlaceholderConfigurerSupport.java:220)
-	    ... 23 more
-
-You can ignore it.
-
 Once the Ibis console is loaded, go to the Larva testtool. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
 
 Press [ Start ], sit back, relax, do some stretches, and let's hope for the best. :)
