@@ -415,7 +415,7 @@ public class IbisContext extends IbisApplicationContext {
 					log(currentConfigurationName, currentConfigurationVersion,
 							"error generating flowDiagram for adapter ["
 									+ adapter.getName() + "]",
-									MessageKeeperLevel.WARN.name(), e);
+							MessageKeeperLevel.WARN.name(), e);
 				}
 			}
 
@@ -425,7 +425,7 @@ public class IbisContext extends IbisApplicationContext {
 				log(currentConfigurationName, currentConfigurationVersion,
 						"error generating flowDiagram for configuration ["
 								+ configuration.getName() + "]",
-								MessageKeeperLevel.WARN.name(), e);
+						MessageKeeperLevel.WARN.name(), e);
 			}
 		}
 	}
