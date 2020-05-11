@@ -105,6 +105,26 @@ In some cases you might want/need to:
 - Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.
 - When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
+- Check the deployment assemblies:
+  - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
+    - `src/main/webapp` to `/`
+    - `target/m2e-wtp/web-resources` to `/`
+    - `iaf-akami` to `WEB-INF/lib/ibis-adapterframework-akami-7.6-SNAPSHOT.jar`
+    - ...
+    - `iaf-larva `to `WEB-INF/lib/ibis-adapterframework-larva-7.6-SNAPSHOT.jar`
+    - `Maven Dependencies` to `WEB-INF/lib`
+  - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
+  - Right-click iaf-example and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
+    - `/src/main/java` to `WEB-INF/classes`
+    - `/src/main/resources` to `WEB-INF/classes`
+    - `/src/main/webapp` to `/`
+    - `/target/m2e-wtp/web-resources` to `/`
+    - `iaf-core` to `WEB-INF/lib/ibis-adapterframework-core-7.6-SNAPSHOT.jar`
+    - `iaf-example` to -
+    - ...
+    - `iaf-webapp` to -
+    - `Maven Dependencies` to `WEB-INF/lib`
+  - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
 - When running Tomcat v8.5, you can disable its pluggability scans to prevent unnecessarily long startup times. To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
 ######
     <JarScanner>
