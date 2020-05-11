@@ -12,6 +12,14 @@ public class TestFileUtils {
 	public static String getTestFile(String file) throws IOException {
 		return getTestFile(file, "UTF-8");
 	}
+	public static URL getTestFileURL(String file) throws IOException {
+		URL url = TestFileUtils.class.getResource(file);
+		if (url == null) {
+			System.out.println("file [" + file + "] not found");
+			return null;
+		}
+		return url;
+	}
 
 	public static String getTestFile(String file, String charset) throws IOException {
 		URL url = TestFileUtils.class.getResource(file);
