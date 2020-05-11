@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
 
@@ -51,8 +50,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperEnum;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
@@ -179,7 +177,7 @@ public class Adapter implements IAdapter, NamedBean {
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			messageKeeper.add(msg, MessageKeeperEnum.ERROR_LEVEL.getLevel());
+			messageKeeper.add(msg, MessageKeeperLevel.ERROR.name());
 			throw new ConfigurationException(msg);
 		}
 		try {
@@ -238,7 +236,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [" + getName() + "] "+msg);
-		getMessageKeeper().add("WARNING: " + msg, MessageKeeperEnum.WARN_LEVEL.getLevel());
+		getMessageKeeper().add("WARNING: " + msg, MessageKeeperLevel.WARN.name());
 	}
 
 	/** 
@@ -249,7 +247,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperEnum.ERROR_LEVEL.getLevel());
+		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperLevel.ERROR.name());
 	}
 
 

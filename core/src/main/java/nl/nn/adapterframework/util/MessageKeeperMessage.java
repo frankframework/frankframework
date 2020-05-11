@@ -30,6 +30,11 @@ import java.util.Set;
  */
 public class MessageKeeperMessage {
 	
+	public enum MessageKeeperLevel {
+		INFO, WARN, ERROR
+	}
+	
+	
 	private Date messageDate=new Date();
 	private String messageText;
 	private String messageLevel;

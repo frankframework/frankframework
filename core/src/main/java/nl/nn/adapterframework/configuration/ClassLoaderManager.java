@@ -28,8 +28,7 @@ import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperEnum;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
 
 /**
  * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make 
@@ -115,7 +114,7 @@ public class ClassLoaderManager {
 						LOG.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(configurationName, null, msg, MessageKeeperEnum.INFO_LEVEL.getLevel(), ce);
+						ibisContext.log(configurationName, null, msg, MessageKeeperLevel.INFO.name(), ce);
 						break;
 					case WARN:
 						ConfigurationWarnings.add(LOG, msg, ce);

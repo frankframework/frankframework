@@ -17,8 +17,9 @@ package nl.nn.adapterframework.util;
 
 import java.util.Date;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
@@ -38,13 +39,13 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 	
 	public synchronized void add(String message) {
-		add(message, MessageKeeperEnum.INFO_LEVEL.getLevel());
+		add(message, MessageKeeperLevel.INFO.name());
 	}
 	public synchronized void add(String message, String level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
 	public synchronized void add(String message, Date date) {
-		add(message, date, MessageKeeperEnum.INFO_LEVEL.getLevel());
+		add(message, date, MessageKeeperLevel.INFO.name());
 	}
 	public synchronized void add(String message, Date date, String level) {
 		super.add(new MessageKeeperMessage(message, date, level));
