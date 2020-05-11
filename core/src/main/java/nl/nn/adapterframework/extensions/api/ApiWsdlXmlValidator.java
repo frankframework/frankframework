@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,12 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 /**
  * Extension to WsdlXmlValidator for API Management.
  * <p>
+ * <b>Configuration </b><i>(where deviating from WsdlXmlValidator)</i><b>:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setMultipart(String) boolean}</td><td>indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)</td><td>false</td></tr>
+ * </table>
+ * <p>
  * The SOAP header can only contain the following schema (or it's empty):
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>mandatory</th></tr>
@@ -37,6 +43,8 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 	protected static final String API_NAMESPACE = "http://api.nn.nl/MessageHeader";
 
+	private boolean multipart = false;
+
 	public void configure() throws ConfigurationException {
 		setSoapHeader("MessageHeader,");
 		setSoapHeaderNamespace(API_NAMESPACE);
@@ -44,5 +52,24 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 				+ " /xml/xsd/api/MessageHeader.xsd");
 		setAddNamespaceToSchema(true);
 		super.configure();
+	}
+
+	public void setMultipart(boolean b) {
+		multipart = b;
+	}
+	public boolean isMultipart() {
+		return multipart;
+	}
+
+	@Override
+	public String getDocumentation() {
+		if (multipart) {
+			return "<br/>"
+					+ "<b>Note: </b>this service is not a SOAP service but a REST service."
+					+ " A 'multipart/form-data' request is expected of which the first part is a SOAP message and each next part is a file(stream)."
+					+ " This wsdl describes the SOAP message in the first part.";
+		} else {
+			return null;
+		}
 	}
 }

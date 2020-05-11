@@ -25,10 +25,10 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 
 /**
  * Generate WSDL of parent or specified adapter.
@@ -70,8 +70,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Could not determine adapter name", e); 
 		}
 		try {
-			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine());
-			wsdl.setDocumentation("Generated at " + dtapStage + "-" + dtapSide + " on " + DateUtils.getIsoTimeStamp() + ".");
+			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
+			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine(), generationInfo);
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			wsdl.wsdl(outputStream, null);
