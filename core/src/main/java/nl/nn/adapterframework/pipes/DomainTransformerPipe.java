@@ -88,7 +88,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		Connection conn = null;
 		try {
 			conn = qs.getConnection();
-			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, "*")) {
+			if (!qs.getDbmsSupport().isTablePresent(conn, tableName)) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}
 			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, labelField)) {
@@ -103,8 +103,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			query = "SELECT " + valueOutField + " FROM " + tableName + 
 					" WHERE " + labelField+ "=? AND " + valueInField + "=?";
 		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.close(conn);

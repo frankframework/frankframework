@@ -36,7 +36,6 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
@@ -267,6 +266,38 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
+	@Override
+	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
+		return isTablePresent(conn, null, tableName);
+	}
+
+	@Override
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getTables(null, schemaName, tableName, null)) {
+			return !rs.isAfterLast();
+		} catch (SQLException e) {
+			throw new JdbcException("exception checking for existence of table [" + tableName + "]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+	
+	@Override
+	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException {
+		return this.isColumnPresent(conn, null, tableName, columnName);
+	}
+
+	@Override
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName)) {
+			return !rs.isAfterLast();
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+
+
+	/**
+	 * Alternative implementation of isTablePresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
+	 */
 	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
 		String query="select count(*) from "+tablesTable+" where upper("+tableNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
@@ -284,75 +315,24 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
-	@Override
-	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-		boolean tExists = Boolean.FALSE;
-		ResultSet rs = null;
-	    try {
-	    	rs = conn.getMetaData().getTables(null, null, tableName, null);
-	    	tExists = !rs.isAfterLast();
-	    }catch(SQLException e) {
-	    	log.error("exception checking for existence of table ["+tableName+"]", e);
-	    	throw new JdbcException(e);
-	    }finally {
-			try {
-				rs.close();
-			} catch (Exception e) {
-				if (log.isDebugEnabled()) log.debug("there was an error closing the resulset", e);
-			}
-		}
-	    return tExists;
-	}
-
-	
-	private boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws SQLException {
-		ResultSet rs = null;
-		boolean cExists = Boolean.FALSE;
-		try {
-			rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName);
-			cExists = !rs.isAfterLast();
-		}catch(SQLException e) {
-			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]", e);
-		}finally {
-			try {
-				rs.close();
-			} catch (Exception e) {
-				if (log.isDebugEnabled()) log.debug("there was an error closing the resulset", e);
-			}
-		}
-		return cExists;
-	}
-
-	@Override
-	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws SQLException {
-		return this.isColumnPresent(conn, null, tableName, columnName);
-	}
-
-	protected boolean doIsTableColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
-		boolean isPresent = Boolean.FALSE;
+	/**
+	 * Alternative implementation of isColumnPresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
+	 */
+	protected boolean doIsColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
+		String query="select count(*) from "+columnsTable+" where upper("+tableNameColumn+")=? and upper("+columnNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
-				try {
-					isPresent = this.isColumnPresent(conn, schemaColumn, tableName, columnName);
-				} catch (SQLException e) {
-					log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"] with schema ["+schemaColumn+"]",e);
-				}
+				query+=" and upper("+schemaColumn+")='"+schemaName.toUpperCase()+"'";
 			} else {
 				throw new JdbcException("no schemaColumn present in table ["+columnsTable+"] to test for presence of column ["+columnName+"] of table ["+tableName+"] in schema ["+schemaName+"]");
 			}
 		}
 		try {
-			isPresent = this.isColumnPresent(conn, tableName, columnName);
+			return JdbcUtil.executeIntQuery(conn, query, tableName.toUpperCase(), columnName.toUpperCase())>=1;
 		} catch (Exception e) {
 			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
+			return false;
 		}
-		return isPresent;
-	}
-
-	@Override
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"], assuming it exists");
-		return true;
 	}
 
 	@Override

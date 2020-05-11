@@ -49,17 +49,15 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA()");
 	}
 
-	/*
-	 * public boolean isTablePresent(Connection conn, String schemaName, String
-	 * tableName) throws JdbcException { return doIsTablePresent(conn,
-	 * "INFORMATION_SCHEMA.TABLES", "TABLE_SCHEMA", "TABLE_NAME", schemaName,
-	 * tableName.toUpperCase()); }
-	 */
-	
-	@Override
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
-	}
+//	@Override
+//	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+//		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_SCHEMA", "TABLE_NAME", schemaName, tableName.toUpperCase());
+//	}
+//	
+//	@Override
+//	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+//		return doIsColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
+//	}
 
 	@Override
 	public String getIbisStoreSummaryQuery() {
