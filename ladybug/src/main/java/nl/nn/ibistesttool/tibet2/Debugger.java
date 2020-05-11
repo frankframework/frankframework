@@ -43,12 +43,13 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 		return STUB_STRATEY_NEVER;
 	}
 
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext) {
 		String errorMessage = null;
 		if ("Table EXCEPTIONLOG".equals(originalReport.getName())) {
 			List checkpoints = originalReport.getCheckpoints();
 			Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
-			String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+			String message = checkpoint.getMessage();
+
 			IAdapter adapter = ibisManager.getRegisteredAdapter(RESEND_ADAPTER);
 			if (adapter != null) {
 				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
@@ -58,7 +59,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 				try {
 					if(securityContext.getUserPrincipal() != null)
 						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-					PipeLineResult processResult = adapter.processMessage(correlationId, inputMessage, pipeLineSession);
+					PipeLineResult processResult = adapter.processMessage(correlationId, message, pipeLineSession);
 					if (!(processResult.getState().equalsIgnoreCase("success")
 							&& processResult.getResult().equalsIgnoreCase("<ok/>"))) {
 						errorMessage = "Rerun failed. Result of adapter "
@@ -74,7 +75,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 				errorMessage = "Adapter '" + RESEND_ADAPTER + "' not found";
 			}
 		} else {
-			errorMessage = super.rerun(correlationId, originalReport, securityContext, reportRunner);
+			errorMessage = super.rerun(correlationId, originalReport, securityContext);
 		}
 		return errorMessage;
 	}
