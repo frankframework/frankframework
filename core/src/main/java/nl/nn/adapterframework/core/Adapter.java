@@ -991,15 +991,12 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public String getAdapterConfigurationAsString() throws ConfigurationException {
+	public String getAdapterConfigurationAsString() {
 		String loadedConfig = getConfiguration().getLoadedConfiguration();
 		String encodedName = StringUtils.replace(getName(), "'", "''");
 		String xpath = "//adapter[@name='" + encodedName + "']";
-		try {
-			return XmlUtils.copyOfSelect(loadedConfig, xpath);
-		} catch (Exception e) {
-			throw new ConfigurationException(e);
-		}
+
+		return XmlUtils.copyOfSelect(loadedConfig, xpath);
 	}
 
 	public void waitForNoMessagesInProcess() throws InterruptedException {

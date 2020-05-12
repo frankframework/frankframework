@@ -76,10 +76,11 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	}
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		// descendants can override this method when specific actions are required
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, message, requestContext);

@@ -96,9 +96,10 @@ public interface IDbmsSupport {
 	void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException;
 	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
-	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
+	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
+	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException;
+	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);
-	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws SQLException;
 	boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName);
 	boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);
 	int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);

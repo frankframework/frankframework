@@ -74,6 +74,7 @@ public class RestServiceDispatcher  {
 
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
+	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
 
 	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
 
@@ -152,7 +153,7 @@ public class RestServiceDispatcher  {
 				noImageAvailable(httpServletResponse);
 				return "";
 			}
-			if (uri != null && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/"))) {
+			if (uri != null && STRUTS_CONSOLE_ENABLED && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/")) ) {
 				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
 				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
 					httpServletResponse.setHeader("REFRESH", "0");
