@@ -735,7 +735,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return owner.getXsds();
 		}
 
-		
+		@Override
+		public String getDocumentation() {
+			return null;
+		}
 	}
 	
 	public boolean isMixedValidator(Object outputValidator) {
@@ -892,5 +895,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
 		return invalidRootNamespaces;
+	}
+
+	@Override
+	public String getDocumentation() {
+		return null;
 	}
 }

@@ -15,20 +15,20 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import nl.nn.adapterframework.extensions.cxf.NamespaceUriProvider;
-import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.http.cxf.Endpoint;
+import nl.nn.adapterframework.http.cxf.NamespaceUriProvider;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This bean creates an (CXF) endpoint with the /rpcrouter mapping for older SOAP based requests.
@@ -51,7 +51,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 
 	private Logger log = LogUtil.getLogger(this);
 	private ApplicationContext applicationContext;
-	private EndpointImpl namespaceRouter = null;
+	private Endpoint namespaceRouter = null;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -75,7 +75,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 			log.debug("default CXF SpringBus ["+bus.getId()+"]");
 
 			log.info("registering NamespaceURI Provider with JAX-WS CXF Dispatcher");
-			namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
+			namespaceRouter = new Endpoint(bus, new NamespaceUriProvider());
 			namespaceRouter.publish("/rpcrouter");
 
 			if(namespaceRouter.isPublished()) {

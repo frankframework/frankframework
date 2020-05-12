@@ -67,5 +67,5 @@ public interface IAdapter extends IManagable {
 
     String getDescription();
     
-    String getAdapterConfigurationAsString() throws ConfigurationException;
+    String getAdapterConfigurationAsString();
 }

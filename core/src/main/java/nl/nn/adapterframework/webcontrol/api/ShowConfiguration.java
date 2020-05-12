@@ -45,16 +45,21 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.FlowDiagram;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -71,14 +76,25 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") boolean flow) throws ApiException {
+	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 
-		String result = "";
+		if(StringUtils.isNotEmpty(flow)) {
+			FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
 
-		if(flow) {
-			result = getFlow(getIbisManager().getConfigurations());
+			try {
+				ResponseBuilder response = Response.status(Response.Status.OK);
+				if("dot".equalsIgnoreCase(flow)) {
+					response.entity(flowDiagram.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
+				} else {
+					response.entity(flowDiagram.get(getIbisManager().getConfigurations())).type("image/svg+xml");
+				}
+				return response.build();
+			} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+				throw new ApiException(e);
+			}
 		}
 		else {
+			String result = "";
 			for (Configuration configuration : getIbisManager().getConfigurations()) {
 				if (loaded) {
 					result = result + configuration.getLoadedConfiguration();
@@ -86,9 +102,8 @@ public final class ShowConfiguration extends Base {
 					result = result + configuration.getOriginalConfiguration();
 				}
 			}
+			return Response.status(Response.Status.OK).entity(result).build();
 		}
-
-		return Response.status(Response.Status.OK).entity(result).build();
 	}
 
 	@PUT
@@ -141,7 +156,7 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
+	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @QueryParam("dot") boolean dot) throws ApiException {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -149,7 +164,19 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		return Response.status(Response.Status.OK).entity(getFlow(configuration)).build();
+		FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+
+		try {
+			ResponseBuilder response = Response.status(Response.Status.OK);
+			if(dot) {
+				response.entity(flowDiagram.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
+			} else {
+				response.entity(flowDiagram.get(configuration)).type("image/svg+xml");
+			}
+			return response.build();
+		} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	@PUT

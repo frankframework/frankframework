@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -54,12 +55,12 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return Message.asMessage(doGet(session));
+			return new PipeRunResult(getForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return Message.asMessage(doPost(session));
+			return new PipeRunResult(getForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method

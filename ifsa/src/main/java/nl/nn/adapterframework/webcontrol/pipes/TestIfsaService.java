@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
@@ -46,12 +47,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class TestIfsaService extends TimeoutGuardPipe {
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return Message.asMessage(doGet(session));
+			return new PipeRunResult(getForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return Message.asMessage(doPost(session));
+			return new PipeRunResult(getForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method

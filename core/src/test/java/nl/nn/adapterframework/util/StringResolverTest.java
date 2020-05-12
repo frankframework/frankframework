@@ -41,6 +41,12 @@ public class StringResolverTest {
 	}
 
 	@Test
+	public void resolveRecursivelyAvoidStackOverflow() {
+		String result = StringResolver.substVars("blalblalab ${key5}", properties);
+		assertEquals("blalblalab ${key5}", result);
+	}
+
+	@Test
 	public void resolveComplexRecursively() {
 		String result = StringResolver.substVars("blalblalab ${key1_${key2}}", properties);
 		assertEquals("blalblalab value101", result);

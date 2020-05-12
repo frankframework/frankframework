@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2020 Nationale-Nederlanden
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,21 +24,21 @@ import java.util.StringTokenizer;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.extensions.cxf.MessageProvider;
+import nl.nn.adapterframework.http.cxf.Endpoint;
+import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.Bus;
-import org.apache.cxf.BusFactory;
-import org.apache.cxf.jaxws.EndpointImpl;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -48,7 +48,7 @@ import org.apache.cxf.jaxws.EndpointImpl;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
+public class WebServiceListener extends PushingListenerAdapter<String> implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private static final long serialVersionUID = 1L;
 
@@ -62,7 +62,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	private String attachmentSessionKeys = "";
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
-	private EndpointImpl endpoint = null;
+	private Endpoint endpoint = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -70,7 +70,6 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
 		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
@@ -105,7 +104,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 				throw new ListenerException("unable to find SpringBus");
 			}
 			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
-			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
+			endpoint = new Endpoint(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
@@ -148,7 +147,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
 		if (attachmentSessionKeysList.size() > 0) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {

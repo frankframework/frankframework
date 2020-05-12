@@ -98,9 +98,9 @@ public class StringResolver {
 				sbuf.append(val.substring(i, j));
                 k = indexOfDelimStop(val, j, props1, props2);
 				if (k == -1) {
-					throw new IllegalArgumentException(
-							'[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
+					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
 				} else {
+					String expression = val.substring(j, k + DELIM_STOP_LEN);
 					j += DELIM_START_LEN;
 					String key = val.substring(j, k);
                     if (key.contains(DELIM_START)) {
@@ -139,8 +139,12 @@ public class StringResolver {
 						// the where the properties are
 						// x1=${x2}
 						// x2=p2
-						String recursiveReplacement = substVars(replacement, props1, props2);
-						sbuf.append(recursiveReplacement);
+						if (!replacement.equals(expression)) {
+							String recursiveReplacement = substVars(replacement, props1, props2);
+							sbuf.append(recursiveReplacement);
+						} else {
+							sbuf.append(replacement);
+						}
 					}
 					i = k + DELIM_STOP_LEN;
 				}
