@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
-
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
@@ -29,6 +27,10 @@ import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
  */
 public class MessageKeeper extends SizeLimitedVector {
 	protected Logger log = LogUtil.getLogger(this);
+
+	public enum MessageKeeperLevel {
+		INFO, WARN, ERROR
+	}
 
 	public MessageKeeper() {
 		super();
@@ -39,15 +41,15 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 	
 	public synchronized void add(String message) {
-		add(message, MessageKeeperLevel.INFO.name());
+		add(message, MessageKeeperLevel.INFO);
 	}
-	public synchronized void add(String message, String level) {
+	public synchronized void add(String message, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
 	public synchronized void add(String message, Date date) {
-		add(message, date, MessageKeeperLevel.INFO.name());
+		add(message, date, MessageKeeperLevel.INFO);
 	}
-	public synchronized void add(String message, Date date, String level) {
+	public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, date, level));
 	}
 	/**
@@ -66,7 +68,7 @@ public class MessageKeeper extends SizeLimitedVector {
 		if(t.getMessage() != null) {
 			msgToLog += ": "+t.getMessage();
 		}
-		add(msgToLog);
+		add(msgToLog, MessageKeeperLevel.ERROR);
 		log.warn(msgToLog, t);
 	}
 }

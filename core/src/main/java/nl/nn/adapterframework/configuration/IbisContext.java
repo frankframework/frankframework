@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -228,26 +228,22 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void fullReload() {
 		if (isLoadingConfigs()) {
-			log("Skipping fullReload because one or more configurations are currently loading",
-					MessageKeeperLevel.WARN);
+			log("Skipping fullReload because one or more configurations are currently loading", MessageKeeperLevel.WARN);
 			return;
 		}
 
 		destroy();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (javaListenerNames.size() > 0) {
-			log("Not all java listeners are unregistered: " + javaListenerNames,
-					MessageKeeperLevel.ERROR);
+			log("Not all java listeners are unregistered: " + javaListenerNames, MessageKeeperLevel.ERROR);
 		}
 		Set uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
 		if (uriPatterns.size() > 0) {
-			log("Not all rest listeners are unregistered: " + uriPatterns,
-					MessageKeeperLevel.ERROR);
+			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
 		Set mbeans = JmxMbeanHelper.getMBeans();
 		if (mbeans != null && mbeans.size() > 0) {
-			log("Not all JMX MBeans are unregistered: " + mbeans,
-					MessageKeeperLevel.ERROR);
+			log("Not all JMX MBeans are unregistered: " + mbeans, MessageKeeperLevel.ERROR);
 		}
 		JdbcUtil.resetJdbcProperties();
 
@@ -490,9 +486,9 @@ public class IbisContext extends IbisApplicationContext {
 			m = m + "[" + version + "] ";
 		}
 		m = m + message;
-		if (level.equals(MessageKeeperLevel.ERROR)) {
+		if (MessageKeeperLevel.ERROR.equals(level)) {
 			LOG.info(m, e);
-		} else if (level.equals(MessageKeeperLevel.WARN)) {
+		} else if (MessageKeeperLevel.WARN.equals(level)) {
 			LOG.warn(m, e);
 		} else {
 			LOG.info(m, e);
@@ -500,7 +496,7 @@ public class IbisContext extends IbisApplicationContext {
 		if (e != null) {
 			m = m + ": " + e.getMessage();
 		}
-		messageKeeper.add(m, level.name());
+		messageKeeper.add(m, level);
 		if (!allOnly) {
 			log(configurationName, configurationVersion, message, level, e, true);
 		}

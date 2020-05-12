@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage.MessageKeeperLevel;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
@@ -177,7 +177,7 @@ public class Adapter implements IAdapter, NamedBean {
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			messageKeeper.add(msg, MessageKeeperLevel.ERROR.name());
+			messageKeeper.add(msg, MessageKeeperLevel.ERROR);
 			throw new ConfigurationException(msg);
 		}
 		try {
@@ -236,7 +236,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [" + getName() + "] "+msg);
-		getMessageKeeper().add("WARNING: " + msg, MessageKeeperLevel.WARN.name());
+		getMessageKeeper().add("WARNING: " + msg, MessageKeeperLevel.WARN);
 	}
 
 	/** 
@@ -247,7 +247,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperLevel.ERROR.name());
+		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperLevel.ERROR);
 	}
 
 
