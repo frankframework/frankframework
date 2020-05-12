@@ -567,7 +567,7 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (Exception e) {
-				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperLevel.WARN.name(), e);
+				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperLevel.WARN, e);
 			}
 		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
@@ -588,7 +588,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperLevel.WARN.name(), e);
+				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperLevel.WARN, e);
 			}
 		}
 
