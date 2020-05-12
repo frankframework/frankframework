@@ -96,7 +96,7 @@ public class StringResolver {
 				}
 			} else {
 				sbuf.append(val.substring(i, j));
-                k = indexOfDelimStop(val, j, props1, props2);
+                k = indexOfDelimStop(val, j);
 				if (k == -1) {
 					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
 				} else {
@@ -174,7 +174,7 @@ public class StringResolver {
 		}
 	}
 
-	private static int indexOfDelimStop(String val, int j, Map props1, Map props2) {
+	private static int indexOfDelimStop(String val, int j) {
 		// if variable in variable then find the correct stop delimiter
 		int k = val.indexOf(DELIM_STOP, j);
 		if (k > 0) {
