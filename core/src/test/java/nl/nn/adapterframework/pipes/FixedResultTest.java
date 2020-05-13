@@ -63,7 +63,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getResult().toString(), "inside the file");
+        assertEquals(res.getResult().toString(), "String: inside the file");
     }
 
     @Test

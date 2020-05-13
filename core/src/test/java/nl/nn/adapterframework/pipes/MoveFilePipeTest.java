@@ -129,7 +129,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     @Order(13)
     public void cantMoveAsItAlreadyExists() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file ["+sourceFolderPath+"/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc]: Could not move file ["+sourceFolderPath+"/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc] because it already exists");
 
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath);
@@ -148,7 +147,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     @Order(14)
     public void cantMoveFileAsItsDirectoryIsFalse() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file ["+sourceFolderPath+"/itswrong/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc]: (IOException) Could not move file ["+sourceFolderPath+"/itswrong/cantmove.sc] to ["+destFolderPath+"/cantmove.sc]");
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath+"/itswrong");
         pipe.setFilename("cantmove.sc");
@@ -276,7 +274,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     @Order(17)
     public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
         exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file [/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd/deletable.sd] to file ["+destFolderPath+"/deletable.sd]: (IOException) Could not move file [/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd/deletable.sd] to ["+destFolderPath+"/deletable.sd]");
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd");// some random, wrong directory path
         pipe.setDeleteEmptyDirectory(true);
