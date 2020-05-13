@@ -271,7 +271,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.setUnlessSessionKey("unlessKey");
 		pipe.setOnlyIfValue("unlessTargetValue");
 		session.put("unlessKey", "otherValue");
-		testBasicUnwrapConditional(true);
+		testBasicUnwrapConditional(false);
 	}
 
 	@Test
