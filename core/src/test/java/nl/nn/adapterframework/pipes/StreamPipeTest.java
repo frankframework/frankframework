@@ -51,7 +51,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
 				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
 				+ "</parts>";
-		assertEquals(expectedResult, pipeRunResult.getResult());
+		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
 				+ "<part type=\"string\" name=\"antivirus_rc\" sessionKey=\"part_string3\" size=\"4\"/>"
 				+ "</parts>";
-		assertEquals(expectedResult, pipeRunResult.getResult());
+		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
 				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
 				+ "</parts>";
-		assertEquals(expectedResult, pipeRunResult.getResult());
+		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		PipeRunResult pipeRunResult = doPipe(pipe, "", session);
 		assertEquals("antiVirusFailed", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "multipart contains file [doc002.pdf] with antivirus status [Fail] and message []";
-		assertEquals(expectedResult, pipeRunResult.getResult());
+		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
 
 	private MockMultipartHttpServletRequest createMultipartHttpRequest() throws Exception {

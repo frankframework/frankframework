@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -15,16 +14,17 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class PipeTestBase<P extends IPipe> {
-	protected Log log = LogFactory.getLog(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 
-	@Mock
-	protected IPipeLineSession session;
+	protected IPipeLineSession session = new PipeLineSessionBase();
 
 	protected P pipe;
 	protected PipeLine pipeline;
@@ -74,6 +74,9 @@ public abstract class PipeTestBase<P extends IPipe> {
 	 * use this method to execute pipe, instead of calling pipe.doPipe directly. This allows for 
 	 * integrated testing of streaming.
 	 */
+	protected PipeRunResult doPipe(Message input) throws PipeRunException {
+		return doPipe(pipe, input, session);
+	}
 	protected PipeRunResult doPipe(P pipe, Message input, IPipeLineSession session) throws PipeRunException {
 		return pipe.doPipe(input, session);
 	}

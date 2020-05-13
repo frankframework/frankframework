@@ -51,6 +51,7 @@ public interface IAdapter extends IManagable {
 	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
 	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+	public PipeLine getPipeLine();
 	void setConfiguration(Configuration configuration);
 	Configuration getConfiguration();
 	boolean isAutoStart();
@@ -66,5 +67,5 @@ public interface IAdapter extends IManagable {
 
     String getDescription();
     
-    String getAdapterConfigurationAsString() throws ConfigurationException;
+    String getAdapterConfigurationAsString();
 }

@@ -25,8 +25,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -62,6 +63,7 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private final boolean FLOWDIAGRAM_LAZYLOAD = APP_CONSTANTS.getBoolean("flow.lazyload", true);
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -129,10 +131,12 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			try {
-				flowDiagram = new FlowDiagram();
-			} catch (Exception e) { //The IBIS should still start up when Graphviz fails to initialize
-				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			if(!FLOWDIAGRAM_LAZYLOAD) {
+				try {
+					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
+					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+				}
 			}
 
 			load();
@@ -317,8 +321,8 @@ public class IbisContext extends IbisApplicationContext {
 
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
-		if (!configFound) {
-			log(configurationName, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
+		if (!configFound && configurationName != null) {
+			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 

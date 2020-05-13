@@ -119,6 +119,8 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 					"WEB_EXECJDBCCOOKIE_NAME"),
 				cookieValue);
 		execJdbcCookie.setMaxAge(Integer.MAX_VALUE);
+		execJdbcCookie.setHttpOnly(true);
+		execJdbcCookie.setSecure(true);
 		log.debug(
 			"Store cookie for "
 				+ request.getServletPath()

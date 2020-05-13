@@ -87,10 +87,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe !=null) {
 			if (pe.isRestoreMovedElements()) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
+				Message result = pipeRunResult.getResult();
+				if (!result.isEmpty()) {
 					try {
-						String resultString = Message.asString(result);
+						String resultString = result.asString();
 						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
 					} catch (IOException e) {
 						throw new PipeRunException(pipe, "cannot open stream of result", e);
@@ -100,7 +100,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
-				Message result = Message.asMessage(pipeRunResult.getResult());
+				Message result = pipeRunResult.getResult();
 				if (result!=null && !result.isEmpty()) {
 					try {
 						String resultString = result.asString();
@@ -131,8 +131,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-				Object result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				Message result = pipeRunResult.getResult();
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.setResult(preservedObject);

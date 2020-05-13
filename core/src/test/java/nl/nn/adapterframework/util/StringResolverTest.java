@@ -1,74 +1,48 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.Test; 
-import org.junit.Before; 
-import org.junit.After; 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-/** 
-* StringResolver Tester. 
-* 
-* @author <Sina Sen>
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
 
-*/ 
-public class StringResolverTest { 
+import org.junit.Before;
+import org.junit.Test;
 
-@Before
-public void before() throws Exception { 
-} 
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
-@After
-public void after() throws Exception { 
-} 
+public class StringResolverTest {
 
-/** 
-* 
-* Method: getSystemProperty(String key, String def) 
-* 
-*/ 
-@Test
-public void testGetSystemProperty() throws Exception { 
-//TODO: Test goes here... 
-} 
+	Properties properties;
 
-/** 
-* 
-* Method: substVars(String val, Map props1, Map props2, List<String> propsToHide) 
-* 
-*/ 
-@Test
-public void testSubstVarsForValProps1Props2PropsToHide() throws Exception { 
-//TODO: Test goes here... 
-} 
+	@Before
+	public void setUp() throws Exception {
+		properties = new Properties();
+		URL propertiesURL = TestFileUtils.getTestFileURL("/StringResolver.properties");
+		assertNotNull("properties file [StringResolver.properties] not found!", propertiesURL);
 
-/** 
-* 
-* Method: substVars(String val, Map props1, Map props2) 
-* 
-*/ 
-@Test
-public void testSubstVarsForValProps1Props2() throws Exception { 
-//TODO: Test goes here... 
-} 
+		InputStream propsStream = propertiesURL.openStream();
+		properties.load(propsStream);
+		assertTrue("did not find any properties!", properties.size() > 0);
+	}
 
-/** 
-* 
-* Method: substVars(String val, Map props) 
-* 
-*/ 
-@Test
-public void testSubstVarsForValProps() throws Exception { 
-//TODO: Test goes here... 
-} 
+	@Test
+	public void resolveSimple() {
+		String result = StringResolver.substVars("blalblalab ${key1}", properties);
+		assertEquals("blalblalab value1", result);
+	}
 
-/** 
-* 
-* Method: needsResolution(String string) 
-* 
-*/ 
-@Test
-public void testNeedsResolution() throws Exception { 
-//TODO: Test goes here... 
-} 
+	@Test
+	public void resolveRecursively() {
+		String result = StringResolver.substVars("blalblalab ${key4}", properties);
+		assertEquals("blalblalab value1.value2.value1", result);
+	}
 
-
-} 
+	@Test
+	public void resolveRecursivelyAvoidStackOverflow() {
+		String result = StringResolver.substVars("blalblalab ${key5}", properties);
+		assertEquals("blalblalab ${key5}", result);
+	}
+}

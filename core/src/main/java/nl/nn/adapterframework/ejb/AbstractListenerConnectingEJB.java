@@ -21,7 +21,7 @@ import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jndi.JndiLookupFailureException;
 
 /**

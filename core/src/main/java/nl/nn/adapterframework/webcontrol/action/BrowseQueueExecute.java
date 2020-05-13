@@ -158,6 +158,8 @@ public class BrowseQueueExecute extends ActionBase {
 					"WEB_QBROWSECOOKIE"),
 				cookieValue);
 		sendJmsCookie.setMaxAge(Integer.MAX_VALUE);
+		sendJmsCookie.setHttpOnly(true);
+		sendJmsCookie.setSecure(true);
 		log.debug(
 			"Store cookie for "
 				+ request.getServletPath()

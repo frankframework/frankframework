@@ -24,7 +24,7 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same. 

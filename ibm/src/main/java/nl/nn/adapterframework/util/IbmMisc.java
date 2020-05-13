@@ -25,7 +25,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.ibm.websphere.management.AdminService;
@@ -37,7 +37,7 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
  * @since 5.0.29
  */
 public class IbmMisc {
-    private static final Logger LOG = LogUtil.getLogger(Misc.class);
+    private static final Logger LOG = LogUtil.getLogger(IbmMisc.class);
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
