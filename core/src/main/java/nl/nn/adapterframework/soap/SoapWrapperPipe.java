@@ -83,6 +83,11 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String root = null;
 	private boolean ignoreSoapFault = false;
 
+	private String onlyIfSessionKey;
+	private String onlyIfValue;
+	private String unlessSessionKey;
+	private String unlessValue;
+
 	private CredentialFactory wssCredentialFactory = null;
 	private String wssAuthAlias;
 	private String wssUserName;
@@ -204,6 +209,20 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 
     @Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
+			Object onlyIfAcutalValue = session.get(getOnlyIfSessionKey());
+			if (onlyIfAcutalValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfAcutalValue)) {
+				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfAcutalValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
+				return new PipeRunResult(getForward(), input);
+			}
+		}
+		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
+			Object unlessActualValue = session.get(getUnlessSessionKey());
+			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
+				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or not equal to value ["+getUnlessValue()+"]");
+				return new PipeRunResult(getForward(), input);
+			}
+		}
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
@@ -396,5 +415,37 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public boolean isWssPasswordDigest() {
 		return wssPasswordDigest;
+	}
+
+	@IbisDoc({"17", "Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
+	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
+		this.onlyIfSessionKey = onlyIfSessionKey;
+	}
+	public String getOnlyIfSessionKey() {
+		return onlyIfSessionKey;
+	}
+
+	@IbisDoc({"18", "Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
+	public void setOnlyIfValue(String onlyIfValue) {
+		this.onlyIfValue = onlyIfValue;
+	}
+	public String getOnlyIfValue() {
+		return onlyIfValue;
+	}
+
+	@IbisDoc({"19", "Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
+	public void setUnlessSessionKey(String unlessSessionKey) {
+		this.unlessSessionKey = unlessSessionKey;
+	}
+	public String getUnlessSessionKey() {
+		return unlessSessionKey;
+	}
+
+	@IbisDoc({"18", "Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
+	public void setUnlessValue(String unlessValue) {
+		this.unlessValue = unlessValue;
+	}
+	public String getUnlessValue() {
+		return unlessValue;
 	}
 }
