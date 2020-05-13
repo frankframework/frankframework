@@ -646,7 +646,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 * Retrieves the value of the primary key for the record just inserted. 
 	 */
-	protected String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
+	private String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
 		PreparedStatement stmt=null;
 		
 		try {			
@@ -667,7 +667,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				if (!rs.next()) {
 					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
 				}
-				return rs.getString(1);
+				return "<id>" + rs.getString(1) + "</id>";
 			} finally {
 				if (rs!=null) {
 					rs.close();
@@ -755,7 +755,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				ResultSet rs = stmt.getGeneratedKeys();
 				boolean messageIdExists = false;
 				if (rs.next() && rs.getString(1) != null) {
-					return "<results><result>" + rs.getString(1) + "</result></results>";
+					return "<id>" + rs.getString(1) + "</id>";
 				} else {
 					messageIdExists = true;
 				}
@@ -821,7 +821,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					}
 					out.close();
 					dbmsSupport.updateBlob(rs, 1, blobHandle);
-					return newKey;
+					return "<id>" + newKey+ "</id>";
 				
 				} finally {
 					if (rs!=null) {
@@ -830,7 +830,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				}
 			} else {
 				if (isOnlyStoreWhenMessageIdUnique()) {
-					return "already there";
+					boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+					String resultString = createResultString(isMessageDifferent);
+					log.warn("MessageID [" + messageId + "] already exists");
+					if (isMessageDifferent) {
+						log.warn("Message with MessageID [" + messageId + "] is not equal");
+					}
+					return resultString;
 				} else {
 					throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
 				}
