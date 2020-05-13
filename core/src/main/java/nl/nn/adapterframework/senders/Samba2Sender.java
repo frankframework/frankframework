@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
