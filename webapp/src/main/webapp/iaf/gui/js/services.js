@@ -1053,4 +1053,36 @@ angular.module('iaf.beheerconsole')
 			}
 			return false;
 		};
+	}]).config(['$httpProvider', function($httpProvider) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', function(appConstants, $q, Misc) {
+			return {
+				request: function(config) {
+					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+						config.url = config.url + '?v=' + ff_version;
+					}
+					return config;
+				},
+				responseError: function(rejection) {
+					if(rejection.config && rejection.config.url && rejection.config.url.indexOf(Misc.getServerPath()) < 0) return;
+					switch (rejection.status) {
+						case -1:
+							if(appConstants.init == 1) {
+								if(rejection.config.headers["Authorization"] != undefined) {
+									console.warn("Authorization error");
+								}
+							}
+							else if(appConstants.init == 2) {
+								console.warn("Connection to the server was lost!");
+							}
+							break;
+						case 401:
+						case 403:
+							console.warn("an authorization error occured!", rejection.data, rejection.statusText);
+							break;
+					}
+					// otherwise, default behaviour
+					return $q.reject(rejection);
+				}
+			};
+		}]);
 	}]);
