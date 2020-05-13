@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018, 2020 Nationale-Nederlanden
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -79,6 +82,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private boolean failOnWildcards=true;
 	private boolean acceptNamespaceLessXml=false;
 	private boolean produceNamespaceLessXml=false;
+	private boolean validateJsonToRootElementOnly=true;
 
 
 	{
@@ -110,7 +114,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	
 	protected void storeInputFormat(String format, IPipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
-			session.put(INPUT_FORMAT_SESSION_KEY_PREFIX+getName(), format);
+			String sessionKey = INPUT_FORMAT_SESSION_KEY_PREFIX+getName();
+			if (log.isDebugEnabled()) log.debug("storing inputFormat ["+format+"] under session key ["+sessionKey+"]");
+			session.put(sessionKey, format);
 		}
 	}
 	
@@ -170,9 +176,21 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 	
+	protected Set<List<String>> getJsonRootValidations(boolean responseMode) {
+		if (isValidateJsonToRootElementOnly()) {
+			String root=getMessageRoot(responseMode);
+			List<String> resultList = new LinkedList<>();
+			resultList.add(root);
+			Set<List<String>> resultSet = new HashSet<>();
+			resultSet.add(resultList);
+			return resultSet;
+		} 
+		return getRootValidations(responseMode);
+	}
+	
 	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
@@ -192,7 +210,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
-			context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+			context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 			validatorHandler = validator.getValidatorHandler(session, context);
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
@@ -392,5 +410,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public boolean isProduceNamespaceLessXml() {
 		return produceNamespaceLessXml;
 	}
+
+	@IbisDoc({"12", "If true, and converting to or from json, then the message root is the only rootValidation", "true"})
+	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {
+		this.validateJsonToRootElementOnly = validateJsonToRootElementOnly;
+	}
+	public boolean isValidateJsonToRootElementOnly() {
+		return validateJsonToRootElementOnly;
+	}
+
 
 }
