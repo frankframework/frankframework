@@ -50,6 +50,7 @@
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
+	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -104,4 +105,5 @@
 	&Javascript;
 	&Parameters;
 	&MessageStore;
+	&SoapValidator;	
 </configuration>

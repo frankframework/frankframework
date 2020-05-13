@@ -2,8 +2,10 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -13,6 +15,13 @@ import nl.nn.adapterframework.util.TestAssertions;
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 
 	private String TARGET_NAMESPACE="urn:fakenamespace";
+	
+	@Override
+	@Before
+	public void setup() throws ConfigurationException {
+		super.setup();
+		session = new PipeLineSessionBase();
+	}
 	
 	@Override
 	public P createPipe() {
@@ -197,7 +206,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 				+"<attrib>2</attrib>\n"
 				+"</root>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(input,session);
 		
 		String actual = (String)prr.getResult();
 		System.out.println("result ["+actual+"]");

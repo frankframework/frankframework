@@ -16,8 +16,12 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonStructure;
@@ -75,6 +79,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private boolean failOnWildcards=true;
 	private boolean acceptNamespaceLessXml=false;
 	private boolean produceNamespaceLessXml=false;
+	private boolean validateJsonToRootElementOnly=true;
 
 
 	{
@@ -160,9 +165,24 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 	
+	protected Set<List<String>> getJsonRootValidations(boolean responseMode) {
+		if (isValidateJsonToRootElementOnly()) {
+			String root=getMessageRoot(responseMode);
+			if (StringUtils.isEmpty(root)) {
+				return null;
+			}
+			List<String> resultList = new LinkedList<>();
+			resultList.add(root);
+			Set<List<String>> resultSet = new HashSet<>();
+			resultSet.add(resultList);
+			return resultSet;
+		} 
+		return getRootValidations(responseMode);
+	}
+	
 	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
@@ -182,7 +202,7 @@ public class Json2XmlValidator extends XmlValidator {
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
-			context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+			context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 			validatorHandler = validator.getValidatorHandler(session, context);
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
@@ -348,5 +368,14 @@ public class Json2XmlValidator extends XmlValidator {
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
+
+	@IbisDoc({"12", "If true, and converting to or from json, then the message root is the only rootValidation", "true"})
+	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {
+		this.validateJsonToRootElementOnly = validateJsonToRootElementOnly;
+	}
+	public boolean isValidateJsonToRootElementOnly() {
+		return validateJsonToRootElementOnly;
+	}
+
 
 }
