@@ -179,6 +179,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	protected Set<List<String>> getJsonRootValidations(boolean responseMode) {
 		if (isValidateJsonToRootElementOnly()) {
 			String root=getMessageRoot(responseMode);
+			if (StringUtils.isEmpty(root)) {
+				return null;
+			}
 			List<String> resultList = new LinkedList<>();
 			resultList.add(root);
 			Set<List<String>> resultSet = new HashSet<>();
