@@ -28,42 +28,42 @@ public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> {
 		setFileSystem(new Samba2FileSystem());
 	}
 
-	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
+	@IbisDocRef({"1", SAMBA_2_FILE_SYSTEM})
 	public void setShare(String share) {
 		getFileSystem().setShare(share);
 	}
 
-	@IbisDoc({ "2", "the smb share username", "" })
+	@IbisDocRef({"2", SAMBA_2_FILE_SYSTEM})
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	@IbisDoc({ "3", "the smb share password", "" })
+	@IbisDocRef({"3", SAMBA_2_FILE_SYSTEM})
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
+	@IbisDocRef({"4", SAMBA_2_FILE_SYSTEM})
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	@IbisDocRef({"5", SAMBA_2_FILE_SYSTEM})
 	public void setDomain(String domain) {
 		getFileSystem().setDomain(domain);
 	}
 
-	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
+	@IbisDocRef({"6", SAMBA_2_FILE_SYSTEM})
 	public void setAuthType(String authType) {
 		getFileSystem().setAuthType(authType);
 	}
 
-	@IbisDoc({ "7", "Kerberos Domain Controller, as set in java.security.krb5.kdc. If authentication type specified as SPNEGO and realm is specified then this field must be filled.", "" })
+	@IbisDocRef({"7", SAMBA_2_FILE_SYSTEM})
 	public void setKdc(String kdc) {
 		getFileSystem().setKdc(kdc);
 	}
 
-	@IbisDoc({ "8", "Kerberos Realm, as set in java.security.krb5.realm. If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used", "" })
+	@IbisDocRef({"8", SAMBA_2_FILE_SYSTEM})
 	public void setRealm(String realm) {
 		getFileSystem().setRealm(realm);
 	}
