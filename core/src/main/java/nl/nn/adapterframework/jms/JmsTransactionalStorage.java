@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
@@ -36,7 +37,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
+public class JmsTransactionalStorage<M extends Message> extends JmsMessageBrowser<M> implements ITransactionalStorage<M> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -65,11 +66,11 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();
-			ObjectMessage msg = session.createObjectMessage(message);
+			ObjectMessage msg = session.createObjectMessage((Serializable)message);
 			msg.setStringProperty(FIELD_TYPE,getType());
 			msg.setStringProperty(FIELD_ORIGINAL_ID,messageId);
 			msg.setJMSCorrelationID(correlationId);
@@ -101,20 +102,20 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	@Override
-	public Object browseMessage(String messageId) throws ListenerException {
+	public M browseMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=(ObjectMessage)super.browseMessage(messageId);
-			return msg.getObject();
+			return(M)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
 
 	@Override
-	public Object getMessage(String messageId) throws ListenerException {
+	public M getMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=(ObjectMessage)super.getMessage(messageId);
-		return msg.getObject();
+		return (M)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

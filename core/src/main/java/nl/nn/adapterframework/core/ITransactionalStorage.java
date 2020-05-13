@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -27,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
+public interface ITransactionalStorage<M> extends IMessageBrowser<M>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
 
@@ -51,16 +50,15 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 * 
 	 * The messageId should be unique.
 	 */
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException;
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException;
 	
-    /**
-     * Check if the storage contains message with the given original messageId
-     * (as passed to storeMessage).
-     */
-    public boolean containsMessageId(String originalMessageId) throws ListenerException;
+	/**
+	 * Check if the storage contains message with the given original messageId 
+	 * (as passed to storeMessage).
+	 */
+	public boolean containsMessageId(String originalMessageId) throws ListenerException;
 
-    public boolean containsCorrelationId(String correlationId) throws ListenerException;
-
+	public boolean containsCorrelationId(String correlationId) throws ListenerException;
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.

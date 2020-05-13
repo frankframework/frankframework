@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -27,10 +26,10 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author Jaco de Groot
  */
-public class DummyTransactionalStorage extends JdbcTransactionalStorage {
+public class DummyTransactionalStorage<M> extends JdbcTransactionalStorage<M> {
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
 		return null;
 	}
 

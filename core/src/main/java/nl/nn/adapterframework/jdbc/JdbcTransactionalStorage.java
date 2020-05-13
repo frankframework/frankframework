@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
+public class JdbcTransactionalStorage<M> extends JdbcFacade implements ITransactionalStorage<M> {
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -670,7 +670,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, M message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
 			IDbmsSupport dbmsSupport=getDbmsSupport();
@@ -839,7 +839,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	private boolean isMessageDifferent(Connection conn, String messageId, Serializable message) throws SQLException{
+	private boolean isMessageDifferent(Connection conn, String messageId, M message) throws SQLException{
 		PreparedStatement stmt = null;
 		int paramPosition=0;
 		
@@ -884,7 +884,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
 			txStatus = txManager.getTransaction(TXREQUIRED);
@@ -940,7 +940,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		
 	}
 
-	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
 		String result;
 		try {
 			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
@@ -1115,7 +1115,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	private Object retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private M retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		InputStream blobStream=null;
 		try {
 			Blob blob = rs.getBlob(columnIndex);
@@ -1128,7 +1128,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
 			ObjectInputStream ois = new ObjectInputStream(blobStream);
-			Object result = ois.readObject();
+			M result = (M)ois.readObject();
 			ois.close();
 			return result;
 		} finally {
@@ -1139,7 +1139,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	
-	protected Object retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -1275,7 +1275,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	@Override
-	public Object browseMessage(String messageId) throws ListenerException {
+	public M browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1306,8 +1306,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	@Override
-	public Object getMessage(String messageId) throws ListenerException {
-		Object result = browseMessage(messageId);
+	public M getMessage(String messageId) throws ListenerException {
+		M result = browseMessage(messageId);
 		deleteMessage(messageId);
 		return result;
 	}
