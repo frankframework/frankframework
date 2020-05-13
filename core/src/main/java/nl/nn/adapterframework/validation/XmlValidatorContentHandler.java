@@ -92,7 +92,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						String message = "Illegal element '" + lName + "'. No element expected.";
 						if (xmlValidatorErrorHandler != null) {
 							xmlValidatorErrorHandler.addReason(message, null, null);
-					} else {
+						} else {
 							throw new IllegalRootElementException(message);
 						}
 					} else {
@@ -117,7 +117,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 											throw new UnknownNamespaceException(message);
 										}
 									}
-								} 
+								}
 								rootElementsFound.add(path);
 							}
 						} else {
@@ -126,9 +126,9 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 								xmlValidatorErrorHandler.addReason(message, null, null);
 							} else {
 								throw new IllegalRootElementException(message);
+							}
+						}
 					}
-				}
-			}
 				}
 			}
 		}
