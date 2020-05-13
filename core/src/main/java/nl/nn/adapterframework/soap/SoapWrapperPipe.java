@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -82,6 +82,11 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String soapNamespace = null;
 	private String root = null;
 	private boolean ignoreSoapFault = false;
+	
+	private String onlyIfSessionKey;
+	private String onlyIfValue;
+	private String unlessSessionKey;
+	private String unlessValue;
 
 	private CredentialFactory wssCredentialFactory = null;
 	private String wssAuthAlias;
@@ -127,12 +132,11 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix(null) + "created CredentialFactory for username=["
-					+ wssCredentialFactory.getUsername()+"]");
+			log.debug(getLogPrefix(null) + "created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
 		}
 	}
 
-    @Override
+	@Override
 	public void start() throws PipeStartException {
 		super.start();
 		if (soapHeaderTp != null) {
@@ -179,7 +183,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 	}
 
-    @Override
+	@Override
 	public void stop() {
 		super.stop();
 		if (soapHeaderTp != null) {
@@ -204,6 +208,20 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
+			Object onlyIfAcutalValue = session.get(getOnlyIfSessionKey());
+			if (onlyIfAcutalValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfAcutalValue)) {
+				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfAcutalValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
+				return new PipeRunResult(getForward(), message);
+			}
+		}
+		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
+			Object unlessActualValue = session.get(getUnlessSessionKey());
+			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
+				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or not equal to value ["+getUnlessValue()+"]");
+				return new PipeRunResult(getForward(), message);
+			}
+		}
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
@@ -267,15 +285,15 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, getSoapNamespace(), wssCredentialFactory, isWssPasswordDigest());
 	}
 
+	@IbisDoc({"1", "Either <code>wrap</code> or <code>unwrap</code>", "wrap"})
+	public void setDirection(String string) {
+		direction = string;
+	}
 	public String getDirection() {
 		return direction;
 	}
 
-	@IbisDoc({"either <code>wrap</code> or <code>unwrap</code>", "wrap"})
-	public void setDirection(String string) {
-		direction = string;
-	}
-
+	@IbisDoc({"2", "Key of session variable to store soap header", DEFAULT_SOAP_HEADER_SESSION_KEY+", when direction is 'unwrap'"})
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
@@ -283,7 +301,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapHeaderSessionKey;
 	}
 
-	@IbisDoc({"the encodingstyle to be set in the soap header", ""})
+	@IbisDoc({"3", "The encodingstyle to be set in the soap header", ""})
 	public void setEncodingStyle(String string) {
 		encodingStyle = string;
 	}
@@ -291,7 +309,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return encodingStyle;
 	}
 
-	@IbisDoc({"the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent", ""})
+	@IbisDoc({"4", "The default for the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent", ""})
 	public void setServiceNamespace(String string) {
 		serviceNamespace = string;
 	}
@@ -299,7 +317,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return serviceNamespace;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) stylesheet to create the content of the soap header. as input for this stylesheet a dummy xml string is used. note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
+	@IbisDoc({"5", "(only used when <code>direction=wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
 	public void setSoapHeaderStyleSheet(String string){
 		this.soapHeaderStyleSheet = string;
 	}
@@ -307,7 +325,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapHeaderStyleSheet;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
+	@IbisDoc({"6", "(only used when <code>direction=wrap</code>) Stylesheet to apply to the input message. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
 	public void setSoapBodyStyleSheet(String string){
 		this.soapBodyStyleSheet = string;
 	}
@@ -315,7 +333,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapBodyStyleSheet;
 	}
 
-	@IbisDoc({"(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
+	@IbisDoc({"7", "(only used when <code>direction=unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
@@ -323,7 +341,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return removeOutputNamespaces;
 	}
 
-	@IbisDoc({"(only used when <code>direction=unwrap</code> and <code>removeoutputnamespaces=false</code>) when <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
+	@IbisDoc({"8", "(only used when <code>direction=unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
 	public void setRemoveUnusedOutputNamespaces(boolean b) {
 		removeUnusedOutputNamespaces = b;
 	}
@@ -331,7 +349,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return removeUnusedOutputNamespaces;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the soap body", ""})
+	@IbisDoc({"9", "(only used when <code>direction=wrap</code>) If not empty, this namespace is added to the root element in the soap body", ""})
 	public void setOutputNamespace(String string) {
 		outputNamespace = string;
 	}
@@ -339,7 +357,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return outputNamespace;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) namespace of the soap envelope", "http://schemas.xmlsoap.org/soap/envelope/"})
+	@IbisDoc({"10", "(only used when <code>direction=wrap</code>) Namespace of the soap envelope", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
@@ -347,7 +365,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapNamespace;
 	}
 
-	@IbisDoc({"when not empty, the root element in the soap body is changed to this value", ""})
+	@IbisDoc({"11", "If not empty, the root element in the soap body is changed to this value", ""})
 	public void setRoot(String string) {
 		root = string;
 	}
@@ -355,7 +373,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return root;
 	}
 
-	@IbisDoc({"(only used when <code>direction=unwrap</code>) when <code>false</code> and the soap body contains a soap fault, a piperunexception is thrown", "false"})
+	@IbisDoc({"12", "(only used when <code>direction=unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown", "false"})
 	public void setIgnoreSoapFault(boolean b) {
 		ignoreSoapFault = b;
 	}
@@ -363,23 +381,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return ignoreSoapFault;
 	}
 
-	@IbisDoc({"", " "})
-	public void setWssUserName(String string) {
-		wssUserName = string;
-	}
-	public String getWssUserName() {
-		return wssUserName;
-	}
-
-	@IbisDoc({"", " "})
-	public void setWssPassword(String string) {
-		wssPassword = string;
-	}
-	public String getWssPassword() {
-		return wssPassword;
-	}
-
-	@IbisDoc({"alias used to obtain credentials for authentication to web services security", ""})
+	@IbisDoc({"13", "alias used to obtain credentials for authentication to WebServiceSecurity", ""})
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}
@@ -387,11 +389,59 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssAuthAlias;
 	}
 
-	@IbisDoc({"when true, the password is sent digested. otherwise it is sent in clear text", "true"})
+	@IbisDoc({"14", "Default username for WebServiceSecurity", " "})
+	public void setWssUserName(String string) {
+		wssUserName = string;
+	}
+	public String getWssUserName() {
+		return wssUserName;
+	}
+
+	@IbisDoc({"15", "Default password for WebServiceSecurity", " "})
+	public void setWssPassword(String string) {
+		wssPassword = string;
+	}
+	public String getWssPassword() {
+		return wssPassword;
+	}
+
+	@IbisDoc({"16", "If true, the password is sent digested; Otherwise it is sent in clear text", "true"})
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}
 	public boolean isWssPasswordDigest() {
 		return wssPasswordDigest;
+	}
+
+	@IbisDoc({"17", "Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
+	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
+		this.onlyIfSessionKey = onlyIfSessionKey;
+	}
+	public String getOnlyIfSessionKey() {
+		return onlyIfSessionKey;
+	}
+
+	@IbisDoc({"18", "Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
+	public void setOnlyIfValue(String onlyIfValue) {
+		this.onlyIfValue = onlyIfValue;
+	}
+	public String getOnlyIfValue() {
+		return onlyIfValue;
+	}
+
+	@IbisDoc({"19", "Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
+	public void setUnlessSessionKey(String unlessSessionKey) {
+		this.unlessSessionKey = unlessSessionKey;
+	}
+	public String getUnlessSessionKey() {
+		return unlessSessionKey;
+	}
+
+	@IbisDoc({"18", "Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
+	public void setUnlessValue(String unlessValue) {
+		this.unlessValue = unlessValue;
+	}
+	public String getUnlessValue() {
+		return unlessValue;
 	}
 }
