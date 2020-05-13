@@ -205,13 +205,12 @@ public class CisConversionResult {
 	 */
 	public void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
 		if(isRoot) {
-			main.addAttribute("CONVERSION_OPTION", this.getConversionOption().getValue());
-			main.addAttribute("MEDIA_TYPE", this.getMediaType().toString());
-			main.addAttribute("DOCUMENT_NAME", this.getDocumentName());
-			main.addAttribute("FAILURE_REASON", this.getFailureReason());
-			main.addAttribute("PARENT_CONVERSION_ID", null);
-			main.addAttribute("NUMBER_OF_PAGES", this.getNumberOfPages());
-			main.addAttribute("CONVERTED_DOCUMENT", this.getResultFilePath());
+			main.addAttribute("conversionOption", this.getConversionOption().getValue());
+			main.addAttribute("mediaType", this.getMediaType().toString());
+			main.addAttribute("documentName", this.getDocumentName());
+			main.addAttribute("failureReason", this.getFailureReason());
+			main.addAttribute("numberOfPages", this.getNumberOfPages());
+			main.addAttribute("convertedDocument", this.getResultFilePath());
 		}
 		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
 		if (attachmentList != null && !attachmentList.isEmpty()) {
@@ -225,7 +224,7 @@ public class CisConversionResult {
 				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
 				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
 				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("filePath", attachment.getResultFilePath());
+				attachmentAsXml.addAttribute("convertedDocument", attachment.getResultFilePath());
 				attachmentsAsXml.addSubElement(attachmentAsXml);
 
 				buildXmlFromResult(attachmentAsXml, attachment, false);

@@ -11,7 +11,6 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Semaphore Tester.
- *
  * @author <Sina Sen>
  */
 public class SemaphoreTest {
@@ -36,7 +35,7 @@ public class SemaphoreTest {
         Semaphore s = new Semaphore(0);
         s.acquire();
         }*/
-    
+
     /**
      * Method: tighten()
      */

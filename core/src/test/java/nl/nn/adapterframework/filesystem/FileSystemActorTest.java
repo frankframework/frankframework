@@ -322,7 +322,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 
-	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute) throws Exception {
+	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		
@@ -342,21 +342,27 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
 		String actualContents = Misc.streamToString((InputStream)result);
 		assertEquals(contents, actualContents);
+		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
 	}
 
 	@Test
 	public void fileSystemActorReadActionTest() throws Exception {
-		fileSystemActorReadActionTest("read",false);
+		fileSystemActorReadActionTest("read",false, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestFilenameViaAttribute() throws Exception {
-		fileSystemActorReadActionTest("read",true);
+		fileSystemActorReadActionTest("read",true, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestCompatiblity() throws Exception {
-		fileSystemActorReadActionTest("download",false);
+		fileSystemActorReadActionTest("download",false, true);
+	}
+
+	@Test
+	public void fileSystemActorReadDeleteActionTest() throws Exception {
+		fileSystemActorReadActionTest("readDelete",false, false);
 	}
 
 	@Test
@@ -509,9 +515,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		// verify the filename is properly returned
-		String stringResult=(String)target.getPipeRunResult().getResult();
+		String stringResult=target.getPipeRunResult().getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		
+	
 		// verify the file contents
 		waitForActionToFinish();
 		String actualContents = readFile(null, filename);

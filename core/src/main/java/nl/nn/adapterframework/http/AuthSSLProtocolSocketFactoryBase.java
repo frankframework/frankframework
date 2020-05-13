@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.commons.net.SocketFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * <p>

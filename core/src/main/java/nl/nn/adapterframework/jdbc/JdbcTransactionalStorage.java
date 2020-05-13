@@ -251,7 +251,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName) throws JdbcException {
-		if (StringUtils.isNotEmpty(columnName) && !dbms.isTableColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
+		if (StringUtils.isNotEmpty(columnName) && !dbms.isColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
 			ConfigurationWarnings.add(this, log, "table [" + getTableName() + "] has no column [" + columnName + "]");
 		}
 	}

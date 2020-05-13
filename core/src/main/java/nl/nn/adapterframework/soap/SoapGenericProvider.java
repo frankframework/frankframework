@@ -28,7 +28,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.Envelope;
 import org.apache.soap.SOAPException;

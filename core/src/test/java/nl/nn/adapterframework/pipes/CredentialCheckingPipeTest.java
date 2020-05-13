@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
     private IPipeLineSession session = new PipeLineSessionBase();
@@ -117,7 +119,11 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         pipe.setTargetUserid(targetId);
         pipe.setDefaultUserid(defaultId);
 
-        return doPipe(pipe, input, session).getResult().toString();
+        try {
+			return doPipe(pipe, input, session).getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(pipe, "cannot convert results", e);
+		}
     }
 
 

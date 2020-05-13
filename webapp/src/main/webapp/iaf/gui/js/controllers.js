@@ -80,6 +80,7 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
+					$scope.strutsConsoleEnabled = (appConstants["strutsConsole.enabled"] === 'true');
 					$rootScope.$broadcast('appConstants');
 				}
 			});
@@ -228,7 +229,7 @@ angular.module('iaf.beheerconsole')
 						adapter.status = "stopped";
 
 					//Add flow diagrams
-					adapter.flow = Misc.getServerPath() + 'rest/showFlowDiagram/' + adapter.name;
+					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + adapter.name + "/flow";
 
 					$rootScope.adapters[adapter.name] = adapter;
 
@@ -398,6 +399,13 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
+
+	$scope.showStrutsConsoleDisabled = function () {
+		SweetAlert.Warning({
+			title: "Struts Console Disabled",
+			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
+		});
+	}
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
@@ -664,10 +672,14 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.showReferences = function() {
 		var config = $scope.selectedConfiguration;
-		if(config == "All")
-			config = "*All*";
+		var url = Misc.getServerPath() + 'iaf/api/configurations/';
 
-		var url = Misc.getServerPath() + 'rest/showFlowDiagram?configuration=' + config;
+		if(config == "All")
+			url += "?flow=true";
+		else {
+			url += config + "/flow";
+		}
+
 		window.open(url);
 	};
 
@@ -1017,15 +1029,24 @@ angular.module('iaf.beheerconsole')
 		$scope.form.loglevel = name;
 	};
 
+	var timeoutPromise = null;
 	$scope.submit = function(formData) {
+		if(timeoutPromise != null) {
+			$timeout.cancel(timeoutPromise);
+		}
+
 		$scope.state = [{type:"info", message: "Updating log configuration..."}];
 		Api.Put("server/log", formData, function() {
 			Api.Get("server/log", function(data) {
 				$scope.form = data;
 				$scope.state = [{type:"success", message: "Successfully updated log configuration!"}];
 			});
+		}, function(data, code) {
+			if(code === 401 || code === 403) {
+				$scope.state = [{type:"danger", message: code+" - Forbidden; you do not have enough access rights to complete this action!"}];
+			}
 		});
-		$timeout(function(){
+		timeoutPromise = $timeout(function(){
 			$scope.state = [];
 		}, 5000);
 	};
@@ -1837,8 +1858,7 @@ angular.module('iaf.beheerconsole')
 				iframeBody.css({"background-color": "rgb(243, 243, 244)"});
 				iframe.css({"height": iframeBody.height() + 50});
 			};
-		}, 50);
-		$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+		});
 	};
 
 	$scope.closeFile = function () {
@@ -1861,6 +1881,7 @@ angular.module('iaf.beheerconsole')
 		Api.Get(url, function(data) {
 			$scope.alert = false;
 			$.extend($scope, data);
+			$scope.path = data.directory;
 			if(data.count > 500) {
 				$scope.alert = "Total number of items ("+data.count+") exceeded maximum number, only showing first 500 items!";
 			}
@@ -1870,10 +1891,11 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.open = function(file) {
-		if(file.type == "directory")
+		if(file.type == "directory") {
 			$state.transitionTo('pages.logging', {directory: file.path});
-		else
-			openFile(file);
+		} else {
+			$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+		}
 	};
 
 	//This is only false when the user opens the logging page
@@ -1883,6 +1905,7 @@ angular.module('iaf.beheerconsole')
 		var file = $stateParams.file;
 
 		$scope.directory = directory;
+		$scope.path = directory+"/"+file;
 		openFile({path: directory+"/"+file, name: file});
 	}
 	else {
@@ -2194,8 +2217,8 @@ angular.module('iaf.beheerconsole')
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
 		}, function(returnData) {
-			$scope.addNote("danger", returnData.state);
-			$scope.result = (returnData.result);
+			$scope.addNote("danger", returnData.error);
+			$scope.result = "";
 			$scope.processingMessage = false;
 		});
 	};

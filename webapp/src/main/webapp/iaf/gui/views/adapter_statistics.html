@@ -115,7 +115,7 @@
 							<thead>
 								<tr>
 									<th>Receiver</th>
-									<th>Threads</th>
+									<th># Threads Processing</th>
 									<th>Count</th>
 									<th>Min</th>
 									<th>Max</th>
@@ -124,10 +124,10 @@
 									<th>Sum</th>
 									<th>First</th>
 									<th>Last</th>
-									<th>< 100ms</th>
-									<th>< 1000ms</th>
-									<th>< 2000ms</th>
-									<th>< 10000ms</th>
+									<th>&lt; 100ms</th>
+									<th>&lt; 1000ms</th>
+									<th>&lt; 2000ms</th>
+									<th>&lt; 10000ms</th>
 									<th>p50</th>
 									<th>p90</th>
 									<th>p95</th>
@@ -136,8 +136,8 @@
 							</thead>
 							<tbody ng-repeat="receiver in stats.receivers">
 								<tr ng-repeat="p in receiver.processing">
-									<td>{{receiver.name}}tralala</td>
-									<td>Thread {{$index}}</td>
+									<td>{{receiver.name}}</td>
+									<td>{{$index + 1}}</td>
 									<td>{{::p.count | dash}}</td>
 									<td>{{::p.min | dash}}</td>
 									<td>{{::p.max | dash}}</td>
@@ -172,10 +172,10 @@
 									<th>Sum</th>
 									<th>First</th>
 									<th>Last</th>
-									<th>< 100ms</th>
-									<th>< 1000ms</th>
-									<th>< 2000ms</th>
-									<th>< 10000ms</th>
+									<th>&lt; 100ms</th>
+									<th>&lt; 1000ms</th>
+									<th>&lt; 2000ms</th>
+									<th>&lt; 10000ms</th>
 									<th>p50</th>
 									<th>p90</th>
 									<th>p95</th>
@@ -219,8 +219,8 @@
 									<th>Sum</th>
 									<th>First</th>
 									<th>Last</th>
-									<th>< 100000B</th>
-									<th>< 1000000B</th>
+									<th>&lt; 100000B</th>
+									<th>&lt; 1000000B</th>
 									<th>p50</th>
 									<th>p90</th>
 									<th>p95</th>
