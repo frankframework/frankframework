@@ -17,10 +17,11 @@
 	<link href="font-awesome/css/font-awesome.css" rel="stylesheet">
 	<link href="css/animate.css" rel="stylesheet">
 
-	<link id="loadBefore" href="css/style.css" rel="stylesheet">
 	<link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
 	<link href="css/plugins/iCheck/custom.css" rel="stylesheet">
 	<link href="css/plugins/ladda/ladda-themeless.min.v1.0.5.css" rel="stylesheet">
+	<link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+	<link id="loadBefore" href="css/style.css" rel="stylesheet">
 	<link rel="shortcut icon" href="favicon.ico">
 </head>
 
@@ -42,6 +43,8 @@
 		</div>
 	</div>
 </div>
+
+<toaster-container toaster-options="{'time-out':5500, 'close-button': true}"></toaster-container>
 
 <div ui-view style="display:none;" class="main"></div>
 
@@ -73,6 +76,7 @@
 <script src="js/plugins/ladda/spin.min.v1.0.5.js"></script>
 <script src="js/plugins/ladda/ladda.min.v1.0.5.js"></script>
 <script src="js/plugins/ladda/angular-ladda.min.v0.4.3.js"></script>
+<script src="js/plugins/toastr/toastr.min.js"></script>
 
 <%
 // Calculate an unique hash (per framework version) to disable caching
