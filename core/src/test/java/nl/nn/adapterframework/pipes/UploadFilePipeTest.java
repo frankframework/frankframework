@@ -170,7 +170,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
         session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+"/new_dir");
         PipeRunResult res =doPipe(pipe, "dsfdf", session1);
-        assertEquals("String: "+sourceFolderPath+"\\new_dir", res.getResult().toString());
+        assertEquals("String: "+sourceFolderPath+"/new_dir", res.getResult().toString());
     }
 
     /**
