@@ -2,6 +2,8 @@ package nl.nn.adapterframework.util;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * CounterStatistic Tester.
  *
@@ -20,6 +22,7 @@ public class CounterStatisticTest {
     public void testPerformAction01() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(0);
+        assertEquals(cs.getValue(), 10);
     }
 
     /**

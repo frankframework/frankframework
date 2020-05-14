@@ -1,11 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runners.model.TestTimedOutException;
-
-import javax.ejb.Timeout;
 
 import static org.junit.Assert.assertEquals;
 
