@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationListener;
+
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -31,16 +33,17 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
 	private static final String STUB_STRATEY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEY_NEVER = "Never";
 	private static final String STUB_STRATEY_ALWAYS = "Always";
@@ -177,7 +180,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 	
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext) {
 		String errorMessage = null;
 		if (securityContext.isUserInRoles(rerunRoles)) {
 			int i = 0;
@@ -186,7 +189,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 			String checkpointName = checkpoint.getName();
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
-				String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+				String message = checkpoint.getMessage();
 				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					IPipeLineSession pipeLineSession = new PipeLineSessionBase();
@@ -207,7 +210,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 						inRerun.add(correlationId);
 					}
 					try {
-						adapter.processMessage(correlationId, inputMessage, pipeLineSession);
+						adapter.processMessage(correlationId, message, pipeLineSession);
 					} finally {
 						synchronized(inRerun) {
 							inRerun.remove(correlationId);
@@ -323,4 +326,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger {
 		return name;
 	}
 
+	@Override
+	public void updateReportGeneratorStatus(boolean enabled) {
+		AppConstants.getInstance().put("testtool.enabled", ""+enabled);
+	}
+
+	@Override
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+		testTool.setReportGeneratorEnabled(event.isEnabled());
+	}
 }

@@ -19,14 +19,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -74,7 +71,6 @@ public class LadybugPipe extends FixedForwardPipe {
 	private ReportXmlTransformer reportXmlTransformer;
 	private String exclude;
 	private Pattern excludeRegexPattern;
-	private ReportNameComparator reportNameComparator;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -86,7 +82,6 @@ public class LadybugPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
 		}
-		reportNameComparator = new ReportNameComparator();
 	}
 
 	@Override
@@ -110,20 +105,18 @@ public class LadybugPipe extends FixedForwardPipe {
 		}
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
-		reportRunner.setDebugStorage(debugStorage);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
 
-		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
-		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
+		boolean reportGeneratorEnabledOldValue = testTool.isReportGeneratorEnabled();
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(true);
 			testTool.setReportGeneratorEnabled(true);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
-			IbisDebuggerAdvice.setEnabled(reportGeneratorEnabledOldValue);
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
+			testTool.sendReportGeneratorStatusUpdate();
 		}
 		long endTime = System.currentTimeMillis();
 		
@@ -139,7 +132,7 @@ public class LadybugPipe extends FixedForwardPipe {
 			} else {
 				Report runResultReport = null;
 				try {
-					runResultReport = reportRunner.getRunResultReport(runResult.correlationId);
+					runResultReport = ReportRunner.getRunResultReport(debugStorage, runResult.correlationId);
 				} catch (StorageException e) {
 					addExceptionElement(results, e);
 				}
@@ -152,7 +145,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					runResultReport.setGlobalReportXmlTransformer(reportXmlTransformer);
 					runResultReport.setTransformation(report.getTransformation());
 					runResultReport.setReportXmlTransformer(report.getReportXmlTransformer());
-					if(report.toXml(reportRunner).equals(runResultReport.toXml(reportRunner))) {
+					if (report.toXml().equals(runResultReport.toXml())) {
 						equal = true;
 						reportsPassed++;
 					}
@@ -283,13 +276,5 @@ class IbisSecurityContext implements SecurityContext {
 		} else {
 			return true;
 		}
-	}
-}
-
-class ReportNameComparator implements Comparator<Report> {
-
-	@Override
-	public int compare(Report o1, Report o2) {
-		return o1.getFullPath().compareTo(o2.getFullPath());
 	}
 }
