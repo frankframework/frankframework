@@ -323,6 +323,7 @@ body.mini-navbar .navbar-default .nav > li > .nav-second-level li a {
   display: none;
   height: 60px;
   padding: 15px;
+  text-align: center;
 }
 .logo-element object {
   max-height: 100%;
@@ -1659,6 +1660,20 @@ table.dataTable thead .sorting_desc_disabled {
 }
 .dataTables_filter label {
   margin-right: 5px;
+}
+td.storageActions {
+  min-width: 120px !important;
+  height: 100px;
+}
+td.storageActions > div.icheckbox_square-green {
+  margin: 38px 6px 0 0;
+}
+td.storageActions > div {
+  float: left;
+}
+td.storageActions a, .storageActions button {
+  float: left;
+  clear: both;
 }
 .html5buttons {
   float: right;
@@ -3650,7 +3665,11 @@ body.body-small .footer.fixed {
   line-height: 1.42857;
   padding: 5px;
   vertical-align: top;
-  min-width: 75px;
+  min-width: 30px;
+}
+.table > thead > tr > th > input {
+  font-weight: 400;
+  font-size: 14px;
 }
 .table-nohead > tbody > tr:first-child > td {
   border-top: none;
@@ -3839,6 +3858,8 @@ code {
   margin-bottom: 0;
   padding: 14px 15px 7px;
   min-height: 48px;
+}
+.disableUserSelect {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select:none;

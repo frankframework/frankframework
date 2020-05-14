@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
@@ -47,10 +48,11 @@ import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
-
 
 /**
  *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
@@ -61,7 +63,9 @@ import nl.nn.adapterframework.validation.XSD;
  * @author  Jaco de Groot
  */
 public class Wsdl {
-    protected static final String WSDL_NAMESPACE                 = "http://schemas.xmlsoap.org/wsdl/";
+	protected Logger log = LogUtil.getLogger(this);
+
+	protected static final String WSDL_NAMESPACE                 = "http://schemas.xmlsoap.org/wsdl/";
     protected static final String WSDL_NAMESPACE_PREFIX          = "wsdl";
     protected static final String XSD_NAMESPACE                  = SchemaUtils.XSD;
     protected static final String XSD_NAMESPACE_PREFIX           = "xsd";
@@ -78,6 +82,8 @@ public class Wsdl {
     protected static final String ESB_SOAP_JNDI_NAMESPACE_PREFIX = "jndi";
     protected static final String ESB_SOAP_TNS_BASE_URI          = "http://nn.nl/WSDL";
     protected static final String TARGET_NAMESPACE_PREFIX        = "tns";
+
+    public static final String WSDL_EXTENSION                    = ".wsdl";
 
     protected static final List<String> excludeXsds = new ArrayList<String>();
     static {
@@ -132,6 +138,10 @@ public class Wsdl {
     private List<String> warnings = new ArrayList<String>();
 
     public Wsdl(PipeLine pipeLine) {
+    	this(pipeLine, null);
+    }
+
+    public Wsdl(PipeLine pipeLine, String generationInfo) {
         this.pipeLine = pipeLine;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
@@ -300,6 +310,12 @@ public class Wsdl {
             soapNamespace = SOAP12_NAMESPACE;
             soapPrefix = SOAP12_NAMESPACE_PREFIX;
         }
+        if (StringUtils.isEmpty(getDocumentation())) {
+    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getIsoTimeStamp() + ".";
+        }
+		if (inputValidator.getDocumentation() != null) {
+			documentation = documentation + inputValidator.getDocumentation();
+		}
     }
 
     public String getName() {
@@ -1007,5 +1023,4 @@ public class Wsdl {
             warnings.add(warning);
         }
     }
-
 }

@@ -21,7 +21,7 @@ import nl.nn.adapterframework.statistics.Basics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Record use to gather statistics data from a file.

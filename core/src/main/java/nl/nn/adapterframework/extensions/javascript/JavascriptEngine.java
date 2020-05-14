@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /** 
  * Javascript engine interface, allows the use of a javascript engine to execute javascript code functions.
@@ -67,7 +67,6 @@ public interface JavascriptEngine<E> {
 	 * a javascript function can call the sender using the name of the sender as a function call.
 	 * 
 	 * @param sender		The sender given in the adapter configuration
-	 * @param prc		The ParameterResolutionContext
 	 */
-	public void registerCallback(ISender sender, ParameterResolutionContext prc);
+	public void registerCallback(ISender sender, IPipeLineSession session);
 }

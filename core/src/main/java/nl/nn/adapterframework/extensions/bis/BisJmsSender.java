@@ -22,12 +22,13 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -63,6 +64,8 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
+@Deprecated
+@ConfigurationWarning("Please change to JmsSender combined with BisWrapperPipe")
 public class BisJmsSender extends JmsSender {
 
 	private String responseXPath = null;
@@ -86,9 +89,6 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	public void configure() throws ConfigurationException {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to JmsSender combined with BisWrapperPipe";
-		configWarnings.add(log, msg);
 		super.configure();
 		if (!isSoap()) {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
@@ -109,23 +109,23 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
 		String messageHeader;
 		try {
-			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey()));
+			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String payload;
+		String replyMessage;
 		try {
-			payload = bisUtils.prepareReply(message, isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
+			String payload = bisUtils.prepareReply(input.asString(), isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
 			if (StringUtils.isNotEmpty(getRequestNamespace())) {
 				payload = XmlUtils.addRootNamespace(payload, getRequestNamespace());
 			}
+			replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		String replyMessage = super.sendMessage(correlationID, payload, prc, isMessageHeaderInSoapBody() ? null : messageHeader);
 		if (isSynchronous()) {
 			String bisError;
 			String bisErrorList;
@@ -137,7 +137,7 @@ public class BisJmsSender extends JmsSender {
 			}
 			if (Boolean.valueOf(bisError).booleanValue()) {
 				log.debug("put in session [" + getErrorListSessionKey() + "] [" + bisErrorList + "]");
-				prc.getSession().put(getErrorListSessionKey(), bisErrorList);
+				session.put(getErrorListSessionKey(), bisErrorList);
 				throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()) + "] returns true");
 			}
 			try {
@@ -153,14 +153,14 @@ public class BisJmsSender extends JmsSender {
 					}
 					replyMessage = XmlUtils.nodeToString(soapBodyElement);
 				}
-				return replyMessage;
+				return new Message(replyMessage);
 
 			} catch (Exception e) {
 				throw new SenderException(e);
 			}
 
 		} else {
-			return replyMessage;
+			return new Message(replyMessage);
 		}
 	}
 

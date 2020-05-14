@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.ClassUtils;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * Singleton class that has the configuration warnings for this application.
@@ -28,65 +29,90 @@ import nl.nn.adapterframework.util.ClassUtils;
 public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
 	private Configuration activeConfiguration = null;
-	
+
+	/**
+	 * Add configuration independent warning
+	 */
+	public static void add(Logger log, String message) {
+		add(log, message, null);
+	}
+
+	/**
+	 * Add configuration independent warning and log the exception stack
+	 */
+	public static void add(Logger log, String message, Throwable t) {
+		getInstance().addConfigurationIndependentWarning(log, message, t, (t==null));
+	}
+
+	/**
+	 * Add configuration warning with INamedObject prefix
+	 */
+	public static void add(INamedObject object, Logger log, String message) {
+		add(object, log, message, null);
+	}
+
+	/**
+	 * Add configuration warning with INamedObject prefix and log the exception stack
+	 */
+	public static void add(INamedObject object, Logger log, String message, Throwable t) {
+		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"]")+" "+message;
+		getInstance().doAdd(log, msg, t);
+	}
+
 	public static synchronized ConfigurationWarnings getInstance() {
 		if (self == null) {
 			self = new ConfigurationWarnings();
 		}
 		return self;
 	}
-	
-	public static void add(INamedObject object, Logger log, String message) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(object) +"["+object.getName()+"]: "+message;
-		configWarnings.add(log, msg);		
+
+	private void doAdd(Logger log, String msg, Throwable t) {
+		if (activeConfiguration!=null) {
+			activeConfiguration.getConfigurationWarnings().add(log, msg, t, (t==null));
+		} else {
+			addConfigurationIndependentWarning(log, msg, t, (t==null));
+		}
 	}
 
-	public boolean add(Logger log, String msg) {
-		return add(log, msg, null, false);
-	}
-	
-	public boolean add(Logger log, String msg, Throwable t) {
-		return add(log, msg, t, false);
-	}
-	
-	public boolean add(Logger log, String msg, boolean onlyOnce) {
-		return add(log, msg, null, onlyOnce);
-	}
 
 	@Override
-	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
+	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
 		return add(log, msg, null, onlyOnce, null);
 	}
 
-	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce, Configuration config) {
+	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce, Configuration config) {
 		if (config!=null) {
 			return config.getConfigurationWarnings().add(log, msg, t, onlyOnce);
 		} else {
 			if (activeConfiguration!=null) {
 				return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
 			} else {
-				return super.add(log, msg, t, onlyOnce);
+				return addConfigurationIndependentWarning(log, msg, t, onlyOnce);
 			}
 		}
 	}
 
-	public boolean containsDefaultValueExceptions(String key) {
+	private boolean addConfigurationIndependentWarning(Logger log, String msg, Throwable t, boolean onlyOnce) {
+		return super.add(log, msg, t, onlyOnce);
+	}
+
+	@Override
+	public boolean containsDefaultValueException(String key) {
 		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().containsDefaultValueExceptions(key);
+			return activeConfiguration.getConfigurationWarnings().containsDefaultValueException(key);
 		} else {
-			return super.containsDefaultValueExceptions(key);
+			return super.containsDefaultValueException(key);
 		}
 	}
 
-	public boolean addDefaultValueExceptions(String key) {
+	public void addDefaultValueExceptions(String key) {
 		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().addDefaultValueExceptions(key);
+			activeConfiguration.getConfigurationWarnings().addDefaultValueException(key);
 		} else {
-			return super.addDefaultValueExceptions(key);
+			super.addDefaultValueException(key);
 		}
 	}
-	
+
 	public void setActiveConfiguration (Configuration configuration) {
 		activeConfiguration = configuration;
 	}

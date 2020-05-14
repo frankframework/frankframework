@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.5-RC2-SNAPSHOT</version>
+    <version>7.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>ibis-adapterframework-webapp</artifactId>
@@ -54,6 +54,12 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- Servlet support for multiple contexts -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-web</artifactId>
     </dependency>
   </dependencies>
 

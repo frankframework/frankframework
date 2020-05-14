@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,47 @@ package nl.nn.adapterframework.configuration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.util.Map;
 
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-public class ConfigurationUtilsTest {
+import nl.nn.adapterframework.configuration.ConfigurationUtils.ConfigurationValidator;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+
+public class ConfigurationUtilsTest extends Mockito {
+
+	private IbisContext ibisContext = spy(new IbisContext());
+	private PreparedStatementMock stmt;
+
+	private void mockDatabase() throws Exception {
+		// Mock a FixedQuerySender
+		FixedQuerySender fq = mock(FixedQuerySender.class);
+		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
+
+		Connection conn = mock(Connection.class);
+		doReturn(conn).when(fq).getConnection();
+
+		//Override prepareStatement(String query) and return a mock to validate the parameters
+		doAnswer(new Answer<PreparedStatementMock>() {
+			@Override
+			public PreparedStatementMock answer(InvocationOnMock invocation) throws Throwable {
+				String query = (String) invocation.getArguments()[0];
+				stmt = new PreparedStatementMock(query);
+				return stmt;
+			}
+		}).when(conn).prepareStatement(anyString());
+
+		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+	}
 
 	@Test
 	public void retrieveBuildInfo() throws IOException {
@@ -68,5 +102,114 @@ public class ConfigurationUtilsTest {
 
 		String buildInfoVersion = buildInfo[1];
 		assertEquals("buildInfo version does not match", "789_20171002-1300", buildInfoVersion);
+	}
+
+	@Test
+	public void configurationValidator() throws Exception {
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		ConfigurationValidator details = new ConfigurationValidator(zip.openStream());
+
+		assertEquals("buildInfo name does not match", "ConfigurationName", details.getName());
+		assertEquals("buildInfo version does not match", "001_20191002-1300", details.getVersion());
+	}
+
+	@Test(expected=ConfigurationException.class)
+	public void configurationValidatorNoBuildInfoZip() throws Exception {
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		new ConfigurationValidator(zip.openStream());
+	}
+
+	@Test
+	public void addConfigToDatabaseOld() throws Exception {
+		mockDatabase();
+
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, "ConfigurationName", "001_20191002-1300", "fileName", zip.openStream(), "dummy-user");
+		assertTrue("file uploaded to mock database", result);
+		Map<String, Object> parameters = stmt.getNamedParameters();
+
+		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
+		assertEquals("buildInfo version does not match", "001_20191002-1300", parameters.get("VERSION"));
+	}
+
+	@Test
+	public void addConfigToDatabaseNew() throws Exception {
+		mockDatabase();
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, "fileName", zip.openStream(), "dummy-user");
+		assertTrue("file uploaded to mock database", result);
+		Map<String, Object> parameters = stmt.getNamedParameters();
+
+		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
+		assertEquals("buildInfo version does not match", "001_20191002-1300", parameters.get("VERSION"));
+	}
+
+	@Test
+	public void addConfigToDatabaseNewBuildInfoSC() throws Exception {
+		mockDatabase();
+
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
+		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, "fileName", zip.openStream(), "dummy-user");
+		assertTrue("file uploaded to mock database", result);
+		Map<String, Object> parameters = stmt.getNamedParameters();
+
+		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
+		assertEquals("buildInfo version does not match", "123_20181002-1300", parameters.get("VERSION"));
+	}
+
+	@Test
+	public void addConfigToDatabaseNewBuildInfoSPECIAL() throws Exception {
+		mockDatabase();
+
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull("BuildInfoZip not found", zip);
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
+		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, "fileName", zip.openStream(), "dummy-user");
+		assertTrue("file uploaded to mock database", result);
+		Map<String, Object> parameters = stmt.getNamedParameters();
+
+		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
+		assertEquals("buildInfo version does not match", "789_20171002-1300", parameters.get("VERSION"));
+	}
+
+	@Test
+	public void processMultiConfigZipFile() throws Exception {
+		mockDatabase();
+
+		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/multiConfig.zip");
+		assertNotNull("multiConfig.zip not found", zip);
+
+		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		String result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
+		assertNotNull("file uploaded to mock database", result);
+		assertEquals("buildInfoZip.jar:true", result.trim());
+
+		Map<String, Object> parameters = stmt.getNamedParameters();
+		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
+		assertEquals("buildInfo version does not match", "001_20191002-1300", parameters.get("VERSION"));
+
+		//Make sure ACTIVECONFIG, AUTORELOAD and RUSER are passed through properly
+		assertEquals("ACTIVECONFIG does not match", "FALSE", parameters.get("ACTIVECONFIG"));
+		assertEquals("AUTORELOAD does not match", "FALSE", parameters.get("AUTORELOAD"));
+		assertEquals("RUSER does not match", "user", parameters.get("RUSER"));
+
+		//This field is pretty obsolete, check if it's been set
+		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
 	}
 }

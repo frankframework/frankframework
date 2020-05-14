@@ -111,27 +111,36 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	
 	@Test
 	public void fileListenerTestCreateInputFolder() throws Exception {
-		fileSystemListener.setInputFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setInputFolder(fileAndFolderPrefix+"xxx1");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
 	
 	@Test
 	public void fileListenerTestCreateInProcessFolder() throws Exception {
-		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+"xxx2");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
 	
 	@Test
 	public void fileListenerTestCreateProcessedFolder() throws Exception {
-		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+"xxx");
-		fileSystemListener.setCreateInputDirectory(true);
+		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+"xxx3");
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
+
+	@Test
+	public void fileListenerTestCreateLogFolder() throws Exception {
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+"xxx4");
+		fileSystemListener.setCreateFolders(true);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
 	/*
 	 * vary this on: 
 	 *   inputFolder
@@ -177,7 +186,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
-		fileListenerTestGetRawMessage(null,"inProcessFolder");
+		String folderName = "inProcessFolder";
+		_createFolder(folderName);
+		fileListenerTestGetRawMessage(null,folderName);
 	}
 
 
@@ -275,15 +286,19 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	}
 	
 	@Test
-	public void fileListenerTestAfterMessageProcessedDelete() throws Exception {
+	public void fileListenerTestAfterMessageProcessedDeleteAndCopy() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
+		String logFolder = "logFolder";
+		String contents = "contents of file";
 		
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
+		fileSystemListener.setLogFolder(fileAndFolderPrefix+logFolder);
+		fileSystemListener.setCreateFolders(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
-		createFile(null, filename, "maakt niet uit");
+		createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -296,6 +311,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		waitForActionToFinish();
 		// test
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+		assertFileExistsWithContents(logFolder, filename, contents);
 	}
 
 

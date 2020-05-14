@@ -44,6 +44,9 @@ angular.module('iaf.beheerconsole')
 			var uri = args.shift();
 			var object = (args.shift() || {});
 			var headers = {};
+			if(object instanceof FormData) {
+				headers = { 'Content-Type': undefined }; //Unset default contentType when posting formdata
+			}
 			if(args.length == 3) {
 				headers = args.shift();
 			}
@@ -85,8 +88,17 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Delete = function (uri, callback, error) {
-			return $http({url:buildURI(uri), method: "delete" }).then(function(response){
+		this.Delete = function () { // uri, callback, error || uri, object, callback, error
+			var args = Array.prototype.slice.call(arguments);
+			var uri = args.shift();
+			var request = {url:buildURI(uri), method: "delete" };
+			if(args.length == 3) { //if 3 args are left, we have an object!
+				request.data = args.shift();
+			}
+			var callback = args.shift();
+			var error = args.shift();
+
+			return $http(request).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
 					callback(response.data);
@@ -246,6 +258,7 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
+			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
 			var poller = new this.createPollerObject(uri, callback);
 			data[uri] = poller;
 			if(!!autoStart)

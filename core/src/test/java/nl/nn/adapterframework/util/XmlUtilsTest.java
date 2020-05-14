@@ -124,7 +124,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertEquals("String,namespaceAware",in,actual);
 		
 		Source source = XmlUtils.stringToSourceForSingleUse(in, true);
-		actual = tp.transform(source, null);
+		actual = tp.transform(source);
 		assertEquals("Source,namespaceAware",in,actual);
 	}
 	

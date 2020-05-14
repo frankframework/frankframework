@@ -38,7 +38,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 

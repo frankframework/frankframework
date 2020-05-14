@@ -25,8 +25,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -62,16 +63,17 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private final boolean FLOWDIAGRAM_LAZYLOAD = APP_CONSTANTS.getBoolean("flow.lazyload", true);
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+			ConfigurationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ConfigurationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
 	private IbisManager ibisManager;
@@ -129,10 +131,12 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			try {
-				flowDiagram = new FlowDiagram();
-			} catch (Exception e) { //The IBIS should still start up when Graphviz fails to initialize
-				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			if(!FLOWDIAGRAM_LAZYLOAD) {
+				try {
+					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
+					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+				}
 			}
 
 			load();
@@ -317,8 +321,8 @@ public class IbisContext extends IbisApplicationContext {
 
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
-		if (!configFound) {
-			log(configurationName, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
+		if (!configFound && configurationName != null) {
+			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 
@@ -336,6 +340,9 @@ public class IbisContext extends IbisApplicationContext {
 		if (classLoader != null) {
 			Thread.currentThread().setContextClassLoader(classLoader);
 			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+			if(StringUtils.isEmpty(currentConfigurationVersion)) {
+				LOG.info("unable to determine [configuration.version] for configuration ["+currentConfigurationName+"]");
+			}
 		}
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");

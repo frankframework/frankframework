@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.servlet.ServletContext;
@@ -40,7 +38,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -51,6 +49,7 @@ import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -75,6 +74,7 @@ public class RestServiceDispatcher  {
 
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
+	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
 
 	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
 
@@ -153,7 +153,7 @@ public class RestServiceDispatcher  {
 				noImageAvailable(httpServletResponse);
 				return "";
 			}
-			if (uri != null && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/"))) {
+			if (uri != null && STRUTS_CONSOLE_ENABLED && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/")) ) {
 				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
 				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
 					httpServletResponse.setHeader("REFRESH", "0");
@@ -325,8 +325,7 @@ public class RestServiceDispatcher  {
 
 	private void noImageAvailable(HttpServletResponse httpServletResponse)
 			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(this,
-				SVG_FILE_NO_IMAGE_AVAILABLE);
+		URL svgSource = ClassUtils.getResourceURL(this, SVG_FILE_NO_IMAGE_AVAILABLE);
 		if (svgSource == null) {
 			throw new ListenerException("cannot find resource ["
 					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
@@ -362,8 +361,7 @@ public class RestServiceDispatcher  {
 			IPipeLineSession session = new PipeLineSessionBase();
 			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = (String) pipe.doPipe("<dummy/>", session)
-					.getResult();
+			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
 			pipe.stop();
 			return result;
 		} catch (Exception e) {

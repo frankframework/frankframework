@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -57,9 +57,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private String xpathExpression;
 
 	@Override
-	public String format(String message, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
 
-		String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
+		String result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
@@ -85,10 +85,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 						log.error("exception while configuring parameters",e);
 					}
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = prc.getValueMap(params);
+						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSessionBase()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}

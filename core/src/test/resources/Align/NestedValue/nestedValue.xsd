@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2019 sp2 (http://www.altova.com) by NN (Nationale Nederlanden) -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:gbpd" targetNamespace="urn:gbpd" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<!--********************************************** Service Elements************************************************-->
 	<xsd:element name="NestedValue" type="NestedValueType"/>
@@ -6,10 +7,11 @@
 	<xsd:complexType name="NestedValueType">
 		<xsd:sequence>
 			<xsd:choice>
-				<xsd:element name="Party">
+				<xsd:element name="Party" minOccurs="0">
 					<xsd:complexType>
 						<xsd:all>
-							<xsd:element name="Id" type="xsd:string"/>
+							<xsd:element name="Id" type="xsd:string" minOccurs="0"/>
+							<xsd:element name="Name" type="xsd:string" minOccurs="0"/>
 						</xsd:all>
 					</xsd:complexType>
 				</xsd:element>

@@ -1,4 +1,4 @@
-<array1 xmlns="urn:arrays" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:arrays file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/arrays.xsd">
+<array1 xmlns="urn:arrays">
 	<!-- array1 is a pure array, elem 'arrayElement' can be compacted away in json -->
 	<arrayElement>
 		<fielda>1a</fielda>

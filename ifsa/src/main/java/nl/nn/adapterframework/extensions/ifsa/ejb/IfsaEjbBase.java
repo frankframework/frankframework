@@ -17,12 +17,11 @@ package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.ing.ifsa.api.ServiceRequest;
 import nl.nn.adapterframework.configuration.ConfigurationException;

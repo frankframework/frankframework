@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
@@ -56,55 +56,49 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	 *
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
-	public String format(
-	    String message,
-	    Throwable t,
-	    INamedObject location,
-	    String originalMessage,
-	    String messageId,
-	    long receivedTime) {
+	@Override
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
 	
 		String details = null;
-		message = getMessage(message, t);
+		errorMessage = getErrorMessage(errorMessage, t);
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
 		 
-		String originator = AppConstants.getInstance().getProperty("application.name")+" "+
-	            			AppConstants.getInstance().getProperty("application.version");
-	    // Build a Base xml
-	    XmlBuilder errorXml = new XmlBuilder("errorMessage");
-	    errorXml.addAttribute("timestamp", new Date().toString());
-	    errorXml.addAttribute("originator", originator);
-	    errorXml.addAttribute("message", XmlUtils.replaceNonValidXmlCharacters(message));
-	
-	    if (location!=null) {
-		    XmlBuilder locationXml = new XmlBuilder("location");
-		    locationXml.addAttribute("class", location.getClass().getName());
-		    locationXml.addAttribute("name", location.getName());
+		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
+		// Build a Base xml
+		XmlBuilder errorXml = new XmlBuilder("errorMessage");
+		errorXml.addAttribute("timestamp", new Date().toString());
+		errorXml.addAttribute("originator", originator);
+		errorXml.addAttribute("message", XmlUtils.replaceNonValidXmlCharacters(errorMessage));
+
+		if (location != null) {
+			XmlBuilder locationXml = new XmlBuilder("location");
+			locationXml.addAttribute("class", location.getClass().getName());
+			locationXml.addAttribute("name", location.getName());
 			errorXml.addSubElement(locationXml);
-	    }
-	    
-	    if (details != null && !details.equals("")) {
-		    XmlBuilder detailsXml = new XmlBuilder("details");
-	    	//detailsXml.setCdataValue(details);
-	    	detailsXml.setValue(XmlUtils.replaceNonValidXmlCharacters(details), true);
-		    errorXml.addSubElement(detailsXml);
 		}
-			
-	    XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
-	    originalMessageXml.addAttribute("messageId", messageId);
-	    if (receivedTime!=0) {
+
+		if (details != null && !details.equals("")) {
+			XmlBuilder detailsXml = new XmlBuilder("details");
+			// detailsXml.setCdataValue(details);
+			detailsXml.setValue(XmlUtils.replaceNonValidXmlCharacters(details), true);
+			errorXml.addSubElement(detailsXml);
+		}
+
+		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
+		originalMessageXml.addAttribute("messageId", messageId);
+		if (receivedTime != 0) {
 			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
-	    }
-	   	//originalMessageXml.setCdataValue(originalMessage);
+		}
+		// originalMessageXml.setCdataValue(originalMessage);
 		originalMessageXml.setValue(originalMessage, true);
-	    errorXml.addSubElement(originalMessageXml);
-	
-	    return errorXml.toXML();
+		errorXml.addSubElement(originalMessageXml);
+
+		return errorXml.toXML();
 	}
 
-	protected String getMessage(String message, Throwable t) {
+	protected String getErrorMessage(String message, Throwable t) {
 		if (t != null) {
 			if (message == null || message.equals("")) {
 				message = t.getMessage();

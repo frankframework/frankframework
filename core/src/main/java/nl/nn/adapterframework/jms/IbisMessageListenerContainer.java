@@ -20,12 +20,13 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -38,9 +39,16 @@ import nl.nn.adapterframework.util.LogUtil;
 public class IbisMessageListenerContainer extends DefaultMessageListenerContainer {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private CredentialFactory credentialFactory;
+
 	@Override
 	protected Connection createConnection() throws JMSException {
-		Connection conn = super.createConnection();
+		Connection conn; 
+		if (credentialFactory!=null) {
+			conn = getConnectionFactory().createConnection(credentialFactory.getUsername(), credentialFactory.getPassword());
+		} else {
+			conn = super.createConnection();
+		}
 		log.trace("createConnection() - connection["+(conn==null?"null":conn.toString())+"]");
 		return conn;
 	}
@@ -89,4 +97,12 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 		}
 		return messageReceived;
 	}
+
+	public void setCredentialFactory(CredentialFactory credentialFactory) {
+		this.credentialFactory = credentialFactory;
+	}
+	public CredentialFactory getCredentialFactory() {
+		return credentialFactory;
+	}
+
 }

@@ -15,9 +15,8 @@
 */
 package nl.nn.adapterframework.cache;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 
 /**
  * Interface to be implemented by cache-providers. 
@@ -35,23 +34,14 @@ public interface ICacheAdapter<K,V> {
 	 * Transform the the current request message to a key in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	K transformKey(String input, Map<String,Object> sessionContext);
+	K transformKey(String input, IPipeLineSession session);
 	
 	/**
 	 * Transform the the current response message to a value in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	V transformValue(String input, Map<String,Object> sessionContext);
+	V transformValue(String input, IPipeLineSession session);
 	
-
-	/**
-	 * Obtain a potentially cached value, set by putString().
-	 */
-	String getString(K key);
-	/**
-	 * store a value in the cache, that can be retrieved later using getString().
-	 */
-	void putString(K key, String value);
 
 	/**
 	 * Obtain a potentially cached value, set by put().

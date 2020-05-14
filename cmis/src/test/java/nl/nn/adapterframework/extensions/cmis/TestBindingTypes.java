@@ -2,16 +2,11 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletResponse;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -33,6 +28,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
 public class TestBindingTypes extends SenderBase<CmisSender>{
@@ -95,13 +97,13 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 	private String bindingType;
 	private String action;
-	private String input;
+	private Message input;
 	private String expectedResult;
 
 	public TestBindingTypes(String bindingType, String action, String input, String expected) {
 		this.bindingType = bindingType;
 		this.action = action;
-		this.input = input;
+		this.input = new Message(input);
 		this.expectedResult = expected;
 	}
 
@@ -148,7 +150,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
 
 		try {
-			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
@@ -164,7 +166,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessage() throws ConfigurationException, SenderException, TimeOutException {
+	public void sendMessage() throws ConfigurationException, SenderException, TimeOutException, IOException {
 
 		if(action.equals("get")) {
 			sender.setFileContentSessionKey("");
@@ -173,23 +175,19 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreRN(expectedResult, actualResult);
 	}
 
 	@Test
-	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeOutException {
+	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		if(!action.equals("get")) return;
 
 		configure();
 
-		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
-
-		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		String actualResult = sender.sendMessage(input, session).asString();
 		assertEquals("", actualResult);
-		String base64 = (String) prc.getSession().get("fileContent");
+		String base64 = (String) session.get("fileContent");
 		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}
 }

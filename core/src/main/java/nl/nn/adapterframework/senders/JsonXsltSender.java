@@ -23,9 +23,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -59,18 +59,18 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		return null; // JsonParser requires inputSource
 	}
 
 	@Override
-	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(correlationID, input, session, target);
+			return super.createHandler(input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,correlationID);
-		return super.createHandler(correlationID, input, session, prev);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,null,threadLifeCycleEventListener,session);
+		return super.createHandler(input, session, prev);
 	}
 
 

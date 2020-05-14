@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.StreamPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -108,8 +107,6 @@ public class ApiStreamPipe extends StreamPipe {
 								"Exception configuring dummy query sender", e);
 					}
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(
-							"", session);
 					String slotId = AppConstants.getInstance()
 							.getResolvedProperty("instance.name") + "/"
 							+ session.get("operation");
@@ -159,7 +156,7 @@ public class ApiStreamPipe extends StreamPipe {
 	private String selectMessageKey(String slotId, String messageId)
 			throws JdbcException {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
-				+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
+				+ ITransactionalStorage.TYPE_MESSAGESTORAGE
 				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
 				+ "'";
 		Connection conn = dummyQuerySender.getConnection();

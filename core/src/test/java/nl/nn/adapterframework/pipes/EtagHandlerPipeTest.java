@@ -67,18 +67,18 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 
     @Test(expected = PipeRunException.class)
     public void testInputNull() throws PipeRunException {
-        pipe.doPipe(null, session);
+        doPipe(pipe, null, session);
     }
 
 
     @Test(expected = PipeRunException.class)
     public void testWrongInputFormat() throws PipeRunException {
-        pipe.doPipe(5000, session);
+        doPipe(pipe, 5000, session);
     }
 
     @Test(expected = PipeRunException.class)
     public void testFailedToLocateCache() throws PipeRunException {
-        pipe.doPipe("dummyString", session);
+        doPipe(pipe, "dummyString", session);
     }
 
     @Test(expected = PipeRunException.class)
@@ -86,7 +86,7 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
         pipe.setAction("generate");
         pipe.setUriPattern("dummyPattern");
         pipe.configure();
-        pipe.doPipe("dummyString", session);
+        doPipe(pipe, "dummyString", session);
     }
 
 

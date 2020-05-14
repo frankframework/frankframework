@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -47,11 +48,11 @@ public class ShowConfig extends TimeoutGuardPipe {
 				.getIbisManager().getIbisContext();
 	}
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
+			return new PipeRunResult(getForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Illegal value for method [" + method
@@ -96,9 +97,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setStreamResultToServlet(true);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"dummy", session);
-				queryResult = qs.sendMessage("dummy", "dummy", prc);
+				queryResult = qs.sendMessage(new Message("dummy"), session).asString();
 			} catch (Throwable t) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "Error occured on executing jdbc query", t);
@@ -108,9 +107,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 			if (queryResult.length() == 0) {
 				// means result is found and streamed
 			} else {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Could not retrieve configuration for name ["
-						+ parm_name + "]");
+				throw new PipeRunException(this, getLogPrefix(session) + "Could not retrieve configuration for name [" + parm_name + "]");
 			}
 			return queryResult;
 		}
@@ -143,13 +140,10 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();
 				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"dummy", session);
-				String queryResult = qs.sendMessage("dummy", "dummy", prc);
+				String queryResult = qs.sendMessage(new Message("dummy"), session).asString();
 				configXML.setValue(queryResult, false);
 			} catch (Throwable t) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Error occured on executing jdbc query", t);
+				throw new PipeRunException(this, getLogPrefix(session) + "Error occured on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}
