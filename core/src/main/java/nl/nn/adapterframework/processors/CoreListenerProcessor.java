@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Jaco de Groot

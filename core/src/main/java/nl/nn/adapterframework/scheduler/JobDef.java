@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -770,13 +770,17 @@ public class JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					String type = configuration.getClassLoaderType();
+					if(type == null) { //Configuration has not been loaded yet
+						type = AppConstants.getInstance().getProperty("configurations."+configName+".classLoaderType");
+					}
+					if ("DatabaseClassLoader".equals(type)) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if(StringUtils.isEmpty(configVersion)) {
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
 								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
 							}
 							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
@@ -789,8 +793,8 @@ public class JobDef {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				qs.close();
 				JdbcUtil.fullClose(conn, rs);
+				qs.close();
 			}
 
 			if (!configsToReload.isEmpty()) {
@@ -938,8 +942,8 @@ public class JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author Johan Verrips
  * @author Niels Meijer
  */
-public class PipeLineExit {
+public class PipeLineExit implements IForwardTarget {
 	
 	public static final String EXIT_STATE_SUCCESS = "success";
 	
@@ -58,14 +58,20 @@ public class PipeLineExit {
 	private int exitCode = 0;
 	private boolean emptyResult = false;
 
-	public String getPath() {
-		return path;
-	}
-
 	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
 		path = newPath;
 	}
+	public String getPath() {
+		return path;
+	}
+	@Override
+	// getName() is required by {@link IForwardTarget}. It is required that it returns the path,
+	// this way PipeForwards can be resolved to either Pipes or PipeLineExits.
+	public String getName() {
+		return getPath();
+	}
+
 
 	public String getState() {
 		return state;

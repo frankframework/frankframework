@@ -1,0 +1,507 @@
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 12:18:01 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 12:18:33.593 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     11e4
+[PRS]:     1590
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 12:18:33.608]     11e4 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 12:18:34.638 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     11e4
+[PRS]:     1590
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 12:18:34.638 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     11e4
+[PRS]:     1590
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 12:26:43 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 12:26:49.941 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     1604
+[PRS]:      af0
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 12:26:49.941]     1604 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 12:26:50.362 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     1604
+[PRS]:      af0
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 12:26:50.362 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     1604
+[PRS]:      af0
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 12:29:18 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 12:29:23.741 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     12fc
+[PRS]:      ec4
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 12:29:23.741]     12fc E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 12:29:24.116 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     12fc
+[PRS]:      ec4
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 12:29:24.116 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     12fc
+[PRS]:      ec4
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 12:40:00 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 12:40:04.949 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      d78
+[PRS]:      438
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 12:40:04.965]      d78 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 12:40:05.339 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      d78
+[PRS]:      438
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 12:40:05.339 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      d78
+[PRS]:      438
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 13:07:20 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 13:07:27.246 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      adc
+[PRS]:     16b0
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 13:07:27.246]      adc E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 13:07:27.652 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      adc
+[PRS]:     16b0
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 13:07:27.652 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      adc
+[PRS]:     16b0
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 13:10:10 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 13:10:15.254 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     10a0
+[PRS]:      c88
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 13:10:15.270]     10a0 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 13:10:15.660 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     10a0
+[PRS]:      c88
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 13:10:15.660 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:     10a0
+[PRS]:      c88
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 13:12:49 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 13:13:07.479 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      f78
+[PRS]:     135c
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 13:13:07.479]      f78 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 13:13:07.869 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      f78
+[PRS]:     135c
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 13:13:07.869 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      f78
+[PRS]:     135c
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 13:17:11 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 01/21/2014 13:17:19.733 @ ONTW7D03790 (10.177.39.245); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      ef8
+[PRS]:      50c
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[01/21/2014 13:17:19.733]      ef8 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 01/21/2014 13:17:20.170 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      ef8
+[PRS]:      50c
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 01/21/2014 13:17:20.170 @ ONTW7D03790 (10.177.39.245);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      ef8
+[PRS]:      50c
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 01/21/2014 at 14:13:09 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Program Files\Common Files\Elixir;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+[ INFO]
+>>>>> C++ connector logging started 02/26/2014 at 09:38:06 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+[ INFO]
+>>>>> C++ connector logging started 02/26/2014 at 09:39:59 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 02/26/2014 09:40:43.769 @ ONTW7D03790 (10.177.39.221); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      e78
+[PRS]:      d8c
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[02/26/2014 09:40:43.816]      e78 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+
+[EXC]: 02/26/2014 09:40:46.593 @ ONTW7D03790 (10.177.39.221);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      e78
+[PRS]:      d8c
+[MSG]: CMB::CMBSchemaManagement::getEntity - CMB4002A: The method failed because the specified entity name (ICMSAVEDSEARCH) was not found 
+
+[EXC]: 02/26/2014 09:40:46.593 @ ONTW7D03790 (10.177.39.221);  # CMBTraceLog
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      e78
+[PRS]:      d8c
+[MSG]: CMB::CMBSchemaManagement::getEntity - 
+[ INFO]
+>>>>> C++ connector logging started 02/26/2014 at 13:05:26 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+[ INFO]
+>>>>> C++ connector logging started 02/26/2014 at 14:09:43 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+[ INFO]
+>>>>> C++ connector logging started 02/26/2014 at 14:50:35 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties
+
+
+
+
+
+
+
+[EXC]: 02/26/2014 14:51:06.767 @ ONTW7D03790 (10.177.39.221); DKDatastoreAccessError # 
+[USR]: d220472 (C:\Users\d220472) @ C:\Apps\IBM\db2cmv8
+[THD]:      1d8
+[PRS]:      b04
+[LOC]: (C:\sbroot\src\eip\dk\cmbdbci\db2\PDB2Connection.cpp:ICM::PDB2Connection::throwException):734
+[MSG]: DGL0394A: Fout in:Error - SQL_ERROR
+[IBM][CLI Driver] SQL30082N  Security processing failed with reason "24" ("USERNAME AND/OR PASSWORD INVALID").  SQLSTATE=08001
+ (STATE) : 08001
+
+[02/26/2014 14:51:06.799]      1d8 E: ?-?-?-
+------------------------------------------------------------------
+ The above error may be expected in some certain scenarios 
+ Trying to connect by using the connect userid from the ini file  
+
+[ INFO]
+>>>>> C++ connector logging started 03/04/2014 at 08:14:41 GMT
+
+CODEBASE        : cm843 253_840303     Fri Oct 19 14:50:27 Pacific Daylight Time 2012 
+OS version      : Windows verson 6.1, build 0 7601, CSDVersion Service Pack 1
+CMCOMMON        : 
+CMBROOT         : 
+ICMROOT         : 
+IBMCMROOT       : C:\Apps\IBM\db2cmv8
+PATH            : C:\Apps\IBM\db2cmv8\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Apps\Microsoft App-V Client;C:\Apps\IBM\SQLLIB\BIN;C:\Apps\IBM\SQLLIB\FUNCTION;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\idmu\common
+Log Config      : C:\\Apps\\IBM\\db2cmv8\\cmgmt\connectors\cmblogconfig.properties

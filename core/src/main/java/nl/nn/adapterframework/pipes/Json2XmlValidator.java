@@ -144,9 +144,11 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode);
 					if (isProduceNamespaceLessXml()) {
-						String msg=(String)result.getResult();
-						msg=XmlUtils.removeNamespaces(msg);
-						result.setResult(msg);
+						try {
+							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
+						} catch (IOException e) {
+							throw new PipeRunException(this, "Cannot remove namespaces",e);
+						}
 					}
 					return result;
 				}

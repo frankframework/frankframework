@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -54,7 +54,7 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -99,7 +99,7 @@ public class ServerStatistics extends Base {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 
-			ClassLoader classLoader = configuration.getClassLoader().getParent();
+			ClassLoader classLoader = configuration.getClassLoader();
 			if(classLoader instanceof DatabaseClassLoader) {
 				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
@@ -113,6 +113,7 @@ public class ServerStatistics extends Base {
 				configurations.add(cfg);
 		}
 
+		//TODO Replace this with java.util.Collections!
 		Collections.sort(configurations, new Comparator<Map<String, String>>() {
 			@Override
 			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
@@ -274,15 +275,7 @@ public class ServerStatistics extends Base {
 		Map<String, Object> logSettings = new HashMap<String, Object>(3);
 		Logger rootLogger = LogUtil.getRootLogger();
 
-		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-			logSettings.put("maxMessageLength", iaw.getMaxMessageLength());
-		}
-		else {
-			logSettings.put("maxMessageLength", -1);
-		}
+		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
@@ -310,12 +303,6 @@ public class ServerStatistics extends Base {
 
 		Logger rootLogger = LogUtil.getRootLogger();
 
-		Appender appender = rootLogger.getAppender("appwrap");
-		IbisAppenderWrapper iaw = null;
-		if (appender!=null && appender instanceof IbisAppenderWrapper) {
-			iaw = (IbisAppenderWrapper) appender;
-		}
-
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -334,7 +321,7 @@ public class ServerStatistics extends Base {
 		}
 
 		if(loglevel != null && rootLogger.getLevel() != loglevel) {
-			rootLogger.setLevel(loglevel);
+			Configurator.setLevel(rootLogger.getName(), loglevel);
 			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
 		}
 
@@ -348,14 +335,12 @@ public class ServerStatistics extends Base {
 				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
 		}
 
-		if (iaw != null) {
-			if(iaw.getMaxMessageLength() != maxMessageLength) {
-				if(msg.length() > 0)
-					msg.append(", logMaxMessageLength from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				else
-					msg.append("logMaxMessageLength changed from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
-				iaw.setMaxMessageLength(maxMessageLength);
-			}
+		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
+			if(msg.length() > 0)
+				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			else
+				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
+			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
 
 		if (enableDebugger!=null) {

@@ -17,7 +17,7 @@ package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.sshtools.j2ssh.transport.AbstractKnownHostsKeyVerification;
 import com.sshtools.j2ssh.transport.InvalidHostFileException;
