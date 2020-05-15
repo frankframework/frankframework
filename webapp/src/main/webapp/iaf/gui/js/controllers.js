@@ -42,14 +42,7 @@ angular.module('iaf.beheerconsole')
 					Debug.setLevel(3);
 				}
 
-				$scope.configurations = new Array();
-				for(var i in data.configurations) {
-					var config = data.configurations[i];
-					if(config.name.startsWith("IAF_"))
-						$scope.configurations.unshift(config);
-					else
-						$scope.configurations.push(config);
-				}
+				$scope.updateConfigurations(data.configurations);
 
 				//Was it able to retrieve the serverinfo without logging in?
 				if(!$scope.loggedin) {
@@ -112,6 +105,17 @@ angular.module('iaf.beheerconsole')
 	$scope.closeAlert = function(index) {
 		$scope.alerts.splice(index, 1);
 	};
+
+	$scope.updateConfigurations = function(configurations) {
+		$scope.configurations = new Array();
+		for(var i in configurations) {
+			var config = configurations[i];
+			if(config.name.startsWith("IAF_"))
+				$scope.configurations.unshift(config);
+			else
+				$scope.configurations.push(config);
+		}
+	}
 
 	$scope.adapterSummary = {
 		started:0,
@@ -758,24 +762,21 @@ angular.module('iaf.beheerconsole')
 }])
 
 //** Ctrls **//
+.controller('ManageConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
+	Api.Get("server/info", function(data) {
+		$scope.updateConfigurations(data.configurations);
+	});
+}])
 
-.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', function($scope, $state, Api, Debug, Misc, $interval, SweetAlert) {
-	$scope.state = [];
+.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', 'Toastr', function($scope, $state, Api, Debug, Misc, $interval, SweetAlert, Toastr) {
 	$scope.loading = false;
-	$scope.addNote = function(type, message) {
-		$scope.state.push({type:type, message: message});
-	};
-	$scope.setNote = function(type, message) {
-		$scope.state = [];
-		$scope.addNote(type, message);
-	};
-	$scope.closeNote = function(index) {
-		$scope.state.splice(index, 1);
-	};
 
-	$interval(function() {
+	var promise = $interval(function() {
 		update();
 	}, 30000);
+	$scope.$on('$destroy', function() {
+		$interval.cancel(promise);
+	});
 
 	$scope.configuration = $state.params.name;
 	function update() {
@@ -806,13 +807,8 @@ angular.module('iaf.beheerconsole')
 		SweetAlert.Confirm({title:message}, function(imSure) {
 			if(imSure) {
 				Api.Delete("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), function() {
-					$scope.addNote("success", "Successfully removed version '"+config.version+"'");
+					Toastr.success("Successfully removed version '"+config.version+"'");
 					update();
-				}, function(_, status, statusText) {
-					if(status == 403)
-						$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
-					else
-						$scope.addNote("danger", "An error occured while attempting to remove version '"+config.version+"'. ");
 				});
 			}
 		});
@@ -825,25 +821,17 @@ angular.module('iaf.beheerconsole')
 				configs.actived = false;
 		}
 		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
-			$scope.setNote("success", "Successfully changed startup config to version '"+config.version+"'");
-		}, function(_, status, statusText) {
+			Toastr.success("Successfully changed startup config to version '"+config.version+"'");
+		}, function() {
 			update();
-			if(status == 403)
-				$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
-			else
-				$scope.setNote("danger", "An error occured while changing default configuration version");
 		});
 	};
 
 	$scope.scheduleReload = function(config) {
 		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
-			$scope.setNote("success", "Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
-		}, function(_, status, statusText) {
+			Toastr.success("Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
+		}, function() {
 			update();
-			if(status == 403)
-				$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
-			else
-				$scope.setNote("danger", "An error occured while changing Auto Reload setting");
 		});
 	};
 }])
@@ -853,7 +841,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = data.datasources[0];
 	});
 
 	$scope.form = {
@@ -904,7 +892,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("automatic_reload", $scope.form.automatic_reload);
 		fd.append("file", $scope.file, $scope.file.name);
 
-		Api.Post("configurations", fd, { 'Content-Type': undefined }, function(data) {
+		Api.Post("configurations", fd, function(data) {
 			$scope.error = "";
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
@@ -920,7 +908,7 @@ angular.module('iaf.beheerconsole')
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.result = "";
-		});
+		}, false);
 	};
 
 	$scope.reset = function() {
@@ -980,8 +968,8 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', '$timeout', function($scope, Api, appConstants, $timeout) {
-	$scope.state = [];
+.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', 'Toastr', function($scope, Api, appConstants, Toastr) {
+	$scope.updateDynamicParams = false;
 	$scope.variables = {};
 	$scope.searchFilter = "";
 
@@ -1035,26 +1023,17 @@ angular.module('iaf.beheerconsole')
 		$scope.form.loglevel = name;
 	};
 
-	var timeoutPromise = null;
 	$scope.submit = function(formData) {
-		if(timeoutPromise != null) {
-			$timeout.cancel(timeoutPromise);
-		}
-
-		$scope.state = [{type:"info", message: "Updating log configuration..."}];
+		$scope.updateDynamicParams = true;
 		Api.Put("server/log", formData, function() {
 			Api.Get("server/log", function(data) {
 				$scope.form = data;
-				$scope.state = [{type:"success", message: "Successfully updated log configuration!"}];
+				$scope.updateDynamicParams = false;
+				Toastr.success("Successfully updated log configuration!");
 			});
-		}, function(data, code) {
-			if(code === 401 || code === 403) {
-				$scope.state = [{type:"danger", message: code+" - Forbidden; you do not have enough access rights to complete this action!"}];
-			}
+		}, function() {
+			$scope.updateDynamicParams = false;
 		});
-		timeoutPromise = $timeout(function(){
-			$scope.state = [];
-		}, 5000);
 	};
 }])
 
@@ -1168,7 +1147,7 @@ angular.module('iaf.beheerconsole')
 			message.deleting = false;
 			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
 			$scope.updateTable();
-		});
+		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+messageId+"/download");
@@ -1186,7 +1165,7 @@ angular.module('iaf.beheerconsole')
 			message.resending = false;
 			$scope.addNote("danger", "Unable to resend message ["+message.id+"]. "+data.error);
 			$scope.updateTable();
-		});
+		}, false);
 	};
 }])
 
@@ -1646,7 +1625,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 
-		Api.Post("schedules", fd, { 'Content-Type': undefined }, function(data) {
+		Api.Post("schedules", fd, function(data) {
 			$scope.addAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
@@ -1662,7 +1641,7 @@ angular.module('iaf.beheerconsole')
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.addAlert("warning", error);
-		});
+		}, false);
 	};
 
 }])
@@ -1720,7 +1699,7 @@ angular.module('iaf.beheerconsole')
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.addAlert("warning", error);
-		});
+		}, false);
 	};
 
 }])
@@ -1804,7 +1783,7 @@ angular.module('iaf.beheerconsole')
 			}
 		}, function(data) {
 			$scope.alert = (data) ? data.error : "An unknown error occured!";
-		});
+		}, false);
 	};
 
 	$scope.open = function(file) {
@@ -1850,7 +1829,7 @@ angular.module('iaf.beheerconsole')
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.result = "";
-		});
+		}, false);
 	};
 
 	$scope.reset = function() {
@@ -1897,7 +1876,7 @@ angular.module('iaf.beheerconsole')
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 
-		Api.Post("jms/message", fd, { 'Content-Type': undefined }, function(returnData) {
+		Api.Post("jms/message", fd, function(returnData) {
 			//?
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
@@ -1937,7 +1916,6 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jms/browse", JSON.stringify(formData), function(returnData, status) {
 			$scope.error = "";
-			console.log("status", status);
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
@@ -1970,6 +1948,7 @@ angular.module('iaf.beheerconsole')
 		$scope.processingMessage = true;
 		if(!formData || !formData.query) {
 			$scope.error = "Please specify a datasource, resulttype and query!";
+			$scope.processingMessage = false;
 			return;
 		}
 		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
@@ -1977,14 +1956,17 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
+			if(returnData == undefined || returnData == "") {
+				returnData = "Ok";
+			}
 			$scope.result = returnData;
 			$scope.processingMessage = false;
-		}, function(errorData, status, errorMsg) {
-			var error = (errorData.error) ? errorData.error : errorMsg;
+		}, function(errorData) {
+			var error = (errorData.error) ? errorData.error : "";
 			$scope.error = error;
 			$scope.result = "";
 			$scope.processingMessage = false;
-		});
+		}, false);
 	};
 
 	$scope.reset = function() {
@@ -2007,6 +1989,7 @@ angular.module('iaf.beheerconsole')
 		$scope.processingMessage = true;
 		if(!formData || !formData.table) {
 			$scope.error = "Please specify a datasource and table name!";
+			$scope.processingMessage = false;
 			return;
 		}
 		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
@@ -2050,12 +2033,12 @@ angular.module('iaf.beheerconsole')
 				$scope.result.push(orderedRow);
 			}
 			$scope.processingMessage = false;
-		}, function(errorData, status, errorMsg) {
-			var error = (errorData.error) ? errorData.error : errorMsg;
+		}, function(errorData) {
+			var error = (errorData.error) ? errorData.error : "";
 			$scope.error = error;
 			$scope.query = "";
 			$scope.processingMessage = false;
-		});
+		}, false);
 	};
 	$scope.reset = function() {
 		$scope.query = "";
@@ -2117,14 +2100,13 @@ angular.module('iaf.beheerconsole')
 		}
 
 		$scope.processingMessage = true;
-		Api.Post("test-pipeline", fd, { 'Content-Type': undefined }, function(returnData) {
+		Api.Post("test-pipeline", fd, function(returnData) {
 			var warnLevel = "success";
 			if(returnData.state == "ERROR") warnLevel = "danger";
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
-		}, function(returnData) {
-			$scope.addNote("danger", returnData.error);
+		}, function(returnData, code) {
 			$scope.result = "";
 			$scope.processingMessage = false;
 		});
@@ -2181,7 +2163,6 @@ angular.module('iaf.beheerconsole')
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
 		}, function(returnData) {
-			$scope.addNote("danger", returnData.state);
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
 		});

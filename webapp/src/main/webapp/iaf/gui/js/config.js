@@ -9,10 +9,8 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	$urlRouterProvider.otherwise("/");
 
 	$ocLazyLoadProvider.config({
-		modules: [{
-			name: 'toaster',
-			files: ['js/plugins/toastr/toastr.min.js', 'css/plugins/toastr/toastr.min.css']
-		}, {
+		modules: [
+		{
 			name: 'datatables',
 			serie: true,
 			files: [

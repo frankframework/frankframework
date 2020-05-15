@@ -99,7 +99,7 @@ public class ServerStatistics extends Base {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 
-			ClassLoader classLoader = configuration.getClassLoader().getParent();
+			ClassLoader classLoader = configuration.getClassLoader();
 			if(classLoader instanceof DatabaseClassLoader) {
 				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
