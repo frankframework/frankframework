@@ -127,17 +127,19 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		dynamicParametersXml.addAttribute("logIntermediaryResults", retrieveLogIntermediaryResults());
 		dynamicParametersXml.addAttribute("lengthLogRecords", retrieveLengthLogRecords());
 
-		List<String> propsToHide = new ArrayList<String>();
-		String propertiesHideString = AppConstants.getInstance(configuration.getClassLoader())
-				.getString("properties.hide", null);
-		if (propertiesHideString != null) {
-			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-		}
-
 		XmlBuilder environmentVariablesXml = new XmlBuilder("environmentVariables");
+		List<String> propsToHide = new ArrayList<String>();
 
-		addPropertiesToXmlBuilder(environmentVariablesXml, AppConstants.getInstance(configuration.getClassLoader()),
-				"Application Constants", propsToHide, true);
+		if(configuration.getClassLoader() != null) {
+			String propertiesHideString = AppConstants.getInstance(configuration.getClassLoader())
+					.getString("properties.hide", null);
+			if (propertiesHideString != null) {
+				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+			}
+
+			addPropertiesToXmlBuilder(environmentVariablesXml, AppConstants.getInstance(configuration.getClassLoader()),
+					"Application Constants", propsToHide, true);
+		}
 		addPropertiesToXmlBuilder(environmentVariablesXml, System.getProperties(), "System Properties", propsToHide);
 
 		try {

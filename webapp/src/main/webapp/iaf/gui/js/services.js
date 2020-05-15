@@ -12,8 +12,8 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.headers.post["Content-Type"] = "application/json";
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
-		this.Get = function (uri, callback, error, httpOptions) {
-			var defaultHttpOptions = { headers:{}};
+		this.Get = function (uri, callback, error, httpOptions, intercept) {
+			var defaultHttpOptions = { headers:{}, intercept: intercept };
 
 			if(httpOptions) {
 				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
@@ -44,15 +44,20 @@ angular.module('iaf.beheerconsole')
 			var uri = args.shift();
 			var object = (args.shift() || {});
 			var headers = {};
-			if(args.length == 3) {
+			if(object instanceof FormData) {
+				headers = { 'Content-Type': undefined }; //Unset default contentType when posting formdata
+			}
+			if(args.length == 4) {
 				headers = args.shift();
 			}
 			var callback = args.shift();
 			var error = args.shift();
+			var intercept = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
 				transformRequest: angular.identity,
+				intercept: intercept,
 			}).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
@@ -61,7 +66,7 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Put = function (uri, object, callback, error) {
+		this.Put = function (uri, object, callback, error, intercept) {
 			var headers = {};
 			var data = {};
 			if(object != null) {
@@ -73,10 +78,12 @@ angular.module('iaf.beheerconsole')
 					headers["Content-Type"] = "application/json";
 				}
 			}
+			var intercept = intercept;
 
 			return $http.put(buildURI(uri), data, {
 				headers: headers,
 				transformRequest: angular.identity,
+				intercept: intercept,
 			}).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
@@ -85,8 +92,18 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Delete = function (uri, callback, error) {
-			return $http({url:buildURI(uri), method: "delete" }).then(function(response){
+		this.Delete = function () { // uri, callback, error || uri, object, callback, error
+			var args = Array.prototype.slice.call(arguments);
+			var uri = args.shift();
+			var request = {url:buildURI(uri), method: "delete" };
+			if(args.length == 4) { //if 3 args are left, we have an object!
+				request.data = args.shift();
+			}
+			var callback = args.shift();
+			var error = args.shift();
+			request.intercept = args.shift();
+
+			return $http(request).then(function(response) {
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
 					callback(response.data);
@@ -1041,4 +1058,53 @@ angular.module('iaf.beheerconsole')
 			}
 			return false;
 		};
+	}]).service('Toastr', ['toaster', function(toaster) {
+		this.error = function(title, text) {
+			toaster.pop({type: 'error', title: title, body: text});
+		};
+		this.success = function(title, text) {
+			toaster.pop({type: 'success', title: title, body: text});
+		};
+	}]).config(['$httpProvider', function($httpProvider) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', function(appConstants, $q, Misc, Toastr) {
+			return {
+				request: function(config) {
+					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+						config.url = config.url + '?v=' + ff_version;
+					}
+					return config;
+				},
+				responseError: function(rejection) {
+					if(rejection.config) { //It should always have a config object, but just in case!
+						if(rejection.config.url && rejection.config.url.indexOf(Misc.getServerPath()) < 0) return $q.reject(rejection); //Don't capture non-api requests
+
+						switch (rejection.status) {
+							case -1:
+								if(appConstants.init == 1) {
+									if(rejection.config.headers["Authorization"] != undefined) {
+										console.warn("Authorization error");
+									}
+								}
+								else if(appConstants.init == 2) {
+									console.warn("Connection to the server was lost!");
+								}
+								break;
+							case 401:
+								Toastr.error("Unauthorized", "Please authenticate");
+								break;
+							case 403:
+								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
+								break;
+							case 500:
+								if(rejection.config.intercept != undefined && rejection.config.intercept === false) return $q.reject(rejection); //Don't capture when explicitly disabled
+								if(rejection.data != null && rejection.data.error != null) //When formatted data is returned, Toast it!
+									Toastr.error("Server Error", rejection.data.error);
+								break;
+						}
+					}
+					// otherwise, default behaviour
+					return $q.reject(rejection);
+				}
+			};
+		}]);
 	}]);

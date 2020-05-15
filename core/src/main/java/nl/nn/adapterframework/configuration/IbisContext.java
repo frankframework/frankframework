@@ -349,6 +349,7 @@ public class IbisContext extends IbisApplicationContext {
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);
+			configuration.setClassLoader(classLoader);
 			ibisManager.addConfiguration(configuration);
 			if (customClassLoaderConfigurationException == null) {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
