@@ -42,14 +42,7 @@ angular.module('iaf.beheerconsole')
 					Debug.setLevel(3);
 				}
 
-				$scope.configurations = new Array();
-				for(var i in data.configurations) {
-					var config = data.configurations[i];
-					if(config.name.startsWith("IAF_"))
-						$scope.configurations.unshift(config);
-					else
-						$scope.configurations.push(config);
-				}
+				$scope.updateConfigurations(data.configurations);
 
 				//Was it able to retrieve the serverinfo without logging in?
 				if(!$scope.loggedin) {
@@ -113,6 +106,17 @@ angular.module('iaf.beheerconsole')
 	$scope.closeAlert = function(index) {
 		$scope.alerts.splice(index, 1);
 	};
+
+	$scope.updateConfigurations = function(configurations) {
+		$scope.configurations = new Array();
+		for(var i in configurations) {
+			var config = configurations[i];
+			if(config.name.startsWith("IAF_"))
+				$scope.configurations.unshift(config);
+			else
+				$scope.configurations.push(config);
+		}
+	}
 
 	$scope.adapterSummary = {
 		started:0,
@@ -770,13 +774,21 @@ angular.module('iaf.beheerconsole')
 }])
 
 //** Ctrls **//
+.controller('ManageConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
+	Api.Get("server/info", function(data) {
+		$scope.updateConfigurations(data.configurations);
+	});
+}])
 
 .controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', 'Toastr', function($scope, $state, Api, Debug, Misc, $interval, SweetAlert, Toastr) {
 	$scope.loading = false;
 
-	$interval(function() {
+	var promise = $interval(function() {
 		update();
 	}, 30000);
+	$scope.$on('$destroy', function() {
+		$interval.cancel(promise);
+	});
 
 	$scope.configuration = $state.params.name;
 	function update() {
@@ -841,7 +853,7 @@ angular.module('iaf.beheerconsole')
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
-		$scope.form = {datasource: data.datasources[0]};
+		$scope.form.datasource = data.datasources[0];
 	});
 
 	$scope.form = {
@@ -2037,6 +2049,9 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
+			if(returnData == undefined || returnData == "") {
+				returnData = "Ok";
+			}
 			$scope.result = returnData;
 			$scope.processingMessage = false;
 		}, function(errorData, status, errorMsg) {
