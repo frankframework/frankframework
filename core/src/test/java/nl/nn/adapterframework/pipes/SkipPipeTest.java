@@ -28,7 +28,7 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
     public void testDoPipeSkip3Read2WithString() throws Exception {
         pipe.setSkip(3); pipe.setLength(2);
         PipeRunResult res = doPipe(pipe, "0123456", session);
-        assertEquals(res.getResult().toString(), "34");
+        assertEquals(res.getResult().toString(), "String: 34");
     }
 
     @Test
@@ -42,7 +42,7 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
     public void testWrongInput() throws Exception {
         pipe.setSkip(2);
         PipeRunResult res = doPipe(pipe, 2, session);
-        assertEquals(res.getResult().toString(), "SkipPipe doesn't work for this type of object");
+        assertEquals(res.getResult().toString(), "String: SkipPipe doesn't work for this type of object");
     }
 
 

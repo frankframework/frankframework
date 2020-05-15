@@ -35,7 +35,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("3");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "3", session);
-        assertEquals(res.getResult().toString(), "9");
+        assertEquals(res.getResult().toString(), "String: 9");
     }
 
     @Test
@@ -45,7 +45,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("2");
         pipe.setLookupAtRuntime(true);
         PipeRunResult res = doPipe(pipe, "3", session);
-        assertEquals(res.getResult().toString(), "9");
+        assertEquals(res.getResult().toString(), "String: 9");
     }
 
     @Test
@@ -82,7 +82,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeLookupAtRuntimeFailAsWrongFileName() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] cannot find resource [wrong name]");
+        exception.expectMessage("Pipe [RhinoPipe under test] msgId [null] cannot find resource [wrong name]");
         pipe.setFileName("wrong name");
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("2");
@@ -93,7 +93,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeFailAsWrongInputType() throws Exception {
-        exception.expectMessage("expected:<[16]> but was:<[NaN]>");
+        exception.expectMessage("expected:<[String: 16]> but was:<[NaN]>");
         pipe.setFileName(fileName);
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("3");
