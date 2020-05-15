@@ -12,10 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * FixedResult Tester.
@@ -81,7 +78,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        assertFalse(res.getPipeForward().getName().isEmpty());
 
     }
 
@@ -89,6 +86,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     public void testEmptyFileName() throws Exception{
         exception.expectMessage("Pipe [FixedResult under test] has neither fileName nor fileNameSessionKey nor returnString specified");
         pipe.configure();
+        fail("this should fail");
     }
 
     @Test

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import org.junit.Test;
 
 import org.mockito.Mock;
@@ -17,9 +18,6 @@ import static org.junit.Assert.assertFalse;
  */
 public class PutInSessionTest extends PipeTestBase<PutInSession> {
 
-    @Mock
-    PipeLineSessionBase session = new PipeLineSessionBase();
-
     @Override
     public PutInSession createPipe() {
         return new PutInSession();
@@ -30,25 +28,20 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
     /**
      * Method: configure()
      */
-    /*
+
     @Test
     public void testConfigureWithoutSessionKey() throws Exception {
         pipe.setSessionKey("hola");
         pipe.configure();
         doPipe(pipe, "val", session);
-        Message m = new Message("val");
-        assertEquals(new Message("val") , session.get("hola"));
+        Message m = new Message("String: val");
+        assertEquals(m.asString(), session.get("hola").toString());
 
     }
 
-    PutInSessionPipeTest:
-java.lang.AssertionError: expected: nl.nn.adapterframework.stream.Message<String: val> but was: nl.nn.adapterframework.stream.Message<String: val>
-Expected :nl.nn.adapterframework.stream.Message<String: val>
-Actual   :nl.nn.adapterframework.stream.Message<String: val>
-<Click to see difference>
-No Difference??
 
-    */
+
+
 
 
     /**

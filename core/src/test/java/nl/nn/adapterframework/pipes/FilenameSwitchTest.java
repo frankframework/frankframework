@@ -8,7 +8,10 @@ import org.junit.Test;
 
 import org.mockito.Mock;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertFalse;
+
 
 /**
 * FilenameSwitch Tester. 
@@ -58,7 +61,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         pipe.setNotFoundForwardName(null);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "", session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        assertFalse(res.getPipeForward().getName().isEmpty());
     }
 
     @Test
@@ -66,7 +69,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         exception.expect(NullPointerException.class);
         pipe.configure();
         PipeRunResult res = pipe.doPipe(null, session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        assertFalse(res.getPipeForward().getName().isEmpty());
     }
 
     @Test

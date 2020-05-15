@@ -4,17 +4,18 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
-import org.junit.Before; 
+import org.junit.Before;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-/** 
+
+/**
 * IfMultipart Tester. 
 * 
 * @author <Sina Sen>
@@ -42,7 +43,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
         PipeRunResult res = pipe.doPipe(null, session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        assertFalse(res.getPipeForward().getName().isEmpty());
 
     }
 

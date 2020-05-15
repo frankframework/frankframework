@@ -4,8 +4,6 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.PasswordHash;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;

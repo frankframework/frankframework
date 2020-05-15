@@ -8,7 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.After;
 import org.junit.rules.TemporaryFolder;
 
 import org.mockito.Mock;
@@ -16,11 +15,13 @@ import org.mockito.Mock;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 
 import java.util.zip.ZipInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertFalse;
+
 
 /**
  * UploadFilePipe Tester.
@@ -30,7 +31,6 @@ import static org.junit.Assert.*;
  */
 public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 
-    private static InputStream inputStream;
     private static ZipInputStream zis;
     @ClassRule
     public static TemporaryFolder testFolderSource = new TemporaryFolder();
@@ -54,11 +54,12 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         sourceFolderPath = testFolderSource.getRoot().getPath();
         newFile  = testFolderSource.newFile("1.txt");
         newFile2  = testFolderSource.newFile("1.zip");
+        assert newFile.exists();
+        assert newFile2.exists();
     }
 
     @Before
     public void before() throws Exception {
-
 
         FileInputStream fis = new FileInputStream(sourceFolderPath+"/1.zip");
         BufferedInputStream bis = new BufferedInputStream(fis);
