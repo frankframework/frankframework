@@ -770,13 +770,17 @@ public class JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					String type = configuration.getClassLoaderType();
+					if(type == null) { //Configuration has not been loaded yet
+						type = AppConstants.getInstance().getProperty("configurations."+configName+".classLoaderType");
+					}
+					if ("DatabaseClassLoader".equals(type)) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if(StringUtils.isEmpty(configVersion)) {
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
 								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
 							}
 							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
