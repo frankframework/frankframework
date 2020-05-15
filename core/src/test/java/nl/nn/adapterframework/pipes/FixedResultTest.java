@@ -79,7 +79,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReplaceTo("kar");
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "whatisthis", session1);
+        doPipe(pipe, "whatisthis", session1);
         fail("this is expected to fail");
     }
 
@@ -122,7 +122,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReplaceTo("kar");
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "whatisthis", session1);
+        doPipe(pipe, "whatisthis", session1);
         fail("this is expected to fail");
     }
 

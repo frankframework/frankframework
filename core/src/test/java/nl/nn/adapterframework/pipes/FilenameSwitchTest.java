@@ -68,7 +68,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     public void testConfigureWithNullForwardName()  throws Exception {
         exception.expect(NullPointerException.class);
         pipe.configure();
-        PipeRunResult res = pipe.doPipe(null, session);
+        pipe.doPipe(null, session);
         fail("this is expected to fail");
     }
 
@@ -90,7 +90,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     public void testValidForwardNameToLowerCaseFalse() throws Exception {
         exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named [SUCCESS]");
         pipe.setToLowercase(false);
-        PipeRunResult res = doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
+        doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
         fail("this is expected to fail");
     }
 

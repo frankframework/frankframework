@@ -42,7 +42,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
-        PipeRunResult res = pipe.doPipe(null, session);
+         pipe.doPipe(null, session);
         fail("this is expected to fail");
     }
 
@@ -50,7 +50,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
     public void testInputNotHTTPRequest() throws Exception {
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] expected HttpServletRequest as input, got [Message]");
-        PipeRunResult res = doPipe(pipe, "i am a string not a http req", session);
+        doPipe(pipe, "i am a string not a http req", session);
         fail("this is expected to fail");
     }
 
@@ -78,7 +78,6 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         request.setContentType("aamultipartofx");
         pipe.setThenForwardName("success");
         PipeRunResult res = doPipe(pipe, request, session);
-        PipeForward forward = res.getPipeForward();
         fail("this is expected to fail");
     }
 
@@ -87,7 +86,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
     public void testCannotFindForward() throws Exception {
         exception.expect(PipeRunException.class);
         pipe.setElseForwardName("elsee");
-        PipeRunResult res = doPipe(pipe, request, session);
+        doPipe(pipe, request, session);
         fail("this is expected to fail");
     }
 

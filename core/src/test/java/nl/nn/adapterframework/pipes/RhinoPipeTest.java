@@ -4,7 +4,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 /**
@@ -52,7 +51,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         exception.expectMessage("Pipe [RhinoPipe under test] has neither fileName nor inputString specified");
         pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "3", session);
+        doPipe(pipe, "3", session);
         fail("this is expected to fail");
 
     }
@@ -63,7 +62,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setFileName(fileName);
         pipe.setjsfunctionArguments("2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "3", session);
+        doPipe(pipe, "3", session);
         fail("this is expected to fail");
 
     }
@@ -74,7 +73,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("3");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "3", session);
+        doPipe(pipe, "3", session);
         fail("this is expected to fail");
     }
 
@@ -86,7 +85,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("2");
         pipe.setLookupAtRuntime(true);
-        PipeRunResult res = doPipe(pipe, "3", session);
+        doPipe(pipe, "3", session);
         fail("this is expected to fail");
     }
 

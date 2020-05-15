@@ -54,7 +54,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
         exception.expect(ConfigurationException.class);
         pipe.setValue("val");
         pipe.configure();
-        PipeRunResult res = pipe.doPipe(null, session);
+        pipe.doPipe(null, session);
         fail("this is expected to fail");
     }
 

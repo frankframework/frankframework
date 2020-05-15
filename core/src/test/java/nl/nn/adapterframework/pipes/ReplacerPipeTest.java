@@ -28,7 +28,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         exception.expectMessage("cannot have a null replace-attribute");
         pipe.setFind("laa");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "", session);
+        doPipe(pipe, "", session);
         fail("this is expected to fail");
 
     }
@@ -86,7 +86,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChar("klkl");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
+        doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
         fail("this is expected to fail");
     }
 

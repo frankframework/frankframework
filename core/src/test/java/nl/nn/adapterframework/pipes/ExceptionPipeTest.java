@@ -38,8 +38,8 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expect(PipeRunException.class);
         exception.expectMessage("exception: ExceptionPipe under test");
         pipe.setThrowException(true);
-        PipeRunResult res = doPipe(pipe, "", session);
-        Assert.fail("this is expected to fail");
+        doPipe(pipe, "", session);
+        fail("this is expected to fail");
     }
 
     @Test
@@ -47,7 +47,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expect(PipeRunException.class);
         exception.expectMessage("exception thrown with a custom message");
         pipe.setThrowException(true);
-        PipeRunResult res  = doPipe(pipe, "exception thrown with a custom message", session);
+        doPipe(pipe, "exception thrown with a custom message", session);
         fail("this is expected to fail");
 
     }

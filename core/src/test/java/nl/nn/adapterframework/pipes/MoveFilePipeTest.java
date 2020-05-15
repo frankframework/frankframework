@@ -80,7 +80,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = pipe.doPipe(null, session);
+        pipe.doPipe(null, session);
 
         fail("this is expected to fail");
     }
@@ -91,7 +91,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         exception.expect(ConfigurationException.class);
         pipe.configure(pipeline);
         pipe.start();
-        PipeRunResult res = doPipe(pipe, "testdoc", session);
+        doPipe(pipe, "testdoc", session);
 
         fail("this is expected to fail");
     }
@@ -140,7 +140,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = pipe.doPipe(null, session);
+        pipe.doPipe(null, session);
 
         fail("this is expected to fail");
     }
@@ -155,7 +155,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = doPipe(pipe, "xdfgfx", session);
+        doPipe(pipe, "xdfgfx", session);
 
         fail("this is expected to fail");
     }
@@ -283,7 +283,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = doPipe(pipe, "xx", session);
+        doPipe(pipe, "xx", session);
 
         fail("this is expected to fail");
     }
@@ -330,7 +330,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = doPipe(pipe, "xx", session);
+        doPipe(pipe, "xx", session);
 
         fail("this is expected to fail");
     }
