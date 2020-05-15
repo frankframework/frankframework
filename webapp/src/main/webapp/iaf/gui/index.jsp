@@ -1,24 +1,28 @@
+<%@ page import="nl.nn.adapterframework.util.AppConstants"%>
 <!DOCTYPE html>
 <html ng-app="iaf.beheerconsole">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="pragma" content="no-cache">
 	<base href="">
 
-    <title page-title></title>
+	<title page-title></title>
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
-    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="css/animate.css" rel="stylesheet">
 
-    <link id="loadBefore" href="css/style.css" rel="stylesheet">
-    <link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
-    <link href="css/plugins/iCheck/custom.css" rel="stylesheet">
-    <link href="css/plugins/ladda/ladda-themeless.min.v1.0.5.css" rel="stylesheet">
-    <link rel="shortcut icon" href="favicon.ico">
+	<link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+	<link href="css/plugins/iCheck/custom.css" rel="stylesheet">
+	<link href="css/plugins/ladda/ladda-themeless.min.v1.0.5.css" rel="stylesheet">
+	<link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+	<link id="loadBefore" href="css/style.css" rel="stylesheet">
+	<link rel="shortcut icon" href="favicon.ico">
 </head>
 
 <body ng-class="{'gray-bg': ($state.current.name.indexOf('pages.')===1) }" id="page-top">
@@ -39,6 +43,8 @@
 		</div>
 	</div>
 </div>
+
+<toaster-container toaster-options="{'time-out':5500, 'close-button': true}"></toaster-container>
 
 <div ui-view style="display:none;" class="main"></div>
 
@@ -70,13 +76,23 @@
 <script src="js/plugins/ladda/spin.min.v1.0.5.js"></script>
 <script src="js/plugins/ladda/ladda.min.v1.0.5.js"></script>
 <script src="js/plugins/ladda/angular-ladda.min.v0.4.3.js"></script>
+<script src="js/plugins/toastr/toastr.min.js"></script>
 
+<%
+// Calculate an unique hash (per framework version) to disable caching
+String time = ""+System.currentTimeMillis();
+String version = AppConstants.getInstance().getString("application.version", time);
+if(version.contains("SNAPSHOT")) {
+	version = version + "-" + time; //Append time to disable cache
+}
+%>
+<script type="text/javascript">var ff_version="<%=version%>"</script>
 
-<script src="js/app.js"></script>
-<script src="js/config.js"></script>
-<script src="js/services.js"></script>
-<script src="js/directives.js"></script>
-<script src="js/controllers.js"></script>
+<script src="js/app.js?v=<%=version%>"></script>
+<script src="js/config.js?v=<%=version%>"></script>
+<script src="js/services.js?v=<%=version%>"></script>
+<script src="js/directives.js?v=<%=version%>"></script>
+<script src="js/controllers.js?v=<%=version%>"></script>
 
 </body>
 </html>
