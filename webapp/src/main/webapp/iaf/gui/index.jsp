@@ -81,8 +81,10 @@
 <%
 // Calculate an unique hash (per framework version) to disable caching
 String time = ""+System.currentTimeMillis();
-String version = AppConstants.getInstance().getString("application.version", time);
-if(version.contains("SNAPSHOT")) {
+String version = AppConstants.getInstance().getString("application.version", "");
+if(version.isEmpty()) {
+	version = time;
+} else if(version.contains("SNAPSHOT")) {
 	version = version + "-" + time; //Append time to disable cache
 }
 %>
