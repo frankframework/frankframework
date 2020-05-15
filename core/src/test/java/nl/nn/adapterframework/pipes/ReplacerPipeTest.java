@@ -64,7 +64,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("String: <head>lolo</head>/jacjac:)", res.getResult().toString());
+        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("String: <head>lolo</head>/jacjac:)", res.getResult().toString());
+        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
     }
 
     @Test
