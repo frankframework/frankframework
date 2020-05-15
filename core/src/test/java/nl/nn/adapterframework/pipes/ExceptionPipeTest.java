@@ -2,6 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import org.junit.Test;
 
 
@@ -27,7 +28,8 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
     @Test
     public void testDoesntThrowException() throws Exception {
         pipe.setThrowException(false);
-        assertEquals("String: no exception", doPipe(pipe, "no exception", session).getResult());
+        Message m = new Message("no exception");
+        assertEquals(m, doPipe(pipe, "no exception", session).getResult());
     }
 
     @Test
