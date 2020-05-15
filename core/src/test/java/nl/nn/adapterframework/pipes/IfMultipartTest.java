@@ -77,7 +77,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         request.setContentType("aamultipartofx");
         pipe.setThenForwardName("success");
-        PipeRunResult res = doPipe(pipe, request, session);
+        doPipe(pipe, request, session);
         fail("this is expected to fail");
     }
 

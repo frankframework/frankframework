@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static com.ibm.icu.impl.Assert.fail;
