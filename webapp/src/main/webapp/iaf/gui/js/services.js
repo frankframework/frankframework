@@ -39,7 +39,7 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Post = function () { // uri, object, callback, intercept errors
+		this.Post = function () { // uri, object, callback, error callback, intercept 4xx errors
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
 			var object = (args.shift() || {});
