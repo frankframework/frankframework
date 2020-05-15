@@ -72,7 +72,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
      */
     @Test
     public void testNullSessionKey() throws Exception {
-        exception.expect(NullPointerException.class);
+        exception.expect(PipeRunException.class);
         PipeRunResult res = doPipe(pipe, "das", session);
         assertFalse(res.getPipeForward().getName().isEmpty());
 
