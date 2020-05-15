@@ -892,7 +892,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("automatic_reload", $scope.form.automatic_reload);
 		fd.append("file", $scope.file, $scope.file.name);
 
-		Api.Post("configurations", fd, { 'Content-Type': undefined }, function(data) {
+		Api.Post("configurations", fd, function(data) {
 			$scope.error = "";
 			$scope.result = "Successfully uploaded configuration!";
 			$scope.form = {
@@ -1625,7 +1625,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 
-		Api.Post("schedules", fd, { 'Content-Type': undefined }, function(data) {
+		Api.Post("schedules", fd, function(data) {
 			$scope.addAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
@@ -1876,7 +1876,7 @@ angular.module('iaf.beheerconsole')
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 
-		Api.Post("jms/message", fd, { 'Content-Type': undefined }, function(returnData) {
+		Api.Post("jms/message", fd, function(returnData) {
 			//?
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
@@ -1961,8 +1961,8 @@ angular.module('iaf.beheerconsole')
 			}
 			$scope.result = returnData;
 			$scope.processingMessage = false;
-		}, function(errorData, status, errorMsg) {
-			var error = (errorData.error) ? errorData.error : errorMsg;
+		}, function(errorData) {
+			var error = (errorData.error) ? errorData.error : "";
 			$scope.error = error;
 			$scope.result = "";
 			$scope.processingMessage = false;
@@ -2033,8 +2033,8 @@ angular.module('iaf.beheerconsole')
 				$scope.result.push(orderedRow);
 			}
 			$scope.processingMessage = false;
-		}, function(errorData, status, errorMsg) {
-			var error = (errorData.error) ? errorData.error : errorMsg;
+		}, function(errorData) {
+			var error = (errorData.error) ? errorData.error : "";
 			$scope.error = error;
 			$scope.query = "";
 			$scope.processingMessage = false;
@@ -2100,7 +2100,7 @@ angular.module('iaf.beheerconsole')
 		}
 
 		$scope.processingMessage = true;
-		Api.Post("test-pipeline", fd, { 'Content-Type': undefined }, function(returnData) {
+		Api.Post("test-pipeline", fd, function(returnData) {
 			var warnLevel = "success";
 			if(returnData.state == "ERROR") warnLevel = "danger";
 			$scope.addNote(warnLevel, returnData.state);

@@ -39,16 +39,13 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Post = function () { // uri, object, callback, error || uri, object, headers, callback, error
+		this.Post = function () { // uri, object, callback, intercept errors
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
 			var object = (args.shift() || {});
 			var headers = {};
 			if(object instanceof FormData) {
 				headers = { 'Content-Type': undefined }; //Unset default contentType when posting formdata
-			}
-			if(args.length == 4) {
-				headers = args.shift();
 			}
 			var callback = args.shift();
 			var error = args.shift();
