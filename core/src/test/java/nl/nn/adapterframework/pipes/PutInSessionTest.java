@@ -1,15 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import org.junit.Test;
 
-import org.mockito.Mock;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * PutInSession Tester.
@@ -39,11 +36,6 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 
     }
 
-
-
-
-
-
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
      */
@@ -63,7 +55,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
         pipe.setValue("val");
         pipe.configure();
         PipeRunResult res = pipe.doPipe(null, session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
+        fail("this is expected to fail");
     }
 
 

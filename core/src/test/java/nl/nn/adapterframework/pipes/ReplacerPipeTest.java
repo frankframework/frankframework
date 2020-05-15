@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * ReplacerPipe Tester.
@@ -28,7 +29,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setFind("laa");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "", session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
+        fail("this is expected to fail");
 
     }
 
@@ -63,7 +64,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("String: <head>lolo</head>/jacjac:)", res.getResult().toString());
+        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
     }
 
     @Test
@@ -73,7 +74,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("String: <head>lolo</head>/jacjac:)", res.getResult().toString());
+        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
     }
 
     @Test
@@ -86,7 +87,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
+        fail("this is expected to fail");
     }
 
 

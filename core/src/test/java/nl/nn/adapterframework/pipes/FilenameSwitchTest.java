@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -69,7 +69,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         exception.expect(NullPointerException.class);
         pipe.configure();
         PipeRunResult res = pipe.doPipe(null, session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
+        fail("this is expected to fail");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
         exception.expectMessage("Pipe [FilenameSwitch under test] msgId [null] cannot find forward or pipe named [SUCCESS]");
         pipe.setToLowercase(false);
         PipeRunResult res = doPipe(pipe, "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS", session);
-        assertNotEquals(res.getPipeForward().getName(), "success");
+        fail("this is expected to fail");
     }
 
     @Test

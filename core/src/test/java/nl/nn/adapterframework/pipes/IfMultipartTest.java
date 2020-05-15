@@ -10,9 +10,9 @@ import org.junit.Before;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -43,8 +43,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
         PipeRunResult res = pipe.doPipe(null, session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
-
+        fail("this is expected to fail");
     }
 
     @Test
@@ -52,8 +51,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] expected HttpServletRequest as input, got [Message]");
         PipeRunResult res = doPipe(pipe, "i am a string not a http req", session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
-
+        fail("this is expected to fail");
     }
 
     @Test
@@ -81,7 +79,8 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         pipe.setThenForwardName("success");
         PipeRunResult res = doPipe(pipe, request, session);
         PipeForward forward = res.getPipeForward();
-        assertEquals(forward.getName(), "success");    }
+        fail("this is expected to fail");
+    }
 
 
     @Test
@@ -89,7 +88,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         pipe.setElseForwardName("elsee");
         PipeRunResult res = doPipe(pipe, request, session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        fail("this is expected to fail");
     }
 
 

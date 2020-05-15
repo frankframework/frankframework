@@ -3,12 +3,11 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import org.junit.Assert;
 import org.junit.Test;
 
+import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 
 
 /**
@@ -40,7 +39,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expectMessage("exception: ExceptionPipe under test");
         pipe.setThrowException(true);
         PipeRunResult res = doPipe(pipe, "", session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        Assert.fail("this is expected to fail");
     }
 
     @Test
@@ -49,7 +48,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
         exception.expectMessage("exception thrown with a custom message");
         pipe.setThrowException(true);
         PipeRunResult res  = doPipe(pipe, "exception thrown with a custom message", session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
+        fail("this is expected to fail");
 
     }
 

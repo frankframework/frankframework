@@ -17,6 +17,7 @@ import org.springframework.core.annotation.Order;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -81,7 +82,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = pipe.doPipe(null, session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
 
     @Test
@@ -92,7 +93,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.start();
         PipeRunResult res = doPipe(pipe, "testdoc", session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
 
     @Test
@@ -141,7 +142,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = pipe.doPipe(null, session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
 
     @Test
@@ -156,7 +157,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = doPipe(pipe, "xdfgfx", session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
 
 
@@ -284,7 +285,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = doPipe(pipe, "xx", session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
     @Test
     @Order(18)
@@ -331,7 +332,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = doPipe(pipe, "xx", session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+        fail("this is expected to fail");
     }
 
     @Test
@@ -343,7 +344,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.start();
 
         //PipeRunResult res = pipe.doPipe("xx", session);
-        assertEquals(3, pipe.getNumberOfBackups());
+        fail("this is expected to fail");
     }
 
     @Test
