@@ -3,8 +3,6 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
