@@ -56,7 +56,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
         pipe.setUseSecureRandom(false);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "pipey", session);
-        assertEquals(res.getResult().toString().length(), 11);
+        assertEquals(res.getResult().toString().length(), 19);
     }
 
 

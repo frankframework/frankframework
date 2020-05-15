@@ -30,7 +30,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address><line><![CDATA[this is an example]]></line><line><![CDATA[im in cdata]]></line></address>", res.getResult().toString());
+        assertEquals("String: <?xml version=\"1.0\" encoding=\"UTF-8\"?><address><line><![CDATA[this is an example]]></line><line><![CDATA[im in cdata]]></line></address>", res.getResult().toString());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
+        assertEquals("String: <?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
                 "im in cdata</address>", res.getResult().toString());
     }
 
@@ -55,7 +55,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         pipe.setReplaceNonXmlChars(false);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
+        assertEquals("String: <?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
                 "im in cdata</address>", res.getResult().toString());
     }
 
@@ -67,7 +67,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         pipe.setXmlTag("address"); pipe.setSplitLines(true); pipe.setUseCdataSection(true);
         pipe.setIncludeXmlDeclaration(true); pipe.setReplaceNonXmlChars(false); pipe.configure();
         PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address><line><![CDATA[this is an example]]></line><line><![CDATA[im in cdata]]></line></address>", res.getResult().toString());
+        assertEquals("String: <?xml version=\"1.0\" encoding=\"UTF-8\"?><address><line><![CDATA[this is an example]]></line><line><![CDATA[im in cdata]]></line></address>", res.getResult().toString());
     }
 
 

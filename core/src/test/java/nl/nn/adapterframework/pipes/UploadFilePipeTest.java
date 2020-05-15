@@ -114,7 +114,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         session1.put("key", zis);
         session1.put("fileName", "1.zip");
         PipeRunResult res = doPipe(pipe, "dsfdf", session1);
-        assertEquals(sourceFolderPath, res.getResult().toString());
+        assertEquals("String: " + sourceFolderPath, res.getResult().toString());
     }
 
     /**
@@ -146,7 +146,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         session1.put("fileName", "1.zip");
         session1.put("key2", sourceFolderPath);
         PipeRunResult res = doPipe(pipe, "dsfdf", session1);
-        assertEquals(sourceFolderPath, res.getResult().toString());
+        assertEquals("String: " + sourceFolderPath, res.getResult().toString());
     }
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
@@ -159,7 +159,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         session1.put("key", zis);
         session1.put("fileName", "1.zip");
         PipeRunResult res =doPipe(pipe, "hoooray.zip", session1);
-        assertEquals("hoooray.zip", res.getResult().toString());
+        assertEquals("String: hoooray.zip", res.getResult().toString());
     }
 
     /**
@@ -170,7 +170,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
         session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+"/new_dir");
         PipeRunResult res =doPipe(pipe, "dsfdf", session1);
-        assertEquals(sourceFolderPath+"/new_dir", res.getResult().toString());
+        assertEquals("String: " + sourceFolderPath+"/new_dir", res.getResult().toString());
     }
 
     /**

@@ -27,7 +27,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
     @Test
     public void testDoesntThrowException() throws Exception {
         pipe.setThrowException(false);
-        assertEquals("no exception", doPipe(pipe, "no exception", session).getResult());
+        assertEquals("String: no exception", doPipe(pipe, "String: no exception", session).getResult());
     }
 
     @Test
