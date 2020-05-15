@@ -153,5 +153,5 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 
 		assertEquals(expected, actual);
 	}
-	
+
 }
