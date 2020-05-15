@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.stream;
 
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Set;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 
 public class ThreadConnector {
 	protected Logger log = LogUtil.getLogger(this);
@@ -25,22 +28,24 @@ public class ThreadConnector {
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private Thread parentThread;
 	private Object threadInfo;
-	private String hideRegex;
+	private Set<String> hideRegex;
 	
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
-		hideRegex=LogUtil.getThreadHideRegex();
+		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 	}
-
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+	}
 	
 	public Object startThread(Object input) {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread!=parentThread) {
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
-			LogUtil.setThreadHideRegex(hideRegex);
+			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
 			// Commented out code below. Do not set contextClassLoader, contextClassLoader is not reliable outside configure().
 			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
@@ -61,7 +66,7 @@ public class ThreadConnector {
 			}
 			return response;
 		} finally {
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 
@@ -77,7 +82,7 @@ public class ThreadConnector {
 			}
 			return t;
 		} finally {
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 	

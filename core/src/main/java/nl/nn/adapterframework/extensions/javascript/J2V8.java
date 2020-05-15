@@ -18,16 +18,16 @@ package nl.nn.adapterframework.extensions.javascript;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.eclipsesource.v8.JavaCallback;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -58,7 +58,10 @@ public class J2V8 implements JavascriptEngine<V8> {
 					file = new File(absPath, directory);
 				}
 			}
-			String fileDir = file.toString();
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			String fileDir = file.getPath();
 			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
 				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
 			}
@@ -91,16 +94,13 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	@Override
-	public void registerCallback(final ISender sender, final ParameterResolutionContext prc) {
+	public void registerCallback(final ISender sender, final IPipeLineSession session) {
 		v8.registerJavaMethod(new JavaCallback() {
 			@Override
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
-					String msg = parameters.get(0).toString();
-					if(sender instanceof ISenderWithParameters)
-						return ((ISenderWithParameters) sender).sendMessage(null, msg, prc);
-					else
-						return sender.sendMessage(null, msg);
+					Message msg = Message.asMessage(parameters.get(0));
+					return sender.sendMessage(msg, session).asString();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

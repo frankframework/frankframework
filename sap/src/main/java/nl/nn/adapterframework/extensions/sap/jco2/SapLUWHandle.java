@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.sap.mw.jco.JCO;
 

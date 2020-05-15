@@ -80,6 +80,14 @@
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
+				<xs:element name="PatternString" minOccurs="0">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:length value="1"/>
+							<xs:pattern value="J|N"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>

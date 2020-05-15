@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,9 +32,11 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
@@ -52,13 +54,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get("file");
 		if (inputStream == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got null value from session under key ["
-					+ getSessionKey() + "]");
+			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;
@@ -127,9 +126,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			adapter.registerReceiver(genericReceiver);
 			pipeLine.setAdapter(adapter);
 			Wsdl wsdl = null;
-			wsdl = new Wsdl(pipeLine);
+			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
+			wsdl = new Wsdl(pipeLine, generationInfo);
 			wsdl.setIndent(true);
-			wsdl.setDocumentation(getWsdlDocumentation(wsdl.getFilename()));
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);
 			// zip (with includes)

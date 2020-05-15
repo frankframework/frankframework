@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
 
 @IbisInitializer
@@ -54,10 +54,10 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+						ConfigurationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
 				}
 			} catch (Exception e) {
-				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+				ConfigurationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
 			}
 		}
 	}
@@ -84,7 +84,7 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 	 */
 	private void log2ContextAndGui(String message) {
 		servletContext.log(message);
-		ConfigurationWarnings.getInstance().add(log, message);
+		ConfigurationWarnings.add(log, message);
 	}
 
 	private void checkAndCorrectLegacyServerTypes() {

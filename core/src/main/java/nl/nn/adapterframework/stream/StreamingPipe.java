@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package nl.nn.adapterframework.stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -34,23 +32,19 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
 	
-	private boolean determinedStreamTarget=false;
-	private IOutputStreamingSupport streamTarget;
 
-
-	@Override
-	public void start() throws PipeStartException {
-		super.start();
-		getStreamTarget();
-	}
-
-	@Override
-	public void stop() {
-		super.stop();
-	}
-
-	public IPipe getNextPipe() {
-		return getPipeLine().getPipe(getForwardName());
+	public IForwardTarget getNextPipe() {
+		if (getPipeLine()==null) {
+			return null;
+		}
+		
+		PipeForward forward = getForward();
+		try {
+			return getPipeLine().resolveForward(this, forward);
+		} catch (PipeRunException e) {
+			log.warn("no next pipe found",e);
+			return null;
+		}
 	}
 	
 	public boolean canProvideOutputStream() {
@@ -63,66 +57,18 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	/**
 	 * provide the outputstream, or null if a stream cannot be provided.
-	 * If nextProvider is null, then descendants must replace it with getStreamTarget().
+	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
-	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		return null;
 	}
 
-	/**
-	 * Descendants of this class must implement this method. When nextProvider is not null, they can use that to obtain an OutputStream to write their results to. 
-	 */
-	public abstract PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException;
-	
 	@Override
-	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input, session, getStreamTarget());
+	public final MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		return provideOutputStream(session);
 	}
-
 	
-	public IOutputStreamingSupport getStreamTarget() {
-		if (!determinedStreamTarget) {
-			determinedStreamTarget=true;
-			PipeLine pipeline=getPipeLine();
-			if (!isStreamingActive()) {
-				log.debug("Do not try to setup streaming because streamingActive=false");
-				return null;
-			}
-			if (pipeline==null) {
-				log.debug("Cannot stream, no pipeline");
-				return null;
-			}
-			PipeForward forward=getForward();
-			if (forward==null) {
-				log.debug("Forward is null, streaming stops");
-				return null;
-			}
-			String forwardPath=forward.getPath();
-			if (forwardPath==null) {
-				log.debug("ForwardPath is null, streaming stops");
-				return null;
-			}
-			IPipe nextPipe=pipeline.getPipe(forwardPath);
-			if (nextPipe==null) {
-				log.debug("Pipeline ends here, streaming stops");
-				return null;
-			}
-			if (!(nextPipe instanceof IOutputStreamingSupport)) {
-				log.debug("nextPipe ["+forwardPath+"] type ["+nextPipe.getClass().getSimpleName()+"] does not support streaming");
-				return null;
-			}
-			
-			if (nextPipe instanceof StreamingPipe && !((StreamingPipe)nextPipe).isStreamingActive()) {
-				log.debug("nextPipe ["+forwardPath+"] has not activated streaming");
-				return null;
-			}
-			streamTarget = (IOutputStreamingSupport)nextPipe;
-		}
-		return streamTarget;
-	}
 
-	
 
 	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})
 	public void setStreamingActive(boolean streamingActive) {

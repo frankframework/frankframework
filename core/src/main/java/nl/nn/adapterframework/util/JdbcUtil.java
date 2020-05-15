@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -52,16 +51,21 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database-oriented utility functions.
@@ -394,7 +398,7 @@ public class JdbcUtil {
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {
-					rawMessage = (String)result;
+					rawMessage = Message.asString(result);
 				}
 			} else {
 				rawMessage = new String(buf,charset);
@@ -1143,6 +1147,12 @@ public class JdbcUtil {
 			sb.append(parameterValues.getParameterValue(i).getValue() + "]");
 		}
 		return sb.toString();
+	}
+
+	public static void applyParameters(PreparedStatement statement, ParameterList parameters, Message message, IPipeLineSession session) throws SQLException, JdbcException, ParameterException {
+		if (parameters != null) {
+			applyParameters(statement,parameters.getValues(message, session));
+		}
 	}
 
 	public static void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {

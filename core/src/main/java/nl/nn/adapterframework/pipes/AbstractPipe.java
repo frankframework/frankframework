@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
@@ -66,7 +67,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * As much as possible, class instantiating should take place in the
  * {@link IPipe#configure()} method.
  * The object remains alive while the framework is running. When the pipe is to be run,
- * the {@link IPipe#doPipe(Object, IPipeLineSession) doPipe} method is activated.
+ * the {@link IPipe#doPipe(Message, IPipeLineSession) doPipe} method is activated.
  * <p>
  * For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link IPipeLineSession pipeLineSession}.
  * <br/>
@@ -148,7 +149,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
 	 * at the {@link Adapter Adapter}. Purpose of this method is to reduce
-	 * creating connections to databases etc. in the {@link #doPipe(Object) doPipe()} method.
+	 * creating connections to databases etc. in the {@link #doPipe(Message, IPipeLineSession) doPipe()} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
@@ -169,9 +170,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (pipeForwards.isEmpty()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix(null)+"has no forwards defined.";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
 				String forwardName = it.next();
@@ -182,9 +181,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 						PipeLineExit plExit= pipeline.getPipeLineExits().get(path);
 						if (plExit==null){
 							if (pipeline.getPipe(path)==null){
-								ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-								String msg = getLogPrefix(null)+"has a forward of which the pipe to execute ["+path+"] is not defined.";
-								configWarnings.add(log, msg);
+								ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
 							}
 						}
 					}
@@ -212,21 +209,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
-	 * @deprecated use {@link #doPipe(Object,IPipeLineSession)} instead
-	 */
-	@Deprecated
-	public final PipeRunResult doPipe (Object input) throws PipeRunException {
-		throw new PipeRunException(this, "Pipe should implement method doPipe()");
-	}
-
-	/**
-	 * This is where the action takes place. Pipes may only throw a PipeRunException,
-	 * to be handled by the caller of this object.
 	 */
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input);
-	}
+	public abstract PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException;
 
 	/**
 	 * looks up a key in the pipeForward hashtable. <br/>
@@ -300,9 +285,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		} else {
 			if (!isRecoverAdapter()) {
 				if (forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-					String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
-					configWarnings.add(log, msg);
+					ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
 				} else {
 					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 				}
@@ -416,11 +399,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return null;
 	}
 
-	@Override
-	public String getType() {
-		return this.getClass().getSimpleName();
-	}
-
 	/**
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
 	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
@@ -430,7 +408,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously in case
+	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
 	@IbisDoc({"maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously", "0 (unlimited)"})

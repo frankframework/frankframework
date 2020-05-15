@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -140,7 +140,7 @@ public class IbisApplicationContext {
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
 			String file = locationTokenizer.nextToken();
-			log.info("found spring configuration file to load ["+file+"]");
+			if(log.isDebugEnabled()) log.debug("found spring configuration file to load ["+file+"]");
 
 			URL fileURL = classLoader.getResource(file);
 			if(fileURL == null) {
@@ -193,7 +193,7 @@ public class IbisApplicationContext {
 		return applicationContext.getBean(beanName);
 	}
 
-	public Object getBean(String beanName, Class<?> beanClass) {
+	public <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 

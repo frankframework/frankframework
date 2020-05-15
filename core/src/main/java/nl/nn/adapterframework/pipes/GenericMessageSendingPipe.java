@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
 
+	@Override
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
 	}

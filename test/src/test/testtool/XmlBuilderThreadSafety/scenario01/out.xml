@@ -1,102 +1,122 @@
 <results>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
-	<result senderClass="DirectQuerySender$$EnhancerByCGLIB$$998d4777" type="String"><result>
-	<fielddefinition>
-		<field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="DUMMY">X</field>
-		</row>
-	</rowset>
-</result></result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result senderClass="DirectQuerySender" type="String">
+    <result>
+      <fielddefinition>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="DUMMY">X</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
 </results>

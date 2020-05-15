@@ -15,47 +15,21 @@
  */
 package nl.nn.adapterframework.extensions.svn;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Date;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.xml.transform.Transformer;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jms.JmsException;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import bitronix.tm.BitronixTransactionManager;
-import bitronix.tm.TransactionManagerServices;
-import bitronix.tm.resource.jdbc.PoolingDataSource;
-import bitronix.tm.resource.jms.PoolingConnectionFactory;
-
 /**
  * Some utilities for working with SVN.
  * 
@@ -64,9 +38,7 @@ import bitronix.tm.resource.jms.PoolingConnectionFactory;
 public class SvnUtils {
 	protected static Logger log = LogUtil.getLogger(SvnUtils.class);
 
-	public static String getLogReport(String urlString)
-			throws DomBuilderException, XPathExpressionException,
-			ConfigurationException, SenderException, TimeOutException {
+	public static String getLogReport(String urlString) throws DomBuilderException, XPathExpressionException, ConfigurationException, SenderException, TimeOutException, IOException {
 		String head = getHeadHtml(urlString);
 		String etag = XmlUtils.evaluateXPathNodeSetFirstElement(head,
 				"headers/header[lower-case(@name)='etag']");
@@ -82,8 +54,7 @@ public class SvnUtils {
 		return null;
 	}
 
-	private static String getHeadHtml(String urlString)
-			throws ConfigurationException, SenderException, TimeOutException {
+	private static String getHeadHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -95,7 +66,7 @@ public class SvnUtils {
 			httpSender.setMethodType("HEAD");
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, "");
+			String result = httpSender.sendMessage(new Message(""), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {
@@ -104,9 +75,7 @@ public class SvnUtils {
 		}
 	}
 
-	private static String getReportHtml(String urlString, String revision,
-			String path) throws ConfigurationException, SenderException,
-			TimeOutException {
+	private static String getReportHtml(String urlString, String revision, String path) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -128,7 +97,7 @@ public class SvnUtils {
 			httpSender.setMethodType("REPORT");
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(null, logReportRequest);
+			String result = httpSender.sendMessage(new Message(logReportRequest), null).asString();
 			return result;
 		} finally {
 			if (httpSender != null) {

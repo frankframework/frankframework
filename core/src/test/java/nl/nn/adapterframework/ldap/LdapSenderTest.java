@@ -6,12 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URL;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceConstants;
@@ -28,6 +22,14 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * @author Peter Leeuwenburgh
@@ -57,13 +59,13 @@ public class LdapSenderTest {
 
 	@Test
 	public void init() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException {
+			ConfigurationException, SenderException, LDAPException, TimeOutException {
 		compareXML("Ldap/expected/init.xml", getTree());
 	}
 
 	@Test
 	public void updateAttribute() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException {
+			ConfigurationException, SenderException, LDAPException, TimeOutException {
 		String result;
 		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 		LdapSender ldapSender = null;
@@ -80,10 +82,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender
-					.sendMessage(
-							"dummy",
-							"<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>");
+			result = ldapSender.sendMessage(new Message("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>"),null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -98,31 +97,25 @@ public class LdapSenderTest {
 	}
 
 	@Test
-	public void updateNewEntry() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException {
+	public void updateNewEntry() throws SAXException, IOException, ConfigurationException, SenderException, LDAPException, TimeOutException {
 		String result;
 		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 		LdapSender ldapSender = null;
 		try {
 			ldapSender = new LdapSender();
-			ldapSender.setLdapProviderURL("ldap://"
-					+ connection.getConnectedAddress() + ":"
-					+ connection.getConnectedPort());
+			ldapSender.setLdapProviderURL("ldap://" + connection.getConnectedAddress() + ":" + connection.getConnectedPort());
 			ldapSender.setOperation("update");
 			Parameter parameter = new Parameter();
 			parameter.setName("entryName");
-			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development,"
-					+ baseDNs);
+			parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
 			ldapSender.addParameter(parameter);
 			Parameter parameter2 = new Parameter();
 			parameter2.setName("newEntryName");
-			parameter2
-					.setValue("cn=LEA Administrator,ou=people,ou=development,"
-							+ baseDNs);
+			parameter2.setValue("cn=LEA Administrator,ou=people,ou=development," + baseDNs);
 			ldapSender.addParameter(parameter2);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender.sendMessage("dummy", "<dummy/>");
+			result = ldapSender.sendMessage(new Message("<dummy/>"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -138,7 +131,7 @@ public class LdapSenderTest {
 
 	@Test
 	public void deleteAttribute() throws SAXException, IOException,
-			ConfigurationException, SenderException, LDAPException {
+			ConfigurationException, SenderException, LDAPException, TimeOutException {
 		String result;
 		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 		LdapSender ldapSender = null;
@@ -155,10 +148,8 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender
-					.sendMessage(
-							"dummy",
-							"<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>");
+			result = ldapSender.sendMessage(new Message("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>"),
+							null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
@@ -180,7 +171,7 @@ public class LdapSenderTest {
 	}
 
 	private String getTree() throws LDAPException, ConfigurationException,
-			SenderException {
+			SenderException, TimeOutException, IOException {
 		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 		LdapSender ldapSender = null;
 		try {
@@ -195,7 +186,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter);
 			ldapSender.configure();
 			ldapSender.open();
-			return ldapSender.sendMessage("dummy", "dummy");
+			return ldapSender.sendMessage(new Message("dummy"), null).asString();
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();

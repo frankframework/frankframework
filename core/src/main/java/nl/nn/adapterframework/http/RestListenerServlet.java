@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -36,7 +35,7 @@ import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
@@ -50,6 +49,7 @@ public class RestListenerServlet extends HttpServlet {
 	
 	private RestServiceDispatcher sd=null;
 	
+	@Override
 	public void init() throws ServletException {
 		super.init();
 		if (sd==null) {
@@ -57,6 +57,7 @@ public class RestListenerServlet extends HttpServlet {
 		}
 	}
 	
+	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String path=request.getPathInfo();

@@ -10,7 +10,11 @@ jdk:
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
 install: echo 'Skipping separate install phase'
-script: mvn install -B -Dmaven.javadoc.skip=true
+script: mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource
+
+cache:
+  directories:
+  - $HOME/.m2
 
 notifications:
   email:

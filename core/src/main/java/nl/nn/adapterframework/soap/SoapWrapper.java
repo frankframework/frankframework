@@ -30,7 +30,7 @@ import org.apache.axis.client.AxisClient;
 import org.apache.axis.configuration.NullProvider;
 import org.apache.axis.message.SOAPEnvelope;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityEngine;
@@ -47,6 +47,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -131,10 +132,10 @@ public class SoapWrapper {
 	}
 
 	public String getBody(InputStream request) throws TransformerException, IOException {
-		String result = extractBody.transform(new StreamSource(request),null);
+		String result = extractBody.transform(new StreamSource(request));
 		if (StringUtils.isNotEmpty(result))
 			return result;
-		return extractBody2.transform(new StreamSource(request),null);
+		return extractBody2.transform(new StreamSource(request));
 	}
 
 	public String getHeader(String message) throws SAXException, TransformerException, IOException {
@@ -142,7 +143,7 @@ public class SoapWrapper {
 	}
 
 	public String getHeader(InputStream request) throws TransformerException, IOException {
-		return extractHeader.transform(new StreamSource(request), null);
+		return extractHeader.transform(new StreamSource(request));
 	}
 
 	public int getFaultCount(String message) throws SAXException, TransformerException, IOException {
@@ -253,7 +254,7 @@ public class SoapWrapper {
 			AxisClient tmpEngine = new AxisClient(new NullProvider());
 			MessageContext msgContext = new MessageContext(tmpEngine);
 
-			InputStream in = new ByteArrayInputStream(soapMessage.getBytes());
+			InputStream in = new ByteArrayInputStream(soapMessage.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 			Message msg = new Message(in);
 			msg.setMessageContext(msgContext);
 

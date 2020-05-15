@@ -19,7 +19,6 @@ package nl.nn.adapterframework.validation;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.xerces.xs.XSModel;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -153,6 +153,7 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract List<XSModel> getXSModels();
 
 	/**
 	 * @param input   the XML string to validate
@@ -180,7 +181,7 @@ public abstract class AbstractXmlValidator {
 			validatorHandler.setErrorHandler(context.getErrorHandler());
 		}
 
-		InputSource is = getInputSource(input);
+		InputSource is = getInputSource(Message.asMessage(input));
 
 		return validate(is, validatorHandler, session, context, resolveExternalEntities);
 	}
@@ -237,13 +238,12 @@ public abstract class AbstractXmlValidator {
 		return sb.toString();
 	}
 
-	protected InputSource getInputSource(Object input) throws XmlValidatorException {
-		Message in = new Message(input);
+	protected InputSource getInputSource(Message input) throws XmlValidatorException {
 		final InputSource is;
 		if (isValidateFile()) {
 			String filename=null;
 			try {
-				filename = in.asString();
+				filename = input.asString();
 				is = new InputSource(StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(filename), getCharset()));
 			} catch (FileNotFoundException e) {
 				throw new XmlValidatorException("could not find file [" + filename + "]", e);
@@ -254,7 +254,7 @@ public abstract class AbstractXmlValidator {
 			}
 		} else {
 			try {
-				is = in.asInputSource();
+				is = input.asInputSource();
 			} catch (IOException e) {
 				throw new XmlValidatorException("cannot obtain InputSource", e);
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -84,13 +83,14 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
-		querySender.sendMessage(streamId, streamId); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
+	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
-		Message msg = new Message(streamId);
-		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
-		PreparedStatement statement=queryContext.getStatement();
+		Message message = new Message(streamId);
+		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+		PreparedStatement statement=queryExecutionContext.getStatement();
+		JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
@@ -100,9 +100,9 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 	
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
-			return super.finalizeResult(session,streamId, error, prc);
+			return super.finalizeResult(session,streamId, error);
 		} finally {
 			Object lobHandle = openLobHandles.get(streamId);
 			Connection conn = openConnections.get(streamId);

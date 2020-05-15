@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -95,14 +96,14 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
         String testXml=inputFile!=null?TestFileUtils.getTestFile(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");
-        String xml2json = (String)jsonPipe.doPipe(testXml,session).getResult();
+        String xml2json = jsonPipe.doPipe(new Message(testXml),session).getResult().asString();
         System.out.println("testXml ["+inputFile+".xml] to json ["+xml2json+"]");
         String testJson=inputFile!=null?TestFileUtils.getTestFile(inputFile+".json"):null;
         System.out.println("testJson ["+testJson+"]");
          
         try {
-        	PipeRunResult prr = instance.doPipe(testJson, session);
-        	String result = (String)prr.getResult();
+        	PipeRunResult prr = instance.doPipe(new Message(testJson), session);
+        	String result = prr.getResult().asString();
         	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
         	String event;
         	if (prr.getPipeForward().getName().equals("success")) {

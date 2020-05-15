@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.text.StrTokenizer;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-
-import org.apache.commons.lang.text.StrTokenizer;
 
 /**
  * Read messages from the ibisstore previously stored by a
@@ -75,13 +76,13 @@ public class MessageStoreListener extends JdbcQueryListener {
 		setPreSelectQuery("SELECT TOP 1 MESSAGEKEY FROM IBISSTORE "
 				+ "WHERE TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 		setSelectQuery("SELECT MESSAGEKEY, MESSAGE FROM IBISSTORE "
-				+ "WHERE TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
+				+ "WHERE TYPE = '" + ITransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 				// This class was initially developed as DelayStoreListener with
 				// the following condition added. We could still add an
 				// optional delay attribute but this functionality wasn't used
 				// anymore and the condition is Oracle specific.
 				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
-		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
+		String query = "UPDATE IBISSTORE SET TYPE = '" + ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
 		if (!isMoveToMessageLog()) {
 			query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
 		}

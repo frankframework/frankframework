@@ -28,21 +28,22 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
+
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -167,6 +168,8 @@ public final class SendJmsMessageExecute extends ActionBase {
 	          cookieValue += "destinationType=\"" + form_destinationType + "\"";
 	          Cookie sendJmsCookie = new Cookie(AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME"), cookieValue);
 	          sendJmsCookie.setMaxAge(Integer.MAX_VALUE);
+	          sendJmsCookie.setHttpOnly(true);
+	          sendJmsCookie.setSecure(true);
 	          log.debug("Store cookie for " + request.getServletPath()+
 	          " cookieName[" + AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME")+"] "+
 	          " cookieValue[" + new StringTagger(cookieValue).toString()+"]");
@@ -185,7 +188,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	
 	}
 
-	private void processMessage(JmsSender qms, String messageId, String message) {
+	private void processMessage(JmsSender qms, String messageId, String message) throws IOException {
 		//PipeLineSession pls=new PipeLineSession();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
 		String technicalCorrelationId = messageId;
@@ -208,7 +211,12 @@ public final class SendJmsMessageExecute extends ActionBase {
 
 		try {
 			qms.open();
-			qms.sendMessage(technicalCorrelationId,message);
+			/*
+			 * this used to be:
+			 *   qms.sendMessage(technicalCorrelationId,new Message(message), null);
+			 * Be aware that 'technicalCorrelationId' will not be used by default
+			 */
+			qms.sendMessage(new Message(message),null);
 		} catch (SenderException e) {
 			error("error occured sending message",e);
 		} catch (TimeOutException e) {

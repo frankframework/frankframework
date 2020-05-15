@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Integration Partners
+   Copyright 2017-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,27 +15,32 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.xml.transform.TransformerConfigurationException;
-
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -64,33 +69,31 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.log4j.Logger;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Logger;
+
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.xml.transform.TransformerConfigurationException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -170,8 +173,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String urlParam = "url";
 	private String methodType = "GET";
 	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType contentType = null;
-	private String mimeType = "text/html";
+	private ContentType fullContentType = null;
+	private String contentType = null;
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -226,7 +229,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected Parameter urlParameter;
 
-	protected URIBuilder staticUri;
+	protected URI staticUri;
 	private CredentialFactory credentials;
 
 	private Set<String> parametersToSkip=new HashSet<String>();
@@ -246,22 +249,39 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	protected URIBuilder getURI(String url) throws URISyntaxException {
+	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
 		URIBuilder uri = new URIBuilder(url);
+
+		if (!uri.getScheme().matches("(?i)https?"))
+			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
 
 		if (uri.getPath()==null) {
 			uri.setPath("/");
 		}
 
+		// Encode query param values.
+		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
+		for(NameValuePair pair : uri.getQueryParams()) {
+			String paramValue = pair.getValue(); //May be NULL
+			if(StringUtils.isNotEmpty(paramValue)) {
+				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
+			}
+			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
+		}
+		if(pairs.size() > 0) {
+			uri.clearParameters();
+			uri.addParameters(pairs);
+		}
+
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
-		return uri;
+		return uri.build();
 	}
 
-	protected int getPort(URIBuilder uri) {
+	protected int getPort(URI uri) {
 		int port = uri.getPort();
 		if (port<1) {
 			try {
-				URL url = uri.build().toURL();
+				URL url = uri.toURL();
 				port = url.getDefaultPort();
 				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
@@ -302,10 +322,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		if(StringUtils.isNotEmpty(mimeType)) {
-			contentType = ContentType.parse(mimeType);
-			if(contentType != null && contentType.getCharset() == null) {
-				contentType = contentType.withCharset(getCharSet());
+		if(StringUtils.isNotEmpty(getContentType())) {
+			fullContentType = ContentType.parse(getContentType());
+			if(fullContentType != null && fullContentType.getCharset() == null) {
+				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
 
@@ -421,7 +441,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 
 			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-		} catch (URISyntaxException e) {
+		} catch (URISyntaxException | UnsupportedEncodingException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]");
 		}
 
@@ -549,36 +569,41 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @param uri endpoint to send the message to
 	 * @param message to be sent
 	 * @param parameters ParameterValueList that contains all the senders parameters
-	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
 	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
 	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param prc ParameterResolutionContext
+	 * @param session {@link IPipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
-	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
+	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
+		String message;
+		try {
+			message = input.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		ParameterValueList pvl = null;
 		try {
-			if (prc !=null && paramList !=null) {
-				pvl=prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(input, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
 		HttpHost httpTarget;
-		URIBuilder uri;
+		URI uri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
@@ -606,13 +631,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				message = URLEncoder.encode(message, getCharSet());
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, (prc==null) ? null : prc.getSession());
+			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
 			//Set all headers
-			if(prc != null && APPEND_MESSAGEID_HEADER) {
-				httpRequestBase.setHeader("Message-Id", prc.getSession().getMessageId());
+			if(session != null && APPEND_MESSAGEID_HEADER) {
+				httpRequestBase.setHeader("Message-Id", session.getMessageId());
 			}
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
@@ -658,8 +683,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				StatusLine statusline = httpResponse.getStatusLine();
 				statusCode = statusline.getStatusCode();
 
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && prc != null) {
-					prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 				}
 
 				// Only give warnings for 4xx (client errors) and 5xx (server errors)
@@ -669,7 +694,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 
-				result = extractResult(responseHandler, prc);
+				result = extractResult(responseHandler, session);
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
@@ -727,9 +752,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true);
 					try {
-						result = transformerPool.transform(prc_xslt.getInputSource(true), null);
+						result = transformerPool.transform(Message.asSource(result));
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}
@@ -737,7 +761,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		return result;
+		return Message.asMessage(result);
 	}
 
 	@Override
@@ -773,15 +797,21 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return methodType.toUpperCase();
 	}
 
-	@IbisDoc({"4", "content-type of the request, only for POST and PUT methods", "text/html"})
+	/**
+	 * This is a superset of mimetype + charset + optional payload metadata.
+	 */
+	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
-		mimeType = string;
+		contentType = string;
 	}
-	public ContentType getContentType() {
+	public String getContentType() {
 		return contentType;
 	}
+	public ContentType getFullContentType() {
+		return fullContentType;
+	}
 
-	@IbisDoc({"5", "charset of the request, only for POST and PUT methods", "UTF-8"})
+	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}

@@ -15,17 +15,26 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
+//import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.ing.ifsa.IFSAQueue;
+import com.ing.ifsa.IFSAReportMessage;
+import com.ing.ifsa.IFSATimeOutMessage;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -34,21 +43,14 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
-import com.ing.ifsa.IFSAQueue;
-import com.ing.ifsa.IFSAReportMessage;
-import com.ing.ifsa.IFSATimeOutMessage;
 
 
 /**
@@ -95,6 +97,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
   		super(false); // instantiate IfsaFacade as a requestor	
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -106,6 +109,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
 	}
 	
+	@Override
   	public void open() throws SenderException {
 	  	try {
 		 	openService();
@@ -116,6 +120,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	/**
 	 * Stop the sender and deallocate resources.
 	 */
+	@Override
 	public void close() throws SenderException {
 	    try {
 	        closeService();
@@ -127,6 +132,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	/**
 	 * returns true for Request/Reply configurations
 	 */
+	@Override
 	public boolean isSynchronous() {
 		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
 	}
@@ -134,10 +140,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
-	private Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeOutException {
+	private javax.jms.Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeOutException {
 	
 		String selector=null;
-	    Message msg = null;
+		javax.jms.Message msg = null;
 		QueueReceiver replyReceiver=null;
 		try {
 		    replyReceiver = getReplyReceiver(session, sentMessage);
@@ -176,15 +182,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //		}
 	}
 
-	public String sendMessage(String message) throws SenderException, TimeOutException {
-		return sendMessage(null, message, (Map)null);
-	}
 
-	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
-		return sendMessage(dummyCorrelationId, message, (Map)null);
-	}
-
-	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		
 		try {
 			if (isSynchronous()) {
@@ -200,12 +200,16 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			throw new SenderException(e);
 		}
 
-		ParameterValueList paramValueList;
-		try {
-			paramValueList = prc.getValues(paramList);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		
+		ParameterValueList paramValueList=null;
+		if (paramList!=null) {
+			try {
+				paramValueList = paramList.getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage()", e);
+			}
 		}
+		
 		Map params = new HashMap();
 		if (paramValueList != null && paramList != null) {
 			for (int i = 0; i < paramList.size(); i++) {
@@ -215,22 +219,26 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 		}
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		String BIF = (String)prc.getSession().get(getBifNameSessionKey());
+		String BIF = (String)session.get(getBifNameSessionKey());
 		if (StringUtils.isEmpty(BIF)) {
-			BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
-		return sendMessage(dummyCorrelationId, message, params,BIF,null);
+		try {
+			return new Message(sendMessage(message.asString(), params, BIF,null));
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
-		return sendMessage(dummyCorrelationId, message,params, null, null);
+		return sendMessage(message, params, null, null);
 	}
 
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String dummyCorrelationId, String message, Map params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
+	public String sendMessage(String message, Map params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
 	    String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;
@@ -278,7 +286,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			if (isSynchronous()){
 		
 				log.debug(getLogPrefix()+"waiting for reply");
-				Message msg=getRawReplyMessage(session, queue, sentMessage);
+				javax.jms.Message msg=getRawReplyMessage(session, queue, sentMessage);
 				try {
 					long tsReplyReceived = System.currentTimeMillis();
 					long tsRequestSent = sentMessage.getJMSTimestamp();

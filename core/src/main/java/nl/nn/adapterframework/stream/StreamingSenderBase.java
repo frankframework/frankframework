@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,39 +15,24 @@
 */
 package nl.nn.adapterframework.stream;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
 	@Override
-	public abstract PipeRunResult sendMessage(String correlationID, Message message, ParameterResolutionContext prc, IOutputStreamingSupport nextProvider) throws SenderException, TimeOutException;
-	@Override
-	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException;
-
-	
-	@Override
-	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
-	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(correlationID, new Message(message), prc, null);
-		try {
-			return result==null?null:new Message(result.getResult()).asString();
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
+	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
+	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		PipeRunResult result = sendMessage(message, session, null);
+		return result.getResult();
 	}
 
-	
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return true;
 	}
 	
-
 }

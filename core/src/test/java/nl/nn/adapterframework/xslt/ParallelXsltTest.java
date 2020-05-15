@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -23,12 +22,11 @@ import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 
 public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
-	
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
 	boolean expectExtraParamWarning=false;
-	
+
 	@Before
 	public void clear() {
 		expectExtraParamWarning=false;

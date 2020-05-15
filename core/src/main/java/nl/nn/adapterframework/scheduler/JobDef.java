@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -55,6 +67,7 @@ import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -67,18 +80,6 @@ import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -748,9 +749,7 @@ public class JobDef {
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		
-		String configJmsRealm = JmsRealmFactory.getInstance()
-				.getFirstDatasourceJmsRealm();
+		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
 			List<String> configNames = new ArrayList<String>();
@@ -771,19 +770,21 @@ public class JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					String type = configuration.getClassLoaderType();
+					if(type == null) { //Configuration has not been loaded yet
+						type = AppConstants.getInstance().getProperty("configurations."+configName+".classLoaderType");
+					}
+					if ("DatabaseClassLoader".equals(type)) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
-									configVersion)) {
-								log.info(getLogPrefix() + "configuration ["
-										+ configName + "] with version ["
-										+ configVersion
-										+ "] will be reloaded with new version ["
-										+ ibisConfigVersion + "]");
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+							}
+							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
 								configsToReload.add(configName);
 							}
 						}
@@ -792,8 +793,8 @@ public class JobDef {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				qs.close();
 				JdbcUtil.fullClose(conn, rs);
+				qs.close();
 			}
 
 			if (!configsToReload.isEmpty()) {
@@ -941,8 +942,8 @@ public class JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
@@ -966,7 +967,7 @@ public class JobDef {
 			qs.setTimeout(getQueryTimeout());
 			qs.configure(true);
 			qs.open();
-			String result = qs.sendMessage("dummy", getQuery());
+			Message result = qs.sendMessage(new Message(getQuery()), null);
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
@@ -1000,8 +1001,8 @@ public class JobDef {
 			localSender.open();
 			try {
 				//sendMessage message cannot be NULL
-				String message = (getMessage()==null) ? "" : getMessage();
-				localSender.sendMessage(null, message);
+				Message message = new Message((getMessage()==null) ? "" : getMessage());
+				localSender.sendMessage(message, null);
 			}
 			finally {
 				localSender.close();

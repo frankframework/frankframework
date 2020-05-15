@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -62,14 +63,15 @@ public class IbisConsoleTest {
 		String testResult=ibisTester.testStartAdapters();
 		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
+		assertNotNull(ibisContext);
 
-		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_CONFIGURATION_STATUS_XSLT);
+		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), SHOW_CONFIGURATION_STATUS_XSLT);
 		if (showConfigurationStatusUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_CONFIGURATION_STATUS_XSLT + "]");
 		}
 		showConfigurationStatusTransformer = XmlUtils.createTransformer(showConfigurationStatusUrl);
 
-		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_ENVIRONMENT_VARIABLES_XSLT);
+		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), SHOW_ENVIRONMENT_VARIABLES_XSLT);
 		if (showEnvironmentVariablesUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_ENVIRONMENT_VARIABLES_XSLT + "]");
 		}
@@ -81,6 +83,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -88,7 +91,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
-		String result = transformShowConfigurationStatusXml((String) pipeRunResult.getResult());
+		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowConfigurationStatus_all.xml", result);
 	}
@@ -98,6 +101,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -105,7 +109,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
-		String result = transformShowConfigurationStatusXml((String) pipeRunResult.getResult());
+		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowConfigurationStatus_single.xml", result);
 	}
@@ -115,6 +119,7 @@ public class IbisConsoleTest {
 		ShowEnvironmentVariables showEnvironmentVariables = new ShowEnvironmentVariables();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowEnvironmentVariables");
+		assertNotNull("adapter is null", adapter);
 		pipeLine.setAdapter(adapter);
 		showEnvironmentVariables.registerForward(createPipeSuccessForward());
 		showEnvironmentVariables.configure(pipeLine);
@@ -122,7 +127,7 @@ public class IbisConsoleTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showEnvironmentVariables.doPipe(null, session);
-		String result = transformShowEnvironmentVariablesXml((String) pipeRunResult.getResult());
+		String result = transformShowEnvironmentVariablesXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
 		compareXML("webcontrol/pipes/ShowEnvironmentVariables.xml", result);
 	}
@@ -140,11 +145,12 @@ public class IbisConsoleTest {
 	}
 
 	private void compareXML(String expectedFile, String result) throws SAXException, IOException, DomBuilderException, TransformerException {
-		URL expectedUrl = ClassUtils.getResourceURL(this, expectedFile);
+		URL expectedUrl = ClassUtils.getResourceURL(IbisConsoleTest.class.getClassLoader(), expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
 		String expected = Misc.resourceToString(expectedUrl);
+		XMLUnit.setIgnoreAttributeOrder(true);
 		Diff diff = XMLUnit.compareXML(expected, result);
 		assertTrue(diff.toString(), diff.identical());
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -23,10 +27,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Selects an exitState, based on the content of a sessionkey.
@@ -74,6 +77,7 @@ public class XmlIf extends AbstractPipe {
 
 
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
@@ -85,16 +89,21 @@ public class XmlIf extends AbstractPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String forward = "";
 		PipeForward pipeForward = null;
 
 		String sInput;
 		if (StringUtils.isEmpty(getSessionKey())) {
-			if (input==null) {
+			if (message==null || message.asObject()==null) {
 				sInput="";
 			} else {
-				sInput = input.toString();
+				try {
+					sInput = message.asString();
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 			}
 		} else {
 			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
@@ -141,7 +150,7 @@ public class XmlIf extends AbstractPipe {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
 		}
 		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
-		return new PipeRunResult(pipeForward, input);
+		return new PipeRunResult(pipeForward, message);
 	}
 	
 

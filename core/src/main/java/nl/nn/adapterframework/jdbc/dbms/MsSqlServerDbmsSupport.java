@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,63 +19,105 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
+	protected static final String NEXT_VALUE_FOR = "NEXT VALUE FOR ";
+	protected static final String SELECT_CURRENT_VALUE = "SELECT CURRENT_VALUE FROM SYS.SEQUENCES WHERE NAME = ";
+	protected static final String DEFAULT_BLOB_VALUE = "0x";
+	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
+	protected static final String GET_DATE = "GETDATE()";
+	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
+	
+
+	@Override
 	public int getDatabaseType() {
 		return DbmsSupportFactory.DBMS_MSSQLSERVER;
 	}
 
+	@Override
 	public String getDbmsName() {
 		return "MS SQL";
 	}
 
+	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
 	}
 
+	@Override
 	public String getNumericKeyFieldType() {
 		return "INT";
 	}
 
+	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT IDENTITY";
 	}
 	
+	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
 	}
 
+	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return "SELECT @@IDENTITY";
 	}
 
+	@Override
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
 
+	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
 
+	@Override
 	public boolean mustInsertEmptyBlobBeforeData() {
 		return false;
 	}
 
+	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
 	
+	@Override
+	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConversionRequired(sqlDialectFrom)) {
+			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
+				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
+				StringBuilder sb = new StringBuilder();
+				for (String singleQuery : multipleQueries) {
+					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
+					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
+					if (convertedQuery != null) {
+						sb.append(convertedQuery);
+						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
+							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
+						}
+					}
+				}
+				queryExecutionContext.setQuery(sb.toString());
+			} else {
+				warnConvertQuery(sqlDialectFrom);
+			}
+		}
+	}
 	
+	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
@@ -92,27 +134,23 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return result;
 	}
 
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select top(1) * from "+tableName;
 		return query;
 	} 
 
+	@Override
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
 	}
 
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
 	}
 
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName, tableName.toUpperCase());
-	}
-	
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
-	}
-
+	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
 		if (e.getErrorCode()==2627) {
 			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
@@ -122,18 +160,22 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
+	@Override
 	public String getRowNumber(String order, String sort) {
 		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 	}
 
+	@Override
 	public String getRowNumberShortName() {
 		return "rn";
 	}
 
+	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
 	}
 
+	@Override
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}

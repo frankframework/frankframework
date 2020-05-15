@@ -17,9 +17,6 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +30,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher
@@ -49,6 +46,7 @@ public class HttpListenerServlet extends HttpServlet {
 
 	private ServiceDispatcher sd=null;
 	
+	@Override
 	public void init() throws ServletException {
 		super.init();
 		if (sd==null) {
@@ -64,9 +62,9 @@ public class HttpListenerServlet extends HttpServlet {
 		messageContext.put("httpListenerServletRequest", request);
 		messageContext.put("httpListenerServletResponse", response);
 		String service=request.getParameter(SERVICE_ID_PARAM);
-		Enumeration paramnames=request.getParameterNames();
+		Enumeration<String> paramnames=request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
-			String paramname = (String)paramnames.nextElement();
+			String paramname = paramnames.nextElement();
 			String paramvalue = request.getParameter(paramname);
 			if (log.isDebugEnabled()) {
 				log.debug("HttpListenerServlet setting parameter ["+paramname+"] to ["+paramvalue+"]");
@@ -83,11 +81,13 @@ public class HttpListenerServlet extends HttpServlet {
 		}
 	}
 	
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		String message=request.getParameter(MESSAGE_PARAM);
 		invoke(message,request,response);
 	}
 
+	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		String message=Misc.streamToString(request.getInputStream(),"\n",false);
 		invoke(message,request,response);

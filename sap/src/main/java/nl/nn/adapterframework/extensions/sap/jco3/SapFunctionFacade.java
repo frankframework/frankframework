@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
@@ -33,6 +33,7 @@ import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
@@ -260,7 +261,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return result;
 	}
 
-	public String functionResult2message(JCoFunction function) {
+	public Message functionResult2message(JCoFunction function) {
 		JCoParameterList export = function.getExportParameterList();
 		
 		int replyFieldIndex = findFieldIndex(export, getReplyFieldIndex(), getReplyFieldName());
@@ -282,7 +283,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			}
 			result+="</response>";
 		}
-		return result;
+		return new Message(result);
 	}
 
 	public void message2FunctionCall(JCoFunction function, String request, String correlationId, ParameterValueList pvl) throws SapException {

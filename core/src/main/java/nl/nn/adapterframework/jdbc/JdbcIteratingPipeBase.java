@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -48,7 +47,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
 	
-	protected class MixedQuerySender extends JdbcQuerySenderBase {
+	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
 		
@@ -57,11 +56,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			if (query!=null) {
 				return query;
 			}
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
+			return super.getQuery(message);
 		}
 
 		public void setQuery(String query) {
@@ -93,26 +88,19 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
-		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
-	}
-
-
 	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
 	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			Message msg = new Message(input);
-			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, correlationID, msg, prc);
-			statement=queryContext.getStatement();
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");

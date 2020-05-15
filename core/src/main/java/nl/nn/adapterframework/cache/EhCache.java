@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.cache;
 
-import java.io.Serializable;
-
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -132,23 +130,8 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	}
 
 	@Override
-	protected void putElement(String key, Object value) {
+	protected void putElement(String key, V value) {
 		Element element=new Element(key,value);
-		cache.put(element);
-	}
-
-	@Override
-	protected Object getElementObject(Object key) {
-		Element element = cache.get(key);
-		if (element==null) {
-			return null;
-		}
-		return element.getObjectValue();
-	}
-
-	@Override
-	protected void putElementObject(Object key, Object value) {
-		Element element = new Element(key,value);
 		cache.put(element);
 	}
 
@@ -156,6 +139,12 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	protected boolean removeElement(Object key) {
 		return cache.remove(key);
 	}
+
+	@Override
+	protected V stringToValue(String value) {
+		return (V)value;
+	}
+
 
 	public int getMaxElementsInMemory() {
 		return maxElementsInMemory;
@@ -238,4 +227,5 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 			int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}
+
 }

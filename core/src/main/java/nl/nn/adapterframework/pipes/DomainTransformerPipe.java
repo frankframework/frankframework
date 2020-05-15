@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,18 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.sql.DataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -66,9 +68,10 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
-	private Map proxiedDataSources;
+	private Map<String, DataSource> proxiedDataSources;
 	private String jmsRealm;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -85,7 +88,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		Connection conn = null;
 		try {
 			conn = qs.getConnection();
-			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, "*")) {
+			if (!qs.getDbmsSupport().isTablePresent(conn, tableName)) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}
 			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, labelField)) {
@@ -101,15 +104,13 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 					" WHERE " + labelField+ "=? AND " + valueInField + "=?";
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
-		} catch (SQLException e) {
-			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.close(conn);
 		}
 	}
 
-	public PipeRunResult doPipe(Object invoer, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message invoer, IPipeLineSession session) throws PipeRunException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		StringBuffer buffer = new StringBuffer();
@@ -118,7 +119,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			conn = qs.getConnection();
 			stmt = conn.prepareStatement(query);
 
-			String invoerString = invoer.toString();
+			String invoerString = invoer.asString();
 			int startPos = invoerString.indexOf(DT_START);
 			if (startPos == -1)
 				return new PipeRunResult(getForward(), invoerString);
@@ -127,19 +128,14 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			while (startPos != -1) {
 				buffer.append(invoerChars, copyFrom, startPos - copyFrom);
 				int nextStartPos =
-					invoerString.indexOf(
-						DT_START,
-						startPos + DT_START.length());
+					invoerString.indexOf(DT_START, startPos + DT_START.length());
 				if (nextStartPos == -1) {
 					nextStartPos = invoerString.length();
 				}
 				int endPos =
 					invoerString.indexOf(DT_END, startPos + DT_START.length());
 				if (endPos == -1 || endPos > nextStartPos) {
-					log.warn(
-						getLogPrefix(session)
-							+ "Found a start delimiter without an end delimiter at position ["
-							+ startPos + "] in ["+ invoerString+ "]");
+					log.warn(getLogPrefix(session) + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ invoerString+ "]");
 					buffer.append(invoerChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				} else {
@@ -159,9 +155,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						}
 						if (!type.equals(TYPE_STRING)
 							&& !type.equals(TYPE_NUMBER)) {
-							log.warn(
-								getLogPrefix(session)
-									+ "Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
+							log.warn(getLogPrefix(session) + "Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
 							buffer.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {
@@ -219,6 +213,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public void start() throws PipeStartException {
 		try {
 			qs.open();
@@ -231,16 +226,17 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			throw pse;
 		}
 	}
+
+	@Override
 	public void stop() {
 		log.info(getLogPrefix(null) + "is closing");
 		qs.close();
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
-	@IbisDoc({"", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
