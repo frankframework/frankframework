@@ -15,10 +15,16 @@
 */
 package nl.nn.adapterframework.core;
 
-public interface IPullingTriggerListener extends IPullingListener {
+import nl.nn.adapterframework.doc.IbisDoc;
+
+public interface IPeekableListener extends IPullingListener {
 	/**
 	 * Extra check if there are messages to retrieve before starting XA
 	 * transaction and really retrieve the message.
 	 */
-	boolean getRawMessageTrigger() throws ListenerException;
+	boolean hasRawMessageAvailable() throws ListenerException;
+
+	@IbisDoc({"when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true", "false"})
+	public void setPeekUntransacted(boolean b);
+	boolean isPeekUntransacted();
 }

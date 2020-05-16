@@ -25,7 +25,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPullingTriggerListener;
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -43,12 +43,12 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener extends JdbcFacade implements IPullingTriggerListener {
+public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	private String startLocalTransactionQuery;
 	private String commitLocalTransactionQuery;
 	private String selectQuery;
-	private String preSelectQuery;
+	private String peekQuery;
 	private String updateStatusToProcessedQuery;
 	private String updateStatusToErrorQuery;
 
@@ -64,7 +64,8 @@ public class JdbcListener extends JdbcFacade implements IPullingTriggerListener 
 
 	private String preparedSelectQuery;
 
-	private  boolean trace=false;
+	private boolean trace=false;
+	private boolean peekUntransacted=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -117,15 +118,15 @@ public class JdbcListener extends JdbcFacade implements IPullingTriggerListener 
 	}
 
 	@Override
-	public boolean getRawMessageTrigger() throws ListenerException {
-		if (StringUtils.isEmpty(getPreSelectQuery())) {
+	public boolean hasRawMessageAvailable() throws ListenerException {
+		if (StringUtils.isEmpty(getPeekQuery())) {
 			return true;
 		} else {
 			if (isConnectionsArePooled()) {
 				Connection c = null;
 				try {
 					c = getConnection();
-					return getRawMessageTrigger(c);
+					return hasRawMessageAvailable(c);
 				} catch (JdbcException e) {
 					throw new ListenerException(e);
 				} finally {
@@ -139,21 +140,17 @@ public class JdbcListener extends JdbcFacade implements IPullingTriggerListener 
 				}
 			}
 			synchronized (connection) {
-				return getRawMessageTrigger(connection);
+				return hasRawMessageAvailable(connection);
 			}
 		}
 	}
 
-	protected boolean getRawMessageTrigger(Connection conn) throws ListenerException {
+	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
-			String preResult = JdbcUtil.executeStringQuery(conn, getPreSelectQuery(), true);
-			if (preResult == null) {
-				return false;
-			}
+			return !JdbcUtil.isQueryResultEmpty(conn, getPeekQuery());
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + getPreSelectQuery() + "]", e);
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + getPeekQuery() + "]", e);
 		}
-		return true;
 	}
 	
 	@Override
@@ -366,17 +363,20 @@ public class JdbcListener extends JdbcFacade implements IPullingTriggerListener 
 
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
+		if (peekQuery==null) {
+			peekQuery = selectQuery;
+		}
 	}
 	public String getSelectQuery() {
 		return selectQuery;
 	}
 
-	@IbisDoc({"(optional) trigger query to determine if real select query should be executed. This attribute was the fix for an IBIS application which uses MS SQL in combination with 100+ <code>JdbcListener</code>s. Without this attribute the IBIS application started a great many distributed transactions in a short period of which 99,9% aborted", ""})
-	protected void setPreSelectQuery(String string) {
-		preSelectQuery = string;
+	@IbisDoc({"(optional) trigger query to determine if real select query should be executed. This attribute was the fix for an IBIS application which uses MS SQL in combination with 100+ <code>JdbcListener</code>s. Without this attribute the IBIS application started a great many distributed transactions in a short period of which 99,9% aborted", "selectQuery"})
+	protected void setPeekQuery(String string) {
+		peekQuery = string;
 	}
-	public String getPreSelectQuery() {
-		return preSelectQuery;
+	public String getPeekQuery() {
+		return peekQuery;
 	}
 
 	protected void setUpdateStatusToErrorQuery(String string) {
@@ -462,4 +462,13 @@ public class JdbcListener extends JdbcFacade implements IPullingTriggerListener 
 		this.trace = trace;
 	}
 
+	@Override
+	public boolean isPeekUntransacted() {
+		return peekUntransacted;
+	}
+
+	@Override
+	public void setPeekUntransacted(boolean b) {
+		peekUntransacted = b;
+	}
 }

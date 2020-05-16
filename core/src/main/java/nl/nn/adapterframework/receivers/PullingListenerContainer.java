@@ -18,8 +18,8 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
-import nl.nn.adapterframework.core.IPullingTriggerListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
@@ -175,9 +175,11 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						try {
 							boolean retrieveMessage = true;
-							if (listener instanceof IPullingTriggerListener) {
-								IPullingTriggerListener triggerListener = (IPullingTriggerListener) listener;
-								retrieveMessage = triggerListener.getRawMessageTrigger();
+							if (listener instanceof IPeekableListener) {
+								IPeekableListener peekableListener = (IPeekableListener) listener;
+								if (peekableListener.isPeekUntransacted()) {
+									retrieveMessage = peekableListener.hasRawMessageAvailable();
+								}
 							}
 							if (!retrieveMessage) {
 								rawMessage = null;

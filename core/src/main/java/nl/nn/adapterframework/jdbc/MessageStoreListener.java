@@ -73,8 +73,6 @@ public class MessageStoreListener extends JdbcQueryListener {
 				sessionKeysList.add((String)stringTokenizer.nextElement());
 			}
 		}
-		setPreSelectQuery("SELECT TOP 1 MESSAGEKEY FROM IBISSTORE "
-				+ "WHERE TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 		setSelectQuery("SELECT MESSAGEKEY, MESSAGE FROM IBISSTORE "
 				+ "WHERE TYPE = '" + ITransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
 				// This class was initially developed as DelayStoreListener with

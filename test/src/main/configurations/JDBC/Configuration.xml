@@ -1,8 +1,6 @@
 <!DOCTYPE configuration [
 	<!ENTITY JdbcQueryListener SYSTEM "./ConfigurationJdbcQueryListener.xml">
-	<!ENTITY ConfigurationMessageStoreListenerSender SYSTEM "./ConfigurationMessageStoreListenerSender.xml">
 ]>
 <configuration name="JDBC">
 	&JdbcQueryListener;
-	&ConfigurationMessageStoreListenerSender;
 </configuration>

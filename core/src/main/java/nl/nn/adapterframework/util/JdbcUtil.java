@@ -676,14 +676,10 @@ public class JdbcUtil {
 	 * exectues query that returns a string. Returns null if no results are found. 
 	 */
 	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
-		return executeStringQuery(connection, query, false);
-	}
-
-	public static String executeStringQuery(Connection connection, String query, boolean disableLogging) throws JdbcException {
 		PreparedStatement stmt = null;
 
 		try {
-			if (!disableLogging && log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
 			stmt = connection.prepareStatement(query);
 			ResultSet rs = stmt.executeQuery();
 			try {
@@ -876,6 +872,29 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			stmt = connection.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				return rs.isAfterLast();
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]",e);
+				}
+			}
+		}
+	}
 
 	public static void executeStatement(Connection connection, String query) throws JdbcException {
 		executeStatement(connection,query,null,null);

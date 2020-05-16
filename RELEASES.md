@@ -17,7 +17,7 @@ Upcoming
 - introduced property jdbc.datasource.default, with default value jdbc/${instance.name.lc}
 - introduced attribute combineBlocks on ForEachChildElementPipe, that can be set to false to leverage BlockEnhancedCapabilites of the configured sender
 - Add possibility to put error details in ESB SOAP body response
-- Improve MessageStoreListener by adding preSelect attribute without rowlock and XA
+- Improve MessageStoreListener by adding peekUntransacted attribute
 
 
 
