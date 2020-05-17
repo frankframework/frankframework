@@ -371,7 +371,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		return selectQuery;
 	}
 
-	@IbisDoc({"(optional) trigger query to determine if real select query should be executed. This attribute was the fix for an IBIS application which uses MS SQL in combination with 100+ <code>JdbcListener</code>s. Without this attribute the IBIS application started a great many distributed transactions in a short period of which 99,9% aborted", "selectQuery"})
+	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
 	protected void setPeekQuery(String string) {
 		peekQuery = string;
 	}

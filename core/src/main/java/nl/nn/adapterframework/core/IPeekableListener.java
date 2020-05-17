@@ -17,11 +17,15 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 
+/**
+ * PullingListener extension that checks for available messages to retrieve
+ * without starting a XA transaction. With a MS SQL database and a high load it
+ * has been noticed that the application and database transaction coordinator
+ * were out of sync which resulted in hanging distributed transactions.
+ **/
+
 public interface IPeekableListener extends IPullingListener {
-	/**
-	 * Extra check if there are messages to retrieve before starting XA
-	 * transaction and really retrieve the message.
-	 */
+
 	boolean hasRawMessageAvailable() throws ListenerException;
 
 	@IbisDoc({"when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true", "false"})
