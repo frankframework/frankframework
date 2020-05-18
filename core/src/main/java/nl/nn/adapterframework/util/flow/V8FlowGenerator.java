@@ -33,21 +33,21 @@ public class V8FlowGenerator implements IFlowGenerator {
 
 	private GraphvizEngine engine;
 	private Options options = Options.create();
-	private Format format = null;
 	private String jsFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		engine = new GraphvizEngine();
 
+		Format format;
 		try {
-			this.format = Format.valueOf(jsFormat.toUpperCase());
+			format = Format.valueOf(jsFormat.toUpperCase());
 		}
 		catch(IllegalArgumentException e) {
 			throw new IllegalArgumentException("unknown format["+jsFormat.toUpperCase()+"], must be one of "+Format.values());
 		}
 
-		options = options.format(this.format);
+		options = options.format(format);
 
 		if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+options+"]");
 	}
