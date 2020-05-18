@@ -77,7 +77,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 
 		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 		if(noImageAvailable == null) {
-			throw new IllegalStateException("image [no_image_available.svg] not found found");
+			throw new IllegalStateException("image [no_image_available.svg] not found");
 		}
 	}
 
@@ -85,6 +85,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	@Qualifier("flowGenerator")
 	public void setFlowGenerator(IFlowGenerator generator) {
 		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
+
 		this.generator = generator;
 	}
 

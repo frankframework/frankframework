@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class IbisContext extends IbisApplicationContext {
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
-	private FlowDiagramManager flowDiagram;
+	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<String>();
 
@@ -132,9 +133,9 @@ public class IbisContext extends IbisApplicationContext {
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				flowDiagram = getBean("flowDiagramManager", FlowDiagramManager.class);
+				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class);
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
-				log(null, null, "failed to initalize FlowDiagram", MessageKeeperLevel.ERROR, e, true);
+				log(null, null, "failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e, true);
 			}
 
 			load();
@@ -401,41 +402,33 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void generateFlows(Configuration configuration,
-			String currentConfigurationName, String currentConfigurationVersion) {
-		if (flowDiagram != null) {
-			List<IAdapter> registeredAdapters = configuration
-					.getRegisteredAdapters();
+	private void generateFlows(Configuration configuration, String currentConfigurationName, String currentConfigurationVersion) {
+		if (flowDiagramManager != null) {
+			List<IAdapter> registeredAdapters = configuration.getRegisteredAdapters();
 			for (Iterator<IAdapter> adapterIt = registeredAdapters.iterator(); adapterIt.hasNext();) {
 				Adapter adapter = (Adapter) adapterIt.next();
 				try {
-					flowDiagram.generate(adapter);
-				} catch (Exception e) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"error generating flowDiagram for adapter ["
-									+ adapter.getName() + "]",
-							MessageKeeperLevel.WARN, e);
+					flowDiagramManager.generate(adapter);
+				} catch (IOException e) {
+					log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for adapter ["+adapter.getName()+"]", MessageKeeperLevel.WARN, e);
 				}
 			}
 
 			try {
-				flowDiagram.generate(configuration);
-			} catch (Exception e) {
-				log(currentConfigurationName, currentConfigurationVersion,
-						"error generating flowDiagram for configuration ["
-								+ configuration.getName() + "]",
-						MessageKeeperLevel.WARN, e);
+				flowDiagramManager.generate(configuration);
+			} catch (IOException e) {
+				log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for configuration ["+configuration.getName()+"]", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
 
 	private void generateFlow() {
-		if (flowDiagram != null) {
+		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {
-				flowDiagram.generate(configurations);
-			} catch (Exception e) {
-				log("*ALL*", null, "error generating flowDiagram", MessageKeeperLevel.WARN, e);
+				flowDiagramManager.generate(configurations);
+			} catch (IOException e) {
+				log("*ALL*", null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}

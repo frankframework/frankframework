@@ -403,14 +403,14 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
 
-		FlowDiagramManager flowDiagram = getFlowDiagram();
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
 			if(dot) {
-				response.entity(flowDiagram.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+				response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
 			} else {
-				response.entity(flowDiagram.get(adapter)).type("image/svg+xml");
+				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
 			}
 			return response.build();
 		} catch (SAXException | TransformerException | IOException e) {

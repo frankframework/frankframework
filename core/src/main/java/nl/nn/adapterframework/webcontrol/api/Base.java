@@ -89,11 +89,11 @@ public abstract class Base {
 		return this.getClass().getClassLoader();
 	}
 
-	protected FlowDiagramManager getFlowDiagram() {
+	protected FlowDiagramManager getFlowDiagramManager() {
 		try {
 			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			throw new ApiException("failed to initalize FlowDiagram", e);
+			throw new ApiException("failed to initalize FlowDiagramManager", e);
 		}
 	}
 

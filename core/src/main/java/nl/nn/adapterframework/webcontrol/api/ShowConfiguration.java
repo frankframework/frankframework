@@ -78,14 +78,14 @@ public final class ShowConfiguration extends Base {
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 
 		if(StringUtils.isNotEmpty(flow)) {
-			FlowDiagramManager flowDiagram = getFlowDiagram();
+			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 			try {
 				ResponseBuilder response = Response.status(Response.Status.OK);
 				if("dot".equalsIgnoreCase(flow)) {
-					response.entity(flowDiagram.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
+					response.entity(flowDiagramManager.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
 				} else {
-					response.entity(flowDiagram.get(getIbisManager().getConfigurations())).type("image/svg+xml");
+					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
 				}
 				return response.build();
 			} catch (SAXException | TransformerException | IOException e) {
@@ -163,14 +163,14 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		FlowDiagramManager flowDiagram = getFlowDiagram();
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
 			if(dot) {
-				response.entity(flowDiagram.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
+				response.entity(flowDiagramManager.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
 			} else {
-				response.entity(flowDiagram.get(configuration)).type("image/svg+xml");
+				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
 			}
 			return response.build();
 		} catch (SAXException | TransformerException | IOException e) {

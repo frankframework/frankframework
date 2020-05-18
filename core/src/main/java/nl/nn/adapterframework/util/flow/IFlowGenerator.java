@@ -21,6 +21,9 @@ import java.io.OutputStream;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Used by the FlowDiagramManager to turn a dot file into an image.
+ */
 public interface IFlowGenerator extends InitializingBean, DisposableBean {
 
 	public void setFileExtension(String extension);
