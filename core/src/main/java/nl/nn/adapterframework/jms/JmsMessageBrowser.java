@@ -39,11 +39,10 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * Get the messages on a queue without deleting them
- * @author  Johan Verrips / Gerrit van Brakel
- * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
+ * Basic browser of JMS Messages.
+ * @author  Johan Verrips /action.BrowseQueue
  */
-public class JmsMessageBrowser<M extends Message> extends JMSFacade implements IMessageBrowser<M> {
+public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade implements IMessageBrowser<M> {
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -117,15 +116,14 @@ public class JmsMessageBrowser<M extends Message> extends JMSFacade implements I
 	}
 
 	
-	@Override
-	public M getMessage(String messageId) throws ListenerException {
+	public J getJmsMessage(String messageId) throws ListenerException {
 		Session session=null;
-		M msg = null;
+		J msg = null;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
-			msg = (M)mc.receive(getTimeOut());
+			msg = (J)mc.receive(getTimeOut());
 			return msg;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -146,9 +144,8 @@ public class JmsMessageBrowser<M extends Message> extends JMSFacade implements I
 		return new JmsMessageBrowserIteratorItem(doBrowse("JMSMessageID", messageId));
 	}
 
-	@Override
-	public M browseMessage(String messageId) throws ListenerException {
-		return (M)doBrowse("JMSMessageID", messageId);
+	public J browseJmsMessage(String messageId) throws ListenerException {
+		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
 

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -26,7 +27,7 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author Jaco de Groot
  */
-public class DummyTransactionalStorage<M> extends JdbcTransactionalStorage<M> {
+public class DummyTransactionalStorage<M extends Serializable> extends JdbcTransactionalStorage<M> {
 
 	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {

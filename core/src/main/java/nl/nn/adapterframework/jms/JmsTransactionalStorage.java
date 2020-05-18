@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
@@ -37,7 +36,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage<M extends Message> extends JmsMessageBrowser<M> implements ITransactionalStorage<M> {
+public class JmsTransactionalStorage<M extends Serializable> extends JmsMessageBrowser<M, ObjectMessage> implements ITransactionalStorage<M> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -70,7 +69,7 @@ public class JmsTransactionalStorage<M extends Message> extends JmsMessageBrowse
 		Session session=null;
 		try {
 			session = createSession();
-			ObjectMessage msg = session.createObjectMessage((Serializable)message);
+			ObjectMessage msg = session.createObjectMessage(message);
 			msg.setStringProperty(FIELD_TYPE,getType());
 			msg.setStringProperty(FIELD_ORIGINAL_ID,messageId);
 			msg.setJMSCorrelationID(correlationId);
@@ -104,7 +103,7 @@ public class JmsTransactionalStorage<M extends Message> extends JmsMessageBrowse
 	@Override
 	public M browseMessage(String messageId) throws ListenerException {
 		try {
-			ObjectMessage msg=(ObjectMessage)super.browseMessage(messageId);
+			ObjectMessage msg=browseJmsMessage(messageId);
 			return(M)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
@@ -114,7 +113,7 @@ public class JmsTransactionalStorage<M extends Message> extends JmsMessageBrowse
 	@Override
 	public M getMessage(String messageId) throws ListenerException {
 		try {
-			ObjectMessage msg=(ObjectMessage)super.getMessage(messageId);
+			ObjectMessage msg=getJmsMessage(messageId);
 		return (M)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);

@@ -248,11 +248,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	private IListener<M> listener;
 	private ISender errorSender=null;
-	private ITransactionalStorage<M> errorStorage=null;
+	private ITransactionalStorage<Serializable> errorStorage=null;
 	// See configure() for explanation on this field
-	private ITransactionalStorage<M> tmpInProcessStorage=null;
+	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private ISender sender=null; // answer-sender
-	private ITransactionalStorage<M> messageLog=null;
+	private ITransactionalStorage<Serializable> messageLog=null;
 	
 	private int maxDeliveries=5;
 	private int maxRetries=1;
@@ -486,7 +486,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		if (errorSender != null) {
 			errorSender.setName("errorSender of ["+getName()+"]");
 		}
-		ITransactionalStorage<M> errorStorage = getErrorStorage();
+		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		if (errorStorage != null) {
 			errorStorage.setName("errorStorage of ["+getName()+"]");
 		}
@@ -616,7 +616,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 				errorSender.configure();
 			}
-			ITransactionalStorage<M> errorStorage = getErrorStorage();
+			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			if (errorStorage!=null) {
 				errorStorage.configure();
 				if (errorStorage instanceof HasPhysicalDestination) {
@@ -624,7 +624,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 			}
-			ITransactionalStorage<M> messageLog = getMessageLog();
+			ITransactionalStorage<Serializable> messageLog = getMessageLog();
 			if (messageLog!=null) {
 				messageLog.configure();
 				if (messageLog instanceof HasPhysicalDestination) {
@@ -821,7 +821,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, M rawMessage, TransactionDefinition txDef) {
 		cachePoisonMessageId(originalMessageId);
 		ISender errorSender = getErrorSender();
-		ITransactionalStorage<M> errorStorage = getErrorStorage();
+		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
 			log.debug(getLogPrefix()+"has no errorSender or errorStorage, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 			return;
@@ -852,7 +852,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 			}
 			if (errorStorage!=null) {
-				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, (M)sobj);
+				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
 			} 
 			txManager.commit(txStatus);
 		} catch (Exception e) {
@@ -927,7 +927,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	 * Assumes that a transation has been started where necessary.
 	 */
-	private void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
+	private void processRawMessage(IListener<M> origin, Object rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		if (rawMessage==null) {
 			log.debug(getLogPrefix()+"received null message, returning directly");
 			return;
@@ -939,7 +939,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		String message = null;
 		String technicalCorrelationId = null;
 		try {
-			message = origin.getStringFromRawMessage(rawMessage, threadContext);
+			message = origin.getStringFromRawMessage((M)rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { 
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
@@ -951,7 +951,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		try {
-			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+			technicalCorrelationId = origin.getIdFromRawMessage((M)rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
@@ -960,7 +960,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		processMessageInAdapter(origin, (M)rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
 	public void retryMessage(String messageId) throws ListenerException {
@@ -972,10 +972,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 		Map<String,Object>threadContext = new HashMap<>();
-		M msg=null;
+		Serializable msg=null;
 		try {
 			try {
-				ITransactionalStorage<M> errorStorage = getErrorStorage();
+				ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 				msg = errorStorage.getMessage(messageId);
 				processRawMessage(getListener(), msg, threadContext, -1, true);
 			} catch (Throwable t) {
@@ -995,7 +995,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(messageId);
-						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null,(M)msg);	
+						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
 					}
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
@@ -1158,7 +1158,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, (M)pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1358,9 +1358,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/*
 	 * returns true if message should not be processed
 	 */
-	private boolean isDuplicateAndSkip(
-			ITransactionalStorage<M> transactionStorage, String messageId,
-			String correlationId) throws ListenerException {
+	private boolean isDuplicateAndSkip(ITransactionalStorage<Serializable> transactionStorage, String messageId, String correlationId) throws ListenerException {
 		if (isCheckForDuplicates() && transactionStorage != null) {
 			if ("CORRELATIONID".equalsIgnoreCase(getCheckForDuplicatesMethod())) {
 				if (transactionStorage.containsCorrelationId(correlationId)) {
@@ -1703,7 +1701,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 */
 	@Deprecated
 	@ConfigurationWarning("In-Process Storage no longer exists")
-	protected void setInProcessStorage(ITransactionalStorage<M> inProcessStorage) {
+	protected void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1719,7 +1717,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return errorSender;
 	}
 
-	public ITransactionalStorage<M> getErrorStorage() {
+	public ITransactionalStorage<Serializable> getErrorStorage() {
 		return errorStorage;
 	}
 
@@ -1732,7 +1730,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
-	protected void setErrorStorage(ITransactionalStorage<M> errorStorage) {
+	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
 			this.errorStorage = errorStorage;
 			errorStorage.setName("errorStorage of ["+getName()+"]");
@@ -1746,7 +1744,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/**
 	 * Sets the messageLog.
 	 */
-	protected void setMessageLog(ITransactionalStorage<M> messageLog) {
+	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
 			messageLog.setName("messageLog of ["+getName()+"]");
@@ -1756,7 +1754,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
-	public ITransactionalStorage<M> getMessageLog() {
+	public ITransactionalStorage<Serializable> getMessageLog() {
 		return messageLog;
 	}
 

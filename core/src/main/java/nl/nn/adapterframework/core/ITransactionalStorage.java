@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -26,7 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-public interface ITransactionalStorage<M> extends IMessageBrowser<M>, INamedObject {
+public interface ITransactionalStorage<M extends Serializable> extends IMessageBrowser<M>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
 

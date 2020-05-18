@@ -146,7 +146,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage<M> extends JdbcFacade implements ITransactionalStorage<M> {
+public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade implements ITransactionalStorage<M> {
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
