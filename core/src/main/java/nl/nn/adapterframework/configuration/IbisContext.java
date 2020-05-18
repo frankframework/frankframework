@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -135,7 +135,7 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
 				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
-					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperLevel.ERROR, e, true);
 				}
 			}
 
@@ -189,7 +189,7 @@ public class IbisContext extends IbisApplicationContext {
 			unload(configurationName);
 			load(configurationName);
 		} catch (ConfigurationException e) {
-			log(configurationName, null, "failed to reload", MessageKeeperMessage.ERROR_LEVEL, e);
+			log(configurationName, null, "failed to reload", MessageKeeperLevel.ERROR, e);
 		}
 	}
 
@@ -205,7 +205,7 @@ public class IbisContext extends IbisApplicationContext {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
-				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperMessage.ERROR_LEVEL);
+				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperLevel.ERROR);
 			}
 			// Improve configuration reload performance. Probably because
 			// garbage collection will be easier.
@@ -215,7 +215,7 @@ public class IbisContext extends IbisApplicationContext {
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
 		} else {
-			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperMessage.WARN_LEVEL);
+			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperLevel.WARN);
 		}
 		JdbcUtil.resetJdbcProperties();
 	}
@@ -228,26 +228,22 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void fullReload() {
 		if (isLoadingConfigs()) {
-			log("Skipping fullReload because one or more configurations are currently loading",
-					MessageKeeperMessage.WARN_LEVEL);
+			log("Skipping fullReload because one or more configurations are currently loading", MessageKeeperLevel.WARN);
 			return;
 		}
 
 		destroy();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (javaListenerNames.size() > 0) {
-			log("Not all java listeners are unregistered: " + javaListenerNames,
-					MessageKeeperMessage.ERROR_LEVEL);
+			log("Not all java listeners are unregistered: " + javaListenerNames, MessageKeeperLevel.ERROR);
 		}
 		Set uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
 		if (uriPatterns.size() > 0) {
-			log("Not all rest listeners are unregistered: " + uriPatterns,
-					MessageKeeperMessage.ERROR_LEVEL);
+			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
 		Set mbeans = JmxMbeanHelper.getMBeans();
 		if (mbeans != null && mbeans.size() > 0) {
-			log("Not all JMX MBeans are unregistered: " + mbeans,
-					MessageKeeperMessage.ERROR_LEVEL);
+			log("Not all JMX MBeans are unregistered: " + mbeans, MessageKeeperLevel.ERROR);
 		}
 		JdbcUtil.resetJdbcProperties();
 
@@ -322,7 +318,7 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
+			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
 		}
 	}
 
@@ -367,7 +363,7 @@ public class IbisContext extends IbisApplicationContext {
 						databaseMigrator.close();
 					}
 					catch (Exception e) {
-						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
+						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
 					}
 				}
 
@@ -375,10 +371,10 @@ public class IbisContext extends IbisApplicationContext {
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion();
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
-					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperMessage.WARN_LEVEL);
+					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperLevel.WARN);
 				}
 				if (!currentConfigurationName.equals(configuration.getName())) {
-					log(currentConfigurationName, currentConfigurationVersion, "configuration name doesn't match Configuration name attribute: " + configuration.getName(), MessageKeeperMessage.WARN_LEVEL);
+					log(currentConfigurationName, currentConfigurationVersion, "configuration name doesn't match Configuration name attribute: " + configuration.getName(), MessageKeeperLevel.WARN);
 					messageKeepers.put(configuration.getName(), messageKeepers.remove(currentConfigurationName));
 				}
 
@@ -400,7 +396,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.info("configured configuration ["+currentConfigurationName+"] successfully");
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
-			log(currentConfigurationName, currentConfigurationVersion, " exception", MessageKeeperMessage.ERROR_LEVEL, e);
+			log(currentConfigurationName, currentConfigurationVersion, " exception", MessageKeeperLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
@@ -420,7 +416,7 @@ public class IbisContext extends IbisApplicationContext {
 					log(currentConfigurationName, currentConfigurationVersion,
 							"error generating flowDiagram for adapter ["
 									+ adapter.getName() + "]",
-							MessageKeeperMessage.WARN_LEVEL, e);
+							MessageKeeperLevel.WARN, e);
 				}
 			}
 
@@ -430,7 +426,7 @@ public class IbisContext extends IbisApplicationContext {
 				log(currentConfigurationName, currentConfigurationVersion,
 						"error generating flowDiagram for configuration ["
 								+ configuration.getName() + "]",
-						MessageKeeperMessage.WARN_LEVEL, e);
+						MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
@@ -441,32 +437,32 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagram.generate(configurations);
 			} catch (Exception e) {
-				log("*ALL*", null, "error generating flowDiagram", MessageKeeperMessage.WARN_LEVEL, e);
+				log("*ALL*", null, "error generating flowDiagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
 
 	public void log(String message) {
-		log(null, null, message, MessageKeeperMessage.INFO_LEVEL, null, true);
+		log(null, null, message, MessageKeeperLevel.INFO, null, true);
 	}
 
-	public void log(String message, String level) {
+	public void log(String message, MessageKeeperLevel level) {
 		log(null, null, message, level, null, true);
 	}
 
 	public void log(String configurationName, String configurationVersion, String message) {
-		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
+		log(configurationName, configurationVersion, message, MessageKeeperLevel.INFO);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message, String level) {
+	public void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level) {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
+	public void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e) {
 		log(configurationName, configurationVersion, message, level, e, false);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message, String level, Exception e, boolean allOnly) {
+	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e, boolean allOnly) {
 		String key;
 		if (allOnly || configurationName == null) {
 			key = "*ALL*";
@@ -491,9 +487,9 @@ public class IbisContext extends IbisApplicationContext {
 			m = m + "[" + version + "] ";
 		}
 		m = m + message;
-		if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+		if (MessageKeeperLevel.ERROR.equals(level)) {
 			LOG.info(m, e);
-		} else if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+		} else if (MessageKeeperLevel.WARN.equals(level)) {
 			LOG.warn(m, e);
 		} else {
 			LOG.info(m, e);
