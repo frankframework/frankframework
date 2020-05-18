@@ -149,15 +149,30 @@ public abstract class AlignTestBase {
 
     @Test
 	public void testChoiceOfSequence() throws Exception {
-		testFiles("Transaction/transaction.xsd","","transaction","Transaction/order");
-		testFiles("Transaction/transaction.xsd","","transaction","Transaction/invoice");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/order");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/invoice");
 	}
 
-    @Test
+	@Test
 	public void testOptionalArray() throws Exception {
-    	// this test was originally for a wildcard, but conversion fails on multiple occurences of element 'Id' (for Party and OrganisationName)
-    	// wildcard was 'solved' by setting a proper type for PartyAgreementRole
+		// this test was originally for a wildcard, but conversion fails on multiple occurences of element 'Id' (for Party and OrganisationName)
+		// wildcard was 'solved' by setting a proper type for PartyAgreementRole
 		testFiles("OptionalArray/hbp.xsd","urn:pim","Root","OptionalArray/hbp",true);
+	}
+
+	@Test
+	public void testChoiceOfOptions() throws Exception {
+		testFiles("ChoiceOfOptions/Options.xsd","","Options","ChoiceOfOptions/option");
+	}
+
+	@Test
+	public void testEmbeddedChoice() throws Exception {
+		testFiles("EmbeddedChoice/EmbeddedChoice.xsd", "", "EmbeddedChoice", "/EmbeddedChoice/EmbeddedChoice");
+	}
+
+	@Test
+	public void testDoubleId() throws Exception {
+		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
 	}
 
 	@Test
