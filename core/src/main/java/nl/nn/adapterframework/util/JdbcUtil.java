@@ -873,26 +873,14 @@ public class JdbcUtil {
 	}
 
 	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
-		PreparedStatement stmt = null;
-
-		try {
-			stmt = connection.prepareStatement(query);
-			ResultSet rs = stmt.executeQuery();
-			try {
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
 				return rs.isAfterLast();
-			} finally {
-				rs.close();
+			} catch (SQLException e) {
+				throw new JdbcException("could not obtain value using query [" + query + "]", e);
 			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
-		} finally {
-			if (stmt!=null) {
-				try {
-					stmt.close();
-				} catch (Exception e) {
-					throw new JdbcException("could not close statement of query ["+query+"]",e);
-				}
-			}
+		} catch (SQLException e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
 		}
 	}
 

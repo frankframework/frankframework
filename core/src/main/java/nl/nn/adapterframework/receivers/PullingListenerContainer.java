@@ -175,7 +175,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						try {
 							boolean retrieveMessage = true;
-							if (listener instanceof IPeekableListener) {
+							if (isIdle() && listener instanceof IPeekableListener) {
 								IPeekableListener peekableListener = (IPeekableListener) listener;
 								if (peekableListener.isPeekUntransacted()) {
 									retrieveMessage = peekableListener.hasRawMessageAvailable();
