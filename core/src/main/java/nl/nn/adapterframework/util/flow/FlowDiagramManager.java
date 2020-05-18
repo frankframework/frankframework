@@ -59,6 +59,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
+	private Resource noImageAvailable;
 
 	private IFlowGenerator generator;
 
@@ -73,6 +74,8 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		if(generator == null) {
 			throw new IllegalStateException("no IFlowGenerator found");
 		}
+
+		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 	}
 
 	@Autowired
@@ -86,7 +89,6 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(!destFile.exists()) {
-			Resource noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 			return noImageAvailable.openStream();
 		}
 
@@ -97,7 +99,6 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(!destFile.exists()) {
-			Resource noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 			return noImageAvailable.openStream();
 		}
 
@@ -108,7 +109,6 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		File destFile = retrieveAllConfigurationsFlowFile();
 
 		if(!destFile.exists()) {
-			Resource noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 			return noImageAvailable.openStream();
 		}
 
