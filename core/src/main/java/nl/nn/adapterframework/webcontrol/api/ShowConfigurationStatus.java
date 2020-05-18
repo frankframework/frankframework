@@ -49,6 +49,9 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -64,7 +67,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
@@ -77,12 +79,9 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
+import nl.nn.adapterframework.util.flow.FlowDiagram;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -404,7 +403,7 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
 
-		FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+		FlowDiagram flowDiagram = getFlowDiagram();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
@@ -414,7 +413,7 @@ public final class ShowConfigurationStatus extends Base {
 				response.entity(flowDiagram.get(adapter)).type("image/svg+xml");
 			}
 			return response.build();
-		} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);
 		}
 	}

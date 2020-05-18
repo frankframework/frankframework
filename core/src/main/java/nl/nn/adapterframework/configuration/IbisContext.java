@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
@@ -38,11 +39,11 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.flow.FlowDiagram;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -63,7 +64,6 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private final boolean FLOWDIAGRAM_LAZYLOAD = APP_CONSTANTS.getBoolean("flow.lazyload", true);
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -131,12 +131,10 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			if(!FLOWDIAGRAM_LAZYLOAD) {
-				try {
-					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
-				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
-					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperLevel.ERROR, e, true);
-				}
+			try {
+				flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
+				log(null, null, "failed to initalize FlowDiagram", MessageKeeperLevel.ERROR, e, true);
 			}
 
 			load();

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,12 +24,16 @@ import javax.ws.rs.core.Context;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.flow.FlowDiagram;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -83,6 +87,14 @@ public abstract class Base {
 
 	public ClassLoader getClassLoader() {
 		return this.getClass().getClassLoader();
+	}
+
+	protected FlowDiagram getFlowDiagram() {
+		try {
+			return getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			throw new ApiException("failed to initalize FlowDiagram", e);
+		}
 	}
 
 	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {

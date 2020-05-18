@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,36 +17,50 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
-import javax.xml.transform.TransformerConfigurationException;
-
-import nl.nn.adapterframework.util.FlowDiagram;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.IFlowGenerator;
+import nl.nn.adapterframework.util.flow.V8FlowGenerator;
 
 public class FlowDiagramTest {
 
 	@Test
-	public void canInitDefaultWithoutErrors() throws TransformerConfigurationException, IOException {
+	public void canInitDefaultWithoutErrors() throws Exception {
+		IFlowGenerator generator = new V8FlowGenerator();
+		generator.afterPropertiesSet();
+
 		FlowDiagram flow = new FlowDiagram();
+		flow.setFlowGenerator(generator);
+		flow.afterPropertiesSet();
+
 		assertNotNull(flow);
 	}
 
 	@Test
-	public void canInitNullWithoutErrors() throws TransformerConfigurationException, IOException {
-		FlowDiagram flow = new FlowDiagram(null, null);
-		assertNotNull(flow);
-	}
+	public void canInitSVGWithoutErrors() throws Exception {
+		IFlowGenerator generator = new V8FlowGenerator();
+		generator.setFileExtension("svG");
+		generator.afterPropertiesSet();
 
-	@Test
-	public void canInitSVGWithoutErrors() throws TransformerConfigurationException, IOException {
-		FlowDiagram flow = new FlowDiagram("svg");
+		FlowDiagram flow = new FlowDiagram();
+		flow.setFlowGenerator(generator);
+		flow.afterPropertiesSet();
+
 		assertNotNull(flow);
+		assertEquals("svg", generator.getFileExtension());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void getUnknownFormat() throws TransformerConfigurationException, IOException {
-		new FlowDiagram("application/pdf");
+	public void getUnknownFormat() throws Exception {
+		IFlowGenerator generator = new V8FlowGenerator();
+		generator.setFileExtension("application/pdf");
+		generator.afterPropertiesSet();
+
+		FlowDiagram flow = new FlowDiagram();
+		flow.setFlowGenerator(generator);
+		flow.afterPropertiesSet();
+
+		assertNotNull(flow);
 	}
 }
