@@ -66,13 +66,13 @@ public class V8FlowGenerator implements IFlowGenerator {
 	@Override
 	public void setFileExtension(String jsFormat) {
 		if(StringUtils.isNotEmpty(jsFormat)) {
-			this.jsFormat = jsFormat.toLowerCase();
+			this.jsFormat = jsFormat;
 		}
 	}
 
 	@Override
 	public String getFileExtension() {
-		return jsFormat;
+		return jsFormat.toLowerCase();
 	}
 
 	@Override
