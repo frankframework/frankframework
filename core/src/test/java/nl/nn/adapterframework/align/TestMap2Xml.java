@@ -148,6 +148,13 @@ public class TestMap2Xml extends AlignTestBase {
 		super.testMixedContentUnknown();
     }
 
+	@Test
+	@Ignore("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
+	public void testDoubleId() throws Exception {
+		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
+	}
+
+    
     @Override
     @Test
 	@Ignore("No content")
