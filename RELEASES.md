@@ -9,11 +9,66 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...7.5-release)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
-- reset Adapter Statistics by the hour when entering a new hour time slot
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC3...7.5-release)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=7.5-release)](https://travis-ci.org/ibissource/iaf)
 
 
+
+
+
+7.5-RC3
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC2...v7.5-RC3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC3)](https://travis-ci.org/ibissource/iaf)
+
+
+- Fix GUI 3.0 global console warnings #505
+- Fix configurations being reloaded due to not having a (valid) version #506
+- Jdbc query listener does not update status #527
+- Make GUI 3.0 fields selectable again #539
+- Fix default order for irregular message store types #565
+- Fix Parameters using XSLT #570
+- Fix async issue when loading the gui #594
+- Release database connections in GUI #626
+- Restore attribute numberOfBackups on DirectoryListener #625
+- GUI 3.0 bugfixes #644, #617, #697
+- Improve logging #662, #682
+- Correct GUI statistics page #664
+- Avoid CXF publish check failure on WebSpere #645
+- Break endless recursion in StringResolver #692
+- Let JdbcTransactionalStorage return uniform responses for all dbmses #706
+- Update ladybug #708
+- Fix GUI 3.0 caching issues #722
+
+
+
+7.5-RC2
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...v7.5-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC2)](https://travis-ci.org/ibissource/iaf)
+
+- Nested stacktrace ends at ForEachChildElementPipe #425
+- Empty JDBC result throws NullPointerException #426
+- Updated test scenario expected result to recent snapshot version #427
+- WebServiceListeners are not registering on the correct SpringBus #445
+- Inconsequent use of Configuration(s) in menu, breadcrum and tabs #448
+- API json endpoint of statistics uses formatted strings for numbers #443
+- Security roles not showing new GUI #449
+- Browse Tables java.lang.stackoverflowerror #450
+- Confirmation prompt when deleting schedules (GUI 3.0) #452
+- Make minimize and maximize menu more intuitive #453
+- Center the minimized Frank!Framework logo in FireFox #454
+- ErrorStorage ignores "Show # entries" #457
+- GUI 3.0 stuck on error page when no error is present #461
+- Adapter statistics by the hour are not reset every hour #462
+- JSON validator gives error mapping repeating group #468
+- Parameters used to map to the xsd values should be ignored when empty or Null #473
+- Configuration messages are not shown in GUI 3.0 #480
+- Ability to open link to GUI 1.2 on new tab #481
+- Receivers/Listeners using JMS should support credentials #491
+- HttpSender ContentType getter method type is not the same as the setter #492
 
 
 
