@@ -159,4 +159,35 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
+
+	@Test
+	public void testWithDoubleId() throws Exception {
+		pipe.setName("testWithPerson");
+		pipe.setSchema("/Align/DoubleId/Party.xsd");
+		pipe.setRoot("Party");
+		pipe.setThrowException(true);
+
+		//pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
+		
+		Parameter param = new Parameter();
+		param.setName("Id");
+		param.setValue("24");
+		pipe.addParameter(param);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = TestFileUtils.getTestFile("/Align/DoubleId/Party-Template.json");
+		String expected = TestFileUtils.getTestFile("/Align/DoubleId/Party.xml");
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+
 }
