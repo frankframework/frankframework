@@ -7,13 +7,13 @@
 		<exits>
 			<exit path="EXIT" state="success" />
 		</exits>
-		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Request" addNamespaceToSchema="true">
+		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Request" inputFormatSessionKey="receivedFormat" addNamespaceToSchema="true">
 			<forward name="failure" path="InputValidatorFailure" />
 		</inputValidator>
-		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" unlessSessionKey="Json2XmlValidator.inputformat - pipeline inputValidator" unlessValue="json" />
-		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" unlessSessionKey="Json2XmlValidator.inputformat - pipeline inputValidator" unlessValue="json" />
+		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" unlessSessionKey="receivedFormat" unlessValue="json" />
+		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" unlessSessionKey="receivedFormat" unlessValue="json" />
 		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true"
-			outputFormatSessionKey="Json2XmlValidator.inputformat - pipeline inputValidator">
+			outputFormatSessionKey="receivedFormat">
 			<forward name="failure" path="OutputValidatorFailure" />
 		</outputValidator>
 		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response xmlns=&quot;http://api.nn.nl/HelloWorld&quot;/&gt;">
