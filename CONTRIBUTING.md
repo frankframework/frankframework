@@ -109,9 +109,9 @@ In some cases you might want/need to:
   - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
     - `src/main/webapp` to `/`
     - `target/m2e-wtp/web-resources` to `/`
-    - `iaf-akami` to `WEB-INF/lib/ibis-adapterframework-akami-7.6-SNAPSHOT.jar`
+    - `iaf-akami` to `WEB-INF/lib/ibis-adapterframework-akami-X.Y-SNAPSHOT.jar`
     - ...
-    - `iaf-larva `to `WEB-INF/lib/ibis-adapterframework-larva-7.6-SNAPSHOT.jar`
+    - `iaf-larva `to `WEB-INF/lib/ibis-adapterframework-larva-X.Y-SNAPSHOT.jar`
     - `Maven Dependencies` to `WEB-INF/lib`
   - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
   - Right-click iaf-example and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
@@ -119,7 +119,7 @@ In some cases you might want/need to:
     - `/src/main/resources` to `WEB-INF/classes`
     - `/src/main/webapp` to `/`
     - `/target/m2e-wtp/web-resources` to `/`
-    - `iaf-core` to `WEB-INF/lib/ibis-adapterframework-core-7.6-SNAPSHOT.jar`
+    - `iaf-core` to `WEB-INF/lib/ibis-adapterframework-core-X.Y-SNAPSHOT.jar`
     - `iaf-example` to -
     - ...
     - `iaf-webapp` to -
