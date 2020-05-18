@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -403,7 +403,7 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
 
-		FlowDiagram flowDiagram = getFlowDiagram();
+		FlowDiagramManager flowDiagram = getFlowDiagram();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);

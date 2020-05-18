@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -79,7 +79,7 @@ public class IbisContext extends IbisApplicationContext {
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
-	private FlowDiagram flowDiagram;
+	private FlowDiagramManager flowDiagram;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<String>();
 
@@ -132,7 +132,7 @@ public class IbisContext extends IbisApplicationContext {
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				flowDiagram = getBean("flowDiagram", FlowDiagram.class);
+				flowDiagram = getBean("flowDiagramManager", FlowDiagramManager.class);
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
 				log(null, null, "failed to initalize FlowDiagram", MessageKeeperLevel.ERROR, e, true);
 			}

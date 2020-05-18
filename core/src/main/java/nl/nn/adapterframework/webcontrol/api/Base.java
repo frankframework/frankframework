@@ -33,7 +33,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -89,9 +89,9 @@ public abstract class Base {
 		return this.getClass().getClassLoader();
 	}
 
-	protected FlowDiagram getFlowDiagram() {
+	protected FlowDiagramManager getFlowDiagram() {
 		try {
-			return getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new ApiException("failed to initalize FlowDiagram", e);
 		}

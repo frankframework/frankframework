@@ -59,8 +59,8 @@
 	</bean>
 
 	<bean
-		name="flowDiagram"
-		class="nl.nn.adapterframework.util.flow.FlowDiagram"
+		name="flowDiagramManager"
+		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
 		autowire="byName"
 		scope="singleton"
 		lazy-init="true"

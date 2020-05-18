@@ -47,8 +47,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version 2.0
  */
 
-public class FlowDiagram implements InitializingBean, DisposableBean {
-	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
+public class FlowDiagramManager implements InitializingBean, DisposableBean {
+	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));

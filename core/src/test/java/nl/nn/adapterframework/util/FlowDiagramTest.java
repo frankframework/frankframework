@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 import nl.nn.adapterframework.util.flow.IFlowGenerator;
 import nl.nn.adapterframework.util.flow.V8FlowGenerator;
 
@@ -30,7 +30,7 @@ public class FlowDiagramTest {
 		IFlowGenerator generator = new V8FlowGenerator();
 		generator.afterPropertiesSet();
 
-		FlowDiagram flow = new FlowDiagram();
+		FlowDiagramManager flow = new FlowDiagramManager();
 		flow.setFlowGenerator(generator);
 		flow.afterPropertiesSet();
 
@@ -43,7 +43,7 @@ public class FlowDiagramTest {
 		generator.setFileExtension("svG");
 		generator.afterPropertiesSet();
 
-		FlowDiagram flow = new FlowDiagram();
+		FlowDiagramManager flow = new FlowDiagramManager();
 		flow.setFlowGenerator(generator);
 		flow.afterPropertiesSet();
 
@@ -57,7 +57,7 @@ public class FlowDiagramTest {
 		generator.setFileExtension("application/pdf");
 		generator.afterPropertiesSet();
 
-		FlowDiagram flow = new FlowDiagram();
+		FlowDiagramManager flow = new FlowDiagramManager();
 		flow.setFlowGenerator(generator);
 		flow.afterPropertiesSet();
 

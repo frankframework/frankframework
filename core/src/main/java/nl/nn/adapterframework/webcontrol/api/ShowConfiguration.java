@@ -58,7 +58,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.flow.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -78,7 +78,7 @@ public final class ShowConfiguration extends Base {
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 
 		if(StringUtils.isNotEmpty(flow)) {
-			FlowDiagram flowDiagram = getFlowDiagram();
+			FlowDiagramManager flowDiagram = getFlowDiagram();
 
 			try {
 				ResponseBuilder response = Response.status(Response.Status.OK);
@@ -163,7 +163,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		FlowDiagram flowDiagram = getFlowDiagram();
+		FlowDiagramManager flowDiagram = getFlowDiagram();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
