@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
@@ -38,11 +40,11 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -63,7 +65,6 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private final boolean FLOWDIAGRAM_LAZYLOAD = APP_CONSTANTS.getBoolean("flow.lazyload", true);
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -79,7 +80,7 @@ public class IbisContext extends IbisApplicationContext {
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
-	private FlowDiagram flowDiagram;
+	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<String>();
 
@@ -131,12 +132,10 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			if(!FLOWDIAGRAM_LAZYLOAD) {
-				try {
-					flowDiagram = getBean("flowDiagram", FlowDiagram.class);
-				} catch (BeanCreationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
-					log(null, null, "failed to initalize GraphVizEngine", MessageKeeperLevel.ERROR, e, true);
-				}
+			try {
+				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class);
+			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) { //The IBIS should still start up when Graphviz fails to initialize
+				log(null, null, "failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e, true);
 			}
 
 			load();
@@ -403,41 +402,33 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void generateFlows(Configuration configuration,
-			String currentConfigurationName, String currentConfigurationVersion) {
-		if (flowDiagram != null) {
-			List<IAdapter> registeredAdapters = configuration
-					.getRegisteredAdapters();
+	private void generateFlows(Configuration configuration, String currentConfigurationName, String currentConfigurationVersion) {
+		if (flowDiagramManager != null) {
+			List<IAdapter> registeredAdapters = configuration.getRegisteredAdapters();
 			for (Iterator<IAdapter> adapterIt = registeredAdapters.iterator(); adapterIt.hasNext();) {
 				Adapter adapter = (Adapter) adapterIt.next();
 				try {
-					flowDiagram.generate(adapter);
-				} catch (Exception e) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"error generating flowDiagram for adapter ["
-									+ adapter.getName() + "]",
-							MessageKeeperLevel.WARN, e);
+					flowDiagramManager.generate(adapter);
+				} catch (IOException e) {
+					log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for adapter ["+adapter.getName()+"]", MessageKeeperLevel.WARN, e);
 				}
 			}
 
 			try {
-				flowDiagram.generate(configuration);
-			} catch (Exception e) {
-				log(currentConfigurationName, currentConfigurationVersion,
-						"error generating flowDiagram for configuration ["
-								+ configuration.getName() + "]",
-						MessageKeeperLevel.WARN, e);
+				flowDiagramManager.generate(configuration);
+			} catch (IOException e) {
+				log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for configuration ["+configuration.getName()+"]", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
 
 	private void generateFlow() {
-		if (flowDiagram != null) {
+		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {
-				flowDiagram.generate(configurations);
-			} catch (Exception e) {
-				log("*ALL*", null, "error generating flowDiagram", MessageKeeperLevel.WARN, e);
+				flowDiagramManager.generate(configurations);
+			} catch (IOException e) {
+				log("*ALL*", null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}

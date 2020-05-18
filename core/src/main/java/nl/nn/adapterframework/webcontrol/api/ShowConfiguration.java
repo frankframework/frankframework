@@ -44,8 +44,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -56,10 +56,9 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.FlowDiagram;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -79,17 +78,17 @@ public final class ShowConfiguration extends Base {
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 
 		if(StringUtils.isNotEmpty(flow)) {
-			FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 			try {
 				ResponseBuilder response = Response.status(Response.Status.OK);
 				if("dot".equalsIgnoreCase(flow)) {
-					response.entity(flowDiagram.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
+					response.entity(flowDiagramManager.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
 				} else {
-					response.entity(flowDiagram.get(getIbisManager().getConfigurations())).type("image/svg+xml");
+					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
 				}
 				return response.build();
-			} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+			} catch (SAXException | TransformerException | IOException e) {
 				throw new ApiException(e);
 			}
 		}
@@ -164,17 +163,17 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
 			if(dot) {
-				response.entity(flowDiagram.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
+				response.entity(flowDiagramManager.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
 			} else {
-				response.entity(flowDiagram.get(configuration)).type("image/svg+xml");
+				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
 			}
 			return response.build();
-		} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);
 		}
 	}
