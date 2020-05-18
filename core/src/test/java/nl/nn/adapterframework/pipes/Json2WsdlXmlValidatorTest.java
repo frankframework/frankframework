@@ -84,6 +84,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.setSoapBody(soapBody);
+        val.setValidateJsonToRootElementOnly(false);
         val.configure();
 
         boolean compactJsonArrays=false;

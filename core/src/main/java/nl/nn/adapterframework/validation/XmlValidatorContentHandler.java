@@ -77,11 +77,16 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void startElement(String namespaceURI, String lName, String qName, Attributes attrs) throws SAXException {
+		
+		/*
+		 * When there are root validations that are one element longer than the number of elements on the stack,
+		 * and of those root validations the path to last element matches the elements on the stack,
+		 * then they must match their last element too.
+		 */
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				int i = elements.size();
-				if (path.size() == i + 1
-						&& elements.equals(path.subList(0, i))) {
+				if (path.size() == i + 1 && elements.equals(path.subList(0, i))) { // if all the current elements match this valid path up to the one but last
 					String validElements = path.get(i);
 					if (StringUtils.isEmpty(validElements)) {
 						String message = "Illegal element '" + lName + "'. No element expected.";
@@ -140,6 +145,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void endDocument() throws SAXException {
+		// assert that all rootValidations are covered
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				String validElements = path.get(path.size() - 1);
