@@ -168,7 +168,8 @@ public class Wsdl {
         }
 		//isMixedValidator = inputValidator.isMixedValidator(outputValidator);
         String fileName = getName();
-        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
+		ClassLoader classLoader = pipeLine.getAdapter().getConfigurationClassLoader();
+		AppConstants appConstants = classLoader != null ? AppConstants.getInstance(classLoader) : AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
         if (tns == null) {
             tns = appConstants.getResolvedProperty("wsdl.targetNamespace");
@@ -676,38 +677,40 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected String getSoapAction(IListener listener) {
-        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-        String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
-        if (sa != null) {
-        	return sa;
-        }
-        sa = appConstants.getResolvedProperty("wsdl." + getName() + ".soapAction");
-        if (sa != null) {
-        	return sa;
-        }
-        sa = appConstants.getResolvedProperty("wsdl.soapAction");
-        if (sa != null) {
-        	return sa;
-        }
-        if (esbSoapOperationName != null && esbSoapOperationVersion != null) {
-            return esbSoapOperationName + "_" + esbSoapOperationVersion;
-        }
-        return "${wsdl." + getName() + "." + listener.getName() + ".soapAction}";
-    }
+	protected String getSoapAction(IListener listener) {
+		ClassLoader classLoader = pipeLine.getAdapter().getConfigurationClassLoader();
+		AppConstants appConstants = classLoader != null ? AppConstants.getInstance(classLoader) : AppConstants.getInstance();
+		String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
+		if (sa != null) {
+			return sa;
+		}
+		sa = appConstants.getResolvedProperty("wsdl." + getName() + ".soapAction");
+		if (sa != null) {
+			return sa;
+		}
+		sa = appConstants.getResolvedProperty("wsdl.soapAction");
+		if (sa != null) {
+			return sa;
+		}
+		if (esbSoapOperationName != null && esbSoapOperationVersion != null) {
+			return esbSoapOperationName + "_" + esbSoapOperationVersion;
+		}
+		return "${wsdl." + getName() + "." + listener.getName() + ".soapAction}";
+	}
 
-    protected String getLocation(String defaultLocation) {
-        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-        String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
-        if (sa != null) {
-        	return sa;
-        }
-        sa = appConstants.getResolvedProperty("wsdl.location");
-        if (sa != null) {
-        	return sa;
-        }
-        return defaultLocation;
-    }
+	protected String getLocation(String defaultLocation) {
+		ClassLoader classLoader = pipeLine.getAdapter().getConfigurationClassLoader();
+		AppConstants appConstants = classLoader != null ? AppConstants.getInstance(classLoader) : AppConstants.getInstance();
+		String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
+		if (sa != null) {
+			return sa;
+		}
+		sa = appConstants.getResolvedProperty("wsdl.location");
+		if (sa != null) {
+			return sa;
+		}
+		return defaultLocation;
+	}
 
     protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
         String httpPrefix = "";
@@ -835,6 +838,8 @@ public class Wsdl {
     }
 
     protected void jmsService(XMLStreamWriter w, JmsListener listener, String namePrefix) throws XMLStreamException, NamingException {
+		ClassLoader classLoader = pipeLine.getAdapter().getConfigurationClassLoader();
+		AppConstants appConstants = classLoader != null ? AppConstants.getInstance(classLoader) : AppConstants.getInstance();
         w.writeStartElement(WSDL_NAMESPACE, "service");
         w.writeAttribute("name", "Service_" + WsdlUtils.getNCName(getName())); {
             if (!esbSoap) {
@@ -856,7 +861,7 @@ public class Wsdl {
                         w.writeCharacters("externalJndiName-for-"
                                 + listener.getQueueConnectionFactoryName()
                                 + "-on-"
-                                + AppConstants.getInstance().getResolvedProperty("dtap.stage"));
+                                + appConstants.getResolvedProperty("dtap.stage"));
                         w.writeEndElement();
                     }
                     w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
@@ -866,7 +871,7 @@ public class Wsdl {
                         if (queueName == null) {
                             queueName = "queueName-for-"
                                     + listener.getDestinationName() + "-on-"
-                                    + AppConstants.getInstance().getResolvedProperty("dtap.stage");
+                                    + appConstants.getResolvedProperty("dtap.stage");
                         }
                         w.writeCharacters(queueName);
                         w.writeEndElement();
@@ -879,6 +884,8 @@ public class Wsdl {
     }
 
     protected void writeEsbSoapJndiContext(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, NamingException {
+		ClassLoader classLoader = pipeLine.getAdapter().getConfigurationClassLoader();
+		AppConstants appConstants = classLoader != null ? AppConstants.getInstance(classLoader) : AppConstants.getInstance();
         w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "context"); {
             w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
                 w.writeAttribute("name", "java.naming.factory.initial");
@@ -899,7 +906,7 @@ public class Wsdl {
                         warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'");
                     }
                 }
-                String stage = AppConstants.getInstance().getResolvedProperty("dtap.stage");
+                String stage = appConstants.getResolvedProperty("dtap.stage");
                 if (StringUtils.isEmpty(stage)) {
                     warn("Property dtap.stage empty");
                 } else {
