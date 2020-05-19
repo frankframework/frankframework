@@ -27,10 +27,10 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author Jaco de Groot
  */
-public class DummyTransactionalStorage<M extends Serializable> extends JdbcTransactionalStorage<M> {
+public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		return null;
 	}
 

@@ -146,7 +146,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade implements ITransactionalStorage<M> {
+public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade implements ITransactionalStorage<S> {
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -670,7 +670,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 		}
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, M message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
 			IDbmsSupport dbmsSupport=getDbmsSupport();
@@ -839,7 +839,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 		}
 	}
 
-	private boolean isMessageDifferent(Connection conn, String messageId, M message) throws SQLException{
+	private boolean isMessageDifferent(Connection conn, String messageId, S message) throws SQLException{
 		PreparedStatement stmt = null;
 		int paramPosition=0;
 		
@@ -884,7 +884,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 	}
 	
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
 			txStatus = txManager.getTransaction(TXREQUIRED);
@@ -940,7 +940,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 		
 	}
 
-	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
+	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		String result;
 		try {
 			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
@@ -1115,7 +1115,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 		}
 	}
 
-	private M retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		InputStream blobStream=null;
 		try {
 			Blob blob = rs.getBlob(columnIndex);
@@ -1128,7 +1128,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
 			ObjectInputStream ois = new ObjectInputStream(blobStream);
-			M result = (M)ois.readObject();
+			S result = (S)ois.readObject();
 			ois.close();
 			return result;
 		} finally {
@@ -1139,7 +1139,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 	}
 
 	
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	protected S retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -1275,7 +1275,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
+	public S browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1306,8 +1306,8 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 	}
 
 	@Override
-	public M getMessage(String messageId) throws ListenerException {
-		M result = browseMessage(messageId);
+	public S getMessage(String messageId) throws ListenerException {
+		S result = browseMessage(messageId);
 		deleteMessage(messageId);
 		return result;
 	}
@@ -1577,7 +1577,7 @@ public class JdbcTransactionalStorage<M extends Serializable> extends JdbcFacade
 
 
 	@Override
-	@IbisDoc({"possible values are e (error store), m (message store), l (message log for pipe) or a (message log for receiver). receiverbase will always set type to e for errorstorage and always set type to a for messagelog. genericmessagesendingpipe will set type to l for messagelog (when type isn't specified). see {@link messagestoresender} for type m", "e for errorstorage on receiver, a for messagelog on receiver and l for messagelog on pipe"})
+	@IbisDoc({"possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). receiverbase will always set type to e for errorstorage and always set type to a for messagelog. genericmessagesendingpipe will set type to L for messagelog (when type isn't specified). see {@link messagestoresender} for type m", "E for errorstorage on receiver, A for messagelog on receiver and L for messagelog on pipe"})
 	public void setType(String string) {
 		type = string;
 	}

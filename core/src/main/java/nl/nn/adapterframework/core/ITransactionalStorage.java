@@ -27,7 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-public interface ITransactionalStorage<M extends Serializable> extends IMessageBrowser<M>, INamedObject {
+public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
 
@@ -51,7 +51,7 @@ public interface ITransactionalStorage<M extends Serializable> extends IMessageB
 	 * 
 	 * The messageId should be unique.
 	 */
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException;
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 	
 	/**
 	 * Check if the storage contains message with the given original messageId 

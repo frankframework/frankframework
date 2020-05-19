@@ -36,7 +36,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage<M extends Serializable> extends JmsMessageBrowser<M, ObjectMessage> implements ITransactionalStorage<M> {
+public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -65,7 +65,7 @@ public class JmsTransactionalStorage<M extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, M message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();
@@ -101,20 +101,20 @@ public class JmsTransactionalStorage<M extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
+	public S browseMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(messageId);
-			return(M)msg.getObject();
+			return(S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
 
 	@Override
-	public M getMessage(String messageId) throws ListenerException {
+	public S getMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(messageId);
-		return (M)msg.getObject();
+		return (S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
