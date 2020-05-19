@@ -2857,6 +2857,12 @@ public class TestTool {
 			if (fileContent == null) {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
+
+				if( !properties.getProperty("scenario.resolveProperties").equalsIgnoreCase("false") ){
+                    AppConstants appConstants = AppConstants.getInstance();
+                    fileContent = StringResolver.substVars(fileContent, appConstants);
+                }
+
 				if (step.endsWith(".read")) {
 					queueName = step.substring(i + 1, step.length() - 5);
 
