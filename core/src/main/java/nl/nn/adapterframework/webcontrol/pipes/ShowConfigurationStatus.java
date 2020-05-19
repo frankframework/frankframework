@@ -50,8 +50,8 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -618,11 +618,11 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
 							JmsListenerBase jlb = (JmsListenerBase) listener;
-							JmsMessageBrowser jmsBrowser;
+							JmsBrowser<javax.jms.Message> jmsBrowser;
 							if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-								jmsBrowser = new JmsMessageBrowser();
+								jmsBrowser = new JmsBrowser<>();
 							} else {
-								jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
+								jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
 							}
 							jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 							jmsBrowser.setJmsRealm(jlb.getJmsRealName());
