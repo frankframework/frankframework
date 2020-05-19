@@ -2859,9 +2859,9 @@ public class TestTool {
 			} else {
 
 				if( !properties.getProperty("scenario.resolveProperties").equalsIgnoreCase("false") ){
-                    AppConstants appConstants = AppConstants.getInstance();
-                    fileContent = StringResolver.substVars(fileContent, appConstants);
-                }
+					AppConstants appConstants = AppConstants.getInstance();
+					fileContent = StringResolver.substVars(fileContent, appConstants);
+				}
 
 				if (step.endsWith(".read")) {
 					queueName = step.substring(i + 1, step.length() - 5);
