@@ -55,7 +55,6 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
@@ -218,7 +217,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		if(configuration.getClassLoader() instanceof DatabaseClassLoader) {
+		if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
 			if(configs == null)
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

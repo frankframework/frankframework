@@ -93,9 +93,8 @@ public class ServerStatistics extends Base {
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() == null) {
-				cfg.put("type", configuration.getClassLoaderType());
-			} else {
+			cfg.put("type", configuration.getClassLoaderType());
+			if(configuration.getConfigurationException() != null) {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 

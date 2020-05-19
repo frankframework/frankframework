@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -302,9 +303,17 @@ public class Configuration {
 		return configurationClassLoader;
 	}
 
+	/**
+	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
+	 * Because of this, it may not always represent the correct or accurate type.
+	 */
 	public String getClassLoaderType() {
-		if(configurationClassLoader == null)
-			return null;
+		if(configurationClassLoader == null) { //Configuration has not been loaded yet
+			String type = AppConstants.getInstance().getProperty("configurations."+name+".classLoaderType");
+			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
+				return type;
+			}
+		}
 
 		return configurationClassLoader.getClass().getSimpleName();
 	}

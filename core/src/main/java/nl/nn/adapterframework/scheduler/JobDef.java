@@ -770,11 +770,7 @@ public class JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					String type = configuration.getClassLoaderType();
-					if(type == null) { //Configuration has not been loaded yet
-						type = AppConstants.getInstance().getProperty("configurations."+configName+".classLoaderType");
-					}
-					if ("DatabaseClassLoader".equals(type)) {
+					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
 						if (rs.next()) {
