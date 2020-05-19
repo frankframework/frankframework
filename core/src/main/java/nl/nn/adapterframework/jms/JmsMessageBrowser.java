@@ -35,12 +35,13 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Basic browser of JMS Messages.
- * @author  Johan Verrips /action.BrowseQueue
+ * @author  Johan Verrips
  */
 public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade implements IMessageBrowser<M> {
 
@@ -50,6 +51,7 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 	private String hideRegex = null;
 	private String hideMethod = "all";
 	
+	private final String IMESSAGEBROWSER = "nl.nn.adapterframework.core.IMessageBrowser";
 	
 	public JmsMessageBrowser() {
 		super();
@@ -225,6 +227,12 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 		return result.toString();
 	}
 
+	public String getSelector() {
+		return selector;
+	}
+
+
+	@IbisDoc({"timeout for receiving a message from the queue", "3000 ms"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -232,13 +240,8 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 		return timeOut;
 	}
 
-
-	public String getSelector() {
-		return selector;
-	}
-
 	@Override
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -248,7 +251,7 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 	}
 
 	@Override
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
@@ -64,15 +65,14 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
 	 */	
+	@IbisDoc({"Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes", ""})
 	public String getSlotId();
 	public void setSlotId(String string);
 
 
-	/**
-	 *  type is one character: E for error, I for inprocessStorage, L for logging.
-	 */	
-	public String getType();
+	@IbisDoc({"Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). ReceiverBase will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
 	public void setType(String string);
+	public String getType();
 	
 	public boolean isActive();
 	

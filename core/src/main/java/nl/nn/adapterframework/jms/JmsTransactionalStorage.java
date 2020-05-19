@@ -28,7 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
@@ -49,8 +49,8 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	private String slotId=null;
 	private String type=null;
 	private boolean active=true;   
-	private String hideRegex = null;
-	private String hideMethod = "all";
+
+	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
 	public JmsTransactionalStorage() {
 		super();
@@ -133,7 +133,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 
 	@Override
-	@IbisDoc({"Optional identifier for this storage, to be able to share the physical storage between a number of receivers", ""})
+	@IbisDocRef({"1", ITRANSACTIONALSTORAGE})
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -143,6 +143,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
+	@IbisDocRef({"2", ITRANSACTIONALSTORAGE})
 	public void setType(String string) {
 		type = string;
 	}
@@ -159,24 +160,4 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		return active;
 	}
 	
-	@Override
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
-	}
-
 }
