@@ -300,10 +300,8 @@ public final class ShowConfiguration extends Base {
 		}
 
 		try {
-			if(inputDataMap.get("datasource") != null)
-				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
-			else
-				throw new ApiException("Datasource not defined", 400);
+			datasource = resolveStringFromMap(inputDataMap, "datasource");
+
 			if(inputDataMap.get("multiple_configs") != null)
 				multiple_configs = inputDataMap.get("multiple_configs").get(0).getBody(boolean.class, null);
 			if(inputDataMap.get("activate_config") != null)
