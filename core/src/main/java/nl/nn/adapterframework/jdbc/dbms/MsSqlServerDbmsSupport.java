@@ -39,46 +39,57 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
 	
 
+	@Override
 	public int getDatabaseType() {
 		return DbmsSupportFactory.DBMS_MSSQLSERVER;
 	}
 
+	@Override
 	public String getDbmsName() {
 		return "MS SQL";
 	}
 
+	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
 	}
 
+	@Override
 	public String getNumericKeyFieldType() {
 		return "INT";
 	}
 
+	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT IDENTITY";
 	}
 	
+	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
 	}
 
+	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return "SELECT @@IDENTITY";
 	}
 
+	@Override
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
 
+	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
 
+	@Override
 	public boolean mustInsertEmptyBlobBeforeData() {
 		return false;
 	}
 
+	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
@@ -106,6 +117,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 	
+	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
@@ -122,27 +134,23 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return result;
 	}
 
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select top(1) * from "+tableName;
 		return query;
 	} 
 
+	@Override
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
 	}
 
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
 	}
 
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName, tableName.toUpperCase());
-	}
-	
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
-	}
-
+	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
 		if (e.getErrorCode()==2627) {
 			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
@@ -152,18 +160,22 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
+	@Override
 	public String getRowNumber(String order, String sort) {
 		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 	}
 
+	@Override
 	public String getRowNumberShortName() {
 		return "rn";
 	}
 
+	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
 	}
 
+	@Override
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}

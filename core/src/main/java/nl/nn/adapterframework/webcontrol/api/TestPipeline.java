@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,17 +42,12 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,7 +60,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 @Path("/")
-public final class TestPipeline extends TimeoutGuardPipe {
+public final class TestPipeline extends Base {
 	@Context ServletConfig servletConfig;
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
@@ -77,28 +73,29 @@ public final class TestPipeline extends TimeoutGuardPipe {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {
+	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		IbisManager ibisManager = getIbisManager();
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-		
-		String message = null, fileEncoding = null, fileName = null;
+
+		String message = null, fileName = null;
 		InputStream file = null;
-		IAdapter adapter = null;
-		
+
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+
+		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
+		//Make sure the adapter exists!
+		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+		if(adapter == null) {
+			throw new ApiException("Adapter ["+adapterName+"] not found");
+		}
+
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+
 		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("encoding") != null)
-				fileEncoding = inputDataMap.get("encoding").get(0).getBodyAsString();
-			if(inputDataMap.get("adapter") != null) {
-				String adapterName = inputDataMap.get("adapter").get(0).getBodyAsString();
-				adapter = ibisManager.getRegisteredAdapter(adapterName);
-			}
 			if(inputDataMap.get("file") != null) {
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
 				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
@@ -110,37 +107,36 @@ public final class TestPipeline extends TimeoutGuardPipe {
 					}
 				}
 
-				if(fileEncoding == null || fileEncoding.isEmpty())
-					fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
 						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
 					} catch (Exception e) {
-						throw new PipeRunException(this, getLogPrefix(null) + "exception on processing zip file", e);
+						throw new ApiException("An exception occurred while processing zip file", e);
 					}
 				} else {
 					message = Misc.streamToString(file, "\n", fileEncoding, false);
 				}
+			} else {
+				if(inputDataMap.get("message") != null)
+					message = inputDataMap.get("message").get(0).getBodyAsString();
 			}
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 		} catch (IOException e) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			throw new ApiException(e);
 		}
 
-		if(fileEncoding == null || StringUtils.isEmpty(fileEncoding))
-			fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-
-		if(adapter == null && ( message == null && file == null )) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+		if(message == null && file == null) {
+			throw new ApiException("must provide either a message or file");
 		}
-		
+
 		if (StringUtils.isNotEmpty(message)) {
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
 				result.put("result", plr.getResult());
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(null) + "exception on sending message", e);
+				throw new ApiException("exception on sending message", e);
 			}
 		}
 
@@ -209,17 +205,5 @@ public final class TestPipeline extends TimeoutGuardPipe {
 			secLog.info("message [" + message + "]");
 		}
 		return adapter.processMessage(messageId, message, pls);
-	}
-
-	private IbisManager getIbisManager() {
-		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
-		IbisManager ibisManager = ibisContext.getIbisManager();
-		if (ibisManager == null) {
-			log.warn("Could not retrieve ibisManager from context");
-		} else {
-			if(log.isTraceEnabled()) log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context");
-			return ibisManager;
-		}
-		return null;
 	}
 }

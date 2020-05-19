@@ -76,10 +76,10 @@ public class TestAlignXml {
         return string.toString();
     }
 
-    public void testFiles(String inputFile, String namespace, String schemaFile, String rootElement) throws Exception {
-		testFiles(inputFile, namespace, schemaFile, rootElement, false, true, null);
+    public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile) throws Exception {
+		testFiles(schemaFile, namespace, rootElement, inputFile, false, true, null);
 	}
-	public void testFiles(String file, String namespace, String schemaFile, String rootElement, boolean potentialCompactionProblems, boolean checkRountTrip, String expectedFailureReason) throws Exception {
+	public void testFiles(String schemaFile, String namespace, String rootElement, String file, boolean potentialCompactionProblems, boolean checkRountTrip, String expectedFailureReason) throws Exception {
 		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
 		String xmlString=getTestFile(file+".xml");
 		testStrings(xmlString, schemaUrl,namespace, rootElement,expectedFailureReason);
@@ -88,83 +88,83 @@ public class TestAlignXml {
 	@Test
 	public void testOK_abc() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
-		testFiles("Abc/abc","urn:test","Abc/abc.xsd","a");
+		testFiles("Abc/abc.xsd","urn:test","a","Abc/abc");
 	}
 
 	@Test
 	public void testOK_hcda() throws Exception {
-		testFiles("HCDA/HandleCollectionDisbursementAccount","","HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd","HandleCollectionDisbursementAccount");
+		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd","","HandleCollectionDisbursementAccount","HCDA/HandleCollectionDisbursementAccount");
 	}
 
 	
 	@Test
 	public void testArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays","urn:arrays","Arrays/arrays.xsd","arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/arrays",true,true, null);
 	}
 
 	@Test
 	public void testEmptyArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/empty-arrays","urn:arrays","Arrays/arrays.xsd","arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/empty-arrays",true,true, null);
 	}
 
 	@Test
 	public void testSingleElementArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/single-element-arrays","urn:arrays","Arrays/arrays.xsd","arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/single-element-arrays",true,true, null);
 	}
 
 	@Test
 	public void testSingleComplexArray() throws Exception {
 		// straight test
-		testFiles("Arrays/single-complex-array","urn:arrays","Arrays/arrays.xsd","array1",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","array1","Arrays/single-complex-array",true,true, null);
 	}
 
 	@Test
 	public void testSingleSimpleArray() throws Exception {
 		// straight test
-		testFiles("Arrays/single-simple-array","urn:arrays","Arrays/arrays.xsd","singleSimpleRepeatedElement",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","singleSimpleRepeatedElement","Arrays/single-simple-array",true,true, null);
 	}
 
 	@Test
     public void testAttributes() throws Exception {
-    	testFiles("/DataTypes/Attributes","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes");
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Attributes");
     }
 
 	@Test
     public void testStrings() throws Exception {
-    	testFiles("/DataTypes/Strings","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Strings",true,true, null);
     }
 
 	@Test
     public void testSpecialChars() throws Exception {
-    	testFiles("/DataTypes/SpecialChars","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/SpecialChars",true,true, null);
     }
 
 	@Test
     public void testDiacritics() throws Exception {
-    	testFiles("/DataTypes/Diacritics","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",true,true, null);
     }
 
 	@Test
     public void testBooleans() throws Exception {
-    	testFiles("/DataTypes/Booleans","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Booleans",true,true, null);
     }
 
     @Test
     public void testNumbers() throws Exception {
-    	testFiles("/DataTypes/Numbers","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes");
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Numbers");
     }
 
     @Test
     public void testDateTime() throws Exception {
-    	testFiles("/DataTypes/DateTime","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes");
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/DateTime");
     }
     
     @Test
     public void testNull() throws Exception {
-    	testFiles("/DataTypes/Null","urn:datatypes","/DataTypes/DataTypes.xsd","DataTypes");
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null");
     }
 
 //    @Test
@@ -177,20 +177,20 @@ public class TestAlignXml {
  	@Test
 	public void testChoiceOfSequence() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
-		testFiles("Transaction/order","","Transaction/transaction.xsd","transaction");
-		testFiles("Transaction/invoice","","Transaction/transaction.xsd","transaction");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/order");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/invoice");
 	}
 
  	@Test
     public void testRepeatedElements() throws Exception {
 //    	testFiles("/RepeatedElements/sprint-withRepeatedElement","","/RepeatedElements/sprint.xsd","sprint");
 //    	testFiles("/RepeatedElements/sprint-withoutRepeatedElement","","/RepeatedElements/sprint.xsd","sprint");
-    	testFiles("/RepeatedElements/sprint-emptyRepeatedElement","","/RepeatedElements/sprint.xsd","sprint",false,false,null);
+    	testFiles("/RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-emptyRepeatedElement",false,false,null);
     }
 
     @Test
     public void testSimple() throws Exception {
-    	testFiles("/Simple/simple","urn:simple","/Simple/simple.xsd","simple");
+    	testFiles("/Simple/simple.xsd","urn:simple","simple","/Simple/simple");
     }
 
 }

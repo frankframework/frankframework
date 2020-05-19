@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.stream.Message;
@@ -49,12 +50,12 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return Message.asMessage(doGet(session));
+			return new PipeRunResult(getForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return Message.asMessage(doPost(session));
+			return new PipeRunResult(getForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET'");
@@ -123,17 +124,19 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		dynamicParametersXml.addAttribute("logIntermediaryResults", retrieveLogIntermediaryResults());
 		dynamicParametersXml.addAttribute("lengthLogRecords", retrieveLengthLogRecords());
 
-		List<String> propsToHide = new ArrayList<String>();
-		String propertiesHideString = AppConstants.getInstance(configuration.getClassLoader())
-				.getString("properties.hide", null);
-		if (propertiesHideString != null) {
-			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-		}
-
 		XmlBuilder environmentVariablesXml = new XmlBuilder("environmentVariables");
+		List<String> propsToHide = new ArrayList<String>();
 
-		addPropertiesToXmlBuilder(environmentVariablesXml, AppConstants.getInstance(configuration.getClassLoader()),
-				"Application Constants", propsToHide, true);
+		if(configuration.getClassLoader() != null) {
+			String propertiesHideString = AppConstants.getInstance(configuration.getClassLoader())
+					.getString("properties.hide", null);
+			if (propertiesHideString != null) {
+				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+			}
+
+			addPropertiesToXmlBuilder(environmentVariablesXml, AppConstants.getInstance(configuration.getClassLoader()),
+					"Application Constants", propsToHide, true);
+		}
 		addPropertiesToXmlBuilder(environmentVariablesXml, System.getProperties(), "System Properties", propsToHide);
 
 		try {

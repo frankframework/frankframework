@@ -206,7 +206,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 								receiver.processRawMessage(listener, rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
-										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
+										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 										txManager.rollback(txStatus);
 									} else {
 										txManager.commit(txStatus);
@@ -217,9 +217,9 @@ public class PullingListenerContainer implements IThreadCountControllable {
 									txManager.rollback(txStatus);
 								}
 								if (receiver.isOnErrorContinue()) {
-									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
+									receiver.error("caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
+									receiver.error("stopping receiver after exception in processing message", e);
 									receiver.stopRunning();
 								}
 							}
@@ -231,7 +231,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					}
 				}
 			} catch (Throwable e) {
-				receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
+				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
 				if (!pollTokenReleased && pollToken != null) {
@@ -242,7 +242,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
+						receiver.error("Exception closing listener", e);
 					}
 				}
 				ThreadContext.removeStack();

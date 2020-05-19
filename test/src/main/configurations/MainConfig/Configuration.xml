@@ -52,6 +52,7 @@
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
+	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -107,4 +108,5 @@
 	&MessageStore;
 	&BlockEnabledSenders;
 	&SoapValidator;
+	&ApiWsdlGenerator;
 </configuration>
