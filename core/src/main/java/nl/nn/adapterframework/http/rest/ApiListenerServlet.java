@@ -500,8 +500,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		catch (Exception e) {
 			log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 			try {
+				response.reset();
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-				response.flushBuffer();
 			}
 			catch (IllegalStateException ex) {
 				//We're only informing the end user(s), no need to catch this error...
