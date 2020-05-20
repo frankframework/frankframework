@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,28 +15,24 @@
 */
 package nl.nn.adapterframework.validation;
 
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
-	private Logger log = LogUtil.getLogger(this);
 	private boolean errorOccured = false;
 	private String reasons;
 	private final XmlValidatorContentHandler xmlValidatorContentHandler;
 	private XmlBuilder xmlReasons = new XmlBuilder("reasons");
 
 
-	public XmlValidatorErrorHandler(
-			XmlValidatorContentHandler xmlValidatorContentHandler,
-			String mainMessage) {
+	public XmlValidatorErrorHandler(XmlValidatorContentHandler xmlValidatorContentHandler, String mainMessage) {
 		this.xmlValidatorContentHandler = xmlValidatorContentHandler;
 		XmlBuilder message = new XmlBuilder("message");;
 		message.setValue(mainMessage);
@@ -86,39 +82,44 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 			SAXParseException spe = (SAXParseException)t;
 			location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
 		}
-        String message;
-        if (t instanceof SAXException) {
+		String message;
+		if (t instanceof SAXException) {
 			message = t.getMessage();
 		} else {
 			StringWriter stringWriter = new StringWriter();
-			PrintWriter printWriter = new PrintWriter(stringWriter);
-			t.printStackTrace(printWriter);
-			printWriter.close();
+			try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+				t.printStackTrace(printWriter);
+			}
 			message = stringWriter.toString();
 		}
 		addReason(message, null, location);
 	}
 
+	@Override
 	public void warning(SAXParseException exception) {
 		addReason(exception);
 	}
-    public void error(SAXParseException exception) {
-    	addReason(exception);
-    }
-    public void fatalError(SAXParseException exception) {
+
+	@Override
+	public void error(SAXParseException exception) {
 		addReason(exception);
-    }
+	}
 
-    public boolean hasErrorOccured() {
-        return errorOccured;
-    }
+	@Override
+	public void fatalError(SAXParseException exception) {
+		addReason(exception);
+	}
 
-     public String getReasons() {
-        return reasons;
-    }
+	public boolean hasErrorOccured() {
+		return errorOccured;
+	}
+
+	public String getReasons() {
+		return reasons;
+	}
 
 	public String getXmlReasons() {
-	   return xmlReasons.toXML();
-   }
+		return xmlReasons.toXML();
+	}
 }
 

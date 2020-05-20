@@ -294,7 +294,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), schemaLocation, definitionsPath);
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath);
 		JsonObject jsonschema = converter.getDefinitions();
 		return jsonschema;
 	}
@@ -303,7 +303,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), schemaLocation);
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation());
 		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
 		return jsonschema;
 	}
