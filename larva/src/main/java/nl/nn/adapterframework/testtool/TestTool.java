@@ -2857,14 +2857,6 @@ public class TestTool {
 			if (fileContent == null) {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
-
-				String resolveProperties = properties.getProperty("scenario.resolveProperties");
-
-                if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
-                    AppConstants appConstants = AppConstants.getInstance();
-                    fileContent = StringResolver.substVars(fileContent, appConstants);
-                }
-
 				if (step.endsWith(".read")) {
 					queueName = step.substring(i + 1, step.length() - 5);
 
@@ -2895,6 +2887,13 @@ public class TestTool {
 					}
 				} else {
 					queueName = step.substring(i + 1, step.length() - 6);
+
+					String resolveProperties = properties.getProperty("scenario.resolveProperties");
+
+					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
+						AppConstants appConstants = AppConstants.getInstance();
+						fileContent = StringResolver.substVars(fileContent, appConstants);
+					}
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
