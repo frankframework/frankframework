@@ -24,25 +24,36 @@ public class Rhino implements JavascriptEngine<Context> {
 
 	private Context cx;
 	private Scriptable scope;
+	private String alias = "jsScript";
 
+	@Override
+	public void setScriptAlias(String alias) {
+		this.alias = alias;
+	}
+
+	@Override
 	public void startRuntime() {
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
 	}
 
+	@Override
 	public void executeScript(String script) {
-		cx.evaluateString(scope, script, "jsScript", 1, null);
+		cx.evaluateString(scope, script, alias, 1, null);
 	}
 
+	@Override
 	public Object executeFunction(String name, Object... parameters) {
 		Function fct = (Function)scope.get(name, scope);
 		return fct.call(cx, scope, scope, parameters);
 	}
 
+	@Override
 	public void closeRuntime() {
 		Context.exit();
 	}
 
+	@Override
 	public Context getEngine() {
 		return cx;
 	}

@@ -35,22 +35,17 @@ public class J2V8 implements JavascriptEngine<V8> {
 
 	private Logger log = LogUtil.getLogger(this);
 	private V8 v8;
+	private String alias = null;
 
 	@Override
-	public void startRuntime() {
-		startRuntime(null, null);
+	public void setScriptAlias(String alias) {
+		this.alias = alias;
 	}
 
-	/**
-	 * If path is null or empty, it will use the log.dir
-	 * If the log.dir is relative it will turn it into an absolute path
-	 */
-	public void startRuntime(String alias, String path) {
-		String directory = path;
-		if(StringUtils.isEmpty(directory)) {
-			directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
-		}
-		if(directory != null) {
+	private String getTempDirectory() {
+		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+
+		if(StringUtils.isNotEmpty(directory)) {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
 				String absPath = new File("").getAbsolutePath();
@@ -66,10 +61,20 @@ public class J2V8 implements JavascriptEngine<V8> {
 				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
 			}
 			directory = file.getAbsolutePath();
-			log.info("resolved J2V8 tempDirectory from path ["+path+"] to directory ["+directory+"]");
 		}
+		log.info("resolved J2V8 tempDirectory to directory ["+directory+"]");
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
+		return StringUtils.isEmpty(directory) ? null : directory;
+	}
+
+	/**
+	 * If path is null or empty, it will use the log.dir
+	 * If the log.dir is relative it will turn it into an absolute path
+	 */
+	@Override
+	public void startRuntime() {
+		String directory = getTempDirectory();
 		v8 = V8.createV8Runtime(alias, directory);
 	}
 

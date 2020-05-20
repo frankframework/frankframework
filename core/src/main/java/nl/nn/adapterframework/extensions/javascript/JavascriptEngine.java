@@ -30,6 +30,11 @@ import nl.nn.adapterframework.core.ISender;
 public interface JavascriptEngine<E> {
 
 	/**
+	 * @param alias		a string describing the source, such as a filename
+	 */
+	void setScriptAlias(String alias);
+
+	/**
 	 * Initialize the runtime for the specified engine
 	 */
 	void startRuntime();

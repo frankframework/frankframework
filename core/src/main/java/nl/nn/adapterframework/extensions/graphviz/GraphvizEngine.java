@@ -166,7 +166,8 @@ public class GraphvizEngine {
 		 */
 		Env(String initScript, String graphvisJsLibrary, String alias) {
 			log.info("starting V8 runtime...");
-			V8Instance.startRuntime(alias, null);
+			V8Instance.setScriptAlias(alias);
+			V8Instance.startRuntime();
 			log.info("started V8 runtime. Initializing graphviz...");
 			V8Instance.executeScript(graphvisJsLibrary);
 			V8Instance.executeScript(initScript);
