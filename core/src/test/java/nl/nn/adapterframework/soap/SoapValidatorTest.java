@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.soap;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -56,8 +59,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_VALID_SOAP);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -67,8 +73,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_VALID_SOAP_1_2);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP_1_2;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test(expected = PipeRunException.class)
@@ -79,9 +88,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_INVALID_SOAP);
-		doPipe(input);
-
+		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test(expected = PipeRunException.class)
@@ -92,8 +103,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_INVALID_SOAP_BODY);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test(expected = PipeRunException.class)
@@ -104,8 +118,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -115,8 +132,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request,Response");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_VALID_SOAP);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -126,8 +146,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("\nRequest,\nResponse\n");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_VALID_SOAP);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -137,8 +160,11 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("\nResponse,\nRequest\n");
 		pipe.configure();
 		pipe.start();
-		Message input = TestFileUtils.getTestFileMessage(INPUT_FILE_GPBDB_VALID_SOAP);
-		doPipe(input);
+		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
+		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+		PipeRunResult prr = doPipe(input);
+		assertEquals(expected, prr.getResult().asString());
 	}
 
 

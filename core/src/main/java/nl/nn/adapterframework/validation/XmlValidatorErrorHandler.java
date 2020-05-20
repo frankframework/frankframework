@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 			StringWriter stringWriter = new StringWriter();
 			try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 				t.printStackTrace(printWriter);
-			};
+			}
 			message = stringWriter.toString();
 		}
 		addReason(message, null, location);
