@@ -117,8 +117,11 @@ public final class TestPipeline extends Base {
 					message = Misc.streamToString(file, "\n", fileEncoding, false);
 				}
 			} else {
-				if(inputDataMap.get("message") != null)
-					message = inputDataMap.get("message").get(0).getBodyAsString();
+				if(inputDataMap.get("message") != null) {
+					InputPart part = inputDataMap.get("message").get(0);
+					part.setMediaType(part.getMediaType().withCharset(fileEncoding));
+					message = part.getBodyAsString();
+				}
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new ApiException("unsupported file encoding ["+fileEncoding+"]");

@@ -279,10 +279,8 @@ public final class ShowConfiguration extends Base {
 		}
 
 		try {
-			if(inputDataMap.get("datasource") != null)
-				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
-			else
-				throw new ApiException("Datasource not defined", 400);
+			datasource = resolveStringFromMap(inputDataMap, "datasource");
+
 			if(inputDataMap.get("name") != null)
 				name = inputDataMap.get("name").get(0).getBodyAsString();
 			else
