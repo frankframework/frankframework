@@ -1,0 +1,5 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISSTORE</tableName>
+	</delete>
+</manageDatabaseREQ>
