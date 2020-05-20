@@ -59,35 +59,26 @@ public final class SendJmsMessage extends Base {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
 
-		String jmsRealm = null, destinationName = null, destinationType = null, replyTo = null, message = null, fileName = null;
+		String message = null, fileName = null;
 		InputStream file = null;
-		boolean persistent = false;
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		String jmsRealm = resolveStringFromMap(inputDataMap, "realm");
+		String destinationName = resolveStringFromMap(inputDataMap, "destination");
+		String destinationType = resolveStringFromMap(inputDataMap, "type");
+		String replyTo = resolveStringFromMap(inputDataMap, "replyTo");
+		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
+
 		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
-			else
-				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.get("destination") != null)
-				destinationName = inputDataMap.get("destination").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.get("type") != null) 
-				destinationType = inputDataMap.get("type").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.get("replyTo") != null)
-				replyTo = inputDataMap.get("replyTo").get(0).getBodyAsString();
-			else
-				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.get("message") != null) 
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("persistent") != null)
-				persistent = inputDataMap.get("persistent").get(0).getBody(boolean.class, null);
+			if(inputDataMap.get("message") != null) {
+				InputPart part = inputDataMap.get("message").get(0);
+				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
+				message = part.getBodyAsString();
+			}
 			if(inputDataMap.get("file") != null)
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
 		}
@@ -111,11 +102,11 @@ public final class SendJmsMessage extends Base {
 					message = null;
 				}
 				else {
-					message = XmlUtils.readXml(Misc.streamToBytes(file), Misc.DEFAULT_INPUT_STREAM_ENCODING, false);
+					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
 				}
 			}
 			else {
-				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
+				message = new String(message.getBytes(), fileEncoding);
 			}
 		}
 		catch (Exception e) {

@@ -7,15 +7,16 @@
 		<exits>
 			<exit path="EXIT" state="success" />
 		</exits>
-		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Request" addNamespaceToSchema="true">
+		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Request" inputFormatSessionKey="receivedFormat" addNamespaceToSchema="true">
 			<forward name="failure" path="InputValidatorFailure" />
 		</inputValidator>
-		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
-		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true">
+		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" unlessSessionKey="receivedFormat" unlessValue="json" />
+		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" unlessSessionKey="receivedFormat" unlessValue="json" />
+		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true"
+			outputFormatSessionKey="receivedFormat">
 			<forward name="failure" path="OutputValidatorFailure" />
 		</outputValidator>
-		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true">
+		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response xmlns=&quot;http://api.nn.nl/HelloWorld&quot;/&gt;">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6003" />
 			<param name="errorReason" value="Invalid Request" />
@@ -26,13 +27,22 @@
 			<param name="paradigm" value="Response" />
 			<forward name="success" path="EXIT" />
 		</pipe>
-		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response/&gt;">
+		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="Json2XmlValidator.inputformat - pipeline inputValidator" >
+			<forward name="xml" path="OutputValidatorFailureXml" />
+			<forward name="json" path="OutputValidatorFailureJson" />
+		</pipe>
+		<pipe name="OutputValidatorFailureXml" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response xmlns=&quot;http://api.nn.nl/HelloWorld&quot;/&gt;">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6993" />
 			<param name="errorReason" value="Invalid Response" />
+			<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+			<param name="addErrorsDetailsXml" value="true" />
 			<param name="addErrorsFromInputMessage" value="true" />
 			<param name="operationName" value="Test/SoapValidator" />
 			<param name="paradigm" value="Response" />
+			<forward name="success" path="EXIT" />
+		</pipe>
+		<pipe name="OutputValidatorFailureJson" className="nl.nn.adapterframework.pipes.FixedResult" returnString="{ &quot;error&quot;:true }" > <!-- ToDo: create proper error message for json -->
 			<forward name="success" path="EXIT" />
 		</pipe>
 		<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" fileName="SoapValidator/xml/HelloWorldShort_Response.xml">

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.util.flow;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,23 +22,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.annotation.Scope;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.extensions.graphviz.Format;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
-import nl.nn.adapterframework.extensions.graphviz.Options;
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.
@@ -47,10 +47,8 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
  * @version 2.0
  */
 
-@IbisInitializer //Create IBIS Bean
-@Scope("singleton") //Make sure it's a singleton bean (aka reusable)
-public class FlowDiagram implements DisposableBean {
-	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
+public class FlowDiagramManager implements InitializingBean, DisposableBean {
+	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
@@ -59,75 +57,69 @@ public class FlowDiagram implements DisposableBean {
 	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
 
-	private GraphvizEngine engine;
-	private Options options = Options.create();
-	private Format format = Format.SVG;
-
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
+	private Resource noImageAvailable;
 
-	public FlowDiagram() throws TransformerConfigurationException, IOException {
-		this(null);
-	}
+	private IFlowGenerator generator;
 
-	public FlowDiagram(String format) throws TransformerConfigurationException, IOException {
-		this(format, null);
-	}
-
-	public FlowDiagram(String format, String version) throws TransformerConfigurationException, IOException {
-		engine = new GraphvizEngine(version);
-
-		String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", "SVG");
-		if(StringUtils.isNotEmpty(format)) {
-			graphvizJsFormat = format;
-		}
-		try {
-			this.format = Format.valueOf(graphvizJsFormat.toUpperCase());
-		}
-		catch(IllegalArgumentException e) {
-			throw new IllegalArgumentException("unknown format["+format.toUpperCase()+"], must be one of "+Format.values());
-		}
-
-		options = options.format(this.format);
-
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
+
+		if(generator == null) {
+			throw new IllegalStateException("no IFlowGenerator found");
+		}
+
+		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
+		if(noImageAvailable == null) {
+			throw new IllegalStateException("image [no_image_available.svg] not found");
+		}
 	}
 
-	public InputStream get(IAdapter adapter) throws IOException, GraphvizException {
+	@Autowired
+	@Qualifier("flowGenerator")
+	public void setFlowGenerator(IFlowGenerator generator) {
+		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
+
+		this.generator = generator;
+	}
+
+	public InputStream get(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(!destFile.exists()) {
-			generate(adapter);
+			return noImageAvailable.openStream();
 		}
 
 		return new FileInputStream(destFile);
 	}
 
-	public InputStream get(Configuration configuration) throws IOException, GraphvizException {
+	public InputStream get(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(!destFile.exists()) {
-			generate(configuration);
+			return noImageAvailable.openStream();
 		}
 
 		return new FileInputStream(destFile);
 	}
 
-	public InputStream get(List<Configuration> configurations) throws IOException, GraphvizException {
+	public InputStream get(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 
 		if(!destFile.exists()) {
-			generate(configurations);
+			return noImageAvailable.openStream();
 		}
 
 		return new FileInputStream(destFile);
 	}
 
-	public void generate(IAdapter adapter) throws IOException, GraphvizException {
+	public void generate(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(destFile.exists()) //If the file exists, update it
@@ -144,7 +136,7 @@ public class FlowDiagram implements DisposableBean {
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(Configuration configuration) throws IOException, GraphvizException {
+	public void generate(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(destFile.exists()) //If the file exists, update it
@@ -161,7 +153,7 @@ public class FlowDiagram implements DisposableBean {
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(List<Configuration> configurations) throws IOException, GraphvizException {
+	public void generate(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 		destFile.delete();
 
@@ -214,29 +206,29 @@ public class FlowDiagram implements DisposableBean {
 			}
 		}
 
-		String name = FileUtils.encodeFileName(fileName) + "." + format.fileExtension;
+		String name = FileUtils.encodeFileName(fileName) + "." + generator.getFileExtension();
 		log.debug("retrieve flow file for name["+fileName+"] in folder["+parent.getPath()+"]");
 
 		return new File(parent, name);
 	}
 
-	private void generateFlowDiagram(String name, String dot, File destFile) throws IOException, GraphvizException {
+	private void generateFlowDiagram(String name, String dot, File destination) throws IOException {
 		log.debug("generating flow diagram for " + name);
 		long start = System.currentTimeMillis();
 
-		String flow = engine.execute(dot, options);
+		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
+			generator.generateFlow(name, dot, outputStream);
+		} catch (IOException e) {
+			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
 
-		FileOutputStream outputStream = new FileOutputStream(destFile);
-		outputStream.write(flow.getBytes());
-		outputStream.close();
+			throw e;
+		}
 
-		log.debug("finished generating flow diagram for "+ name +" in ["+ (System.currentTimeMillis()-start) +"] ms");
+		log.debug("finished generating flow diagram for ["+ name +"] in ["+ (System.currentTimeMillis()-start) +"] ms");
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		GraphvizEngine.releaseThread();
-
 		if(transformerPoolAdapter != null)
 			transformerPoolAdapter.close();
 

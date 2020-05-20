@@ -12,10 +12,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$cookiesProvider.defaults.samesite = 'strict';
 
 	$ocLazyLoadProvider.config({
-		modules: [{
-			name: 'toaster',
-			files: ['js/plugins/toastr/toastr.min.js', 'css/plugins/toastr/toastr.min.css']
-		}, {
+		modules: [
+		{
 			name: 'datatables',
 			serie: true,
 			files: [

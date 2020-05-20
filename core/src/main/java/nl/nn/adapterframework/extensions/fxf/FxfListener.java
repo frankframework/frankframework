@@ -20,6 +20,8 @@ import java.util.Map;
 
 import javax.jms.Message;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
@@ -28,9 +30,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * FxF extension of EsbJmsListener.
@@ -143,10 +143,7 @@ public class FxfListener extends EsbJmsListener {
 			ReceiverBase rb = (ReceiverBase) iReceiver;
 			IAdapter iAdapter = rb.getAdapter();
 			if (iAdapter != null) {
-				iAdapter.getMessageKeeper().add(
-						"WARNING: " + msg
-								+ (t != null ? ": " + t.getMessage() : ""),
-						MessageKeeperMessage.WARN_LEVEL);
+				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}
 		}
 	}
