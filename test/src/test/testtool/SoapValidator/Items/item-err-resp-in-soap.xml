@@ -1,7 +1,10 @@
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 	<soapenv:Body>
-		<HelloWorld_Request xmlns="http://api.nn.nl/HelloWorld">
-			<Text>hello_to_all</Text>
-		</HelloWorld_Request>
+		<Item_Request xmlns="urn:items">
+			<Status>c</Status>
+			<Item>
+				<Id>1</Id>
+			</Item>
+		</Item_Request>
 	</soapenv:Body>
 </soapenv:Envelope>
