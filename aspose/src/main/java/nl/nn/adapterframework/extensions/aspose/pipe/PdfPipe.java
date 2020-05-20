@@ -15,11 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -61,7 +59,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private List<String> availableActions = Arrays.asList("combine", "convert");
 	private String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
 	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
-	protected String charset = "UTF-8";
+	protected String charset = "UTF-8"; //TODO this should be uniform! StreamUtil.DEFAULT_INPUT_STREAM_ENCODING
 	private boolean isTempDirCreated = false;
 	private AsposeLicenseLoader loader;
 	
@@ -89,13 +87,16 @@ public class PdfPipe extends FixedForwardPipe {
 		// License check
 		if (StringUtils.isEmpty(license)) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field could be set with a valid information to avoid this. ");
-		}else {
-			if(ClassUtils.getResourceURL(this, license) == null) {
+		} else {
+			if(ClassUtils.getResourceURL(getConfigurationClassLoader(), license) == null) {
 				throw new ConfigurationException("Specified file for aspose license is not found");
 			}
 		}
 		// load license 
 		try {
+			//TODO licenseloader should only be loaded once, regardless of the amount of pipes!
+			//TODO licenseloader should not contain any fonts!
+			//TODO licenseloader should take an URL and not a String
 			loader = new AsposeLicenseLoader(license, fontsDirectory);
 			loader.loadLicense();
 		} catch (Exception e) {
@@ -108,6 +109,7 @@ public class PdfPipe extends FixedForwardPipe {
 		super.start();
 		if (StringUtils.isEmpty(pdfOutputLocation)) {
 			try {
+				//TODO uniform temp dir (ibis.tmpdir) should be used
 				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
 				log.info("Temporary directory path : " + pdfOutputLocation);
 				isTempDirCreated = true;
@@ -158,6 +160,7 @@ public class PdfPipe extends FixedForwardPipe {
 				
 				session.put("documents", main.toXML());
 			}
+			//TODO result should be converted document
 			return new PipeRunResult(getForward(), "");
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
