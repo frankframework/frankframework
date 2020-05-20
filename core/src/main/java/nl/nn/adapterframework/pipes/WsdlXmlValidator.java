@@ -278,14 +278,14 @@ public class WsdlXmlValidator extends SoapValidator {
 		List<Schema> filteredSchemas;
 		Map<Schema, String> filteredReferences = null;
 		Map<Schema, String> filteredNamespaces = null;
-		if (StringUtils.isEmpty(schemaLocation)) {
+		if (StringUtils.isEmpty(getSchemaLocation())) {
 			filteredSchemas = schemas;
 		} else {
 			filteredSchemas = new ArrayList<Schema>();
 			filteredReferences = new HashMap<Schema, String>();
 			filteredNamespaces = new HashMap<Schema, String>();
-			String[] split =  schemaLocation.trim().split("\\s+");
-			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+			String[] split =  getSchemaLocation().trim().split("\\s+");
+			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is [" + getSchemaLocation() +"]");
 			for (int i = 0; i < split.length; i += 2) {
 				if (!split[i + 1].startsWith(RESOURCE_INTERNAL_REFERENCE_PREFIX)) {
 					throw new ConfigurationException("Schema reference " + split[i + 1] + " should start with '" + RESOURCE_INTERNAL_REFERENCE_PREFIX + "'");
@@ -303,7 +303,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		for (Schema schema : filteredSchemas) {
 			XSD xsd = new XSD();
 			xsd.setWsdlSchema(definition, schema);
-			if (StringUtils.isNotEmpty(schemaLocation)) {
+			if (StringUtils.isNotEmpty(getSchemaLocation())) {
 				xsd.setResourceInternalReference(filteredReferences.get(schema));
 //				xsd.setNamespace(filteredNamespaces.get(schema));
 			} else {
@@ -313,7 +313,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 			xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 			xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-			xsd.initNamespace(StringUtils.isNotEmpty(schemaLocation)?filteredNamespaces.get(schema):null,getConfigurationClassLoader(), getWsdl());
+			xsd.initNamespace(StringUtils.isNotEmpty(getSchemaLocation())?filteredNamespaces.get(schema):null,getConfigurationClassLoader(), getWsdl());
 			xsds.add(xsd);
 		}
 		return xsds;
