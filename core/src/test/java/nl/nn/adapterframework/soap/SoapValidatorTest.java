@@ -67,7 +67,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void validate12_explicitversion() throws Exception {
+	public void validate12Explicitversion() throws Exception {
 		configureSoapValidator(true, "1.2");
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request");
@@ -81,7 +81,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test(expected = PipeRunException.class)
-	public void validate12_invalid() throws Exception {
+	public void validate12Invalid() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion("1.2");
@@ -96,7 +96,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test(expected = PipeRunException.class)
-	public void validate12_invalid_body() throws Exception {
+	public void validate12Invalid_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion("1.1");
@@ -111,7 +111,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test(expected = PipeRunException.class)
-	public void validate12_unknown_namespace_body() throws Exception {
+	public void validate12Unknown_namespace_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion("1.1");
