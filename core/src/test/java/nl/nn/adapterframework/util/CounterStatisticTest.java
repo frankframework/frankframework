@@ -35,6 +35,7 @@ public class CounterStatisticTest {
         cs.performAction(2);
         assertEquals(cs.getValue(), 0);
     }
+    
 
     /**
      *
