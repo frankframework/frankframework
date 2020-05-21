@@ -389,6 +389,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 	}
+
 	
 
 	protected TransformerPool getExtractElementsTp() {
