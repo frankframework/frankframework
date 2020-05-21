@@ -34,7 +34,8 @@ public class CounterStatisticTest {
     public void testPerformAction2() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(2);
-        assertEquals(cs.getValue(), 0);    }
+        assertEquals(cs.getValue(), 0);
+    }
 
     /**
      *
@@ -45,7 +46,8 @@ public class CounterStatisticTest {
     public void testPerformAction34() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(3);
-        assertEquals(cs.getValue(), 10);    }
+        assertEquals(cs.getValue(), 10);
+    }
 
 
     /**
@@ -56,7 +58,8 @@ public class CounterStatisticTest {
     @Test
     public void testGetIntervalValue() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        assertEquals(cs.getIntervalValue(), 0);}
+        assertEquals(cs.getIntervalValue(), 0);
+    }
 
 
 
