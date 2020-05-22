@@ -133,10 +133,9 @@ public class IbisContext extends IbisApplicationContext {
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				getBean("flowGenerator");
-				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //Should always be present? TODO: Move out of try block
-			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) { //The FlowDiagramManager should always initialize. 
-				log(null, null, "failed to initalize IFlowGenerator", MessageKeeperLevel.ERROR, e, true);
+				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialise.
+			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+				log(null, null, "failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e, true);
 			}
 
 			load();

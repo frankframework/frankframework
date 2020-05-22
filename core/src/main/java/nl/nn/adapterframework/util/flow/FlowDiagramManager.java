@@ -25,10 +25,14 @@ import java.util.List;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -47,7 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version 2.0
  */
 
-public class FlowDiagramManager implements InitializingBean, DisposableBean {
+public class FlowDiagramManager implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -65,8 +69,6 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
-	@Autowired(required=false)
-	@Qualifier("flowGenerator")
 	private IFlowGenerator generator;
 
 	@Override
@@ -86,6 +88,26 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
 		if(noImageAvailable == null) {
 			throw new IllegalStateException("image [no_image_available.svg] not found");
+		}
+	}
+
+	/**
+	 * Cannot use Spring Autowired as it's an optional!
+	 */
+	public void setFlowGenerator(IFlowGenerator generator) {
+		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
+
+		this.generator = generator;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		try {
+			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
+			setFlowGenerator(generator);
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			//Failed to initialise.
+			log.warn("failed to initalize IFlowGenerator", e);
 		}
 	}
 

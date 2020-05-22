@@ -86,7 +86,6 @@ public final class ShowConfiguration extends Base {
 				} else {
 					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
 				}
-				response.cacheControl(getNoCacheCacheControl());
 				return response.build();
 			} catch (SAXException | TransformerException | IOException e) {
 				throw new ApiException(e);
@@ -172,7 +171,6 @@ public final class ShowConfiguration extends Base {
 			} else {
 				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
 			}
-			response.cacheControl(getNoCacheCacheControl());
 			return response.build();
 		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);

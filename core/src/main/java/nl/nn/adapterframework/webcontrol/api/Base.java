@@ -86,18 +86,6 @@ public abstract class Base {
 		return ibisManager;
 	}
 
-	/**
-	 * no-store, no-cache, must-revalidate, max-age=0
-	 */
-	protected CacheControl getNoCacheCacheControl() {
-		CacheControl cache = new CacheControl();
-		cache.setNoStore(true);
-		cache.setNoCache(true);
-		cache.setMustRevalidate(true);
-		cache.setMaxAge(0);
-		return cache;
-	}
-
 	public ClassLoader getClassLoader() {
 		return this.getClass().getClassLoader();
 	}

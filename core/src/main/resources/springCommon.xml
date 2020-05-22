@@ -61,7 +61,7 @@
 	<bean
 		name="flowDiagramManager"
 		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
-		autowire="byName"
+		autowire="no"
 		scope="singleton"
 		lazy-init="true"
 		>

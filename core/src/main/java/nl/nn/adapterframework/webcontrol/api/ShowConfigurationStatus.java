@@ -412,7 +412,6 @@ public final class ShowConfigurationStatus extends Base {
 			} else {
 				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
 			}
-			response.cacheControl(getNoCacheCacheControl());
 			return response.build();
 		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);
