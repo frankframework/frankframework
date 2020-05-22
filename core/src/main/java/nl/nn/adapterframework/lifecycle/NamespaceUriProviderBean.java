@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.http.cxf.Endpoint;
+import org.apache.cxf.jaxws.EndpointImpl;
 import nl.nn.adapterframework.http.cxf.NamespaceUriProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
@@ -51,7 +51,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 
 	private Logger log = LogUtil.getLogger(this);
 	private ApplicationContext applicationContext;
-	private Endpoint namespaceRouter = null;
+	private EndpointImpl namespaceRouter = null;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -75,7 +75,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 			log.debug("default CXF SpringBus ["+bus.getId()+"]");
 
 			log.info("registering NamespaceURI Provider with JAX-WS CXF Dispatcher");
-			namespaceRouter = new Endpoint(bus, new NamespaceUriProvider());
+			namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
 			namespaceRouter.publish("/rpcrouter");
 
 			if(namespaceRouter.isPublished()) {
