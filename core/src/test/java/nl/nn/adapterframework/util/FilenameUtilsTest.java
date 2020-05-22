@@ -15,19 +15,11 @@ public class FilenameUtilsTest {
 
 
     /**
-     * Method: isSystemWindows()
-     */
-    @Test
-    public void testIsSystemWindows() throws Exception {
-        assertEquals(FilenameUtils.isSystemWindows(), true);
-    }
-
-    /**
      * Method: normalize(String filename)
      */
     @Test
     public void testNormalizeFilename() throws Exception {
-        assertEquals(FilenameUtils.normalize("/foo/../bar/../baz"), "\\baz");
+        assertEquals(FilenameUtils.normalize("/foo/../bar/../baz"), "/baz");
     }
 
     /**
@@ -43,7 +35,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testNormalizeNoEndSeparatorFilename() throws Exception {
-        assertEquals(FilenameUtils.normalizeNoEndSeparator("/foo//"), "\\foo");
+        assertEquals(FilenameUtils.normalizeNoEndSeparator("/foo//"), "/foo");
     }
 
     @Test
