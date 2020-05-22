@@ -81,7 +81,7 @@ public class FilenameUtilsTest {
     @Test
     public void testSeparatorsToSystem() throws Exception {
         if (FilenameUtils.isSystemWindows()) {
-            testSeparatorsToWindows();
+            assertEquals(FilenameUtils.separatorsToWindows("src/test/java/nl/nn/adapterframework/util"), "src\\test\\java\\nl\\nn\\adapterframework\\util");
         } else {
             testSeparatorsToUnix();
         }
