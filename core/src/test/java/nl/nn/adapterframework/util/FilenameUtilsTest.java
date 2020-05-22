@@ -48,7 +48,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testConcat() throws Exception {
-        assertEquals(FilenameUtils.concat("src\\test\\java\\nl\\nn\\adapterframework\\util", "test\\test.java"), "src\\test\\java\\nl\\nn\\adapterframework\\util\\test\\test.java");
+        assertEquals(FilenameUtils.concat("src\\test\\java\\nl\\nn\\adapterframework\\util", "test\\test.java"), "src/test/java/nl/nn/adapterframework/util/test/test.java");
     }
 
     /**
