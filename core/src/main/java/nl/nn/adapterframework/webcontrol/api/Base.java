@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
-import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
