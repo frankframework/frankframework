@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,18 @@ public abstract class Base {
 		}
 
 		return ibisManager;
+	}
+
+	/**
+	 * no-store, no-cache, must-revalidate, max-age=0
+	 */
+	protected CacheControl getNoCacheCacheControl() {
+		CacheControl cache = new CacheControl();
+		cache.setNoStore(true);
+		cache.setNoCache(true);
+		cache.setMustRevalidate(true);
+		cache.setMaxAge(0);
+		return cache;
 	}
 
 	public ClassLoader getClassLoader() {

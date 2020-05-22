@@ -61,6 +61,12 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	private TransformerPool transformerPoolConfig;
 	private Resource noImageAvailable;
 
+	/**
+	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
+	 * able to generate dot files and return the `noImageAvailable` image.
+	 */
+	@Autowired(required=false)
+	@Qualifier("flowGenerator")
 	private IFlowGenerator generator;
 
 	@Override
@@ -72,7 +78,9 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
 
 		if(generator == null) {
-			throw new IllegalStateException("no IFlowGenerator found");
+			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
+		} else {
+			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
 		}
 
 		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
@@ -81,18 +89,10 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		}
 	}
 
-	@Autowired
-	@Qualifier("flowGenerator")
-	public void setFlowGenerator(IFlowGenerator generator) {
-		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
-
-		this.generator = generator;
-	}
-
 	public InputStream get(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
-		if(!destFile.exists()) {
+		if(destFile == null || !destFile.exists()) {
 			return noImageAvailable.openStream();
 		}
 
@@ -102,7 +102,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	public InputStream get(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
-		if(!destFile.exists()) {
+		if(destFile == null || !destFile.exists()) {
 			return noImageAvailable.openStream();
 		}
 
@@ -112,7 +112,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	public InputStream get(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 
-		if(!destFile.exists()) {
+		if(destFile == null || !destFile.exists()) {
 			return noImageAvailable.openStream();
 		}
 
@@ -121,6 +121,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 
 	public void generate(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
+		if(destFile == null) return;
 
 		if(destFile.exists()) //If the file exists, update it
 			destFile.delete();
@@ -138,6 +139,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 
 	public void generate(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
+		if(destFile == null) return;
 
 		if(destFile.exists()) //If the file exists, update it
 			destFile.delete();
@@ -155,6 +157,8 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 
 	public void generate(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
+		if(destFile == null) return;
+
 		destFile.delete();
 
 		String dotOutput = null;
@@ -200,6 +204,10 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
+		if(generator == null) {
+			return null;
+		}
+
 		if (!parent.exists()) {
 			if (!parent.mkdirs()) {
 				throw new IllegalStateException(parent.getPath() + " does not exist and could not be created");
@@ -212,6 +220,7 @@ public class FlowDiagramManager implements InitializingBean, DisposableBean {
 		return new File(parent, name);
 	}
 
+	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String dot, File destination) throws IOException {
 		log.debug("generating flow diagram for " + name);
 		long start = System.currentTimeMillis();

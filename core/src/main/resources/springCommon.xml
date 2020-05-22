@@ -69,8 +69,8 @@
 	<bean
 		name="flowGenerator"
 		class="nl.nn.adapterframework.util.flow.V8FlowGenerator"
-		autowire="byName"
 		scope="singleton"
+		lazy-init="true"
 		>
 	</bean>
 
