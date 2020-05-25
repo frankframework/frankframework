@@ -169,10 +169,10 @@ public class TestMap2Xml extends AlignTestBase {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
 
-//	@Test
-//	@Ignore("Problem with converting property array into xml")
-//	public void testTextAndAttributes() throws Exception {
-//		super.testTextAndAttributes();
-//	}
+	@Test
+	@Ignore("Problem with converting property array into xml")
+	public void testTextAndAttributes() throws Exception {
+		super.testTextAndAttributes();
+	}
 
 }
