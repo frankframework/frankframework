@@ -312,6 +312,8 @@ public class Configuration {
 			String type = AppConstants.getInstance().getProperty("configurations."+name+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
+			} else {
+				return null;
 			}
 		}
 
