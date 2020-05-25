@@ -35,7 +35,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.XMLFilter;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -241,7 +241,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), invalidRootNamespaces);
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
-		XMLFilter storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
+		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
 		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context, false);
 		return determineForward(resultEvent, session, responseMode);
 	}
