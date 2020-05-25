@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,12 +29,16 @@ import nl.nn.adapterframework.align.content.JsonDocumentContainer;
  */
 public class Xml2Json extends XmlTo<JsonDocumentContainer> {
 
-	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement) {
-		super(aligner, new JsonDocumentContainer(null, skipArrayElementContainers,skipRootElement));
+	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement, String mixedContentLabel) {
+		super(aligner, new JsonDocumentContainer(null, skipArrayElementContainers,skipRootElement, mixedContentLabel));
 	}
 
 	public static JsonDocumentContainer translate(String xml, URL schemaURL, boolean compactJsonArrays, boolean skipRootElement) throws SAXException, IOException {
-		JsonDocumentContainer documentContainer = new JsonDocumentContainer(null, compactJsonArrays,skipRootElement);
+		return translate(xml, schemaURL, compactJsonArrays, skipRootElement, "text");
+	}
+	
+	public static JsonDocumentContainer translate(String xml, URL schemaURL, boolean compactJsonArrays, boolean skipRootElement, String mixedContentLabel) throws SAXException, IOException {
+		JsonDocumentContainer documentContainer = new JsonDocumentContainer(null, compactJsonArrays,skipRootElement, mixedContentLabel);
 		translate(xml, schemaURL, documentContainer);
 		return documentContainer;
 	}

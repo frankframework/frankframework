@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -209,9 +209,9 @@ public abstract class ToXml<C,N> extends XmlAligner {
 					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
 					//if (DEBUG) log.debug("startElement ["+localName+"] attributeUse ["+ToStringBuilder.reflectionToString(attributeUse)+"]");
 					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-					if (DEBUG) log.debug("node ["+name+"] attributeDeclaration ["+ToStringBuilder.reflectionToString(attributeDeclaration)+"]");
+					//if (DEBUG) log.debug("node ["+name+"] attributeDeclaration ["+ToStringBuilder.reflectionToString(attributeDeclaration)+"]");
 					XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
-					if (DEBUG) log.debug("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
+					//if (DEBUG) log.debug("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
 					String attName=attributeDeclaration.getName();
 					if (nodeAttributes.containsKey(attName)) {
 						String value=nodeAttributes.remove(attName);
@@ -260,6 +260,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
 				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+				handleSimpleTypedElement(elementDeclaration, null, node);
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:

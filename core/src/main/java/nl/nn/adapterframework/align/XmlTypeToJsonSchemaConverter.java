@@ -58,18 +58,20 @@ public class XmlTypeToJsonSchemaConverter  {
 	private boolean skipRootElement;
 	private String schemaLocation;
 	private String definitionsPath;
+	private String mixedContentLabel;
 
 	protected final boolean DEBUG=false; 
 
-	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation) {
-		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, "#/definitions/");
+	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String mixedContentLabel) {
+		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, "#/definitions/", mixedContentLabel);
 	}
-	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String definitionsPath) {
+	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String definitionsPath, String mixedContentLabel) {
 		this.models=models;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.skipRootElement=skipRootElement;
 		this.schemaLocation=schemaLocation;
 		this.definitionsPath=definitionsPath;
+		this.mixedContentLabel=mixedContentLabel;
 	}
 
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
@@ -171,6 +173,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
 				if (DEBUG) log.debug("getDefinition complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+				handleComplexTypeDefinitionOfSimpleContentType(complexTypeDefinition, shouldCreateReferences, builder);
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 				if (DEBUG) log.debug("getDefinition complexTypeDefinition.contentType is Element, complexTypeDefinition ["+ToStringBuilder.reflectionToString(complexTypeDefinition,ToStringStyle.MULTI_LINE_STYLE)+"]");
@@ -178,6 +181,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				break;
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
 				if (DEBUG) log.debug("getDefinition complexTypeDefinition.contentType is Mixed");
+				handleComplexTypeDefinitionOfSimpleContentType(complexTypeDefinition, shouldCreateReferences, builder);
 				break;
 			default:
 				throw new IllegalStateException("getDefinition complexTypeDefinition.contentType is not Empty,Simple,Element or Mixed, but ["+complexTypeDefinition.getContentType()+"]");
@@ -241,33 +245,39 @@ public class XmlTypeToJsonSchemaConverter  {
 				if (DEBUG) log.debug("handleComplexTypeDefinitionOfElementContentType creating ref!");
 
 				builder.add("$ref", definitionsPath+complexTypeDefinitionName);
-//				if(!namedJsonObjects.contains(complexTypeDefinitionName)){
-//					buildReference(complexTypeDefinition, complexTypeDefinitionName);
-//				}
 				return;
 			}
 		}
 		
 		XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
 
-		// Currently commented out because block has no effect
-
-		// if (attributeUses.getLength()>0) {
-		// 	for (int i=0; i<attributeUses.getLength(); i++) {
-		// 		XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
-		// 		if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Element, attribute ["+ToStringBuilder.reflectionToString(attributeUse.getAttrDeclaration(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-
-		// 		XSAttributeDeclaration attrDeclaration = attributeUse.getAttrDeclaration();
-		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getValueConstraintValue ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getTypeDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getTypeDefinition(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-		// 		if (DEBUG) log.debug("handleElementContents attrDeclaration.getEnclosingCTDefinition ["+ToStringBuilder.reflectionToString(attrDeclaration.getValueConstraintValue(),ToStringStyle.MULTI_LINE_STYLE)+"]");
-		// 	}
-		// }
-
 		XSParticle particle = complexTypeDefinition.getParticle();
 		handleParticle(builder, particle, attributeUses, false);
 	}
 	
+	
+	private void handleComplexTypeDefinitionOfSimpleContentType(XSComplexTypeDefinition complexTypeDefinition, boolean shouldCreateReferences, JsonObjectBuilder builder){
+		if(shouldCreateReferences){
+			String complexTypeDefinitionName = complexTypeDefinition.getName();
+
+			if(complexTypeDefinitionName == null && complexTypeDefinition.getContext() != null  && complexTypeDefinition.getContext().getNamespaceItem() != null){
+				complexTypeDefinitionName = complexTypeDefinition.getContext().getName(); // complex type definition name defaults to name of context
+			}
+
+			if(complexTypeDefinitionName != null){
+				if (!(complexTypeDefinitionName.equals("anyType") && complexTypeDefinition.getNamespace().endsWith(XML_SCHEMA_NS))) {
+					if (DEBUG) log.debug("handleComplexTypeDefinitionOfElementContentType creating ref!");
+					builder.add("$ref", definitionsPath+complexTypeDefinitionName);
+				}
+				
+				return;
+			}
+		}
+		
+		XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
+		
+		buildObject(builder, null, attributeUses, mixedContentLabel, complexTypeDefinition.getBaseType());
+	}
 	public void handleParticle(JsonObjectBuilder builder, XSParticle particle, XSObjectList attributeUses, boolean forProperties) {
 		if (particle==null) {
 			throw new NullPointerException("particle is null");
@@ -337,7 +347,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				return;
 			}
 		}
-		buildObject(builder, particles, attributeUses);
+		buildObject(builder, particles, attributeUses, null, null);
 	}
 
 	private void handleCompositorChoice(JsonObjectBuilder builder, XSObjectList particles, boolean forProperties){
@@ -411,7 +421,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		}
 	}
 
-	private void buildObject(JsonObjectBuilder builder, XSObjectList particles, XSObjectList attributeUses){
+	private void buildObject(JsonObjectBuilder builder, XSObjectList particles, XSObjectList attributeUses, String textAttribute, XSTypeDefinition baseType){
 		builder.add("type", "object");
 		builder.add("additionalProperties", false);
 		JsonObjectBuilder propertiesBuilder = Json.createObjectBuilder();
@@ -424,21 +434,27 @@ public class XmlTypeToJsonSchemaConverter  {
 				propertiesBuilder.add("@"+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), true));
 			}
 		}
-		for (int i=0;i<particles.getLength();i++) {
-			XSParticle childParticle = (XSParticle)particles.item(i);
-			if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-		
-			XSTerm childTerm = childParticle.getTerm();
-			if (childTerm instanceof XSElementDeclaration) {
-				XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
-				String elementName = elementDeclaration.getName();
-
-				if(elementName != null && childParticle.getMinOccurs() != 0){
-					requiredProperties.add(elementName);
-				}
-			}
+		if (textAttribute!=null && ((attributeUses!=null && attributeUses.getLength()>0) || (particles!=null && particles.getLength()>0))) {
+			JsonObject elementType = baseType!=null ? getDefinition(baseType, true) : Json.createObjectBuilder().add("type", "string").build();
+			propertiesBuilder.add(textAttribute, elementType);
+		}
+		if (particles!=null) {
+			for (int i=0;i<particles.getLength();i++) {
+				XSParticle childParticle = (XSParticle)particles.item(i);
+				if (DEBUG) log.debug("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 			
-			handleParticle(propertiesBuilder, childParticle, null, true);
+				XSTerm childTerm = childParticle.getTerm();
+				if (childTerm instanceof XSElementDeclaration) {
+					XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
+					String elementName = elementDeclaration.getName();
+	
+					if(elementName != null && childParticle.getMinOccurs() != 0){
+						requiredProperties.add(elementName);
+					}
+				}
+				
+				handleParticle(propertiesBuilder, childParticle, null, true);
+			}
 		}
 		builder.add("properties", propertiesBuilder.build());
 		if(requiredProperties.size() > 0){

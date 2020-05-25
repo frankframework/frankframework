@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	private boolean strictSyntax;
 	private boolean readAttributes=true;
 	private String attributePrefix="@";
+	private String mixedContentLabel;
 
 	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, insertElementContainerElements, rootElement, false);
@@ -132,6 +133,19 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	@Override
 	public JsonValue getRootNode(JsonValue container) {
 		return container;
+	}
+
+	@Override
+	public void handleElementContents(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+		if (node instanceof JsonObject) {
+			JsonObject object = (JsonObject)node;
+			if (object.containsKey(mixedContentLabel)) { // TODO: we might need to check if the elementDeclaration contains a subelement with the same name, or if the element is based on a simpleType...
+				JsonValue labelValue = object.get(mixedContentLabel);
+				super.handleElementContents(elementDeclaration, labelValue);
+				return;
+			}
+		} 
+		super.handleElementContents(elementDeclaration, node);
 	}
 
 
@@ -228,6 +242,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
+	
 	@Override
 	public Iterable<JsonValue> getNodeChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
@@ -293,16 +308,16 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	public static String translate(JsonStructure jsonStructure, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException, IOException {
 //		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
+		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null, "text");
 	}
 	
-	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
+	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues, String mixedContentLabel) throws SAXException, IOException {
 
 		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = sf.newSchema(schemaURL); 
 		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
+
 		// create the XSModel
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
@@ -314,21 +329,24 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		if (overrideValues!=null) {
 			j2x.setOverrideValues(overrideValues);
 		}
+		if (mixedContentLabel!=null) {
+			j2x.setMixedContentLabel(mixedContentLabel);
+		}
 		if (targetNamespace!=null) {
 			//if (DEBUG) System.out.println("setting targetNamespace ["+targetNamespace+"]");
 			j2x.setTargetNamespace(targetNamespace);
 		}
 		j2x.setDeepSearch(deepSearch);
-    	Source source=j2x.asSource(json);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        String xml=null;
+		Source source = j2x.asSource(json);
+		StringWriter writer = new StringWriter();
+		StreamResult result = new StreamResult(writer);
+		String xml = null;
 		try {
-	        TransformerFactory tf = TransformerFactory.newInstance();
-	        Transformer transformer = tf.newTransformer();
-	        transformer.transform(source, result);
-	        writer.flush();
-	        xml = writer.toString();
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+			transformer.transform(source, result);
+			writer.flush();
+			xml = writer.toString();
 		} catch (TransformerConfigurationException e) {
 			SAXException se = new SAXException(e);
 			se.initCause(e);
@@ -338,8 +356,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			se.initCause(e);
 			throw se;
 		}
-    	return xml;
- 	}
+		return xml;
+	}
 
 	public boolean isReadAttributes() {
 		return readAttributes;
@@ -353,6 +371,13 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	public void setAttributePrefix(String attributePrefix) {
 		this.attributePrefix = attributePrefix;
+	}
+
+	public String getMixedContentLabel() {
+		return mixedContentLabel;
+	}
+	public void setMixedContentLabel(String mixedContentLabel) {
+		this.mixedContentLabel = mixedContentLabel;
 	}
 
 }

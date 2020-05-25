@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,21 +39,23 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	private boolean skipArrayElementContainers;
 	private boolean skipRootElement;
 	private String attributePrefix="@";
+	private String mixedContentLabel;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
 	
 	private final boolean DEBUG=false; 	
 	
-	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
+	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement, String mixedContentLabel) {
 		this.name=name;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.skipRootElement=skipRootElement;
+		this.mixedContentLabel=mixedContentLabel;
 	}
 	
 	@Override
 	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
-		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, typeDefinition);
+		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, mixedContentLabel, typeDefinition);
 	}
 
 	@Override
@@ -62,24 +64,6 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		parent.addContent(child);
 	}
 
-//	@Override
-//	protected void addElementContent(JsonNodeContainer parent, JsonNodeContainer child) {
-//		if (DEBUG) log.debug("DocCont.addElementContent (do nothing) name ["+parent.getName()+"] child ["+child.getName()+"]");
-//	}
-
-	
-
-
-//	public JSONObject toJson() {
-//		Object content=getRoot().getContent();
-//		if (content==null) {
-//			return null;
-//		}
-//		if (content instanceof JSONObject) {
-//			return (JSONObject)content;
-//		}
-//		return new JSONObject(content);
-//	}
 	
 	@Override
 	public String toString() {

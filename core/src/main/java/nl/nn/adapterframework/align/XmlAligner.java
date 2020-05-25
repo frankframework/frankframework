@@ -54,13 +54,6 @@ public class XmlAligner extends XMLFilterImpl {
 	public final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
 	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
-	private final int CHILD_OCCURRENCE_EMPTY=0;
-	private final int CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT=1;
-	private final int CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT=2;
-	private final int CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING=3;
-
-	private final String[] CHILD_OCCURRENCE_DESCRIPTION={"Empty","OneSingle","OneMultiOcc","Mixed"};
-	
 	private PSVIProvider psviProvider;
 	private boolean indent=true;
 	private final boolean DEBUG=false; 
@@ -80,6 +73,10 @@ public class XmlAligner extends XMLFilterImpl {
 
 	public String XML_SCHEMA_INSTANCE_NAMESPACE="http://www.w3.org/2001/XMLSchema-instance";
 	public String XML_SCHEMA_NIL_ATTRIBUTE="nil";
+
+	private enum ChildOccurrence {
+		EMPTY,ONE_SINGLE_OCCURRING_ELEMENT,ONE_MULTIPLE_OCCURRING_ELEMENT,MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING
+	}
 
 	
 	public XmlAligner() {
@@ -126,7 +123,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (typeDefinition instanceof XSComplexTypeDefinition) {
 			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
 			multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
-			parentOfSingleMultipleOccurringChildElement=(CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
+			parentOfSingleMultipleOccurringChildElement=(ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
 			if (DEBUG) log.debug("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
 		} else {
 			multipleOccurringChildElements=null;
@@ -171,10 +168,10 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 	
 	
-	protected int determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
+	protected ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
 		if (particle==null) {
 			log.warn("Particle is null, is this a problem? Appearantly not");
-			return CHILD_OCCURRENCE_EMPTY;
+			return ChildOccurrence.EMPTY;
 		} 
 		XSTerm term = particle.getTerm();
 		if (term==null) {
@@ -189,51 +186,51 @@ public class XmlAligner extends XMLFilterImpl {
 			case XSModelGroup.COMPOSITOR_SEQUENCE:
 			case XSModelGroup.COMPOSITOR_ALL: {
 				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all particles ["+ToStringBuilder.reflectionToString(particles)+"]");
-				int result=CHILD_OCCURRENCE_EMPTY;
+				ChildOccurrence result=ChildOccurrence.EMPTY;
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
-					int current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, particle ["+i+"] current result ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
+					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, particle ["+i+"] current result ["+current+"]");
 					switch (current) {
-					case CHILD_OCCURRENCE_EMPTY:
+					case EMPTY:
 						break;
-					case CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT:
-					case CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT:
-						if (result>CHILD_OCCURRENCE_EMPTY) {
-							if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, result ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"] current ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
-							return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+					case ONE_SINGLE_OCCURRING_ELEMENT:
+					case ONE_MULTIPLE_OCCURRING_ELEMENT:
+						if (result.ordinal()>ChildOccurrence.EMPTY.ordinal()) {
+							if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, result ["+result+"] current ["+current+"]");
+							return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 						}
 						result=current;
 						break;
-					case CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
-						return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+					case MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
+						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 					default:
-						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
+						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+current+"]");
 					}
 				}
-				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of sequence or all, returning ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"]");
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of sequence or all, returning ["+result+"]");
 				return result;
 			}
 			case XSModelGroup.COMPOSITOR_CHOICE: {
 				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice particles ["+ToStringBuilder.reflectionToString(particles)+"]");
 				if (particles.getLength()==0) {
-					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice length 0, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
-					return CHILD_OCCURRENCE_EMPTY;
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice length 0, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+					return ChildOccurrence.EMPTY;
 				}
-				int result=determineIsParentOfSingleMultipleOccurringChildElement((XSParticle)particles.item(0));
-				if (result==CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
-					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice single mixed, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
-					return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+				ChildOccurrence result=determineIsParentOfSingleMultipleOccurringChildElement((XSParticle)particles.item(0));
+				if (result==ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice single mixed, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+					return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 				}
 				for (int i=1;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
-					int current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
 					if (current!=result) {
-						if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() break out of choice, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
-						return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+						if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() break out of choice, returning ["+ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING+"]");
+						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 					}
 				}
-				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of choice, returning ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"]");
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of choice, returning ["+result+"]");
 				return result;
 			}
 			default:
@@ -245,15 +242,15 @@ public class XmlAligner extends XMLFilterImpl {
 			String elementName=elementDeclaration.getName();
 			if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() ElementDeclaration name ["+elementName+"] unbounded ["+particle.getMaxOccursUnbounded()+"] maxOccurs ["+particle.getMaxOccurs()+"]");
 			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
-				return CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT;
+				return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
 			}
 			if (particle.getMaxOccurs()==1) {
-				return CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT;
+				return ChildOccurrence.ONE_SINGLE_OCCURRING_ELEMENT;
 			} 
-			return CHILD_OCCURRENCE_EMPTY;
+			return ChildOccurrence.EMPTY;
 		}
 		if (term instanceof XSWildcard) {
-			return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+			return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 		} 
 		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 	}
