@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
