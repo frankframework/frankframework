@@ -108,11 +108,11 @@ public class TestLogMessages {
 			assertEquals(6, logEvents.size());
 
 			String expectedWarn = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
+			"  <message>my beautiful warning &amp;lt;![CDATA[message]]&amp;gt; for me &amp;amp; you --&amp;gt; &amp;quot;world&amp;quot;</message>\n" + 
 			"  <throwable />\n" + 
 			"</event>";
 			String expectedError = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
+			"  <message>my beautiful error &amp;lt;![CDATA[message]]&amp;gt; for me &amp;amp; you --&amp;gt; &amp;quot;world&amp;quot;</message>\n" + 
 			"  <throwable />\n" + 
 			"</event>";
 
