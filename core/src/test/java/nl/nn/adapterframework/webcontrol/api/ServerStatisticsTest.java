@@ -54,6 +54,6 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(200, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		assertEquals("{myConfiguration={errorStoreCount=0}, totalErrorStoreCount=0}", response.getEntity().toString());
+		assertEquals("{myConfiguration={errorStoreCount=0, warnings=[hello I am a configuration warning!]}, totalErrorStoreCount=0}", response.getEntity().toString());
 	}
 }

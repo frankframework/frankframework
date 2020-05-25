@@ -38,6 +38,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -52,8 +53,11 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	@Before
 	public void setUp() {
 		M resource = createJaxRsResource();
-		checkRequestField(resource);
+		checkContextFields(resource);
 		jaxRsResource = spy(resource);
+
+		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
+		globalConfigWarnings.clear();
 
 		MockServletContext servletContext = new MockServletContext();
 		MockServletConfig servletConfig = new MockServletConfig(servletContext, "JAX-RS-MockDispatcher");
@@ -69,7 +73,8 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		dispatcher.register(jaxRsResource);
 	}
 
-	public void checkRequestField(M resource) {
+	//This has to happen before it's proxied by Mockito (spy method)
+	public void checkContextFields(M resource) {
 		for(Field field : resource.getClass().getDeclaredFields()) {
 			Context context = AnnotationUtils.findAnnotation(field, Context.class); //Injected JAX-WS Resources
 
@@ -107,7 +112,8 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		}
 
 		//Uppercase method, make sure url begins with a /
-		public String compileKey(String method, String url) {
+		public String compileKey(String method, String path) {
+			String url = path; //May contain QueryParameters
 			if(!url.startsWith("/")) {
 				url = "/"+url;
 			}
@@ -126,7 +132,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			Method method = rsRequests.get(rsResourceKey);
 //			Class<?>[] parameters = method.getParameterTypes();
 			try {
-				Object[] object = new Object[0];
+				Object[] object = new Object[0]; //TODO: figure out how to deal with QueryParams and MultipartRequests
 				Response response = spy( (Response) method.invoke(jaxRsResource, object));
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);

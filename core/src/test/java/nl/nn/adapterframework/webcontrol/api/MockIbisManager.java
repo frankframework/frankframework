@@ -1,3 +1,18 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.webcontrol.api;
 
 import static org.junit.Assert.fail;
@@ -6,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.AdapterServiceImpl;
+import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -19,9 +36,9 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class MockIbisManager implements IbisManager {
-	IbisContext ibisContext = null;
-	List<Configuration> configurations = new ArrayList<Configuration>();
+public class MockIbisManager extends Mockito implements IbisManager {
+	private IbisContext ibisContext = null;
+	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
 		AdapterService adapterService = new AdapterServiceImpl();
@@ -32,8 +49,11 @@ public class MockIbisManager implements IbisManager {
 		} catch (ConfigurationException e) {
 			fail("error registering adapter ["+adapter+"]");
 		}
-		Configuration mockConfiguration = new Configuration(adapterService);
+		Configuration mockConfiguration = spy(new Configuration(adapterService));
 		mockConfiguration.setName("myConfiguration");
+		BaseConfigurationWarnings warnings = new BaseConfigurationWarnings();
+		warnings.add("hello I am a configuration warning!");
+		doReturn(warnings).when(mockConfiguration).getConfigurationWarnings();
 		configurations.add(mockConfiguration);
 	}
 
@@ -131,15 +151,16 @@ public class MockIbisManager implements IbisManager {
 
 	@Override
 	public void dumpStatistics(int action) {
+		//There are no statistics to dump
 	}
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		//Unused Spring event publisher
 	}
 
 	@Override
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return null;
 	}
-
 }
