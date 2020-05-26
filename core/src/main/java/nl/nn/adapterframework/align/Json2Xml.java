@@ -363,18 +363,4 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		this.readAttributes = readAttributes;
 	}
 
-	public String getAttributePrefix() {
-		return attributePrefix;
-	}
-	public void setAttributePrefix(String attributePrefix) {
-		this.attributePrefix = attributePrefix;
-	}
-
-	public String getMixedContentLabel() {
-		return mixedContentLabel;
-	}
-	public void setMixedContentLabel(String mixedContentLabel) {
-		this.mixedContentLabel = mixedContentLabel;
-	}
-
 }
