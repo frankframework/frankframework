@@ -52,7 +52,6 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private boolean writeAttributes=true;
-	private boolean DEBUG=false; 
 
 	private XmlAligner aligner;
 	
@@ -73,16 +72,16 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XSTypeDefinition typeDefinition=aligner.getTypeDefinition();
 		if (!localName.equals(topElement)) {
 			if (topElement!=null) {
-				if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+				if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
 				documentContainer.endElementGroup(topElement);	
 			}
-			if (DEBUG) log.debug("startElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
 			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);	
 			topElement=localName;			
 		}
 		element.push(topElement);
 		topElement=null;
-		if (DEBUG) log.debug("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
+		if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
 		documentContainer.startElement(localName,xmlArrayContainer,repeatedElement, typeDefinition);
 		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
@@ -101,11 +100,11 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 						XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
 						String attName=attributeDeclaration.getName();
 						String attNS=attributeDeclaration.getNamespace();
-						if (DEBUG) log.debug("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
+						if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
 						int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
 						if (attIndex>=0) {
 							String value=atts.getValue(attIndex);
-							if (DEBUG) log.debug("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
 							if (StringUtils.isNotEmpty(value)) {
 								documentContainer.setAttribute(attName, value, attTypeDefinition);
 							}
@@ -119,15 +118,15 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {
-			if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
 			documentContainer.endElementGroup(topElement);	
 		}
 		topElement=element.pop();
-		if (DEBUG) log.debug("endElement ["+localName+"]");
+		if (log.isTraceEnabled()) log.trace("endElement ["+localName+"]");
 		documentContainer.endElement(localName);
 		super.endElement(uri, localName, qName);
 		if (element.isEmpty()) {
-			if (DEBUG) log.debug("endElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup ["+localName+"]");
 			documentContainer.endElementGroup(localName);
 		}
 	}
@@ -136,8 +135,8 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		XSSimpleType simpleType=aligner.getElementType();
 		ScalarType scalarType=ScalarType.findType(simpleType);
-		if (DEBUG && simpleType!=null) {
-			log.debug("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
+		if (log.isTraceEnabled() && simpleType!=null) {
+			log.trace("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
 		}
 		documentContainer.characters(ch, start, length);
 		super.characters(ch, start, length);

@@ -26,8 +26,8 @@ public abstract class AlignTestBase {
 		testFiles(schemaFile, namespace, rootElement, inputFile, false, null);
 	}
 
-	public URL getSchemaURL(String schemaFile) {
-		URL result=AlignTestBase.class.getResource(BASEDIR+schemaFile);
+	public URL getSchemaURL(String schemaFile) throws IOException {
+		URL result=TestFileUtils.getTestFileURL(BASEDIR+schemaFile);
 		if (result==null) {
 			fail("cannot find schema ["+schemaFile+"]");
 		}

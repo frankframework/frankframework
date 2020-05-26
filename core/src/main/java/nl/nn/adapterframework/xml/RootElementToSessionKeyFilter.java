@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.xml;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import liquibase.util.StringUtils;
 import nl.nn.adapterframework.core.IPipeLineSession;
 
 public class RootElementToSessionKeyFilter extends FullXmlFilter {

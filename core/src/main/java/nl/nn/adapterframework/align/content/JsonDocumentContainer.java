@@ -44,8 +44,6 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
 	
-	private final boolean DEBUG=false; 	
-	
 	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name=name;
 		this.skipArrayElementContainers=skipArrayElementContainers;
@@ -59,7 +57,7 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
-		if (DEBUG) log.debug("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
+		if (log.isTraceEnabled()) log.trace("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
 		parent.addContent(child);
 	}
 

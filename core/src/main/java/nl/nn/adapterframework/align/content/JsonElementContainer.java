@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -30,7 +31,6 @@ import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
-import liquibase.util.StringUtils;
 import nl.nn.adapterframework.align.ScalarType;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -55,8 +55,6 @@ public class JsonElementContainer implements ElementContainer {
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
-	private final boolean DEBUG=false;
-	
 	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix, String mixedContentLabel, XSTypeDefinition typeDefinition) {
 		this.name=name;
 		this.xmlArrayContainer=xmlArrayContainer;
@@ -73,17 +71,17 @@ public class JsonElementContainer implements ElementContainer {
 				XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 				switch (complexTypeDefinition.getContentType()) {
 				case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
-					if (DEBUG) log.debug("JsonElementContainer complexTypeDefinition.contentType is Empty, no child elements");
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Empty, no child elements");
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
-					if (DEBUG) log.debug("JsonElementContainer complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Simple, no child elements (only characters)");
 					setType(ScalarType.findType((XSSimpleType)complexTypeDefinition.getBaseType()));
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
-					if (DEBUG) log.debug("JsonElementContainer complexTypeDefinition.contentType is Element");
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Element");
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
-					if (DEBUG) log.debug("JsonElementContainer complexTypeDefinition.contentType is Mixed");
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Mixed");
 					break;
 				}
 			}
@@ -115,11 +113,11 @@ public class JsonElementContainer implements ElementContainer {
 	 * Sets the Text content of the current object
 	 */
 	public void setContent(String content) {
-		if (DEBUG) log.debug("setContent name ["+getName()+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("setContent name ["+getName()+"] content ["+content+"]");
 		if (content!=null) {
 			boolean whitespace=content.trim().isEmpty();
 			if (whitespace && stringContent==null) {
-				if (DEBUG) log.debug("setContent ignoring empty content for name ["+getName()+"]");
+				if (log.isTraceEnabled()) log.trace("setContent ignoring empty content for name ["+getName()+"]");
 				return;
 			}
 		}
@@ -150,7 +148,7 @@ public class JsonElementContainer implements ElementContainer {
 			} else {
 				stringContent+=content;
 			}
-			if (DEBUG) log.debug("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
+			if (log.isTraceEnabled()) log.trace("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
 		}
 	}
 	
@@ -159,7 +157,7 @@ public class JsonElementContainer implements ElementContainer {
 	 */
 	public void addContent(JsonElementContainer content) {
 		String childName=content.getName();
-		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
 		if (stringContent!=null) {
 			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
@@ -221,7 +219,7 @@ public class JsonElementContainer implements ElementContainer {
 	        case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+				if (log.isTraceEnabled()) log.trace("getContent quoted stringContent ["+stringContent+"]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
 				String result=ESCAPE_JSON.translate(stringContent.toString()); 
 				return '"'+result+'"';
