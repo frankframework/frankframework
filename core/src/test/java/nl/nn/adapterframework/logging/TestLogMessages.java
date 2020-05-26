@@ -245,7 +245,7 @@ public class TestLogMessages {
 
 	@Test(expected = IllegalStateException.class)
 	public void throwExceptionWhenOldLog4jVersion() throws Exception {
-		URL log4jOld = TestFileUtils.getTestFileURL("/logging/log4j-old.xml");
+		URL log4jOld = TestFileUtils.getTestFileURL("/Logging/log4j-old.xml");
 		assertNotNull("cannot find log4j-old.xml", log4jOld);
 		InputStream oldLog4jConfiguration = log4jOld.openStream();
 		IbisLoggerConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
@@ -253,12 +253,12 @@ public class TestLogMessages {
 
 	@Test
 	public void readLog4jConfiguration() throws Exception {
-		URL log4jNew = TestFileUtils.getTestFileURL("/logging/log4j-new.xml");
+		URL log4jNew = TestFileUtils.getTestFileURL("/Logging/log4j-new.xml");
 		assertNotNull("cannot find log4j-new.xml", log4jNew);
 		InputStream newLog4jConfiguration = log4jNew.openStream();
 
 		String config = IbisLoggerConfigurationFactory.readLog4jConfiguration(newLog4jConfiguration);
-		String expected = TestFileUtils.getTestFile("/logging/log4j-new.xml");
+		String expected = TestFileUtils.getTestFile("/Logging/log4j-new.xml");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, config);
 	}
 }

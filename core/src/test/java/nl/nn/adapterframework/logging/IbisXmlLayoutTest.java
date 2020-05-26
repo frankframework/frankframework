@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.logging;
 
+import java.io.IOException;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.impl.MutableLogEvent;
@@ -23,6 +25,7 @@ import org.apache.logging.log4j.message.SimpleMessage;
 import org.junit.Test;
 
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * This class tests StringLayouts without starting/using log4j2.
@@ -82,6 +85,17 @@ public class IbisXmlLayoutTest {
 				"  <message>my &lt;![CDATA[cdata]]&gt; test message with \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  unicode!</message>\n" + 
 				"  <throwable />\n" + 
 				"</event>", result.trim());
+	}
+
+	@Test
+	public void testPdfParsedWithWrongCharset() throws IOException {
+		String pfd = TestFileUtils.getTestFile("/Logging/pdf-parsed-with-wrong-charset.pdf");
+		String expected = TestFileUtils.getTestFile("/Logging/xml-of-pdf-file.log");
+
+		LogEvent logEvent = generateLogEvent(pfd);
+		String actual = layout.toSerializable(logEvent);
+
+		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
 
 	@Test
