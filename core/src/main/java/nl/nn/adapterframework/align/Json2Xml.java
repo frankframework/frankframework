@@ -137,7 +137,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	public void handleElementContents(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		if (node instanceof JsonObject) {
 			JsonObject object = (JsonObject)node;
-			if (object.containsKey(mixedContentLabel)) { // TODO: we might need to check if the elementDeclaration contains a subelement with the same name, or if the element is based on a simpleType...
+			if (object.containsKey(mixedContentLabel)) {
 				JsonValue labelValue = object.get(mixedContentLabel);
 				super.handleElementContents(elementDeclaration, labelValue);
 				return;
