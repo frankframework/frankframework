@@ -181,16 +181,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected Message itemToMessage(I item) throws SenderException {
 		return Message.asMessage(item);
 	}
-
+	
 	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
 		IDataIterator<I> it=null;
+		it = getIterator(input,session, threadContext);
 		try {
-			it = getIterator(input,session, threadContext);
-			if (it==null) {
-				 throw new SenderException("Could not obtain iterator");
-			} else {
+			callback.startIterating();
+			if (it!=null) {
 				try {
-					callback.startIterating();
 					boolean keepGoing = true;
 					while (keepGoing && (it.hasNext())) {
 						if (Thread.currentThread().isInterrupted()) {
@@ -199,19 +197,17 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
  						keepGoing = callback.handleItem(getItem(it));
 					}
 				} finally {
-					callback.endIterating();
+					try {
+						if (isCloseIteratorOnExit()) {
+							it.close();
+						}
+					} catch (Exception e) {
+						log.warn("Exception closing iterator", e);
+					} 
 				}
 			}
 		} finally {
-			if (it!=null) {
-				try {
-					if (isCloseIteratorOnExit()) {
-						it.close();
-					}
-				} catch (Exception e) {
-					log.warn("Exception closing iterator", e);
-				} 
-			}
+			callback.endIterating();
 		}
 	}
 
