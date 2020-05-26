@@ -27,11 +27,12 @@ import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonStructure;
-import javax.xml.transform.Source;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
@@ -49,6 +50,9 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
 *<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
@@ -84,7 +88,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private boolean acceptNamespaceLessXml=false;
 	private boolean produceNamespaceLessXml=false;
 	private boolean validateJsonToRootElementOnly=true;
-
 
 	{
 		setSoapNamespace("");
@@ -199,10 +202,19 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
+		
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
-		aligner.setContentHandler(xml2json);
+
+		XMLFilter sourceFilter = aligner;
+		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
+			XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null);
+			aligner.setContentHandler(storeRootFilter);
+			sourceFilter=storeRootFilter;
+		}
+		
+		sourceFilter.setContentHandler(xml2json);
 		aligner.setErrorHandler(context.getErrorHandler());
 		
 		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
@@ -247,14 +259,29 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 			
+			XMLFilter sourceFilter = aligner;
+			if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
+				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null);
+				aligner.setContentHandler(storeRootFilter);
+				sourceFilter=storeRootFilter;
+			}
+			
 			if (getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
-				aligner.setContentHandler(xml2json);
+				sourceFilter.setContentHandler(xml2json);
 				aligner.startParse(jsonStructure);
 				out=xml2json.toString();
 			} else {
-				Source source = aligner.asSource(jsonStructure);
-				out = XmlUtils.source2String(source,isProduceNamespaceLessXml());
+				if (isProduceNamespaceLessXml()) {
+					XMLFilterImpl removeNamespaces = new NamespaceRemovingFilter();
+					sourceFilter.setContentHandler(removeNamespaces);
+					sourceFilter=removeNamespaces;
+				}
+				XmlWriter xmlWriter = new XmlWriter();
+				xmlWriter.setIncludeXmlDeclaration(true);
+				sourceFilter.setContentHandler(xmlWriter);
+				aligner.startParse(jsonStructure);
+				out = xmlWriter.toString();
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -268,8 +295,18 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public String addNamespace(String xml) {
 		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
 			return xml;
-		}	
-		String namespace = getSchemaLocation().split(" ")[0];
+		}
+		String namespace=null;
+		if (StringUtils.isNotEmpty(getTargetNamespace())) {
+			namespace = getTargetNamespace();
+		} else {
+			if (StringUtils.isNotEmpty(getSchemaLocation())) { 
+				namespace = getSchemaLocation().split(" ")[0];
+			}
+		}
+		if (namespace==null) {
+			return xml;
+		}
 		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
 		int startPos=0;
 		if (xml.trim().startsWith("<?")) {
@@ -433,6 +470,5 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public boolean isValidateJsonToRootElementOnly() {
 		return validateJsonToRootElementOnly;
 	}
-
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,9 +30,11 @@ import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -55,9 +57,11 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.Schema;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
+import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
@@ -85,7 +89,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private String responseRoot;
 	private boolean forwardFailureToSuccess = false;
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
- 
+	private String rootElementSessionKey;
+
 
 	private Set<List<String>> requestRootValidations;
 	private Set<List<String>> responseRootValidations;
@@ -233,7 +238,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(responseMode), getInvalidRootNamespaces(), false);
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
+		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
+		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context, false);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -863,5 +871,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public String getSoapNamespace() {
 		return soapNamespace;
 	}
+
+	public void setRootElementSessionKey(String rootElementSessionKey) {
+		this.rootElementSessionKey = rootElementSessionKey;
+	}
+	public String getRootElementSessionKey() {
+		return rootElementSessionKey;
+	}
+
 
 }
