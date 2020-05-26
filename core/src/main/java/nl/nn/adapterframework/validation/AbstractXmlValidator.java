@@ -176,10 +176,11 @@ public abstract class AbstractXmlValidator {
 		if (filter != null) {
 			filter.setContentHandler(context.getContentHandler());
 			filter.setErrorHandler(context.getErrorHandler());
+			validatorHandler.setContentHandler(filter);
 		} else {
 			validatorHandler.setContentHandler(context.getContentHandler());
-			validatorHandler.setErrorHandler(context.getErrorHandler());
 		}
+		validatorHandler.setErrorHandler(context.getErrorHandler());
 
 		InputSource is = getInputSource(Message.asMessage(input));
 
