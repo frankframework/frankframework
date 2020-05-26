@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -239,7 +239,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), invalidRootNamespaces);
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
 		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
 		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context, false);
