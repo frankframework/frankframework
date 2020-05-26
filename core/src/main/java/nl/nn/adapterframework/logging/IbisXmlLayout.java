@@ -104,7 +104,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		public void setElementContent(String value) {
 			if (value != null) {
-				element.setText(StringEscapeUtils.escapeXml11(value));
+				//Escape illegal JDOM characters
+				element.setText(StringEscapeUtils.escapeJava(value));
 			}
 		}
 
