@@ -67,7 +67,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	private boolean strictSyntax;
 	private boolean readAttributes=true;
 	private String attributePrefix="@";
-	private String mixedContentLabel;
+	private String mixedContentLabel="#text";
 
 	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, insertElementContainerElements, rootElement, false);
@@ -308,10 +308,10 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	public static String translate(JsonStructure jsonStructure, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException, IOException {
 //		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null, "text");
+		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
 	}
 	
-	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues, String mixedContentLabel) throws SAXException, IOException {
+	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
 
 		// create the ValidatorHandler
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -328,9 +328,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays,rootElement,strictSyntax);
 		if (overrideValues!=null) {
 			j2x.setOverrideValues(overrideValues);
-		}
-		if (mixedContentLabel!=null) {
-			j2x.setMixedContentLabel(mixedContentLabel);
 		}
 		if (targetNamespace!=null) {
 			//if (DEBUG) System.out.println("setting targetNamespace ["+targetNamespace+"]");

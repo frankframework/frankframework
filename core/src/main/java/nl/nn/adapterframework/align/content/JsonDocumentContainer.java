@@ -39,18 +39,17 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	private boolean skipArrayElementContainers;
 	private boolean skipRootElement;
 	private String attributePrefix="@";
-	private String mixedContentLabel;
+	private String mixedContentLabel="#text";
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
 	
 	private final boolean DEBUG=false; 	
 	
-	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement, String mixedContentLabel) {
+	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name=name;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.skipRootElement=skipRootElement;
-		this.mixedContentLabel=mixedContentLabel;
 	}
 	
 	@Override

@@ -88,7 +88,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private boolean acceptNamespaceLessXml=false;
 	private boolean produceNamespaceLessXml=false;
 	private boolean validateJsonToRootElementOnly=true;
-	private String mixedContentLabel="text";
 
 	{
 		setSoapNamespace("");
@@ -206,7 +205,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
 		XmlAligner aligner = new XmlAligner(validatorHandler);
-		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements(), getMixedContentLabel());
+		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 
 		XMLFilter sourceFilter = aligner;
 		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
@@ -242,9 +241,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
-			if (StringUtils.isNotEmpty(getMixedContentLabel())) {
-				aligner.setMixedContentLabel(getMixedContentLabel());
-			}
 			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
 			aligner.setFailOnWildcards(isFailOnWildcards());
@@ -271,7 +267,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 			
 			if (getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
-				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements(), getMixedContentLabel());
+				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				sourceFilter.setContentHandler(xml2json);
 				aligner.startParse(jsonStructure);
 				out=xml2json.toString();
@@ -335,7 +331,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath, getMixedContentLabel());
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath);
 		JsonObject jsonschema = converter.getDefinitions();
 		return jsonschema;
 	}
@@ -344,7 +340,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), getMixedContentLabel());
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation());
 		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
 		return jsonschema;
 	}
@@ -474,14 +470,5 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public boolean isValidateJsonToRootElementOnly() {
 		return validateJsonToRootElementOnly;
 	}
-
-	@IbisDoc({"14", "Property to use for element content when element has attributes too", "text"})
-	public void setMixedContentLabel(String mixedContentLabel) {
-		this.mixedContentLabel = mixedContentLabel;
-	}
-	public String getMixedContentLabel() {
-		return mixedContentLabel;
-	}
-
 
 }

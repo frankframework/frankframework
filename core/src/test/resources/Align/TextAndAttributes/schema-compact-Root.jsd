@@ -10,7 +10,7 @@
                 "@id":{
                     "type":"string"
                 },
-                "text":{
+                "#text":{
                     "type":"integer"
                 }
             }
@@ -25,7 +25,7 @@
                 "@y":{
                     "type":"integer"
                 },
-                "text":{
+                "#text":{
                 }
             }
         },
@@ -38,7 +38,7 @@
                     "@name":{
                         "type":"string"
                     },
-                    "text":{
+                    "#text":{
                         "type":"string"
                     }
                 }

@@ -27,7 +27,7 @@ public class TestJson2Xml extends AlignTestBase {
 		Object json = Utils.string2Json(jsonIn);
 		try {
 			JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
-			String xmlAct = Json2Xml.translate(jsonStructure, schemaUrl, compactConversion, rootElement, strictSyntax, deepSearch, targetNamespace, properties,"text");
+			String xmlAct = Json2Xml.translate(jsonStructure, schemaUrl, compactConversion, rootElement, strictSyntax, deepSearch, targetNamespace, properties);
 	    	System.out.println("xml out="+xmlAct);
 	    	if (expectedFailureReason!=null) {
 	    		fail("Expected to fail: "+description);

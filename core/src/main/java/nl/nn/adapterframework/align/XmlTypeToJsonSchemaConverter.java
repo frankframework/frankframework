@@ -58,20 +58,20 @@ public class XmlTypeToJsonSchemaConverter  {
 	private boolean skipRootElement;
 	private String schemaLocation;
 	private String definitionsPath;
-	private String mixedContentLabel;
+	private String attributePrefix="@";
+	private String mixedContentLabel="#text";
 
 	protected final boolean DEBUG=false; 
 
-	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String mixedContentLabel) {
-		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, "#/definitions/", mixedContentLabel);
+	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation) {
+		this(models, skipArrayElementContainers, skipRootElement, schemaLocation, "#/definitions/");
 	}
-	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String definitionsPath, String mixedContentLabel) {
+	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation, String definitionsPath) {
 		this.models=models;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.skipRootElement=skipRootElement;
 		this.schemaLocation=schemaLocation;
 		this.definitionsPath=definitionsPath;
-		this.mixedContentLabel=mixedContentLabel;
 	}
 
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
@@ -431,7 +431,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			for (int i=0; i< attributeUses.getLength(); i++) {
 				XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
 				XSAttributeDeclaration attributeDecl = attributeUse.getAttrDeclaration();
-				propertiesBuilder.add("@"+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), true));
+				propertiesBuilder.add(attributePrefix+attributeDecl.getName(), getDefinition(attributeDecl.getTypeDefinition(), true));
 			}
 		}
 		if (textAttribute!=null && ((attributeUses!=null && attributeUses.getLength()>0) || (particles!=null && particles.getLength()>0))) {
