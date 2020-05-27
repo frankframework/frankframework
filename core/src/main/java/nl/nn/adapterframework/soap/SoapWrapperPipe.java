@@ -69,14 +69,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SoapWrapperPipe extends FixedForwardPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
-	protected static final String DEFAULT_SOAP_VERSION_SESSION_KEY = "soapVersion";
+	protected static final String DEFAULT_SOAP_NAMESPACE_SESSION_KEY = "soapNamespace";
 
 	protected static final SoapVersion DEFAULT_SOAP_VERSION_FOR_WRAPPING = SoapVersion.SOAP11;
 
 	private String direction = "wrap";
 	private SoapVersion soapVersion = SoapVersion.AUTO;
-	private String soapVersionSessionKey = null;
 	private String soapNamespace = null;
+	private String soapNamespaceSessionKey = null;
 	private String soapHeaderSessionKey = null;
 	private String encodingStyle = null;
 	private String serviceNamespace = null;
@@ -118,13 +118,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}
-			if (StringUtils.isEmpty(getSoapVersionSessionKey())) {
-				setSoapVersionSessionKey(DEFAULT_SOAP_VERSION_SESSION_KEY);
+			if (StringUtils.isEmpty(getSoapNamespaceSessionKey())) {
+				setSoapNamespaceSessionKey(DEFAULT_SOAP_NAMESPACE_SESSION_KEY);
 			}
 		}
 		if ("wrap".equalsIgnoreCase(getDirection()) && PipeLine.OUTPUT_WRAPPER_NAME.equals(getName())) {
-			if (StringUtils.isEmpty(getSoapVersionSessionKey())) {
-				setSoapVersionSessionKey(DEFAULT_SOAP_VERSION_SESSION_KEY);
+			if (StringUtils.isEmpty(getSoapNamespaceSessionKey())) {
+				setSoapNamespaceSessionKey(DEFAULT_SOAP_NAMESPACE_SESSION_KEY);
 			}
 		}
 		if (getSoapVersion()==null) {
@@ -295,46 +295,25 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected SoapVersion determineSoapVersion(IPipeLineSession session) {
-		SoapVersion soapVersion = getSoapVersion();
-		if (soapVersion == SoapVersion.AUTO && StringUtils.isNotEmpty(getSoapVersionSessionKey())) {
-			String savedSoapVersion = (String)session.get(getSoapVersionSessionKey());
-			if (StringUtils.isEmpty(savedSoapVersion)) {
-				soapVersion = DEFAULT_SOAP_VERSION_FOR_WRAPPING;
-			} else {
-				soapVersion = SoapVersion.getSoapVersion(savedSoapVersion);
-			}
-		}
-		if (soapVersion==null || soapVersion == SoapVersion.AUTO) {
-			soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
-		}
-		return soapVersion;
-	}
-	
 	protected String determineSoapNamespace(IPipeLineSession session) {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
-			SoapVersion soapVersion = determineSoapVersion(session);
-			switch (soapVersion) {
-			case SOAP11:
-				soapNamespace = SoapWrapper.NAMESPACE_SOAP11;
-				break;
-			case SOAP12:
-				soapNamespace = SoapWrapper.NAMESPACE_SOAP12;
-				break;
-			case AUTO:
-				log.warn("cannot determine soapVersion");
-				//$FALL-THROUGH$
-			case NONE:
-				soapNamespace = null;
-				break;
+			String savedSoapNamespace = (String)session.get(getSoapNamespaceSessionKey());
+			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
+				soapNamespace = savedSoapNamespace;
+			} else {
+				SoapVersion soapVersion = getSoapVersion();
+				if (soapVersion==SoapVersion.AUTO) {
+					soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
+				}
+				soapNamespace = soapVersion.namespace;
 			}
 		}
 		return soapNamespace;
 	}
 	
 	protected String unwrapMessage(String message, IPipeLineSession session) throws SAXException, TransformerException, IOException, SOAPException {
-		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapVersionSessionKey());
+		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
 
 	protected String wrapMessage(String message, String soapHeader, IPipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
@@ -361,12 +340,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapVersion;
 	}
 
-	@IbisDoc({"3", "Key of session variable to store auto detected soapVersion", "soapVersion"})
-	public void setSoapVersionSessionKey(String string) {
-		soapVersionSessionKey = string;
+	@IbisDoc({"3", "Key of session variable to store auto detected soapNamespace", "soapVersion"})
+	public void setSoapNamespaceSessionKey(String string) {
+		soapNamespaceSessionKey = string;
 	}
-	public String getSoapVersionSessionKey() {
-		return soapVersionSessionKey;
+	public String getSoapNamespaceSessionKey() {
+		return soapNamespaceSessionKey;
 	}
 
 	@IbisDoc({"4", "(only used when <code>direction=wrap</code>) Namespace of the soap envelope", "auto determined from soapVersion"})

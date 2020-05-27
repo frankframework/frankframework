@@ -15,30 +15,72 @@
 */
 package nl.nn.adapterframework.soap;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+
+
 public enum SoapVersion {
 	
-	SOAP11("soap1.1"),
-	SOAP12("soap1.2"),
-	NONE("none"),
-	AUTO("auto");
+	SOAP11("1.1", "http://schemas.xmlsoap.org/soap/envelope/", "/xml/xsd/soap/envelope.xsd"),
+	SOAP12("1.2", "http://www.w3.org/2003/05/soap-envelope",   "/xml/xsd/soap/envelope-1.2.xsd"),
+	NONE("none", null, null),
+	AUTO("auto", null, null);
 
-	private final String description;;
+	public final String description;;
+	public final String namespace;
+	public final String location;
 	
-	private SoapVersion(String description) {
+	private SoapVersion(String description, String namespace, String location) {
 		this.description = description;
+		this.namespace = namespace;
+		this.location = location;
 	}
 	
-	public static SoapVersion getSoapVersion(String description) {
-		for (SoapVersion soapVersion: SoapVersion.values()) {
-			if (soapVersion.getDescription().equalsIgnoreCase(description)) {
-				return soapVersion;
-			}
+	public static SoapVersion getSoapVersion(String s) {
+		if (StringUtils.isEmpty(s)) {
+			return SOAP11;
 		}
-		throw new IllegalArgumentException("No Soapversion ["+description+"]"); 
+		if (s.equals("any")) {
+			return AUTO;
+		}
+		if (s.startsWith("1")) {
+			return valueOf("SOAP" + s.replaceAll("\\.", ""));
+		}
+		return valueOf(s.toUpperCase());
 	}
-	
-	public String getDescription() {
-		return this.description;
+
+	public Set<String> getNamespaces() {
+		Set<String> result = new HashSet<>();
+		switch (this) {
+		case SOAP11:
+		case SOAP12:
+			result.add(namespace);
+			break;
+		case AUTO:
+			result.add(SOAP11.namespace);
+			result.add(SOAP12.namespace);
+			break;
+		default:
+		}
+		return result;
+	}
+	public String getSchemaLocation() {
+		switch (this) {
+		case SOAP11:
+		case SOAP12:
+			return toString();
+		case AUTO:
+			return SOAP11.toString()+" "+SOAP12.toString();
+		default:
+			return "";
+		}
+	}
+
+	@Override
+	public String toString() {
+		return namespace + " " + location;
 	}
 
 }

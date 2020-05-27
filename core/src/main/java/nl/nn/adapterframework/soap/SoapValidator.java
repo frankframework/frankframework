@@ -40,17 +40,12 @@ import nl.nn.adapterframework.pipes.Json2XmlValidator;
  */
 public class SoapValidator extends Json2XmlValidator {
 
-	public static final String SOAP_1_1_NAMESPACE="http://schemas.xmlsoap.org/soap/envelope/";
-	public static final String SOAP_1_2_NAMESPACE="http://www.w3.org/2003/05/soap-envelope";
-	
 	private String soapBody = "";
 	private String outputSoapBody = "";
 	private String soapHeader = "";
 	private String soapHeaderNamespace = "";
-	private String soapVersion = "1.1";
+	private SoapVersion soapVersion = SoapVersion.SOAP11;
 	private boolean allowPlainXml = false;
-
-	private SoapVersion[] versions = new SoapVersion[] { SoapVersion.fromAttribute("1.1") };
 
 	protected boolean addSoapEnvelopeToSchemaLocation = true;
 
@@ -63,13 +58,8 @@ public class SoapValidator extends Json2XmlValidator {
 		} else {
 			super.setRoot(getRoot());
 		}
-		if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
-			versions = SoapVersion.values();
-		} else {
-			versions = new SoapVersion[] { SoapVersion.fromAttribute(soapVersion) };
-		}
 		if (addSoapEnvelopeToSchemaLocation) {
-			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + StringUtils.join(versions, " "));
+			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
 		}
 		if (StringUtils.isEmpty(soapBody)) {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
@@ -81,8 +71,8 @@ public class SoapValidator extends Json2XmlValidator {
 			}
 			addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
 			List<String> invalidRootNamespaces = new ArrayList<String>();
-			for (SoapVersion version : versions) {
-				invalidRootNamespaces.add(version.getNamespace());
+			for (String namespace:soapVersion.getNamespaces()) {
+				invalidRootNamespaces.add(namespace);
 			}
 			addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
 			addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
@@ -126,7 +116,7 @@ public class SoapValidator extends Json2XmlValidator {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
 
-	@IbisDoc({"name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
+	@IbisDoc({"1", "name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
@@ -134,25 +124,23 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapBody;
 	}
 
-	@IbisDoc({"identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", "" })
+	@IbisDoc({"2", "identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", "" })
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
 	}
-
 	public String getOutputSoapBody() {
 		return outputSoapBody;
 	}
 
-	@IbisDoc({"name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
+	@IbisDoc({"3", "name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
-
 	public String getSoapHeader() {
 		return soapHeader;
 	}
 
-	@IbisDoc({ "can be used when the soap header element exists multiple times", "" })
+	@IbisDoc({"4", "can be used when the soap header element exists multiple times", "" })
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
@@ -160,51 +148,20 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapHeaderNamespace;
 	}
 
-	@IbisDoc({ "soap envelope xsd version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
+	@IbisDoc({"5", "soap envelope xsd version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = soapVersion;
+		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
 	}
-	public String getSoapVersion() {
+	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;
 	}
 
-	@IbisDoc({"19", "allow plain xml, without a SOAP Envelope, too", "false"})
+	@IbisDoc({"6", "allow plain xml, without a SOAP Envelope, too", "false"})
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
 	}
 	public boolean isAllowPlainXml() {
 		return allowPlainXml;
-	}
-
-	public static enum SoapVersion {
-
-		VERSION_1_1(SOAP_1_1_NAMESPACE, "/xml/xsd/soap/envelope.xsd"),
-		VERSION_1_2(SOAP_1_2_NAMESPACE, "/xml/xsd/soap/envelope-1.2.xsd");
-
-		public final String namespace;
-		public final String location;
-
-		SoapVersion(String namespace, String location) {
-			this.namespace = namespace;
-			this.location = location;
-		}
-
-		public static SoapVersion fromAttribute(String s) {
-			if (StringUtils.isBlank(s)) {
-				return VERSION_1_1;
-			}
-			return valueOf("VERSION_" + s.replaceAll("\\.", "_"));
-		}
-
-		public String getNamespace() {
-			return namespace;
-		}
-
-		@Override
-		public String toString() {
-			return namespace + " " + location;
-		}
-
 	}
 
 }

@@ -72,7 +72,7 @@ public class SoapWrapperTest {
 	}
 	
 	@Test
-	public void getBody11AndStoreSoapVersion() throws ConfigurationException {
+	public void getBody11AndStoreSoapNamespace() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = expectedSoapBody11;
@@ -86,11 +86,11 @@ public class SoapWrapperTest {
 		}
 		assertEquals(expectedSoapBody, soapBody);
 		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP11.getDescription(),soapVersion);
+		assertEquals(SoapVersion.SOAP11.namespace,soapVersion);
 	}
 
 	@Test
-	public void getBody12AndStoreSoapVersion() throws ConfigurationException {
+	public void getBody12AndStoreSoapNamespace() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap12;
 		String expectedSoapBody = expectedSoapBody12;
@@ -104,11 +104,11 @@ public class SoapWrapperTest {
 		}
 		assertEquals(expectedSoapBody, soapBody);
 		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP12.getDescription(),soapVersion);
+		assertEquals(SoapVersion.SOAP12.namespace,soapVersion);
 	}
 	
 	@Test
-	public void getBodyXmlAndStoreSoapVersion() throws ConfigurationException {
+	public void getBodyXmlAndStoreSoapNamespace() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = xmlMessage;
 		String expectedSoapBody = xmlMessage;
@@ -122,7 +122,7 @@ public class SoapWrapperTest {
 		}
 		assertEquals(expectedSoapBody, soapBody);
 		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.NONE.getDescription(),soapVersion);
+		assertEquals(SoapVersion.NONE.namespace,soapVersion);
 	}
 	
 }

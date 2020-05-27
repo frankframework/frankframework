@@ -60,17 +60,14 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SoapWrapper {
 	protected Logger log = LogUtil.getLogger(this);
 
-	public static final String NAMESPACE_SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
-	public static final String NAMESPACE_SOAP12 = "http://www.w3.org/2003/05/soap-envelope";
-
 	private TransformerPool extractBodySoap11;
 	private TransformerPool extractBodySoap12;
 	private TransformerPool extractHeader;
 	private TransformerPool extractFaultCount;
 	private TransformerPool extractFaultCode;
 	private TransformerPool extractFaultString;
-	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv="+NAMESPACE_SOAP11;
-	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv="+NAMESPACE_SOAP12;
+	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv="+SoapVersion.SOAP11.namespace;
+	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv="+SoapVersion.SOAP12.namespace;
 	private static final String EXTRACT_BODY_XPATH = "/soapenv:Envelope/soapenv:Body/*";
 	private static final String EXTRACT_HEADER_XPATH = "/soapenv:Envelope/soapenv:Header/*";
 	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
@@ -132,23 +129,23 @@ public class SoapWrapper {
 		return getBody(message, false, null, null);
 	}
 	
-	public String getBody(String message, boolean allowPlainXml, IPipeLineSession session, String soapVersionSessionKey) throws SAXException, TransformerException, IOException  {
+	public String getBody(String message, boolean allowPlainXml, IPipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		String result = extractBodySoap11.transform(message,null,true);
 		if (StringUtils.isNotEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapVersionSessionKey)) {
-				session.put(soapVersionSessionKey, SoapVersion.SOAP11.getDescription());
+			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
 			}
 			return result;
 		}
 		result = extractBodySoap12.transform(message,null,true);
 		if (StringUtils.isNotEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapVersionSessionKey)) {
-				session.put(soapVersionSessionKey, SoapVersion.SOAP12.getDescription());
+			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
 			}
 			return result;
 		}
-		if (session!=null && StringUtils.isNotEmpty(soapVersionSessionKey)) {
-			session.put(soapVersionSessionKey, SoapVersion.NONE.getDescription());
+		if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+			session.put(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
 		}
 		return allowPlainXml ? message : "";
 	}
@@ -232,10 +229,7 @@ public class SoapWrapper {
 			}
 			log.debug("namespaceClause [" + namespaceClause + "]");
 		}
-		String soapns = "http://schemas.xmlsoap.org/soap/envelope/";
-		if (StringUtils.isNotEmpty(soapNamespace)) {
-			soapns = soapNamespace;
-		}
+		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
 		message = "<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>";
