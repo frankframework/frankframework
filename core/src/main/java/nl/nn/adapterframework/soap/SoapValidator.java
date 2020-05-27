@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class SoapValidator extends Json2XmlValidator {
 	private String soapHeader = "";
 	private String soapHeaderNamespace = "";
 	private String soapVersion = "1.1";
+	private boolean allowPlainXml = false;
 
 	private SoapVersion[] versions = new SoapVersion[] { SoapVersion.fromAttribute("1.1") };
 
@@ -56,7 +57,12 @@ public class SoapValidator extends Json2XmlValidator {
 	@Override
 	public void configure() throws ConfigurationException {
 		setSoapNamespace("");
-		super.setRoot(getRoot());
+		if (isAllowPlainXml()) {
+			//super.setRoot("Envelope,"+soapBody);
+			addRequestRootValidation(Arrays.asList("Envelope,"+soapBody));
+		} else {
+			super.setRoot(getRoot());
+		}
 		if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
 			versions = SoapVersion.values();
 		} else {
@@ -68,17 +74,19 @@ public class SoapValidator extends Json2XmlValidator {
 		if (StringUtils.isEmpty(soapBody)) {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
-		addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
-		if (StringUtils.isNotEmpty(outputSoapBody)) {
-			addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+		if (!isAllowPlainXml()) {
+			addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+			if (StringUtils.isNotEmpty(outputSoapBody)) {
+				addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+			}
+			addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
+			List<String> invalidRootNamespaces = new ArrayList<String>();
+			for (SoapVersion version : versions) {
+				invalidRootNamespaces.add(version.getNamespace());
+			}
+			addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
 		}
-		addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
-		List<String> invalidRootNamespaces = new ArrayList<String>();
-		for (SoapVersion version : versions) {
-			invalidRootNamespaces.add(version.getNamespace());
-		}
-		addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
-		addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
 		super.configure();
 	}
 
@@ -148,7 +156,6 @@ public class SoapValidator extends Json2XmlValidator {
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
-
 	public String getSoapHeaderNamespace() {
 		return soapHeaderNamespace;
 	}
@@ -157,9 +164,16 @@ public class SoapValidator extends Json2XmlValidator {
 	public void setSoapVersion(String soapVersion) {
 		this.soapVersion = soapVersion;
 	}
-
 	public String getSoapVersion() {
 		return soapVersion;
+	}
+
+	@IbisDoc({"19", "allow plain xml, without a SOAP Envelope, too", "false"})
+	public void setAllowPlainXml(boolean allowPlainXml) {
+		this.allowPlainXml = allowPlainXml;
+	}
+	public boolean isAllowPlainXml() {
+		return allowPlainXml;
 	}
 
 	public static enum SoapVersion {

@@ -69,8 +69,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SoapWrapperPipe extends FixedForwardPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
+	protected static final String DEFAULT_SOAP_VERSION_SESSION_KEY = "soapVersion";
+
+	protected static final SoapVersion DEFAULT_SOAP_VERSION_FOR_WRAPPING = SoapVersion.SOAP11;
 
 	private String direction = "wrap";
+	private SoapVersion soapVersion = SoapVersion.AUTO;
+	private String soapVersionSessionKey = null;
+	private String soapNamespace = null;
 	private String soapHeaderSessionKey = null;
 	private String encodingStyle = null;
 	private String serviceNamespace = null;
@@ -79,20 +85,21 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private boolean removeOutputNamespaces = false;
 	private boolean removeUnusedOutputNamespaces = true;
 	private String outputNamespace = null;
-	private String soapNamespace = null;
 	private String root = null;
 	private boolean ignoreSoapFault = false;
+	private boolean allowPlainXml = false;
 	
+	private String wssAuthAlias;
+	private String wssUserName;
+	private String wssPassword;
+	private boolean wssPasswordDigest = true;
+
 	private String onlyIfSessionKey;
 	private String onlyIfValue;
 	private String unlessSessionKey;
 	private String unlessValue;
 
 	private CredentialFactory wssCredentialFactory = null;
-	private String wssAuthAlias;
-	private String wssUserName;
-	private String wssPassword;
-	private boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -111,6 +118,17 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}
+			if (StringUtils.isEmpty(getSoapVersionSessionKey())) {
+				setSoapVersionSessionKey(DEFAULT_SOAP_VERSION_SESSION_KEY);
+			}
+		}
+		if ("wrap".equalsIgnoreCase(getDirection()) && PipeLine.OUTPUT_WRAPPER_NAME.equals(getName())) {
+			if (StringUtils.isEmpty(getSoapVersionSessionKey())) {
+				setSoapVersionSessionKey(DEFAULT_SOAP_VERSION_SESSION_KEY);
+			}
+		}
+		if (getSoapVersion()==null) {
+			soapVersion=SoapVersion.AUTO;
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
 			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), getSoapHeaderStyleSheet(), 0);
@@ -248,9 +266,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 					payload = soapBodyTp.transform(payload, parameterValues);
 				}
 
-				result = wrapMessage(payload, soapHeader);
-			} else {
-				result = unwrapMessage(message.asString());
+				result = wrapMessage(payload, soapHeader, session);
+			} else { // direction==unwrap
+				result = unwrapMessage(message.asString(), session);
 				if (StringUtils.isEmpty(result)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
 				}
@@ -277,12 +295,54 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected String unwrapMessage(String messageText) throws SAXException, TransformerException, IOException, SOAPException {
-		return soapWrapper.getBody(messageText);
+	protected SoapVersion determineSoapVersion(IPipeLineSession session) {
+		SoapVersion soapVersion = getSoapVersion();
+		if (soapVersion == SoapVersion.AUTO && StringUtils.isNotEmpty(getSoapVersionSessionKey())) {
+			String savedSoapVersion = (String)session.get(getSoapVersionSessionKey());
+			if (StringUtils.isEmpty(savedSoapVersion)) {
+				soapVersion = DEFAULT_SOAP_VERSION_FOR_WRAPPING;
+			} else {
+				soapVersion = SoapVersion.getSoapVersion(savedSoapVersion);
+			}
+		}
+		if (soapVersion==null || soapVersion == SoapVersion.AUTO) {
+			soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
+		}
+		return soapVersion;
+	}
+	
+	protected String determineSoapNamespace(IPipeLineSession session) {
+		String soapNamespace = getSoapNamespace();
+		if (StringUtils.isEmpty(soapNamespace)) {
+			SoapVersion soapVersion = determineSoapVersion(session);
+			switch (soapVersion) {
+			case SOAP11:
+				soapNamespace = SoapWrapper.NAMESPACE_SOAP11;
+				break;
+			case SOAP12:
+				soapNamespace = SoapWrapper.NAMESPACE_SOAP12;
+				break;
+			case AUTO:
+				log.warn("cannot determine soapVersion");
+				//$FALL-THROUGH$
+			case NONE:
+				soapNamespace = null;
+				break;
+			}
+		}
+		return soapNamespace;
+	}
+	
+	protected String unwrapMessage(String message, IPipeLineSession session) throws SAXException, TransformerException, IOException, SOAPException {
+		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapVersionSessionKey());
 	}
 
-	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException, SenderException {
-		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, getSoapNamespace(), wssCredentialFactory, isWssPasswordDigest());
+	protected String wrapMessage(String message, String soapHeader, IPipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
+		String soapNamespace = determineSoapNamespace(session);
+		if (soapNamespace==null) {
+			return message;
+		}
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest());
 	}
 
 	@IbisDoc({"1", "Either <code>wrap</code> or <code>unwrap</code>", "wrap"})
@@ -293,71 +353,23 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return direction;
 	}
 
-	@IbisDoc({"2", "Key of session variable to store soap header", DEFAULT_SOAP_HEADER_SESSION_KEY+", when direction is 'unwrap'"})
-	public void setSoapHeaderSessionKey(String string) {
-		soapHeaderSessionKey = string;
+	@IbisDoc({"2", "Soap version to use: one of <code>soap1.1</code>, <code>soap1.2</code>, <code>none</code> or <code>auto</code>. <code>none</code> means that no wrapping or unwrapping will be done, <code>auto</code> means auto-detect", "auto"})
+	public void setSoapVersion(String string) {
+		soapVersion = SoapVersion.getSoapVersion(string);
 	}
-	public String getSoapHeaderSessionKey() {
-		return soapHeaderSessionKey;
-	}
-
-	@IbisDoc({"3", "The encodingstyle to be set in the soap header", ""})
-	public void setEncodingStyle(String string) {
-		encodingStyle = string;
-	}
-	public String getEncodingStyle() {
-		return encodingStyle;
+	public SoapVersion getSoapVersion() {
+		return soapVersion;
 	}
 
-	@IbisDoc({"4", "The default for the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent", ""})
-	public void setServiceNamespace(String string) {
-		serviceNamespace = string;
+	@IbisDoc({"3", "Key of session variable to store auto detected soapVersion", "soapVersion"})
+	public void setSoapVersionSessionKey(String string) {
+		soapVersionSessionKey = string;
 	}
-	public String getServiceNamespace() {
-		return serviceNamespace;
-	}
-
-	@IbisDoc({"5", "(only used when <code>direction=wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
-	public void setSoapHeaderStyleSheet(String string){
-		this.soapHeaderStyleSheet = string;
-	}
-	public String getSoapHeaderStyleSheet() {
-		return soapHeaderStyleSheet;
+	public String getSoapVersionSessionKey() {
+		return soapVersionSessionKey;
 	}
 
-	@IbisDoc({"6", "(only used when <code>direction=wrap</code>) Stylesheet to apply to the input message. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
-	public void setSoapBodyStyleSheet(String string){
-		this.soapBodyStyleSheet = string;
-	}
-	public String getSoapBodyStyleSheet() {
-		return soapBodyStyleSheet;
-	}
-
-	@IbisDoc({"7", "(only used when <code>direction=unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
-	public void setRemoveOutputNamespaces(boolean b) {
-		removeOutputNamespaces = b;
-	}
-	public boolean isRemoveOutputNamespaces() {
-		return removeOutputNamespaces;
-	}
-
-	@IbisDoc({"8", "(only used when <code>direction=unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
-	public void setRemoveUnusedOutputNamespaces(boolean b) {
-		removeUnusedOutputNamespaces = b;
-	}
-	public boolean isRemoveUnusedOutputNamespaces() {
-		return removeUnusedOutputNamespaces;
-	}
-
-	@IbisDoc({"9", "(only used when <code>direction=wrap</code>) If not empty, this namespace is added to the root element in the soap body", ""})
-	public void setOutputNamespace(String string) {
-		outputNamespace = string;
-	}
-	public String getOutputNamespace() {
-		return outputNamespace;
-	}
-
-	@IbisDoc({"10", "(only used when <code>direction=wrap</code>) Namespace of the soap envelope", "http://schemas.xmlsoap.org/soap/envelope/"})
+	@IbisDoc({"4", "(only used when <code>direction=wrap</code>) Namespace of the soap envelope", "auto determined from soapVersion"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
@@ -365,7 +377,71 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapNamespace;
 	}
 
-	@IbisDoc({"11", "If not empty, the root element in the soap body is changed to this value", ""})
+	@IbisDoc({"5", "Key of session variable to store soap header", DEFAULT_SOAP_HEADER_SESSION_KEY+", when direction is 'unwrap'"})
+	public void setSoapHeaderSessionKey(String string) {
+		soapHeaderSessionKey = string;
+	}
+	public String getSoapHeaderSessionKey() {
+		return soapHeaderSessionKey;
+	}
+
+	@IbisDoc({"6", "The encodingstyle to be set in the soap header", ""})
+	public void setEncodingStyle(String string) {
+		encodingStyle = string;
+	}
+	public String getEncodingStyle() {
+		return encodingStyle;
+	}
+
+	@IbisDoc({"7", "The default for the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent", ""})
+	public void setServiceNamespace(String string) {
+		serviceNamespace = string;
+	}
+	public String getServiceNamespace() {
+		return serviceNamespace;
+	}
+
+	@IbisDoc({"8", "(only used when <code>direction=wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
+	public void setSoapHeaderStyleSheet(String string){
+		this.soapHeaderStyleSheet = string;
+	}
+	public String getSoapHeaderStyleSheet() {
+		return soapHeaderStyleSheet;
+	}
+
+	@IbisDoc({"9", "(only used when <code>direction=wrap</code>) Stylesheet to apply to the input message. Note: outputtype=<code>xml</code> and xslt2=<code>true</code>", ""})
+	public void setSoapBodyStyleSheet(String string){
+		this.soapBodyStyleSheet = string;
+	}
+	public String getSoapBodyStyleSheet() {
+		return soapBodyStyleSheet;
+	}
+
+	@IbisDoc({"10", "(only used when <code>direction=unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
+	public void setRemoveOutputNamespaces(boolean b) {
+		removeOutputNamespaces = b;
+	}
+	public boolean isRemoveOutputNamespaces() {
+		return removeOutputNamespaces;
+	}
+
+	@IbisDoc({"11", "(only used when <code>direction=unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
+	public void setRemoveUnusedOutputNamespaces(boolean b) {
+		removeUnusedOutputNamespaces = b;
+	}
+	public boolean isRemoveUnusedOutputNamespaces() {
+		return removeUnusedOutputNamespaces;
+	}
+
+	@IbisDoc({"12", "(only used when <code>direction=wrap</code>) If not empty, this namespace is added to the root element in the soap body", ""})
+	public void setOutputNamespace(String string) {
+		outputNamespace = string;
+	}
+	public String getOutputNamespace() {
+		return outputNamespace;
+	}
+
+	@IbisDoc({"13", "If not empty, the root element in the soap body is changed to this value", ""})
 	public void setRoot(String string) {
 		root = string;
 	}
@@ -373,7 +449,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return root;
 	}
 
-	@IbisDoc({"12", "(only used when <code>direction=unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown", "false"})
+	@IbisDoc({"14", "(only used when <code>direction=unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown", "false"})
 	public void setIgnoreSoapFault(boolean b) {
 		ignoreSoapFault = b;
 	}
@@ -381,7 +457,15 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return ignoreSoapFault;
 	}
 
-	@IbisDoc({"13", "alias used to obtain credentials for authentication to WebServiceSecurity", ""})
+	@IbisDoc({"15", "For direction=<code>unwrap</code> only: if true, allow unwrapped xml too", "false"})
+	public void setAllowPlainXml(boolean allowPlainXml) {
+		this.allowPlainXml = allowPlainXml;
+	}
+	public boolean isAllowPlainXml() {
+		return allowPlainXml;
+	}
+
+	@IbisDoc({"16", "alias used to obtain credentials for authentication to WebServiceSecurity", ""})
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}
@@ -389,7 +473,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssAuthAlias;
 	}
 
-	@IbisDoc({"14", "Default username for WebServiceSecurity", " "})
+	@IbisDoc({"17", "Default username for WebServiceSecurity", " "})
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
@@ -397,7 +481,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssUserName;
 	}
 
-	@IbisDoc({"15", "Default password for WebServiceSecurity", " "})
+	@IbisDoc({"18", "Default password for WebServiceSecurity", " "})
 	public void setWssPassword(String string) {
 		wssPassword = string;
 	}
@@ -405,7 +489,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssPassword;
 	}
 
-	@IbisDoc({"16", "If true, the password is sent digested; Otherwise it is sent in clear text", "true"})
+	@IbisDoc({"19", "If true, the password is sent digested; Otherwise it is sent in clear text", "true"})
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}
@@ -413,7 +497,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssPasswordDigest;
 	}
 
-	@IbisDoc({"17", "Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
+	@IbisDoc({"20", "Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
 	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
 		this.onlyIfSessionKey = onlyIfSessionKey;
 	}
@@ -421,7 +505,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return onlyIfSessionKey;
 	}
 
-	@IbisDoc({"18", "Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
+	@IbisDoc({"21", "Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
 	public void setOnlyIfValue(String onlyIfValue) {
 		this.onlyIfValue = onlyIfValue;
 	}
@@ -429,7 +513,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return onlyIfValue;
 	}
 
-	@IbisDoc({"19", "Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
+	@IbisDoc({"22", "Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
 	public void setUnlessSessionKey(String unlessSessionKey) {
 		this.unlessSessionKey = unlessSessionKey;
 	}
@@ -437,11 +521,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return unlessSessionKey;
 	}
 
-	@IbisDoc({"18", "Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
+	@IbisDoc({"23", "Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
 	public void setUnlessValue(String unlessValue) {
 		this.unlessValue = unlessValue;
 	}
 	public String getUnlessValue() {
 		return unlessValue;
 	}
+
 }

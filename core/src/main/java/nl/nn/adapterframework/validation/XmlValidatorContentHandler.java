@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,8 +70,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 	}
 
-	public void setXmlValidatorErrorHandler(
-			XmlValidatorErrorHandler xmlValidatorErrorHandler) {
+	public void setXmlValidatorErrorHandler(XmlValidatorErrorHandler xmlValidatorErrorHandler) {
 		this.xmlValidatorErrorHandler = xmlValidatorErrorHandler;
 	}
 
@@ -80,7 +79,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		
 		/*
 		 * When there are root validations that are one element longer than the number of elements on the stack,
-		 * and of those root validations the path to last element matches the elements on the stack,
+		 * and of those root validations the path to the last element matches the elements on the stack,
 		 * then they must match their last element too.
 		 */
 		if (rootValidations != null) {
@@ -148,10 +147,10 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		// assert that all rootValidations are covered
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
-				String validElements = path.get(path.size() - 1);
-				List<String> validElementsAsList = listOf(validElements);
-				if (!validElementsAsList.contains("") && !rootElementsFound.contains(path)) {
-					String message = "Element(s) '" + validElements + "' not found";
+				String validLastElements = path.get(path.size() - 1);
+				List<String> validLastElementsAsList = listOf(validLastElements);
+				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(path)) {
+					String message = "Element(s) '" + validLastElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
 						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null);
 					} else {

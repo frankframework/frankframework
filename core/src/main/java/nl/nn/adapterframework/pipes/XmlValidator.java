@@ -241,6 +241,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
 		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
+		if (storeRootFilter!=null) {
+			validatorHandler.setContentHandler(storeRootFilter);
+		}
 		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context, false);
 		return determineForward(resultEvent, session, responseMode);
 	}
