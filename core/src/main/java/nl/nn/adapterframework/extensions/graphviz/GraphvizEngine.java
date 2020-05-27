@@ -18,14 +18,14 @@ package nl.nn.adapterframework.extensions.graphviz;
 import java.io.IOException;
 import java.net.URL;
 
+import com.eclipsesource.v8.V8;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
+import nl.nn.adapterframework.extensions.javascript.J2V8;
+import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
-
-import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -157,7 +157,7 @@ public class GraphvizEngine {
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
 
-		J2V8 V8Instance = new J2V8();
+		JavascriptEngine<NashornScriptEngine> jsEngine = new Nashorn();
 		final ResultHandler resultHandler = new ResultHandler();
 
 		/**
@@ -166,29 +166,18 @@ public class GraphvizEngine {
 		 */
 		Env(String initScript, String graphvisJsLibrary, String alias) {
 			log.info("starting V8 runtime...");
-			V8Instance.setScriptAlias(alias);
-			V8Instance.startRuntime();
+			jsEngine.setScriptAlias(alias);
+			jsEngine.startRuntime();
 			log.info("started V8 runtime. Initializing graphviz...");
-			V8Instance.executeScript(graphvisJsLibrary);
-			V8Instance.executeScript(initScript);
-			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
-				@Override
-				public void invoke(V8Object receiver, V8Array parameters) {
-					resultHandler.setResult(parameters.getString(0));
-				}
-			}, "result");
-			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
-				@Override
-				public void invoke(V8Object receiver, V8Array parameters) {
-					resultHandler.setError(parameters.getString(0));
-				}
-			}, "error");
+			jsEngine.executeScript(graphvisJsLibrary);
+			jsEngine.executeScript(initScript);
+			jsEngine.setResultHandler(resultHandler);
 			log.info("initialized graphviz");
 		}
 
 		public String execute(String call) throws GraphvizException {
 			try {
-				V8Instance.executeScript(call);
+				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (Exception e) {
 				throw new GraphvizException(e);
@@ -196,7 +185,7 @@ public class GraphvizEngine {
 		}
 
 		public void close() {
-			V8Instance.closeRuntime();
+			jsEngine.closeRuntime();
 		}
 	}
 }
