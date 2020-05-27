@@ -34,9 +34,9 @@ import javax.ws.rs.ext.Provider;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.core.Headers;
-import org.jboss.resteasy.core.ResourceMethodInvoker;
-import org.jboss.resteasy.core.ServerResponse;
+//import org.jboss.resteasy.core.Headers;
+//import org.jboss.resteasy.core.ResourceMethodInvoker;
+//import org.jboss.resteasy.core.ServerResponse;
 
 /**
  * Manages authorization per resource/collection.
@@ -46,13 +46,24 @@ import org.jboss.resteasy.core.ServerResponse;
  */
 
 @Provider
-@Produces(MediaType.APPLICATION_JSON)
+//@Produces(MediaType.APPLICATION_JSON)
 public class AuthorizationFilter implements ContainerRequestFilter {
 
+	@Override
+	public void filter(ContainerRequestContext requestContext) throws IOException {
+		SecurityContext securityContext = requestContext.getSecurityContext();
+		if(securityContext.getUserPrincipal() != null) {
+			System.out.println("upn: " + securityContext.getUserPrincipal().getName());
+		}
+		// TODO Auto-generated method stub
+//		System.out.println("filter "+ requestContext);
+	}
+/*
 	private static final ServerResponse ACCESS_FORBIDDEN = new ServerResponse(null, 403, new Headers<Object>());
 	private static final ServerResponse SERVER_ERROR = new ServerResponse(null, 500, new Headers<Object>());
 	protected Logger log = LogUtil.getLogger(this);
 
+	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
 			//Preflight in here?
@@ -106,5 +117,5 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		}
 
 		return false;
-	}
+	}*/
 }

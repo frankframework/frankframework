@@ -52,8 +52,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -350,10 +349,9 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
+	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
 
 		String fileName = null;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -370,14 +368,7 @@ public final class ShowConfiguration extends Base {
 			user = principal.getName();
 		user = resolveTypeFromMap(inputDataMap, "user", String.class, user);
 
-		MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-		String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-		for (String fName : contentDispositionHeader) {
-			if ((fName.trim().startsWith("filename"))) {
-				String[] tmp = fName.split("=");
-				fileName = tmp[1].trim().replaceAll("\"","");
-			}
-		}
+		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 		try {
 			if(multiple_configs) {

@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -34,13 +33,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -73,7 +71,7 @@ public final class TestPipeline extends Base {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException {
+	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		IbisManager ibisManager = getIbisManager();
@@ -83,8 +81,6 @@ public final class TestPipeline extends Base {
 
 		String message = null, fileName = null;
 		InputStream file = null;
-
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
@@ -96,16 +92,10 @@ public final class TestPipeline extends Base {
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
 
 		try {
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
+			Attachment part = inputDataMap.getAttachment("file");
+			if(part != null) {
+				fileName = part.getContentDisposition().getParameter( "filename" );
+				file = part.getObject(InputStream.class);
 
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
@@ -117,10 +107,12 @@ public final class TestPipeline extends Base {
 					message = Misc.streamToString(file, "\n", fileEncoding, false);
 				}
 			} else {
-				if(inputDataMap.get("message") != null) {
-					InputPart part = inputDataMap.get("message").get(0);
-					part.setMediaType(part.getMediaType().withCharset(fileEncoding));
-					message = part.getBodyAsString();
+				if(inputDataMap.getAttachment("message") != null) {
+					getAttachmentPart(inputDataMap, "message");
+					Attachment msg = inputDataMap.getAttachment("message");
+					System.out.println(msg.getContentType());
+//					part.setMediaType(part.getMediaType().withCharset(fileEncoding));
+					message = msg.getObject(String.class);
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
@@ -144,6 +136,11 @@ public final class TestPipeline extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
+	}
+
+	private void getAttachmentPart(MultipartBody inputDataMap, String string) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {

@@ -33,8 +33,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
@@ -56,11 +56,10 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
 
 		String message = null, fileName = null;
 		InputStream file = null;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -71,10 +70,11 @@ public final class SendJmsMessage extends Base {
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
 		String replyTo = resolveStringFromMap(inputDataMap, "replyTo");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
-
+/*
 		try {
-			if(inputDataMap.get("message") != null) {
-				InputPart part = inputDataMap.get("message").get(0);
+			
+			if(inputDataMap.getAttachment("message") != null) {
+				Attachment part = inputDataMap.getAttachment("message");
 				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
 				message = part.getBodyAsString();
 			}
@@ -111,7 +111,7 @@ public final class SendJmsMessage extends Base {
 		catch (Exception e) {
 			throw new ApiException("Failed to read message", e);
 		}
-
+*/
 		if(message != null && message.length() > 0) {
 			JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType);
 

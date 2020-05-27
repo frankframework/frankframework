@@ -15,15 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -97,11 +94,11 @@ public abstract class Base {
 		}
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {
+	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
 		return resolveStringFromMap(inputDataMap, key, null);
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key, String defaultValue) throws ApiException {
+	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
 		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
 		if(StringUtils.isEmpty(result)) {
 			if(defaultValue != null) {
@@ -112,10 +109,10 @@ public abstract class Base {
 		return result;
 	}
 
-	protected <T> T resolveTypeFromMap(Map<String, List<InputPart>> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.get(key) != null) {
-				return inputDataMap.get(key).get(0).getBody(clazz, null);
+			if(inputDataMap.getAttachment(key) != null) {
+				return inputDataMap.getAttachment(key).getObject(clazz);
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);

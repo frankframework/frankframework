@@ -35,10 +35,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.core.ResourceInvoker;
-import org.jboss.resteasy.core.ResourceMethodRegistry;
-
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -50,7 +46,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 @Path("/")
 public class Init extends Base {
-
+/*
 	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
 
 	@Context Dispatcher dispatcher;
@@ -145,4 +141,5 @@ public class Init extends Base {
 
 		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}
+*/
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+
+	<cxf:bus>
+		<cxf:features>
+			<cxf:logging />
+		</cxf:features>
+	</cxf:bus>
+
+	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+
+<!-- 	<bean id="authorizationFilter" class="nl.nn.adapterframework.webcontrol.api.AuthorizationFilter"> -->
+		<!-- authorization bean properties -->
+<!-- 	</bean> -->
+	<bean id="apiExceptionHandler" class="nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler" />
+
+
+	<jaxrs:server id="IAF-API" address="/" basePackages="nl.nn.adapterframework.webcontrol.api">
+<!-- 		<jaxrs:serviceBeans> -->
+<!-- 				<bean id="initService" class="nl.nn.adapterframework.webcontrol.api.Init"></bean> -->
+<!-- 				<bean id="executeJdbcQuery" class="nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery" /> -->
+<!-- 				<bean id="serverStatistics" class="nl.nn.adapterframework.webcontrol.api.ServerStatistics" /> -->
+<!-- 				<bean id="showConfiguration" class="nl.nn.adapterframework.webcontrol.api.ShowConfiguration" /> -->
+<!-- 				<bean id="showConfigurationStatus" class="nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus" /> -->
+<!-- 				<bean id="showEnvironmentVariables" class="nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables" /> -->
+<!-- 				<bean id="testPipeline" class="nl.nn.adapterframework.webcontrol.api.TestPipeline" /> -->
+<!-- 				<bean id="testServiceListener" class="nl.nn.adapterframework.webcontrol.api.TestServiceListener" /> -->
+<!-- 				<bean id="showSecurityItems" class="nl.nn.adapterframework.webcontrol.api.ShowSecurityItems" /> -->
+<!-- 				<bean id="browseJdbcTable" class="nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable" /> -->
+<!-- 				<bean id="showIbisstoreSummary" class="nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary" /> -->
+<!-- 				<bean id="showMonitors" class="nl.nn.adapterframework.webcontrol.api.ShowMonitors" /> -->
+<!-- 				<bean id="showAdapterStatistics" class="nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics" /> -->
+<!-- 				<bean id="showScheduler" class="nl.nn.adapterframework.webcontrol.api.ShowScheduler" /> -->
+<!-- 				<bean id="showLogging" class="nl.nn.adapterframework.webcontrol.api.ShowLogging" /> -->
+<!-- 				<bean id="webservices" class="nl.nn.adapterframework.webcontrol.api.Webservices" /> -->
+<!-- 				<bean id="browseQueue" class="nl.nn.adapterframework.webcontrol.api.BrowseQueue" /> -->
+<!-- 				<bean id="sendJmsMessage" class="nl.nn.adapterframework.webcontrol.api.SendJmsMessage" /> -->
+<!-- 				<bean id="transactionalStorage" class="nl.nn.adapterframework.webcontrol.api.TransactionalStorage" /> -->
+<!-- 		</jaxrs:serviceBeans> -->
+
+		<jaxrs:providers>
+<!-- 			<ref bean="authorizationFilter" /> -->
+			<ref bean="apiExceptionHandler" />
+			<ref bean="jsonProvider" />
+		</jaxrs:providers>
+
+	</jaxrs:server>
+</beans>

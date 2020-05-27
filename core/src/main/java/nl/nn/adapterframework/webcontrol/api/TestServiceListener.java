@@ -33,8 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -81,15 +80,14 @@ public final class TestServiceListener extends Base {
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postServiceListeners(MultipartFormDataInput input) throws ApiException {
+	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		String message = null, serviceName = null, dispatchResult = null;
 		InputStream file = null;
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
-
+/*
 		try {
 			if(inputDataMap.get("message") != null) {
 				InputPart part = inputDataMap.get("message").get(0);
@@ -126,7 +124,7 @@ public final class TestServiceListener extends Base {
 		} catch (IOException e) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-
+*/
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 }
