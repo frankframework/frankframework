@@ -1,15 +1,29 @@
 package nl.nn.adapterframework.extensions.javascript;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
-public class Nashorn implements JavascriptEngine<ScriptEngine> {
+import javax.script.Invocable;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
+import java.net.URL;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
 
-	private ScriptEngine engine;
+public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
+
+	private Logger log = LogUtil.getLogger(this);
+	private NashornScriptEngine engine;
 	private String alias;
+	private static final ScheduledExecutorService globalScheduledThreadPool = Executors.newScheduledThreadPool(20);
 
 	@Override
 	public void setScriptAlias(String alias) {
@@ -19,18 +33,33 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	@Override
 	public void startRuntime() {
 		ScriptEngineManager engineManager = new ScriptEngineManager();
-		engine = engineManager.getEngineByName("nashorn");
+		engine = (NashornScriptEngine) engineManager.getEngineByName("nashorn");
+
+		ScriptContext scriptContext = engine.getContext();
+		scriptContext.setAttribute("__NASHORN_POLYFILL_TIMER__", globalScheduledThreadPool, ScriptContext.ENGINE_SCOPE);
+		engine.setContext(scriptContext);
+
+		executeScript("var " + alias + " = this;");
+		URL polyfill = getClass().getClassLoader().getResource("js/nashorn-polyfill/build/nashorn-polyfill.js");
+		executeScript("load('" + polyfill + "')");
 	}
 
 	@Override
 	public void executeScript(String script) {
-		// TODO Auto-generated method stub
-		
+		try {
+			engine.eval(script);
+		} catch (NullPointerException | ScriptException e) {
+			log.error("Error executing the script[" + script + "]", e);
+		}
 	}
 
 	@Override
 	public Object executeFunction(String name, Object... parameters) {
-		// TODO Auto-generated method stub
+		try {
+			return ((Invocable) engine).invokeFunction(name, parameters);
+		} catch (ScriptException | NoSuchMethodException e) {
+			log.error("Error executing function [" + name + "]", e);
+		}
 		return null;
 	}
 
@@ -39,13 +68,31 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	}
 
 	@Override
-	public ScriptEngine getEngine() {
+	public NashornScriptEngine getEngine() {
 		return engine;
 	}
 
 	@Override
 	public void registerCallback(ISender sender, IPipeLineSession session) {
-		// TODO Auto-generated method stub
-		
+		CallbackInterface<String, String> method = (param) -> {
+			try {
+				Message msg = Message.asMessage(param);
+				return sender.sendMessage(msg, session).asString();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+		getEngine().put(sender.getName(), method);
+	}
+
+	@Override
+	public void setResultHandler(ResultHandler resultHandler) {
+		getEngine().put("result", (Consumer<String>) resultHandler::setResult);
+		getEngine().put("error", (Consumer<String>) resultHandler::setError);
+	}
+
+	@FunctionalInterface
+	interface CallbackInterface<T, R> {
+		public R sendMessage(T b);
 	}
 }
