@@ -19,7 +19,7 @@ public class SizeLimitedVectorTest {
      *
      */
     @Test
-    public void testAdd() throws ArrayIndexOutOfBoundsException {
+    public void testAdd() {
         SizeLimitedVector slv = new SizeLimitedVector(10);
         slv.add("testString");
         assertEquals(slv.getMaxSize(), 10);
