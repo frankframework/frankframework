@@ -181,9 +181,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
 		IPipeLineSession session = new PipeLineSessionBase();
 		PipeRunResult result = validator.doPipe(new Message(testXml), session);
-		//PipeForward forward = result.getPipeForward();
+		PipeForward forward = result.getPipeForward();
 
 		assertEquals(root, (String)session.get("rootElement"));
+		assertEquals("success", forward.getName());
 	}
 
 	@Test
