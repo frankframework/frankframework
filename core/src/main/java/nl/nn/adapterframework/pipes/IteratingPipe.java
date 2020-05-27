@@ -181,12 +181,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected Message itemToMessage(I item) throws SenderException {
 		return Message.asMessage(item);
 	}
-	
+
 	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
 		IDataIterator<I> it=null;
 		it = getIterator(input,session, threadContext);
 		try {
-			callback.startIterating();
+			callback.startIterating(); // perform startIterating even when it=null, to avoid empty result
 			if (it!=null) {
 				try {
 					boolean keepGoing = true;
