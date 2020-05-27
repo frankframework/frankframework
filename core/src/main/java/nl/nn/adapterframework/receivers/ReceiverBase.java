@@ -894,7 +894,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Date tsReceived = null;
 		Date tsSent = null;
 		if (context!=null) {
-			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters
+			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters, hence these silly instanceof's
 			Object tsReceivedObj = context.get(IPipeLineSession.tsReceivedKey);
 			Object tsSentObj = (Date)context.get(IPipeLineSession.tsSentKey);
 			if(tsReceivedObj instanceof Date) {
