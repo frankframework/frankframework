@@ -77,11 +77,16 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void startElement(String namespaceURI, String lName, String qName, Attributes attrs) throws SAXException {
+		
+		/*
+		 * When there are root validations that are one element longer than the number of elements on the stack,
+		 * and of those root validations the path to last element matches the elements on the stack,
+		 * then they must match their last element too.
+		 */
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				int i = elements.size();
-				if (path.size() == i + 1
-						&& elements.equals(path.subList(0, i))) {
+				if (path.size() == i + 1 && elements.equals(path.subList(0, i))) { // if all the current elements match this valid path up to the one but last
 					String validElements = path.get(i);
 					if (StringUtils.isEmpty(validElements)) {
 						String message = "Illegal element '" + lName + "'. No element expected.";
@@ -91,7 +96,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 							throw new IllegalRootElementException(message);
 						}
 					} else {
-						List<String> validElementsAsList = Arrays.asList(validElements.split(",", -1));
+						List<String> validElementsAsList = listOf(validElements);
 						if (validElementsAsList.contains(lName)) {
 							if (rootElementsFound.contains(path)) {
 								String message = "Element(s) '" + lName + "' should occur only once.";
@@ -140,10 +145,11 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void endDocument() throws SAXException {
+		// assert that all rootValidations are covered
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				String validElements = path.get(path.size() - 1);
-				List<String> validElementsAsList = Arrays.asList(validElements.split("\\,", -1));
+				List<String> validElementsAsList = listOf(validElements);
 				if (!validElementsAsList.contains("") && !rootElementsFound.contains(path)) {
 					String message = "Element(s) '" + validElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
@@ -156,6 +162,10 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 	}
 
+	private List<String> listOf(String validElements) {
+		return Arrays.asList(validElements.trim().split("\\s*\\,\\s*", -1));
+	}
+	
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {

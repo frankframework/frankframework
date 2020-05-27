@@ -34,7 +34,7 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.cxf.Endpoint;
+import org.apache.cxf.jaxws.EndpointImpl;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -62,7 +62,7 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 	private String attachmentSessionKeys = "";
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
-	private Endpoint endpoint = null;
+	private EndpointImpl endpoint = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -104,7 +104,7 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 				throw new ListenerException("unable to find SpringBus");
 			}
 			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
-			endpoint = new Endpoint(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
+			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());

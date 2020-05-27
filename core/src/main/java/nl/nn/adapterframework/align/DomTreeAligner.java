@@ -46,8 +46,6 @@ import org.xml.sax.SAXException;
 
 public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
-	private final boolean DEBUG=false; 
-
 	public DomTreeAligner() throws SAXException {
 		super();
 	}
@@ -85,7 +83,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
 		// TODO this does not take overrideValues and defaultValues into account...
-		if (DEBUG) log.debug("hasChild() node ["+node+"] childName ["+childName+"]");
+		if (log.isTraceEnabled()) log.trace("hasChild() node ["+node+"] childName ["+childName+"]");
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
 				return true;
@@ -96,12 +94,12 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
-		if (DEBUG) log.debug("getAllChildNames() node ["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"]");
 		Set<String> children = new HashSet<String>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			//if (DEBUG) log.debug("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
+			//if (log.isTraceEnabled()) log.trace("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
 			if (cur.getNodeType()==Node.ELEMENT_NODE) {
-				if (DEBUG) log.debug("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
+				if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
 				children.add(getNodeName(cur));
 			}
 		}
@@ -111,11 +109,11 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	@Override
 	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
-		if (DEBUG) log.debug("getChildrenByName() node ["+node+"] name ["+name+"]");
+		if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] name ["+name+"]");
 		List<Node> children = new LinkedList<Node>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
-				if (DEBUG) log.debug("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
 				children.add(cur);
 			}
 		}

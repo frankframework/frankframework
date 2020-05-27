@@ -1,21 +1,28 @@
-
 <adapter name="SoapValidator">
-	<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator">
+	<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-Java">
 		<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SoapValidator" throwException="false" />
 	</receiver>
-	<pipeline firstPipe="HelloWorld">
+	<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API">
+		<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
+	</receiver>
+	<pipeline firstPipe="CopyItem">
 		<exits>
 			<exit path="EXIT" state="success" />
 		</exits>
-		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Request" addNamespaceToSchema="true">
+		<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /SoapValidator/xsd/Items.xsd" soapBody="Item_Request" inputFormatSessionKey="receivedFormat" addNamespaceToSchema="true">
+			<param name="Status" sessionKey="Status" />
+			<param name="Id" sessionKey="Id" />
+			<param name="Item/Id" sessionKey="ItemId" />
+			<param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
 			<forward name="failure" path="InputValidatorFailure" />
 		</inputValidator>
-		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
-		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="http://api.nn.nl/HelloWorld /SoapValidator/xsd/HelloWorld.xsd" soapBody="HelloWorld_Response" addNamespaceToSchema="true">
+		<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" unlessSessionKey="receivedFormat" unlessValue="json" />
+		<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="urn:items" root="Item_Response" unlessSessionKey="receivedFormat" unlessValue="json" />
+		<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /SoapValidator/xsd/Items.xsd" soapBody="Item_Response" addNamespaceToSchema="true"
+			outputFormatSessionKey="receivedFormat">
 			<forward name="failure" path="OutputValidatorFailure" />
 		</outputValidator>
-		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true">
+		<pipe name="InputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6003" />
 			<param name="errorReason" value="Invalid Request" />
@@ -26,16 +33,25 @@
 			<param name="paradigm" value="Response" />
 			<forward name="success" path="EXIT" />
 		</pipe>
-		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;HelloWorld_Response/&gt;">
+		<pipe name="OutputValidatorFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" xslt2="true" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
 			<param name="cmhVersion" value="1" />
 			<param name="errorCode" value="ERR6993" />
 			<param name="errorReason" value="Invalid Response" />
+			<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+			<param name="addErrorsDetailsXml" value="true" />
 			<param name="addErrorsFromInputMessage" value="true" />
 			<param name="operationName" value="Test/SoapValidator" />
 			<param name="paradigm" value="Response" />
+		</pipe>
+		<pipe name="OutputValidatorFailureSwitch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="receivedFormat" >
+			<forward name="xml" path="EXIT" />
+			<forward name="json" path="TransformOutputValidatorFailureJson" />
+		</pipe>
+		<pipe name="TransformOutputValidatorFailureJson" className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /SoapValidator/xsd/Items.xsd" soapBody="Item_Response" addNamespaceToSchema="true"
+			outputFormatSessionKey="receivedFormat" throwException="true">
 			<forward name="success" path="EXIT" />
 		</pipe>
-		<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" fileName="SoapValidator/xml/HelloWorldShort_Response.xml">
+		<pipe name="CopyItem" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="SoapValidator/xsl/CopyItem.xsl">
 			<forward name="success" path="EXIT" />
 		</pipe>
 	</pipeline>

@@ -259,13 +259,13 @@ public class OpenApiTestBase extends Mockito {
 
 		private class SysOutMessageKeeper extends MessageKeeper {
 			@Override
-			public synchronized void add(String message, String level) {
+			public synchronized void add(String message, MessageKeeperLevel level) {
 				add(message, null, level);
 			}
 			@Override
-			public synchronized void add(String message, Date date, String level) {
+			public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 				System.out.println("SysOutMessageKeeper " + level + " - " + message);
-				if("ERROR".equals(level)) fail(message);
+				if(MessageKeeperLevel.ERROR.equals(level)) fail(message);
 			}
 		}
 	}
