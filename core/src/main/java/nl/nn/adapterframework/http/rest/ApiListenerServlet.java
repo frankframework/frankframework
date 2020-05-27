@@ -133,6 +133,9 @@ public class ApiListenerServlet extends HttpServletBase {
 		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 		messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 
+		String messageId = request.getHeader("Message-Id");
+		PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null);
+
 		try {
 			ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 			if(config == null) {
