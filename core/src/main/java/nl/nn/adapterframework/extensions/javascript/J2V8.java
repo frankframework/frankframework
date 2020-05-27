@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import java.io.File;
 
+import com.eclipsesource.v8.JavaVoidCallback;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -45,24 +47,24 @@ public class J2V8 implements JavascriptEngine<V8> {
 	private String getTempDirectory() {
 		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 
-		if(StringUtils.isNotEmpty(directory)) {
+		if (StringUtils.isNotEmpty(directory)) {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
 				String absPath = new File("").getAbsolutePath();
-				if(absPath != null) {
+				if (absPath != null) {
 					file = new File(absPath, directory);
 				}
 			}
-			if(!file.exists()) {
+			if (!file.exists()) {
 				file.mkdirs();
 			}
 			String fileDir = file.getPath();
-			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
+			if (StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
+				throw new IllegalStateException("unknown or invalid path [" + ((StringUtils.isEmpty(fileDir)) ? "NULL" : fileDir) + "], unable to load J2V8 binaries");
 			}
 			directory = file.getAbsolutePath();
 		}
-		log.info("resolved J2V8 tempDirectory to directory ["+directory+"]");
+		log.info("resolved J2V8 tempDirectory to directory [" + directory + "]");
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
 		return StringUtils.isEmpty(directory) ? null : directory;
@@ -111,5 +113,21 @@ public class J2V8 implements JavascriptEngine<V8> {
 				}
 			}
 		}, sender.getName());
+	}
+
+	@Override
+	public void setResultHandler(ResultHandler resultHandler) {
+		getEngine().registerJavaMethod(new JavaVoidCallback() {
+			@Override
+			public void invoke(V8Object receiver, V8Array parameters) {
+				resultHandler.setResult(parameters.getString(0));
+			}
+		}, "result");
+		getEngine().registerJavaMethod(new JavaVoidCallback() {
+			@Override
+			public void invoke(V8Object receiver, V8Array parameters) {
+				resultHandler.setError(parameters.getString(0));
+			}
+		}, "error");
 	}
 }

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 
 /** 
  * Javascript engine interface, allows the use of a javascript engine to execute javascript code functions.
@@ -74,4 +75,10 @@ public interface JavascriptEngine<E> {
 	 * @param sender		The sender given in the adapter configuration
 	 */
 	public void registerCallback(ISender sender, IPipeLineSession session);
+
+	/**
+	 * Registers the result and error functions to be handled by the given result handler.
+	 * @param resultHandler Object to handle results and errors.
+	 */
+	void setResultHandler(ResultHandler resultHandler);
 }
