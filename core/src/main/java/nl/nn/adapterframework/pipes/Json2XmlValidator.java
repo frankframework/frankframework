@@ -209,7 +209,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		XMLFilter sourceFilter = aligner;
 		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
-			XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null);
+			XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey());
 			aligner.setContentHandler(storeRootFilter);
 			sourceFilter=storeRootFilter;
 		}
@@ -261,7 +261,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			
 			XMLFilter sourceFilter = aligner;
 			if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
-				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null);
+				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey());
 				aligner.setContentHandler(storeRootFilter);
 				sourceFilter=storeRootFilter;
 			}
