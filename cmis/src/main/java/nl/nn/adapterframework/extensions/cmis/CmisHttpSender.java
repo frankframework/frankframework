@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -162,6 +164,12 @@ public class CmisHttpSender extends HttpSenderBase {
 		}
 
 		return "response";
+	}
+
+	// We don't need to encode QueryParameters as CMIS already takes care of this
+	@Override
+	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
+		return super.getURI(url, false);
 	}
 
 	public Response invoke(String method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {

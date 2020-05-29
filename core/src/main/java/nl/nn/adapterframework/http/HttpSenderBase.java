@@ -249,7 +249,19 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
+	/**
+	 * We don't always need to encode the QueryParameters, make this overwritable 
+	 * so implementations of this class can decide how to implement this
+	 */
 	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
+		return getURI(url, true);
+	}
+
+	/**
+	 * final method, you either want to encode QueryParameters or you don't.
+	 * Makes sure only http(s) requests can be performed.
+	 */
+	protected final URI getURI(String url, boolean encodeQueryParameters) throws URISyntaxException, UnsupportedEncodingException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if (!uri.getScheme().matches("(?i)https?"))
@@ -259,18 +271,20 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			uri.setPath("/");
 		}
 
-		// Encode query param values.
-		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
-		for(NameValuePair pair : uri.getQueryParams()) {
-			String paramValue = pair.getValue(); //May be NULL
-			if(StringUtils.isNotEmpty(paramValue)) {
-				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
+		if(encodeQueryParameters) {
+			// Encode query param values.
+			ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
+			for(NameValuePair pair : uri.getQueryParams()) {
+				String paramValue = pair.getValue(); //May be NULL
+				if(StringUtils.isNotEmpty(paramValue)) {
+					paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
+				}
+				pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
 			}
-			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
-		}
-		if(pairs.size() > 0) {
-			uri.clearParameters();
-			uri.addParameters(pairs);
+			if(pairs.size() > 0) {
+				uri.clearParameters();
+				uri.addParameters(pairs);
+			}
 		}
 
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
