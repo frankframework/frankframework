@@ -18,13 +18,15 @@ package nl.nn.adapterframework.soap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.xml.soap.SOAPConstants;
+
 import org.apache.commons.lang.StringUtils;
 
 
 public enum SoapVersion {
 	
-	SOAP11("1.1", "http://schemas.xmlsoap.org/soap/envelope/", "/xml/xsd/soap/envelope.xsd"),
-	SOAP12("1.2", "http://www.w3.org/2003/05/soap-envelope",   "/xml/xsd/soap/envelope-1.2.xsd"),
+	SOAP11("1.1", SOAPConstants.URI_NS_SOAP_ENVELOPE,     "/xml/xsd/soap/envelope.xsd"),
+	SOAP12("1.2", SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "/xml/xsd/soap/envelope-1.2.xsd"),
 	NONE("none", null, null),
 	AUTO("auto", null, null);
 

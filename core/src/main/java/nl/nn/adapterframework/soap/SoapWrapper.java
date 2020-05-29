@@ -150,12 +150,6 @@ public class SoapWrapper {
 		return allowPlainXml ? message : "";
 	}
 
-//	public String getBody(InputStream request) throws TransformerException, IOException {
-//		String result = extractBodySoap11.transform(new StreamSource(request));
-//		if (StringUtils.isNotEmpty(result))
-//			return result;
-//		return extractBodySoap12.transform(new StreamSource(request));
-//	}
 
 	public String getHeader(String message) throws SAXException, TransformerException, IOException {
 		return extractHeader.transform(message, null, true);
