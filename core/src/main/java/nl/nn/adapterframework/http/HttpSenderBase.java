@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2020 Integration Partners
+   Copyright 2017-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,32 +15,28 @@
 */
 package nl.nn.adapterframework.http;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.SenderWithParametersBase;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.xml.transform.TransformerConfigurationException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
-import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -69,31 +65,33 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
-
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.xml.transform.TransformerConfigurationException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -250,18 +248,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/**
-	 * We don't always need to encode the QueryParameters, make this overwritable 
-	 * so implementations of this class can decide how to implement this
-	 */
-	protected URI getURI(String url) throws URISyntaxException, UnsupportedEncodingException {
-		return getURI(url, true);
-	}
-
-	/**
-	 * final method, you either want to encode QueryParameters or you don't.
 	 * Makes sure only http(s) requests can be performed.
 	 */
-	protected final URI getURI(String url, boolean encodeQueryParameters) throws URISyntaxException, UnsupportedEncodingException {
+	protected final URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if (!uri.getScheme().matches("(?i)https?"))
@@ -269,22 +258,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		if (uri.getPath()==null) {
 			uri.setPath("/");
-		}
-
-		if(encodeQueryParameters) {
-			// Encode query param values.
-			ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
-			for(NameValuePair pair : uri.getQueryParams()) {
-				String paramValue = pair.getValue(); //May be NULL
-				if(StringUtils.isNotEmpty(paramValue)) {
-					paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
-				}
-				pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
-			}
-			if(pairs.size() > 0) {
-				uri.clearParameters();
-				uri.addParameters(pairs);
-			}
 		}
 
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
@@ -455,7 +428,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 
 			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-		} catch (URISyntaxException | UnsupportedEncodingException e) {
+		} catch (URISyntaxException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]");
 		}
 
