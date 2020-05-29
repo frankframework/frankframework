@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,18 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.Document;
@@ -143,39 +132,12 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	}
 
 	public static String translate(Document xmlIn, URL schemaURL) throws SAXException, IOException {
-
-		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
-		// create the XSModel
-		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
-		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
-		schemaInformation.add(xsModel);
+		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
+		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 		
 		// create the validator, setup the chain
 		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
-    	Source source=dta.asSource(xmlIn);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        String xml=null;
-		try {
-	        TransformerFactory tf = TransformerFactory.newInstance();
-	        Transformer transformer = tf.newTransformer();
-	        transformer.transform(source, result);
-	        writer.flush();
-	        xml = writer.toString();
-		} catch (TransformerConfigurationException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		} catch (TransformerException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		}
-    	return xml;
+		
+		return dta.translate(xmlIn);
  	}
 }

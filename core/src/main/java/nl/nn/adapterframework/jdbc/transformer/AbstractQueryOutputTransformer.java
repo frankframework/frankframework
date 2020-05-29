@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.IOException;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	private boolean parsingDefinitions = false;
@@ -16,7 +16,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	protected StringBuilder output, currentBuilder;
 
 	public AbstractQueryOutputTransformer() throws SAXException {
-		super(XMLReaderFactory.createXMLReader());
+		super();
 	}
 
 	public AbstractQueryOutputTransformer(XMLReader parent) {
