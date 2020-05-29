@@ -25,7 +25,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 
 	public String parse(Message message) throws IOException, SAXException {
 		output = new StringBuilder();
-		this.parse(message.asInputSource());
+		XmlUtils.parseXml(this, message.asInputSource());
 		return output.toString();
 	}
 
