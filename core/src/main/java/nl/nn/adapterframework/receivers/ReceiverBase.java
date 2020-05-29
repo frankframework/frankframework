@@ -894,15 +894,26 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		Date tsReceived = null;
 		Date tsSent = null;
 		if (context!=null) {
-			//TODO ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters
-			tsReceived = (Date)context.get(IPipeLineSession.tsReceivedKey);
-			tsSent = (Date)context.get(IPipeLineSession.tsSentKey);
+			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters, hence these silly instanceof's
+			Object tsReceivedObj = context.get(IPipeLineSession.tsReceivedKey);
+			Object tsSentObj = (Date)context.get(IPipeLineSession.tsSentKey);
+			if(tsReceivedObj instanceof Date) {
+				tsReceived = (Date) context.get(IPipeLineSession.tsReceivedKey);
+			} else if(tsReceivedObj instanceof String) {
+				tsReceived = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
+			}
+			if(tsSentObj instanceof Date) {
+				tsSent = (Date) context.get(IPipeLineSession.tsSentKey);
+			} else if(tsSentObj instanceof String) {
+				tsSent = DateUtils.parseToDate((String) tsSentObj, DateUtils.FORMAT_FULL_GENERIC);
+			}
 		} else {
 			context=new HashMap<>();
 		}
 
 		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
-		return processMessageInAdapter(origin, (M)message, message, null, correlationId, context, waitingTime, false);
+		String messageId = (String) context.get("id");
+		return processMessageInAdapter(origin, (M)message, message, messageId, correlationId, context, waitingTime, false);
 	}
 
 

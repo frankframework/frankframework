@@ -21,6 +21,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.cxf.bus.spring.SpringBus;
+import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -40,6 +41,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
+		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
 		servletContext.log("Starting IBIS WebApplicationInitializer");
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();

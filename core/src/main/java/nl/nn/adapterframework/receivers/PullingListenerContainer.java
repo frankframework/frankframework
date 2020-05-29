@@ -18,6 +18,15 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.IPeekableListener;
+import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.Semaphore;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -28,13 +37,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import nl.nn.adapterframework.core.IPullingListener;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.Semaphore;
 
 /**
  * Container that provides threads to exectue pulling listeners.
@@ -181,10 +183,21 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							if (receiver.isTransacted()) {
-								txStatus = txManager.getTransaction(txNew);
+							boolean retrieveMessage = true;
+							if (isIdle() && listener instanceof IPeekableListener) {
+								IPeekableListener peekableListener = (IPeekableListener) listener;
+								if (peekableListener.isPeekUntransacted()) {
+									retrieveMessage = peekableListener.hasRawMessageAvailable();
+								}
 							}
-							rawMessage = listener.getRawMessage(threadContext);
+							if (!retrieveMessage) {
+								rawMessage = null;
+							} else {
+								if (receiver.isTransacted()) {
+									txStatus = txManager.getTransaction(txNew);
+								}
+								rawMessage = listener.getRawMessage(threadContext);
+							}
 							resetRetryInterval();
 							setIdle(rawMessage==null);
 						} catch (Exception e) {

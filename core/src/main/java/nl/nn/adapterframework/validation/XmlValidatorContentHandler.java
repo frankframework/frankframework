@@ -96,7 +96,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 							throw new IllegalRootElementException(message);
 						}
 					} else {
-						List<String> validElementsAsList = Arrays.asList(validElements.split(",", -1));
+						List<String> validElementsAsList = listOf(validElements);
 						if (validElementsAsList.contains(lName)) {
 							if (rootElementsFound.contains(path)) {
 								String message = "Element(s) '" + lName + "' should occur only once.";
@@ -149,7 +149,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
 				String validElements = path.get(path.size() - 1);
-				List<String> validElementsAsList = Arrays.asList(validElements.split("\\,", -1));
+				List<String> validElementsAsList = listOf(validElements);
 				if (!validElementsAsList.contains("") && !rootElementsFound.contains(path)) {
 					String message = "Element(s) '" + validElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
@@ -162,6 +162,10 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 	}
 
+	private List<String> listOf(String validElements) {
+		return Arrays.asList(validElements.trim().split("\\s*\\,\\s*", -1));
+	}
+	
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {

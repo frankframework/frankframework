@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -73,7 +72,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 @Path("/")
 public class ServerStatistics extends Base {
-	@Context ServletConfig servletConfig;
+
 	@Context Request request;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -93,9 +92,8 @@ public class ServerStatistics extends Base {
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() == null) {
-				cfg.put("type", configuration.getClassLoaderType());
-			} else {
+			cfg.put("type", configuration.getClassLoaderType());
+			if(configuration.getConfigurationException() != null) {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 
@@ -145,7 +143,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", getIbisContext().getUptimeDate());
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
 	@GET

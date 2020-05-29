@@ -2888,6 +2888,13 @@ public class TestTool {
 				} else {
 					queueName = step.substring(i + 1, step.length() - 6);
 
+					String resolveProperties = properties.getProperty("scenario.resolveProperties");
+
+					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
+						AppConstants appConstants = AppConstants.getInstance();
+						fileContent = StringResolver.substVars(fileContent, appConstants);
+					}
+
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {

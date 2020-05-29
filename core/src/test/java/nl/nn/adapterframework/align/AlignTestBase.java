@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.align;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
@@ -24,8 +26,12 @@ public abstract class AlignTestBase {
 		testFiles(schemaFile, namespace, rootElement, inputFile, false, null);
 	}
 
-	public URL getSchemaURL(String schemaFile) {
-		 return AlignTestBase.class.getResource(BASEDIR+schemaFile);
+	public URL getSchemaURL(String schemaFile) throws IOException {
+		URL result=TestFileUtils.getTestFileURL(BASEDIR+schemaFile);
+		if (result==null) {
+			fail("cannot find schema ["+schemaFile+"]");
+		}
+	 return result;
 	}
 	
 	protected String getTestFile(String file) throws IOException, TimeoutException {
@@ -183,6 +189,11 @@ public abstract class AlignTestBase {
 	@Test
 	public void testPetstorePet() throws Exception {
 		testFiles("Petstore/petstore.xsd", "", "Pet", "Petstore/pet");
+	}
+
+	@Test
+	public void testTextAndAttributes() throws Exception {
+		testFiles("TextAndAttributes/schema.xsd", "", "Root", "TextAndAttributes/input", true);
 	}
 
 //	@Test

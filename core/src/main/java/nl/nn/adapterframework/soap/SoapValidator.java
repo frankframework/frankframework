@@ -63,7 +63,7 @@ public class SoapValidator extends Json2XmlValidator {
 			versions = new SoapVersion[] { SoapVersion.fromAttribute(soapVersion) };
 		}
 		if (addSoapEnvelopeToSchemaLocation) {
-			super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " " : "") + StringUtils.join(versions, " "));
+			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + StringUtils.join(versions, " "));
 		}
 		if (StringUtils.isEmpty(soapBody)) {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
@@ -122,7 +122,6 @@ public class SoapValidator extends Json2XmlValidator {
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
-
 	public String getSoapBody() {
 		return soapBody;
 	}

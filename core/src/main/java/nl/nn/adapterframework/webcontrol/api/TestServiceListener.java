@@ -97,13 +97,13 @@ public final class TestServiceListener extends Base {
 				message = part.getBodyAsString();
 			}
 			if(inputDataMap.get("service") != null) {
-				serviceName = inputDataMap.get("service").get(0).getBodyAsString();
+				serviceName = resolveStringFromMap(inputDataMap, "service");
 			}
 			if(inputDataMap.get("file") != null) {
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
 				message = Misc.streamToString(file, "\n", fileEncoding, false);
 
-				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);
+				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding, false);
 			}
 			else {
 				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
