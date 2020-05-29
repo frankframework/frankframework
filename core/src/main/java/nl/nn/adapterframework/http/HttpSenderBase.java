@@ -250,7 +250,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * Makes sure only http(s) requests can be performed.
 	 */
-	protected final URI getURI(String url) throws URISyntaxException {
+	protected URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if (!uri.getScheme().matches("(?i)https?"))
