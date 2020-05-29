@@ -1,1 +1,1 @@
-${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exception
+${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/transacted-exception
