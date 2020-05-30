@@ -79,4 +79,13 @@ public class MediaTypeTest {
 			assertTrue("can parse ["+header+"]", MediaTypes.MULTIPART.isConsumable(acceptHeader));
 		}
 	}
+
+	@Test
+	public void addCharset() {
+		MediaTypes type = MediaTypes.PDF;
+		assertEquals("application/pdf", type.getContentType());
+
+		type.withCharset("Utf-8");
+		assertEquals("application/pdf;charset=UTF-8", type.getContentType());
+	}
 }

@@ -56,6 +56,16 @@ public class ApiListenerTest {
 		assertEquals("XML", listener.getProduces());
 	}
 
+	@Test
+	public void testProducesPdfWithCharset() throws ConfigurationException {
+		listener.setProduces("PDF");
+		listener.setCharacterEncoding("utf-8");
+		listener.configure();
+
+		assertEquals("PDF", listener.getProduces());
+		assertEquals("application/pdf;charset=UTF-8", listener.getContentType());
+	}
+
 	@Test(expected=IllegalArgumentException.class)
 	public void testUnknownProduces() throws ConfigurationException {
 		listener.setProduces("unknown");

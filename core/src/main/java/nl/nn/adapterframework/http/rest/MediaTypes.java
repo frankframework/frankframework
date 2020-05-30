@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Integration Partners B.V.
+Copyright 2019 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum MediaTypes {
 
 	ANY("*/*"),
@@ -26,14 +28,43 @@ public enum MediaTypes {
 	MULTIPART_FORMDATA("multipart/form-data"),
 	MULTIPART("multipart/*");
 
-	private final String mediaType;
+	public static final String CHARSET_PARAMETER = "charset";
+
+	private String mediaType;
+	private String charset;
 
 	private MediaTypes(String mediaType) {
+		this(mediaType, null);
+	}
+	private MediaTypes(String mediaType, String charset) {
 		this.mediaType = mediaType;
+		this.charset = charset;
+	}
+
+	/**
+	 * Getter for primary type.
+	 */
+	public String getType() {
+		return mediaType;
+	}
+
+	/**
+	 * Getter for primary type.
+	 */
+	public String getCharset() {
+		return charset;
 	}
 
 	public String getContentType() {
-		return mediaType;
+		StringBuilder string = new StringBuilder(mediaType);
+		if(charset != null) {
+			string.append(";");
+			string.append(CHARSET_PARAMETER);
+			string.append("=");
+			string.append(charset);
+		}
+
+		return string.toString();
 	}
 
 	public boolean isConsumable(String contentType) {
@@ -58,5 +89,12 @@ public enum MediaTypes {
 			}
 		}
 		throw new IllegalArgumentException(v);
+	}
+
+	public MediaTypes withCharset(String charset) {
+		if(StringUtils.isNotEmpty(charset)) {
+			this.charset = charset.toUpperCase();
+		}
+		return this;
 	}
 }

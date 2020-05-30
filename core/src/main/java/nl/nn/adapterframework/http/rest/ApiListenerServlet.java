@@ -62,7 +62,6 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String CHARSET="UTF-8";
 	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
 	protected Logger log = LogUtil.getLogger(this);
@@ -369,7 +368,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			if (ServletFileUpload.isMultipartContent(request)) {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-				servletFileUpload.setHeaderEncoding(CHARSET);
 				List<FileItem> items = servletFileUpload.parseRequest(request);
 				XmlBuilder attachments = new XmlBuilder("parts");
 				int i = 0;
@@ -486,7 +484,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-			String contentType = listener.getContentType() + ";charset="+CHARSET;
+			String contentType = listener.getContentType();
 			if(listener.getProduces().equals("ANY")) {
 				contentType = messageContext.get("contentType", contentType);
 			}
