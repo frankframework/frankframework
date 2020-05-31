@@ -50,13 +50,14 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private MediaTypes consumes = MediaTypes.ANY;
 	private MediaTypes produces = MediaTypes.ANY;
+	private ContentType producedContentType;
 	private String multipartBodyName = null;
 
 	private IReceiver receiver;
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
-	private String charset = null; //Don't use any special character encoding unless explicitly specified!
+	private String charset = null; //Use system default or UTF-8?
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -79,8 +80,9 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(!methods.contains(getMethod()))
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
+		producedContentType = new ContentType(produces);
 		if(StringUtils.isNotEmpty(charset)) {
-			produces.withCharset(charset);
+			producedContentType.setCharset(charset);
 		}
 	}
 
@@ -141,7 +143,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	}
 
 	public String getContentType() {
-		return produces.getContentType();
+		return producedContentType.getContentType();
 	}
 
 	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
@@ -269,7 +271,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		builder.append(" uriPattern["+getUriPattern()+"]");
 		builder.append(" produces["+getProduces()+"]");
 		builder.append(" consumes["+getConsumes()+"]");
-		builder.append(" contentType["+getContentType()+"]");
+		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();
 	}
