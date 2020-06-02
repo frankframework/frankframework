@@ -647,8 +647,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 					if (ibisDocRef != null) {
 						AMethod aMethod = new AMethod(property);
-						if (ibisDoc ==  null) {
-							ibisDoc = aMethod.getIbisDocRef(ibisDocRef.value()[1], method);
+						if (ibisDoc == null) {
+							String[] orderAndPackageName = ibisDocRef.value();
+							String packageName = null;
+							if(orderAndPackageName.length == 1) {
+								packageName = ibisDocRef.value()[0];
+							} else if(orderAndPackageName.length == 2) {
+								packageName = ibisDocRef.value()[1];
+							}
+							ibisDoc = aMethod.getIbisDocRef(packageName, method);
 						}
 					}
 					if (ibisDoc != null) {

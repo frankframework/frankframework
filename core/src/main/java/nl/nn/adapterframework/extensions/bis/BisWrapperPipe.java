@@ -330,9 +330,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				}
 
-				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader);
+				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
 			} else {
-				String body = unwrapMessage(input);
+				String body = unwrapMessage(input, session);
 				if (StringUtils.isEmpty(body)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
 				}

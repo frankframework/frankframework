@@ -88,7 +88,7 @@ public class EsbSoapValidator extends SoapValidator {
 				cmhVersion = 0;
 			}
 		}
-		super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
+		super.setSchemaLocation(getSchemaLocation() + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
 		super.setSoapHeader(GENERIC_HEADER.get(getModeKey()).tag.getLocalPart());
 		if (mode == EsbSoapWrapperPipe.Mode.I2T) {
 			super.setImportedSchemaLocationsToIgnore("CommonMessageHeader.xsd");

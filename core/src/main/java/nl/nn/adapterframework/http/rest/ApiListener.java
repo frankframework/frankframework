@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * 
@@ -52,6 +53,9 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private String multipartBodyName = null;
 
 	private IReceiver receiver;
+
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -235,6 +239,15 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			return multipartBodyName;
 
 		return null;
+	}
+
+	@IbisDoc({"8", "name of the header which contains the message-id", "message-id"})
+	public void setMessageIdHeader(String messageIdHeader) {
+		this.messageIdHeader = messageIdHeader;
+	}
+
+	public String getMessageIdHeader() {
+		return messageIdHeader;
 	}
 
 	@Override

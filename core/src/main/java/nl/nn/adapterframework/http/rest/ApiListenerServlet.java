@@ -49,6 +49,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -444,7 +445,15 @@ public class ApiListenerServlet extends HttpServletBase {
 			if (!ServletFileUpload.isMultipartContent(request)) {
 				body = Misc.streamToString(request.getInputStream(),"\n",false);
 			}
-			//TODO: String correlationId = request.getHeader("message-id");
+
+			String messageId = null;
+			if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
+				String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
+				if(StringUtils.isNotEmpty(messageIdHeader)) {
+					messageId = messageIdHeader;
+				}
+			}
+			PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 			String result = listener.processRequest(null, body, messageContext);
 
 			/**
@@ -500,7 +509,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		catch (Exception e) {
 			log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 			try {
-				response.flushBuffer();
+				response.reset();
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			}
 			catch (IllegalStateException ex) {

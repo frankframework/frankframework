@@ -28,6 +28,7 @@ public interface IFlowGenerator extends InitializingBean, DisposableBean {
 
 	public void setFileExtension(String extension);
 	public String getFileExtension();
+	//TODO FlowDiagramManager should determine MimeType
 
 	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException;
 }

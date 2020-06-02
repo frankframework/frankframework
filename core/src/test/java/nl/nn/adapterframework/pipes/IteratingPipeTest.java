@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.BlockEnabledSenderBase;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
@@ -28,6 +29,9 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		@Override
 		protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 			try {
+				if (input.isEmpty()) {
+					return null;
+				}
 				return new ReaderLineIterator(input.asReader());
 			} catch (IOException e) {
 				throw new SenderException(e);
@@ -224,4 +228,16 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
+	@Test
+	public void testNullIterator() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		configurePipe();
+		pipe.start();
+		
+		String expected = "<results/>";
+		
+		PipeRunResult prr = doPipe(new Message(""));
+		MatchUtils.assertXmlEquals("null iterator", expected, prr.getResult().asString(), true);
+	}
+	
 }

@@ -65,7 +65,6 @@ public abstract class AbstractXmlValidator {
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	protected SchemasProvider schemasProvider;
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = "failureReason";
@@ -86,6 +85,7 @@ public abstract class AbstractXmlValidator {
 	private boolean ignoreCaching = false;
 	private String xmlSchemaVersion=null;
 	
+	protected SchemasProvider schemasProvider;
 
 	/**
 	 * Configure the XmlValidator
@@ -174,12 +174,14 @@ public abstract class AbstractXmlValidator {
 	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
+			// If a filter is present, connect its output to the context.contentHandler.
+			// It is assumed that the filter input is already properly connected.
 			filter.setContentHandler(context.getContentHandler());
 			filter.setErrorHandler(context.getErrorHandler());
 		} else {
 			validatorHandler.setContentHandler(context.getContentHandler());
-			validatorHandler.setErrorHandler(context.getErrorHandler());
 		}
+		validatorHandler.setErrorHandler(context.getErrorHandler());
 
 		InputSource is = getInputSource(Message.asMessage(input));
 
@@ -266,7 +268,7 @@ public abstract class AbstractXmlValidator {
 	/**
 	 * Enable full schema grammar constraint checking, including checking which
 	 * may be time-consuming or memory intensive. Currently, particle unique
-	 * attribution constraint checking and particle derivation resriction
+	 * attribution constraint checking and particle derivation restriction
 	 * checking are controlled by this option.
 	 * <p>
 	 * see property
@@ -282,10 +284,7 @@ public abstract class AbstractXmlValidator {
 		return fullSchemaChecking;
 	}
 
-	/**
-	 * Indicates whether to throw an error (PipeRunexception) when the xml is not compliant.
-	 */
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "<code>false</code>"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -293,9 +292,6 @@ public abstract class AbstractXmlValidator {
 		return throwException;
 	}
 
-	/**
-	 * The sessionkey to store the reasons of misvalidation in.
-	 */
 	@IbisDoc({"If set: key of session variable to store reasons of mis-validation in", "failureReason"})
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
@@ -312,7 +308,7 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"When set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -320,7 +316,7 @@ public abstract class AbstractXmlValidator {
 		return validateFile;
 	}
 
-	@IbisDoc({"Character set used for reading file, only used when <code>validateFile</code> is <code>true</code>", "utf-8"})
+	@IbisDoc({"Characterset used for reading file, only used when <code>validateFile</code> is <code>true</code>", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -328,12 +324,12 @@ public abstract class AbstractXmlValidator {
 		return charset;
 	}
 
-	@IbisDoc({"When set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
+	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"When set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -349,7 +345,7 @@ public abstract class AbstractXmlValidator {
 		return importedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"When set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -373,6 +369,7 @@ public abstract class AbstractXmlValidator {
 		this.ignoreUnknownNamespaces = b;
 	}
 
+	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}
@@ -380,6 +377,7 @@ public abstract class AbstractXmlValidator {
 		return ignoreCaching;
 	}
 
+	@IbisDoc({"If set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
 	public void setLazyInit(boolean lazyInit) {
 		this.lazyInit = lazyInit;
 	}
@@ -387,6 +385,7 @@ public abstract class AbstractXmlValidator {
 		return lazyInit;
 	}
 
+	@IbisDoc({"If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		this.xmlSchemaVersion = xmlSchemaVersion;
 	}
