@@ -2,7 +2,6 @@ package nl.nn.adapterframework.util;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * SizeLimitedVector Tester.
@@ -30,13 +29,10 @@ public class SizeLimitedVectorTest {
 
     @Test
     public void testMaxSizePassed() throws ArrayIndexOutOfBoundsException {
-        try{SizeLimitedVector slv = new SizeLimitedVector(1);
+        SizeLimitedVector slv = new SizeLimitedVector(1);
         slv.add(13);
         slv.add(14);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            fail("array capacity is passed, capacity was 1, but 2 elements got added");
-        }
+        assertEquals(slv.get(0), 14);
 
     }
     /**
@@ -46,9 +42,13 @@ public class SizeLimitedVectorTest {
      */
     @Test
     public void testSetMaxSize() throws Exception {
-        SizeLimitedVector slv = new SizeLimitedVector(10);
-        slv.setMaxSize(14);
-        assertEquals(slv.getMaxSize(), 14);
+        SizeLimitedVector slv = new SizeLimitedVector(5);
+        slv.setMaxSize(6);
+        slv.add(1); slv.add(2); slv.add(3); slv.add(4); slv.add(5); slv.add(6); slv.add(7);
+        assertEquals(slv.getMaxSize(), 6);
+        assertEquals(slv.capacity(), 10);
+        assertEquals(slv.size(), 6);
+        assertEquals(slv.get(0), 2);
     }
 
 
