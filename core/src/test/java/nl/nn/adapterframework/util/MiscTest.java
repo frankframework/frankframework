@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -24,15 +23,11 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.testutil.TestFileUtils;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -103,7 +98,7 @@ public class MiscTest {
     public void testCreateSimpleUUID() throws Exception {
         String uuid = Misc.createSimpleUUID();
         assertEquals(uuid.substring(8, 9), "-");
-        assertEquals(uuid.length(), 35);
+        assertEquals(uuid.length(), 36);
     }
 
 
