@@ -6,16 +6,12 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.Invocable;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.script.SimpleScriptContext;
-import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
@@ -23,11 +19,16 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 	private Logger log = LogUtil.getLogger(this);
 	private NashornScriptEngine engine;
 	private String alias;
-	private static final ScheduledExecutorService globalScheduledThreadPool = Executors.newScheduledThreadPool(20);
 
 	@Override
 	public void setScriptAlias(String alias) {
-		this.alias = alias;
+		if (StringUtils.isEmpty(alias))
+			return;
+		if (engine == null) {
+			this.alias = alias;
+		} else {
+			executeScript(alias  + " = this;");
+		}
 	}
 
 	@Override
@@ -35,13 +36,10 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 		ScriptEngineManager engineManager = new ScriptEngineManager();
 		engine = (NashornScriptEngine) engineManager.getEngineByName("nashorn");
 
-		ScriptContext scriptContext = engine.getContext();
-		scriptContext.setAttribute("__NASHORN_POLYFILL_TIMER__", globalScheduledThreadPool, ScriptContext.ENGINE_SCOPE);
-		engine.setContext(scriptContext);
+		if (StringUtils.isNotEmpty(alias))
+			executeScript(alias + " = this;");
 
-		executeScript("var " + alias + " = this;");
-		URL polyfill = getClass().getClassLoader().getResource("js/nashorn-polyfill/build/nashorn-polyfill.js");
-		executeScript("load('" + polyfill + "')");
+		executeScript("load('classpath:net/arnx/nashorn/lib/promise.js')");
 	}
 
 	@Override
@@ -79,6 +77,7 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 				Message msg = Message.asMessage(param);
 				return sender.sendMessage(msg, session).asString();
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
 		};
