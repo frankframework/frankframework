@@ -92,6 +92,15 @@ public class ApiListenerServlet extends HttpServletBase {
 		super.destroy();
 	}
 
+	public void returnJson(HttpServletResponse response, int status, JsonObject json) throws IOException {
+		Map<String, Boolean> config = new HashMap<>();
+		config.put(JsonGenerator.PRETTY_PRINTING, true);
+		JsonWriterFactory factory = Json.createWriterFactory(config);
+		JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
+		jsonWriter.write(json);
+		jsonWriter.close();
+	}
+	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -114,14 +123,18 @@ public class ApiListenerServlet extends HttpServletBase {
 		 */
 		if(uri.equalsIgnoreCase("openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
-			response.setStatus(200);
+			returnJson(response, 200, jsonSchema);
+			return;
+		}
 
-			Map<String, Boolean> config = new HashMap<>();
-			config.put(JsonGenerator.PRETTY_PRINTING, true);
-			JsonWriterFactory factory = Json.createWriterFactory(config);
-			JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
-			jsonWriter.write(jsonSchema);
-			jsonWriter.close();
+		/**
+		 * Generate an OpenApi json file
+		 */
+		if(uri.endsWith("/openapi.json")) {
+			uri = uri.substring(0, uri.length()-"/openapi.json".length());
+			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
+			returnJson(response, 200, jsonSchema);
 			return;
 		}
 

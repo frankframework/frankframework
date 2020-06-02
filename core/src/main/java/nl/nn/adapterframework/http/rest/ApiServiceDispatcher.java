@@ -15,7 +15,11 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -27,6 +31,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
@@ -89,6 +94,35 @@ public class ApiServiceDispatcher {
 		return config;
 	}
 
+	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
+		List<ApiDispatchConfig> results = new ArrayList<>();
+
+		String uriSegments[] = uri.split("/");
+
+		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
+			String uriPattern = it.next();
+			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
+
+			String patternSegments[] = uriPattern.split("/");
+			if(patternSegments.length < uriSegments.length)
+				continue;
+
+			int matches = 0;
+			for (int i = 0; i < uriSegments.length; i++) {
+				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
+					matches++;
+				} else {
+					continue;
+				}
+			}
+			if(matches == uriSegments.length) {
+				results.add(patternClients.get(uriPattern));
+			}
+		}
+		return results;
+		
+	}
+
 	public synchronized void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null)
@@ -131,6 +165,16 @@ public class ApiServiceDispatcher {
 	}
 
 	protected JsonObject generateOpenApiJsonSchema() {
+		return generateOpenApiJsonSchema(getPatternClients().values());
+	}
+
+	protected JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client) {
+		List<ApiDispatchConfig> clientList = Arrays.asList(client);
+		return generateOpenApiJsonSchema(clientList);
+	}
+		
+	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients) {
+
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
@@ -143,15 +187,16 @@ public class ApiServiceDispatcher {
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
 
-		for (Entry<String, ApiDispatchConfig> entry : getPatternClients().entrySet()) {
-			ApiDispatchConfig config = entry.getValue();
+		for (ApiDispatchConfig config : clients) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				ApiListener listener = config.getApiListener(method);
 				if(listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
-					methodBuilder.add("summary", adapter.getDescription());
+					if (StringUtils.isNotEmpty(adapter.getDescription())) {
+						methodBuilder.add("summary", adapter.getDescription());
+					}
 					methodBuilder.add("operationId", adapter.getName());
 					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				}
