@@ -94,6 +94,11 @@ public class Misc {
 		return createRandomUUID(false);
 	}
 
+	/**
+	 *
+	 * @param buf
+	 * @return the hexadecimal string repreentation of the byte array.
+	 */
     public static String asHex(byte[] buf)
     {
         char[] chars = new char[2 * buf.length];
@@ -105,6 +110,10 @@ public class Misc {
         return new String(chars);
     }
 
+	/**
+	 *
+	 * @return the ip address of the machine that the program runs on.
+	 */
 	private static byte[] getIPAddress() {
 		InetAddress inetAddress = null;
 
@@ -118,6 +127,10 @@ public class Misc {
 		}
 	}
 
+	/**
+	 *
+	 * @return a unique UUID string with length 31 (ipaddress with length 4*3, currentTime with length 13, hashcode with length 6)
+	 */
 	public static String createNumericUUID() {
 		byte[] ipAddress = getIPAddress();
 		DecimalFormat df = new DecimalFormat("000");
@@ -138,11 +151,24 @@ public class Misc {
 		return s.toString();
 	}
 
+	/**
+	 *
+	 * Examples:
+	 * <blockquote><pre>
+	 * Misc.unsignedByteToInt(new Btye(12)) returns 12
+	 * Misc.unsignedByteToInt(new Byte(-12)) returns 244
+	 * </pre></blockquote>
+	 * @param b
+	 * @return integer that is converted from unsigned byte.
+	 */
 	public static int unsignedByteToInt(byte b) {
 		return (int) b & 0xFF;
 		}
 
-
+	/**
+	 *
+	 * @return the current time in milliseconds.
+	 */
 	public static synchronized long getCurrentTimeMillis(){
 		return System.currentTimeMillis();
 	}
@@ -158,6 +184,15 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input,output,true);
 	}
+
+	/**
+	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
+	 * Closes the input stream if specified.
+	 * @param input
+	 * @param output
+	 * @param closeInput: if set to 'true', the input stream gets closed.
+	 * @throws IOException
+	 */
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
 			byte[] buffer=new byte[BUFFERSIZE];
