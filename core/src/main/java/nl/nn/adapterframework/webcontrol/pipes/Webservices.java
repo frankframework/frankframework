@@ -72,29 +72,23 @@ public class Webservices extends TimeoutGuardPipe {
 		String indent = (String) session.get("indent");
 		String useIncludes = (String) session.get("useIncludes");
 
-		if (StringUtils.isNotEmpty(uri)
-				&& (uri.endsWith(Wsdl.WSDL_EXTENSION) || uri.endsWith(".zip"))) {
-			String adapterName = StringUtils.substringBeforeLast(
-					StringUtils.substringAfterLast(uri, "/"), ".");
+		if (StringUtils.isNotEmpty(uri) && (uri.endsWith(Wsdl.WSDL_EXTENSION) || uri.endsWith(".zip"))) {
+			String adapterName = StringUtils.substringBeforeLast(StringUtils.substringAfterLast(uri, "/"), ".");
 			IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "adapter [" + adapterName + "] doesn't exist");
+				throw new PipeRunException(this, getLogPrefix(session) + "adapter [" + adapterName + "] doesn't exist");
 			}
 			try {
 				if (uri.endsWith(Wsdl.WSDL_EXTENSION)) {
-					RestListenerUtils.setResponseContentType(session,
-							"application/xml");
+					RestListenerUtils.setResponseContentType(session, "application/xml");
 					wsdl((Adapter) adapter, session, indent, useIncludes);
 				} else {
-					RestListenerUtils.setResponseContentType(session,
-							"application/octet-stream");
+					RestListenerUtils.setResponseContentType(session, "application/octet-stream");
 					zip((Adapter) adapter, session);
 				}
 
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on retrieving wsdl", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on retrieving wsdl", e);
 			}
 			return "";
 		} else {
@@ -120,8 +114,7 @@ public class Webservices extends TimeoutGuardPipe {
 						if (rl.isView()) {
 							XmlBuilder restXML = new XmlBuilder("rest");
 							restXML.addAttribute("name", rb.getName());
-							restXML.addAttribute("uriPattern",
-									rl.getUriPattern());
+							restXML.addAttribute("uriPattern", rl.getUriPattern());
 							restsXML.addSubElement(restXML);
 						}
 					}
@@ -185,29 +178,22 @@ public class Webservices extends TimeoutGuardPipe {
 		return "at " + RestListenerUtils.retrieveRequestURL(session);
 	}
 	
-	private void wsdl(Adapter adapter, IPipeLineSession session, String indent,
-			String useIncludes) throws ConfigurationException,
-			XMLStreamException, IOException, NamingException {
+	private void wsdl(Adapter adapter, IPipeLineSession session, String indent, String useIncludes) throws ConfigurationException, XMLStreamException, IOException, NamingException {
 		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		if (indent != null) {
 			wsdl.setIndent(StringUtils.equalsIgnoreCase(indent, "true"));
 		}
 		if (useIncludes != null) {
-			wsdl.setUseIncludes(StringUtils.equalsIgnoreCase(useIncludes,
-					"true"));
+			wsdl.setUseIncludes(StringUtils.equalsIgnoreCase(useIncludes, "true"));
 		}
 		wsdl.init();
-		wsdl.wsdl(RestListenerUtils.retrieveServletOutputStream(session),
-				RestListenerUtils.retrieveSOAPRequestURL(session));
+		wsdl.wsdl(RestListenerUtils.retrieveServletOutputStream(session), RestListenerUtils.retrieveSOAPRequestURL(session));
 	}
 
-	private void zip(Adapter adapter, IPipeLineSession session)
-			throws ConfigurationException, XMLStreamException, IOException,
-			NamingException {
+	private void zip(Adapter adapter, IPipeLineSession session) throws ConfigurationException, XMLStreamException, IOException, NamingException {
 		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		wsdl.setUseIncludes(true);
 		wsdl.init();
-		wsdl.zip(RestListenerUtils.retrieveServletOutputStream(session),
-				RestListenerUtils.retrieveSOAPRequestURL(session));
+		wsdl.zip(RestListenerUtils.retrieveServletOutputStream(session), RestListenerUtils.retrieveSOAPRequestURL(session));
 	}
 }
