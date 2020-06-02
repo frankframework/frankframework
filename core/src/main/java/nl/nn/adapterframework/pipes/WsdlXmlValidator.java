@@ -40,6 +40,7 @@ import org.xml.sax.InputSource;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.SchemaUtils;
@@ -246,14 +247,15 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
 		Set<XSD> xsds = new HashSet<XSD>();
-		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
+		SoapVersion soapVersion = getSoapVersionEnum();
+		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
-			xsd.initNamespace(SoapVersion.VERSION_1_1.namespace, getConfigurationClassLoader(), SoapVersion.VERSION_1_1.location);
+			xsd.initNamespace(SoapVersion.SOAP11.namespace, getConfigurationClassLoader(), SoapVersion.SOAP11.location);
 			xsds.add(xsd);
 		}
-		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
+		if (soapVersion==SoapVersion.SOAP12 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
-			xsd.initNamespace(SoapVersion.VERSION_1_2.namespace,getConfigurationClassLoader(), SoapVersion.VERSION_1_2.location);
+			xsd.initNamespace(SoapVersion.SOAP12.namespace, getConfigurationClassLoader(), SoapVersion.SOAP12.location);
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
@@ -265,9 +267,9 @@ public class WsdlXmlValidator extends SoapValidator {
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
-		List types = definition.getTypes().getExtensibilityElements();
-		for (Iterator i = types.iterator(); i.hasNext();) {
-			ExtensibilityElement type = (ExtensibilityElement)i.next();
+		List<ExtensibilityElement> types = definition.getTypes().getExtensibilityElements();
+		for (Iterator<ExtensibilityElement> i = types.iterator(); i.hasNext();) {
+			ExtensibilityElement type = i.next();
 			QName qn = type.getElementType();
 			if (SchemaUtils.WSDL_SCHEMA.equals(qn)) {
 				final Schema schema = (Schema) type;
@@ -323,7 +325,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 	
-	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})
+	@IbisDoc({"1", "pairs of uri references which will be added to the wsdl", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
@@ -332,7 +334,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		return schemaLocationToAdd;
 	}
 
-	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
+	@IbisDoc({"2", "creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}
@@ -402,17 +404,17 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 
 	private InputSource getInputSource(URL url) {
 		InputStream inputStream = null;
+		InputSource source = null;
 		if (url != null) {
 			try {
 				inputStream = url.openStream();
 			} catch (IOException e) {
 				ioException = e;
 			}
-		}
-		InputSource source = null;
-		if (inputStream != null) {
-			source = new InputSource(inputStream);
-			source.setSystemId(url.toString());
+			if (inputStream != null) {
+				source = new InputSource(inputStream);
+				source.setSystemId(url.toString());
+			}
 		}
 		return source;
 	}

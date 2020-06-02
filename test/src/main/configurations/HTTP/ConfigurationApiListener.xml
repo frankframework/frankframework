@@ -30,12 +30,41 @@
 
 		</pipeline>
 	</adapter>
-	<adapter name="ApiListener_SimpleInsertWithException">
+	<adapter name="ApiListener_SimpleInsertWithTransactedException">
 		<receiver
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			transactionAttribute="Required"
+			>
+			<listener
+				name="SimpleInsertListener"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="transacted-exception"
+				method="post"
+			/>
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="ApiListenerDuplicateCheck" />
+		</receiver>
+		<pipeline transactionAttribute="Required">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
+					<param name="tvarchar" sessionKey="messageId" />
+				</sender>
+			</pipe>
+			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="ApiListener_SimpleInsertWithException">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			checkForDuplicates="true"
+			processResultCacheSize="0"
 			>
 			<listener
 				name="SimpleInsertListener"

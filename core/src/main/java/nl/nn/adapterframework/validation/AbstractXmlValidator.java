@@ -174,12 +174,14 @@ public abstract class AbstractXmlValidator {
 	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
+			// If a filter is present, connect its output to the context.contentHandler.
+			// It is assumed that the filter input is already properly connected.
 			filter.setContentHandler(context.getContentHandler());
 			filter.setErrorHandler(context.getErrorHandler());
 		} else {
 			validatorHandler.setContentHandler(context.getContentHandler());
-			validatorHandler.setErrorHandler(context.getErrorHandler());
 		}
+		validatorHandler.setErrorHandler(context.getErrorHandler());
 
 		InputSource is = getInputSource(Message.asMessage(input));
 
