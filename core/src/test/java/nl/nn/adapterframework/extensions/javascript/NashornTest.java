@@ -62,7 +62,6 @@ public class NashornTest {
 		String script = "function plusTwo(x) { return x + 2;}";
 		engine.executeScript(script);
 		Double out = (Double) engine.executeFunction("plusTwo", 5);
-		System.err.println("out: " + out);
 		Assert.assertEquals(7.0, out, 0.0);
 	}
 
