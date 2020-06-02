@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +21,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +31,13 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 
 /**
@@ -36,6 +46,27 @@ import org.junit.Test;
  * @author <Sina Sen>
  */
 public class MiscTest {
+
+    @ClassRule
+    public static TemporaryFolder testFolder = new TemporaryFolder();
+    private static String sourceFolderPath;
+
+    private static File file;
+
+    @BeforeClass
+    public static void setUp() throws IOException {
+        sourceFolderPath = testFolder.getRoot().getPath();
+        file = testFolder.newFile("lebron.txt");
+        Writer w = new FileWriter(file.getName());
+        w.write("inside the lebron file");
+        w.close();
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        File f = new File("lebron.txt");
+        f.delete();
+    }
 
 
     @Test
@@ -61,7 +92,7 @@ public class MiscTest {
         @Override
         public void close() throws IOException {
             inputStreamClosed = true;
-            ;
+
             super.close();
         }
     }
@@ -72,7 +103,6 @@ public class MiscTest {
     @Test
     public void testCreateSimpleUUID() throws Exception {
         String uuid = Misc.createSimpleUUID();
-        assertEquals(uuid.substring(0, 8), "0a00006b");
         assertEquals(uuid.substring(8, 9), "-");
         assertEquals(uuid.length(), 35);
     }
@@ -124,12 +154,9 @@ public class MiscTest {
      */
     @Test
     public void testFileToWriter() throws Exception {
-        File file = new File("/Misc/miscfile.txt");
-        String s = TestFileUtils.getTestFile("/Misc/miscfile.txt");
         Writer writer = new StringWriter();
-        System.out.println(s);
-        Misc.fileToWriter(file.getAbsolutePath(), writer);
-        assertEquals(s, "test");
+        Misc.fileToWriter(file.getName(), writer);
+        assertEquals(writer.toString(), "inside the lebron file");
     }
 
     /**
@@ -137,10 +164,9 @@ public class MiscTest {
      */
     @Test
     public void testFileToStream() throws Exception {
-        File file = new File(TestFileUtils.getTestFile("src/test/resources/Misc/miscfile.txt"));
         OutputStream os = new ByteArrayOutputStream();
         Misc.fileToStream(file.getName(), os);
-        assertEquals(os.toString(), "test");
+        assertEquals(os.toString(), "inside the lebron file");
     }
 
     /**
@@ -174,7 +200,6 @@ public class MiscTest {
     public void testStreamToFile() throws Exception {
         String test = "test";
         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
-        File file = new File(TestFileUtils.getTestFile("/Misc/miscfile.txt"));
         Misc.streamToFile(bais, file);
 
         // to read from the file
@@ -223,8 +248,7 @@ public class MiscTest {
     @Test
     public void testFileToStringFileName() throws Exception {
         //Misc.resourceToString()
-        File file = new File(TestFileUtils.getTestFile("/Misc/miscfile.txt"));
-        assertEquals(Misc.fileToString(file.getName()), "test");
+        assertEquals(Misc.fileToString(file.getName()), "inside the lebron file");
     }
 
 
@@ -260,29 +284,6 @@ public class MiscTest {
         assertEquals(s, "&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r");
     }
 
-    /**
-     * Method: resourceToString(URL resource, String endOfLineString, boolean xmlEncode)
-     */
-    @Test
-    public void testResourceToStringForResourceEndOfLineStringXmlEncode() throws Exception {
-//TODO: Test goes here...
-    }
-
-    /**
-     * Method: resourceToString(URL resource)
-     */
-    @Test
-    public void testResourceToStringResource() throws Exception {
-//TODO: Test goes here...
-    }
-
-    /**
-     * Method: resourceToString(URL resource, String endOfLineString)
-     */
-    @Test
-    public void testResourceToStringForResourceEndOfLineString() throws Exception {
-//TODO: Test goes here...
-    }
 
 
     /**
@@ -518,4 +519,70 @@ String s = "12ab34";
     int regexCount = Misc.countRegex(s, regex);
     assertEquals(regexCount, 4);
     }
+
+    /**
+     * Method: resourceToString(URL resource)
+     */
+    @Test
+    public void testResourceToStringResource() throws Exception {
+        URL resource = new URL("http://example.com/");
+        String s1 = Misc.resourceToString(resource);
+        assertEquals(s1, "<!doctype html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    <title>Example Domain</title>\n" +
+                "\n" +
+                "    <meta charset=\"utf-8\" />\n" +
+                "    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n" +
+                "    <style type=\"text/css\">\n" +
+                "    body {\n" +
+                "        background-color: #f0f0f2;\n" +
+                "        margin: 0;\n" +
+                "        padding: 0;\n" +
+                "        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n" +
+                "        \n" +
+                "    }\n" +
+                "    div {\n" +
+                "        width: 600px;\n" +
+                "        margin: 5em auto;\n" +
+                "        padding: 2em;\n" +
+                "        background-color: #fdfdff;\n" +
+                "        border-radius: 0.5em;\n" +
+                "        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n" +
+                "    }\n" +
+                "    a:link, a:visited {\n" +
+                "        color: #38488f;\n" +
+                "        text-decoration: none;\n" +
+                "    }\n" +
+                "    @media (max-width: 700px) {\n" +
+                "        div {\n" +
+                "            margin: 0 auto;\n" +
+                "            width: auto;\n" +
+                "        }\n" +
+                "    }\n" +
+                "    </style>    \n" +
+                "</head>\n" +
+                "\n" +
+                "<body>\n" +
+                "<div>\n" +
+                "    <h1>Example Domain</h1>\n" +
+                "    <p>This domain is for use in illustrative examples in documents. You may use this\n" +
+                "    domain in literature without prior coordination or asking for permission.</p>\n" +
+                "    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n" +
+                "</div>\n" +
+                "</body>\n" +
+                "</html>\n");
+    }
+
+    /**
+     * Method: resourceToString(URL resource, String endOfLineString, boolean xmlEncode)
+     */
+    @Test
+    public void testResourceToStringForResourceEndOfLineStringXmlEncode() throws Exception {
+        URL resource = new URL("http://example.com/");
+        String s1 = Misc.resourceToString(resource, "end of the page", true);
+        assertEquals(s1, "&lt;!doctype html&gt;end of the page&lt;html&gt;end of the page&lt;head&gt;end of the page    &lt;title&gt;Example Domain&lt;/title&gt;end of the pageend of the page    &lt;meta charset=&quot;utf-8&quot; /&gt;end of the page    &lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;end of the page    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;end of the page    &lt;style type=&quot;text/css&quot;&gt;end of the page    body {end of the page        background-color: #f0f0f2;end of the page        margin: 0;end of the page        padding: 0;end of the page        font-family: -apple-system, system-ui, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;end of the page        end of the page    }end of the page    div {end of the page        width: 600px;end of the page        margin: 5em auto;end of the page        padding: 2em;end of the page        background-color: #fdfdff;end of the page        border-radius: 0.5em;end of the page        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);end of the page    }end of the page    a:link, a:visited {end of the page        color: #38488f;end of the page        text-decoration: none;end of the page    }end of the page    @media (max-width: 700px) {end of the page        div {end of the page            margin: 0 auto;end of the page            width: auto;end of the page        }end of the page    }end of the page    &lt;/style&gt;    end of the page&lt;/head&gt;end of the pageend of the page&lt;body&gt;end of the page&lt;div&gt;end of the page    &lt;h1&gt;Example Domain&lt;/h1&gt;end of the page    &lt;p&gt;This domain is for use in illustrative examples in documents. You may use thisend of the page    domain in literature without prior coordination or asking for permission.&lt;/p&gt;end of the page    &lt;p&gt;&lt;a href=&quot;https://www.iana.org/domains/example&quot;&gt;More information...&lt;/a&gt;&lt;/p&gt;end of the page&lt;/div&gt;end of the page&lt;/body&gt;end of the page&lt;/html&gt;end of the page");
+    }
+
 }
