@@ -138,7 +138,7 @@ public class Webservices extends TimeoutGuardPipe {
 				Adapter adapter = (Adapter) a;
 				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 				wsdlXML.addAttribute("name", wsdl.getName());
-				wsdlXML.addAttribute("extention", Wsdl.WSDL_EXTENSION);
+				wsdlXML.addAttribute("extension", Wsdl.WSDL_EXTENSION);
 			} catch (Exception e) {
 				wsdlXML.addAttribute("name", a.getName());
 				XmlBuilder errorXML = new XmlBuilder("error");

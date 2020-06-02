@@ -88,7 +88,7 @@ public final class Webservices extends Base {
 				Adapter adapter = (Adapter) a;
 				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
 				wsdlMap.put("name", wsdl.getName());
-				wsdlMap.put("extention", getWsdlExtention());
+				wsdlMap.put("extension", getWsdlExtension());
 			} catch (Exception e) {
 				wsdlMap.put("name", a.getName());
 
@@ -105,7 +105,7 @@ public final class Webservices extends Base {
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
-	private String getWsdlExtention() {
+	private String getWsdlExtension() {
 		return ".wsdl";
 	}
 }

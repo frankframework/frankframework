@@ -128,7 +128,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		/**
-		 * Generate an OpenApi json file
+		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 */
 		if(uri.endsWith("/openapi.json")) {
 			uri = uri.substring(0, uri.length()-"/openapi.json".length());
