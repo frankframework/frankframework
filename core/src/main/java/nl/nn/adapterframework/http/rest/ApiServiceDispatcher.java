@@ -64,38 +64,16 @@ public class ApiServiceDispatcher {
 	}
 
 	public ApiDispatchConfig findConfigForUri(String uri) {
-		ApiDispatchConfig config = null;
-
-		String uriSegments[] = uri.split("/");
-
-		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
-			String uriPattern = it.next();
-			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
-
-			String patternSegments[] = uriPattern.split("/");
-			if(patternSegments.length != uriSegments.length)
-				continue;
-
-			int matches = 0;
-			for (int i = 0; i < patternSegments.length; i++) {
-				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
-					matches++;
-				}
-				else {
-					break;
-				}
-			}
-			if(matches == uriSegments.length) {
-				config = patternClients.get(uriPattern);
-				break;
-			}
-		}
-
-		return config;
+		return (ApiDispatchConfig)findMatchingConfigsForUri(uri, true); 
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
-		List<ApiDispatchConfig> results = new ArrayList<>();
+		return (List<ApiDispatchConfig>)findMatchingConfigsForUri(uri, false); 
+	}
+
+	private Object findMatchingConfigsForUri(String uri, boolean exactMatch) {
+		List<ApiDispatchConfig> results = exactMatch ? null : new ArrayList<>();
 
 		String uriSegments[] = uri.split("/");
 
@@ -104,8 +82,9 @@ public class ApiServiceDispatcher {
 			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
 			String patternSegments[] = uriPattern.split("/");
-			if(patternSegments.length < uriSegments.length)
+			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 				continue;
+			}
 
 			int matches = 0;
 			for (int i = 0; i < uriSegments.length; i++) {
@@ -116,11 +95,14 @@ public class ApiServiceDispatcher {
 				}
 			}
 			if(matches == uriSegments.length) {
-				results.add(patternClients.get(uriPattern));
+				ApiDispatchConfig result = patternClients.get(uriPattern); 
+				if (exactMatch) {
+					return result;
+				}
+				results.add(result);
 			}
 		}
 		return results;
-		
 	}
 
 	public synchronized void registerServiceClient(ApiListener listener) throws ListenerException {

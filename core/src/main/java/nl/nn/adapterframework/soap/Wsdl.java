@@ -99,7 +99,6 @@ public class Wsdl {
     private final PipeLine pipeLine;
     private final IXmlValidator inputValidator;
     private final IXmlValidator outputValidator;
-    private final boolean isMixedValidator=false; 
     private String webServiceListenerNamespace;
     private Set<XSD> inputXsds;
     private Set<XSD> outputXsds;
@@ -166,7 +165,6 @@ public class Wsdl {
                 throw new IllegalStateException(outputValidator.getConfigurationException().toString());
             }
         }
-		//isMixedValidator = inputValidator.isMixedValidator(outputValidator);
         String fileName = getName();
         AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
@@ -377,10 +375,6 @@ public class Wsdl {
             rootXsds.addAll(outputRootXsds);
             outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
             xsds.addAll(outputXsds);
-        } else {
-        	if (isMixedValidator) {
-                outputXsds.addAll(inputXsds);
-        	}
         }
         prefixByXsd = new LinkedHashMap<XSD, String>();
         namespaceByPrefix = new LinkedHashMap<String, String>();
@@ -418,13 +412,6 @@ public class Wsdl {
             outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
         	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
-        } else {
-        	if (isMixedValidator) {
-                outputRoot = getRoot(inputValidator, true);
-                outputHeaderElement = inputHeaderElement;
-            	outputHeaderIsOptional = inputHeaderIsOptional;
-                outputBodyElement = getBodyElement(inputValidator, outputXsds, "outputValidator", true);
-        	}
         }
         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
@@ -617,7 +604,7 @@ public class Wsdl {
             }
             message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
         }
-        if (outputValidator != null || isMixedValidator) {
+        if (outputValidator != null) {
             parts.clear();
             if (outputHeaderElement != null && !outputHeaderIsOptional) {
             	parts.add(outputHeaderElement);
@@ -750,7 +737,7 @@ public class Wsdl {
                 writeSoapBody(w, inputBodyElement);
             }
             w.writeEndElement();
-            if (outputValidator != null || isMixedValidator) {
+            if (outputValidator != null) {
                 w.writeStartElement(WSDL_NAMESPACE, "output"); {
                     writeSoapHeader(w, outputRoot, outputHeaderElement, outputHeaderIsOptional);
                     writeSoapBody(w, outputBodyElement);
