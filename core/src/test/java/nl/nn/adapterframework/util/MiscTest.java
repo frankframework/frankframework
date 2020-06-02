@@ -485,7 +485,7 @@ assertFalse(Misc.getFileSystemFreeSpace().isEmpty());    }
     @Test
     public void testGetBuildOutputDirectory() throws Exception {
         String outputDirectory = Misc.getBuildOutputDirectory();
-assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirectory.length()), "\\iaf\\core\\target\\test-classes");    }
+assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirectory.length()), "/iaf/core/target/test-classes");    }
 
     /**
      * Method: getProjectBaseDir()
@@ -493,7 +493,7 @@ assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirect
     @Test
     public void testGetProjectBaseDir() throws Exception {
         String baseDir = Misc.getBuildOutputDirectory();
-        assertEquals(baseDir.substring(baseDir.length()-29, baseDir.length()), "\\iaf\\core\\target\\test-classes");
+        assertEquals(baseDir.substring(baseDir.length()-29, baseDir.length()), "/iaf/core/target/test-classes");
     }
 
     /**
