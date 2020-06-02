@@ -228,7 +228,6 @@ public class MiscTest {
      */
     @Test
     public void testReaderToWriterForReaderWriter() throws Exception {
-        String test = "test";
         Reader reader = new StringReader("test");
         Writer writer = new StringWriter();
         Misc.readerToWriter(reader, writer);
