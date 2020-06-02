@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.pipe;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -32,10 +33,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
+import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
-import nl.nn.adapterframework.extensions.aspose.services.conv.impl.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -61,7 +63,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
 	protected String charset = "UTF-8"; //TODO this should be uniform! StreamUtil.DEFAULT_INPUT_STREAM_ENCODING
 	private boolean isTempDirCreated = false;
-	private AsposeLicenseLoader loader;
+	private AsposeFontManager fontManager;
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -88,19 +90,23 @@ public class PdfPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(license)) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field could be set with a valid information to avoid this. ");
 		} else {
-			if(ClassUtils.getResourceURL(getConfigurationClassLoader(), license) == null) {
+			URL licenseUrl = ClassUtils.getResourceURL(PdfPipe.class.getClassLoader(), license);
+			if(licenseUrl == null) {
 				throw new ConfigurationException("Specified file for aspose license is not found");
 			}
+
+			try {
+				AsposeLicenseLoader.loadLicenses(licenseUrl);
+			} catch (Exception e) {
+				throw new ConfigurationException("an error occured while loading Aspose license(s)");
+			}
 		}
-		// load license 
+
+		fontManager = new AsposeFontManager(fontsDirectory);
 		try {
-			//TODO licenseloader should only be loaded once, regardless of the amount of pipes!
-			//TODO licenseloader should not contain any fonts!
-			//TODO licenseloader should take an URL and not a String
-			loader = new AsposeLicenseLoader(license, fontsDirectory);
-			loader.loadLicense();
-		} catch (Exception e) {
-			throw new ConfigurationException("Error occured while loading the license", e);
+			fontManager.load();
+		} catch (IOException e) {
+			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
 	}
 
@@ -153,7 +159,7 @@ public class PdfPipe extends FixedForwardPipe {
 			} else if ("convert".equalsIgnoreCase(action)) {
 				String fileName = (String) session.get("fileName");
 				CisConversionResult cisConversionResult = null;
-				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, loader.getPathToExtractFonts());
+				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, fontManager.getFontsPath());
 				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName, saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
 				XmlBuilder main = new XmlBuilder("main");
 				cisConversionResult.buildXmlFromResult(main, cisConversionResult, true);
