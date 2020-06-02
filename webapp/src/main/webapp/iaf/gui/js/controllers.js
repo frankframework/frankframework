@@ -1602,7 +1602,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
-	$scope.rootURL = Misc.getServerPath() + 'rest/';
+	$scope.rootURL = Misc.getServerPath();
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
 	});

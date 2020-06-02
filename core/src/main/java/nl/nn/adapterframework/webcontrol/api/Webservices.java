@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
@@ -34,7 +37,11 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
+import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
 
@@ -101,6 +108,33 @@ public final class Webservices extends Base {
 			wsdls.add(wsdlMap);
 		}
 		returnMap.put("wsdls", wsdls);
+
+		//ApiListeners
+		List<Map<String, Object>> apiListeners = new ArrayList<Map<String, Object>>();
+		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
+		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
+			ApiDispatchConfig config = client.getValue();
+
+			Set<String> methods = config.getMethods();
+			for (String method : methods) {
+				ApiListener listener = config.getApiListener(method);
+				IReceiver receiver = listener.getReceiver();
+				IAdapter adapter = receiver == null? null : receiver.getAdapter();
+				Map<String, Object> endpoint = new HashMap<>();
+				endpoint.put("uriPattern", config.getUriPattern());
+				endpoint.put("method", method);
+				endpoint.put("adapter", adapter.getName());
+				endpoint.put("receiver", receiver.getName());
+				PipeLine pipeline = adapter.getPipeLine();
+				if (pipeline.getInputValidator()==null && pipeline.getOutputValidator()==null) {
+					endpoint.put("error","pipeline has no validator");
+				} else {
+					endpoint.put("schemaResource","openapi.json");
+				}
+				apiListeners.add(endpoint);
+			}
+		}
+		returnMap.put("apiListeners", apiListeners);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
