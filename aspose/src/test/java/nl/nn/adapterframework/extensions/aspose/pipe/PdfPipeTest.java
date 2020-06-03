@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -218,16 +218,17 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.configure();
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void emptyLicense() throws Exception {
+		pipe.setAction("convert"); //without action the pipe will never reach the license block!
 		pipe.setLicense("");
 		pipe.configure();
 	}
 
 	@Test(expected = ConfigurationException.class)
 	public void wrongLicense() throws Exception {
-		pipe.setLicense("test123");
+		pipe.setAction("convert"); //without action the pipe will never reach the license block!
+		pipe.setLicense("test123");//can't find this 'license' file
 		pipe.configure();
 	}
-
 }
