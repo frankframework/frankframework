@@ -57,13 +57,13 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testProducesPdfWithCharset() throws ConfigurationException {
-		listener.setProduces("PDF");
+	public void testProducesTextWithCharset() throws ConfigurationException {
+		listener.setProduces("TEXT");
 		listener.setCharacterEncoding("utf-8");
 		listener.configure();
 
-		assertEquals("PDF", listener.getProduces());
-		assertEquals("application/pdf;charset=UTF-8", listener.getContentType());
+		assertEquals("TEXT", listener.getProduces());
+		assertEquals("text/plain;charset=UTF-8", listener.getContentType());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -98,7 +98,7 @@ public class ApiListenerTest {
 			listener.setProduces(type.name());
 			listener.configure(); //Check if the mediatype passes the configure checks
 
-			assertEquals(type.getContentType(), listener.getContentType());
+			assertTrue(listener.getContentType().startsWith(type.getContentType()));
 		}
 
 		//Check empty produces

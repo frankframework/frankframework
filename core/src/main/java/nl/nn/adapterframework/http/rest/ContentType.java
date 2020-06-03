@@ -15,23 +15,31 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class ContentType {
 	public static final String CHARSET_PARAMETER = "charset";
 	private MediaTypes mediaType;
-	private String charset;
+	private Charset charset;
 
 	public ContentType(MediaTypes mediaType) {
 		this.mediaType = mediaType;
+		this.charset = mediaType.getCharset(); // when charset = NULL it means setting it is disallowed
 	}
 
 	public void setCharset(String charset) {
+		if(charset == null) {
+			throw new UnsupportedCharsetException("provided mediatype does not support setting charset");
+		}
+
 		if(StringUtils.isNotEmpty(charset)) {
-			this.charset = charset.toUpperCase();
+			this.charset = Charset.forName(charset);
 		}
 	}
-	public String getCharset() {
+	public Charset getCharset() {
 		return charset;
 	}
 
@@ -41,7 +49,7 @@ public class ContentType {
 			string.append(";");
 			string.append(CHARSET_PARAMETER);
 			string.append("=");
-			string.append(charset);
+			string.append(charset.name());
 		}
 
 		return string.toString();

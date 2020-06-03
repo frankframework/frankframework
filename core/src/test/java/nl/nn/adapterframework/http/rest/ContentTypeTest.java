@@ -18,24 +18,43 @@ package nl.nn.adapterframework.http.rest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.nio.charset.UnsupportedCharsetException;
+
 import org.junit.Test;
 
 public class ContentTypeTest {
 
 	@Test
 	public void defaultTest() {
-		ContentType contenType = new ContentType(MediaTypes.ANY);
-		assertNull("MediaType should not have a charset by default", contenType.getCharset());
-		assertEquals("ContentType should be */* without charset", "*/*", contenType.getContentType());
+		ContentType contentType = new ContentType(MediaTypes.ANY);
+		assertNull("MediaType should not have a charset by default", contentType.getCharset());
+		assertEquals("ContentType should be */* without charset", "*/*", contentType.getContentType());
 	}
 
 	@Test
-	public void withCharset() {
-		ContentType contenType = new ContentType(MediaTypes.PDF);
-		assertNull("ContentType should not have a charset by default", contenType.getCharset());
-		assertEquals("ContentType should be application/pdf without charset", "application/pdf", contenType.getContentType());
+	public void utf8Charset() {
+		ContentType contentType = new ContentType(MediaTypes.TEXT);
+		assertEquals("ContentType should have a charset UTF-8", "UTF-8", contentType.getCharset().name());
+		assertEquals("ContentType should be application/pdf with utf-8 charset", "text/plain;charset=UTF-8", contentType.getContentType());
+	}
 
-		contenType.setCharset("Utf-8");
-		assertEquals("application/pdf;charset=UTF-8", contenType.getContentType());
+	@Test
+	public void isoCharset() {
+		ContentType contentType = new ContentType(MediaTypes.TEXT);
+		contentType.setCharset("ISO-8859-1");
+		assertEquals("text/plain;charset=ISO-8859-1", contentType.getContentType());
+	}
+
+	@Test
+	public void asciiCharset() {
+		ContentType contentType = new ContentType(MediaTypes.TEXT);
+		contentType.setCharset("US-ASCII");
+		assertEquals("text/plain;charset=US-ASCII", contentType.getContentType());
+	}
+
+	@Test(expected=UnsupportedCharsetException.class)
+	public void faultyCharset() {
+		ContentType contentType = new ContentType(MediaTypes.TEXT);
+		contentType.setCharset("ISO-1234");
 	}
 }

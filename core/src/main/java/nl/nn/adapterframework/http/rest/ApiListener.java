@@ -31,6 +31,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * 
@@ -57,7 +58,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
-	private String charset = null; //Use system default or UTF-8?
+	private String charset = null;
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -81,7 +82,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
 		producedContentType = new ContentType(produces);
-		if(StringUtils.isNotEmpty(charset)) {
+		if(charset != null) {
 			producedContentType.setCharset(charset);
 		}
 	}
@@ -190,9 +191,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return produces.name();
 	}
 
-	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", ""})
+	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
 	public void setCharacterEncoding(String charset) {
-		this.charset = charset;
+		if(StringUtils.isNotEmpty(charset)) {
+			this.charset = charset;
+		}
 	}
 	public String getCharacterEncoding() {
 		return charset;
