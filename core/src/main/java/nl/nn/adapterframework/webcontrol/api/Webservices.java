@@ -182,7 +182,9 @@ public final class Webservices extends Base {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
-			String servletName = "serviceuri"; // TODO: set proper serviceuri
+			// TODO: set proper servletName. This is used in Wsdl.service() set location of the service, when it cannot be found
+			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
+			String servletName = "external address of ibis"; 
 			String generationInfo = "by FrankConsole";
 			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
@@ -193,7 +195,7 @@ public final class Webservices extends Base {
 				public void write(OutputStream out) throws IOException, WebApplicationException {
 					try {
 						if (zip) {
-							 wsdl.zip(out, servletName);
+							wsdl.zip(out, servletName);
 						} else {
 							wsdl.wsdl(out, servletName);
 						}
