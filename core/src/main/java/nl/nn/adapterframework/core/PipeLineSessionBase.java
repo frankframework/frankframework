@@ -51,6 +51,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		super(t);
 	}
 
+	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
 	@Override
 	public String getMessageId() {
 		return (String) get(messageIdKey);
@@ -64,11 +65,13 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	/**
 	 * Convenience method to set required parameters from listeners
 	 */
-	public static void setListenerParameters(Map<String,Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
+	public static void setListenerParameters(Map<String, Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
 			map.put("id", messageId);
 		}
-		map.put(technicalCorrelationIdKey, technicalCorrelationId);
+		if (technicalCorrelationId!=null) {
+			map.put(technicalCorrelationIdKey, technicalCorrelationId);
+		}
 		if (tsReceived==null) {
 			tsReceived=new Date();
 		}

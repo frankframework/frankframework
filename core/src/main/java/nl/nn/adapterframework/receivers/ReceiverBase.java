@@ -91,7 +91,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -384,7 +384,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void warn(String msg) {
 		log.warn(getLogPrefix()+msg);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperMessage.WARN_LEVEL);
+			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
 	}
 
 	/** 
@@ -393,7 +393,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void error(String msg, Throwable t) {
 		log.error(getLogPrefix()+msg, t);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperMessage.ERROR_LEVEL);
+			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 	}
 
 
@@ -894,15 +894,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Date tsReceived = null;
 		Date tsSent = null;
 		if (context!=null) {
-			//TODO ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters
-			tsReceived = (Date)context.get(IPipeLineSession.tsReceivedKey);
-			tsSent = (Date)context.get(IPipeLineSession.tsSentKey);
+			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters, hence these silly instanceof's
+			Object tsReceivedObj = context.get(IPipeLineSession.tsReceivedKey);
+			Object tsSentObj = (Date)context.get(IPipeLineSession.tsSentKey);
+			if(tsReceivedObj instanceof Date) {
+				tsReceived = (Date) context.get(IPipeLineSession.tsReceivedKey);
+			} else if(tsReceivedObj instanceof String) {
+				tsReceived = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
+			}
+			if(tsSentObj instanceof Date) {
+				tsSent = (Date) context.get(IPipeLineSession.tsSentKey);
+			} else if(tsSentObj instanceof String) {
+				tsSent = DateUtils.parseToDate((String) tsSentObj, DateUtils.FORMAT_FULL_GENERIC);
+			}
 		} else {
 			context=new HashMap();
 		}
 
 		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
-		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
+		String messageId = (String) context.get("id");
+		return processMessageInAdapter(origin, message, message, messageId, correlationId, context, waitingTime, false);
 	}
 
 

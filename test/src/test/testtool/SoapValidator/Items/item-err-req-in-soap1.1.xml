@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Body>
+		<Item_Request xmlns="urn:items">
+			<Status>e</Status>
+			<Item>
+				<Id>1</Id>
+			</Item>
+		</Item_Request>
+	</soapenv:Body>
+</soapenv:Envelope>

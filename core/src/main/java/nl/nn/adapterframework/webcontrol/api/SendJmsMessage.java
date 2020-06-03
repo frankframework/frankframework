@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -59,35 +58,26 @@ public final class SendJmsMessage extends Base {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
 
-		String jmsRealm = null, destinationName = null, destinationType = null, replyTo = null, message = null, fileName = null;
+		String message = null, fileName = null;
 		InputStream file = null;
-		boolean persistent = false;
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		String jmsRealm = resolveStringFromMap(inputDataMap, "realm");
+		String destinationName = resolveStringFromMap(inputDataMap, "destination");
+		String destinationType = resolveStringFromMap(inputDataMap, "type");
+		String replyTo = resolveStringFromMap(inputDataMap, "replyTo");
+		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
+
 		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
-			else
-				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.get("destination") != null)
-				destinationName = inputDataMap.get("destination").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.get("type") != null) 
-				destinationType = inputDataMap.get("type").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.get("replyTo") != null)
-				replyTo = inputDataMap.get("replyTo").get(0).getBodyAsString();
-			else
-				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.get("message") != null) 
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("persistent") != null)
-				persistent = inputDataMap.get("persistent").get(0).getBody(boolean.class, null);
+			if(inputDataMap.get("message") != null) {
+				InputPart part = inputDataMap.get("message").get(0);
+				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
+				message = part.getBodyAsString();
+			}
 			if(inputDataMap.get("file") != null)
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
 		}
@@ -111,11 +101,11 @@ public final class SendJmsMessage extends Base {
 					message = null;
 				}
 				else {
-					message = XmlUtils.readXml(Misc.streamToBytes(file), Misc.DEFAULT_INPUT_STREAM_ENCODING, false);
+					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
 				}
 			}
 			else {
-				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
+				message = new String(message.getBytes(), fileEncoding);
 			}
 		}
 		catch (Exception e) {
@@ -128,7 +118,7 @@ public final class SendJmsMessage extends Base {
 			if ((replyTo!=null) && (replyTo.length()>0))
 				qms.setReplyToName(replyTo);
 
-			processMessage(qms, "testmsg_"+Misc.createUUID(), message);
+			processMessage(qms, message);
 
 			return Response.status(Response.Status.OK).build();
 		}
@@ -150,7 +140,6 @@ public final class SendJmsMessage extends Base {
 	private void processZipFile(InputStream file, JmsSender qms, String replyTo) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
-			String name = entry.getName();
 			int size = (int)entry.getSize();
 			if (size>0) {
 				byte[] b=new byte[size];
@@ -168,33 +157,14 @@ public final class SendJmsMessage extends Base {
 				if ((replyTo!=null) && (replyTo.length()>0))
 					qms.setReplyToName(replyTo);
 
-				processMessage(qms, name+"_" + Misc.createSimpleUUID(), currentMessage);
+				processMessage(qms, currentMessage);
 			}
 			archive.closeEntry();
 		}
 		archive.close();
 	}
 
-	private void processMessage(JmsSender qms, String messageId, String message) throws ApiException {
-		Map<String, String> ibisContexts = XmlUtils.getIbisContext(message);
-		String technicalCorrelationId = messageId;
-		if (log.isDebugEnabled()) {
-			if (ibisContexts!=null) {
-				String contextDump = "ibisContext:";
-				for (Iterator<String> it = ibisContexts.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					String value = ibisContexts.get(key);
-					if (log.isDebugEnabled()) {
-						contextDump = contextDump + "\n " + key + "=[" + value + "]";
-					}
-					if (key.equals("tcid")) {
-						technicalCorrelationId = value;
-					}
-				}
-				log.debug(contextDump);
-			}
-		}
-
+	private void processMessage(JmsSender qms, String message) throws ApiException {
 		try {
 			qms.open();
 			/*

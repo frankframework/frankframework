@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -43,11 +43,12 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener extends JdbcFacade implements IPullingListener {
+public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	private String startLocalTransactionQuery;
 	private String commitLocalTransactionQuery;
 	private String selectQuery;
+	private String peekQuery;
 	private String updateStatusToProcessedQuery;
 	private String updateStatusToErrorQuery;
 
@@ -63,7 +64,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	private String preparedSelectQuery;
 
-	private  boolean trace=false;
+	private boolean trace=false;
+	private boolean peekUntransacted=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -115,6 +117,42 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
+	@Override
+	public boolean hasRawMessageAvailable() throws ListenerException {
+		if (StringUtils.isEmpty(getPeekQuery())) {
+			return true;
+		} else {
+			if (isConnectionsArePooled()) {
+				Connection c = null;
+				try {
+					c = getConnection();
+					return hasRawMessageAvailable(c);
+				} catch (JdbcException e) {
+					throw new ListenerException(e);
+				} finally {
+					if (c != null) {
+						try {
+							c.close();
+						} catch (SQLException e) {
+							log.warn(new ListenerException(getLogPrefix() + "caught exception closing listener after retrieving message trigger", e));
+						}
+					}
+				}
+			}
+			synchronized (connection) {
+				return hasRawMessageAvailable(connection);
+			}
+		}
+	}
+
+	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
+		try {
+			return !JdbcUtil.isQueryResultEmpty(conn, getPeekQuery());
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + getPeekQuery() + "]", e);
+		}
+	}
+	
 	@Override
 	public Object getRawMessage(Map threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
@@ -325,11 +363,21 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
+		if (peekQuery==null) {
+			peekQuery = selectQuery;
+		}
 	}
 	public String getSelectQuery() {
 		return selectQuery;
 	}
 
+	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
+	protected void setPeekQuery(String string) {
+		peekQuery = string;
+	}
+	public String getPeekQuery() {
+		return peekQuery;
+	}
 
 	protected void setUpdateStatusToErrorQuery(String string) {
 		updateStatusToErrorQuery = string;
@@ -344,7 +392,6 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public String getUpdateStatusToProcessedQuery() {
 		return updateStatusToProcessedQuery;
 	}
-
 
 	@IbisDoc({"primary key field of the table, used to identify messages", ""})
 	protected void setKeyField(String fieldname) {
@@ -415,4 +462,13 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		this.trace = trace;
 	}
 
+	@Override
+	public boolean isPeekUntransacted() {
+		return peekUntransacted;
+	}
+
+	@Override
+	public void setPeekUntransacted(boolean b) {
+		peekUntransacted = b;
+	}
 }

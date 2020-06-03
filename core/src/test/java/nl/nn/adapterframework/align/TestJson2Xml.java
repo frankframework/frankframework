@@ -12,6 +12,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonStructure;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -58,7 +59,7 @@ public class TestJson2Xml extends AlignTestBase {
 	
 	public void testStrings(String xmlIn, String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactInput, boolean potentialCompactionProblems, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
-		if (xmlIn!=null) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
+		if (StringUtils.isNotEmpty(xmlIn)) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
 
 		JsonStructure json = Utils.string2Json(jsonIn);
 		System.out.println("jsonIn ["+json+"]");
@@ -162,11 +163,6 @@ public class TestJson2Xml extends AlignTestBase {
 	@Test
     public void testNestedValue() throws Exception {
 		testTreeAndMap("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue","/NestedValue/result",null);
-    }
-
-    @Test
-    public void testEmbeddedChoice() throws Exception {
-    	testFiles("EmbeddedChoice/EmbeddedChoice.xsd","","EmbeddedChoice", "/EmbeddedChoice/EmbeddedChoice",false,null,false);
     }
 
 }

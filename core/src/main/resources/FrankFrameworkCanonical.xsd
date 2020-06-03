@@ -8,6 +8,7 @@
 				<xsd:element name="jmsRealms" type="JmsRealmsType"/>
 				<xsd:element name="sapSystems" type="SapSystemsType"/>
 				<xsd:element name="adapter" type="AdapterType"/>
+				<xsd:element name="Module" type="ConfigurationType"/>
 				<xsd:element name="module" type="ConfigurationType"/>
 				<xsd:element name="configuration" type="ConfigurationType"/>
 				<xsd:element name="ibis" type="ConfigurationType"/>
