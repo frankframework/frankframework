@@ -93,12 +93,13 @@ public class ApiListenerServlet extends HttpServletBase {
 	}
 
 	public void returnJson(HttpServletResponse response, int status, JsonObject json) throws IOException {
+		response.setStatus(status);
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
-		JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
-		jsonWriter.write(json);
-		jsonWriter.close();
+		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"))) {
+			jsonWriter.write(json);
+		}
 	}
 	
 	@Override
@@ -254,7 +255,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.addCookie(authorizationCookie);
 				}
 
-				if(userPrincipal != null && authorizationToken != null) {
+				if(authorizationToken != null) {
 					userPrincipal.updateExpiry();
 					userPrincipal.setToken(authorizationToken);
 					cache.put(authorizationToken, userPrincipal, authTTL);
