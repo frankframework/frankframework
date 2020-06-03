@@ -155,21 +155,31 @@ public final class Webservices extends Base {
 	
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices/{adapterName}")
+	@Path("/webservices/{resourceName}")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getWsdl(
-		@PathParam("adapterName") String adapterName,
-		@DefaultValue("false") @QueryParam("zip") boolean zip,
+		@PathParam("resourceName") String resourceName,
 		@DefaultValue("true") @QueryParam("indent") boolean indent,
 		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
 	
+		String adapterName;
+		boolean zip;
+		int dotPos=resourceName.lastIndexOf('.');
+		if (dotPos>=0) {
+			adapterName=resourceName.substring(0,dotPos);
+			zip=resourceName.substring(dotPos).equals(".zip");
+		} else {
+			adapterName=resourceName;
+			zip=false;
+		}
+		
 		if (StringUtils.isEmpty(adapterName)) {
-			return Response.status(Response.Status.BAD_REQUEST).build(); // TODO: proper error message
+			return Response.status(Response.Status.BAD_REQUEST).entity("<error>no adapter specified</error>").build();
 		}
 		IAdapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter == null) {
-			return Response.status(Response.Status.BAD_REQUEST).build(); // TODO: proper error message
+			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
 			String servletName = "serviceuri"; // TODO: set proper serviceuri
