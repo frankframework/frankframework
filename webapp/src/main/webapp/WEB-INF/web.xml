@@ -19,7 +19,7 @@
 		<filter-name>LoginFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
 		<init-param>
-			<param-name>allowedExtentions</param-name>
+			<param-name>allowedExtensions</param-name>
 			<param-value>css js gif jpg png svg</param-value>
 		</init-param>
 		<init-param>
