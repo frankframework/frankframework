@@ -115,6 +115,12 @@ public class MiscTest {
         assertEquals(uuid.length(), 32);
     }
 
+    @Test
+    public void testCreateRandomUUID() throws Exception {
+        String uuid = Misc.createRandomUUID();
+        assertFalse(uuid.isEmpty());
+    }
+
 
     /**
      * Method: asHex(byte[] buf)
@@ -246,6 +252,11 @@ public class MiscTest {
         //Misc.resourceToString()
         assertEquals(Misc.fileToString(file.getName()), "inside the lebron file");
     }
+    @Test
+    public void testFileToStringFileNameEndLine() throws Exception {
+        //Misc.resourceToString()
+        assertEquals(Misc.fileToString(file.getName(), " the end"), "inside the lebron file");
+    }
 
 
     /**
@@ -344,6 +355,14 @@ public class MiscTest {
         byte[] arr = s.getBytes();
         byte[] zipped = Misc.gzip(arr);
         assertEquals(Misc.gunzipToString(zipped), "test");
+    }
+
+    @Test
+    public void testGzipString() throws Exception {
+        String s = "you deserved this";
+        byte[] zipped = Misc.gzip(s);
+        assertEquals(Misc.gunzipToString(zipped), "you deserved this");
+
     }
 
     /**
@@ -581,4 +600,10 @@ String s = "12ab34";
         assertEquals(s1, "&lt;!doctype html&gt;end of the page&lt;html&gt;end of the page&lt;head&gt;end of the page    &lt;title&gt;Example Domain&lt;/title&gt;end of the pageend of the page    &lt;meta charset=&quot;utf-8&quot; /&gt;end of the page    &lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;end of the page    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;end of the page    &lt;style type=&quot;text/css&quot;&gt;end of the page    body {end of the page        background-color: #f0f0f2;end of the page        margin: 0;end of the page        padding: 0;end of the page        font-family: -apple-system, system-ui, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;end of the page        end of the page    }end of the page    div {end of the page        width: 600px;end of the page        margin: 5em auto;end of the page        padding: 2em;end of the page        background-color: #fdfdff;end of the page        border-radius: 0.5em;end of the page        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);end of the page    }end of the page    a:link, a:visited {end of the page        color: #38488f;end of the page        text-decoration: none;end of the page    }end of the page    @media (max-width: 700px) {end of the page        div {end of the page            margin: 0 auto;end of the page            width: auto;end of the page        }end of the page    }end of the page    &lt;/style&gt;    end of the page&lt;/head&gt;end of the pageend of the page&lt;body&gt;end of the page&lt;div&gt;end of the page    &lt;h1&gt;Example Domain&lt;/h1&gt;end of the page    &lt;p&gt;This domain is for use in illustrative examples in documents. You may use thisend of the page    domain in literature without prior coordination or asking for permission.&lt;/p&gt;end of the page    &lt;p&gt;&lt;a href=&quot;https://www.iana.org/domains/example&quot;&gt;More information...&lt;/a&gt;&lt;/p&gt;end of the page&lt;/div&gt;end of the page&lt;/body&gt;end of the page&lt;/html&gt;end of the page");
     }
 
+    @Test
+    public void testResourceToStringForResourceEndOfLineString() throws Exception {
+        URL resource = new URL("http://example.com/");
+        String s1 = Misc.resourceToString(resource, "end of the page");
+        assertEquals(s1, "<!doctype html>end of the page<html>end of the page<head>end of the page    <title>Example Domain</title>end of the pageend of the page    <meta charset=\"utf-8\" />end of the page    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />end of the page    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />end of the page    <style type=\"text/css\">end of the page    body {end of the page        background-color: #f0f0f2;end of the page        margin: 0;end of the page        padding: 0;end of the page        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;end of the page        end of the page    }end of the page    div {end of the page        width: 600px;end of the page        margin: 5em auto;end of the page        padding: 2em;end of the page        background-color: #fdfdff;end of the page        border-radius: 0.5em;end of the page        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);end of the page    }end of the page    a:link, a:visited {end of the page        color: #38488f;end of the page        text-decoration: none;end of the page    }end of the page    @media (max-width: 700px) {end of the page        div {end of the page            margin: 0 auto;end of the page            width: auto;end of the page        }end of the page    }end of the page    </style>    end of the page</head>end of the pageend of the page<body>end of the page<div>end of the page    <h1>Example Domain</h1>end of the page    <p>This domain is for use in illustrative examples in documents. You may use thisend of the page    domain in literature without prior coordination or asking for permission.</p>end of the page    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>end of the page</div>end of the page</body>end of the page</html>end of the page");
+    }
 }
