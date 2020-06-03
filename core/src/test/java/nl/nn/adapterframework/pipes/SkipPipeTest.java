@@ -34,6 +34,20 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
     }
 
     @Test
+    public void  testSkip3() throws Exception {
+        pipe.setSkip(3);
+        PipeRunResult res = doPipe(pipe, "0123456", session);
+        assertEquals(res.getResult().asString(), "3456");
+    }
+
+    @Test
+    public void testRead2WithString() throws Exception {
+        pipe.setLength(2);
+        PipeRunResult res = doPipe(pipe, "0123456", session);
+        assertEquals(res.getResult().asString(), "01");
+    }
+
+    @Test
     public void testDoPipeWithByteArray() throws Exception {
         byte[] myvar = "Any String you want".getBytes(); pipe.setSkip(2);
         PipeRunResult res = doPipe(pipe, myvar, session);

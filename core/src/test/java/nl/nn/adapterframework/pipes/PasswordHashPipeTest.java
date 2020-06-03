@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * PasswordHashPipe Tester.
@@ -36,15 +38,11 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
 
     @Test
     public void testValidatePipe() throws Exception {
-
-        String sc = PasswordHash.createHash("password");
-        session.put("key", sc );
-        pipe.setHashSessionKey("key");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "password", session);
+        assertTrue(PasswordHash.validatePassword("password", res.getResult().asString()));
         assertEquals("success", res.getPipeForward().getName());
     }
-
     @Test
     public void testValidatePipeFailAsNotTheSame() throws Exception {
 
@@ -55,6 +53,14 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
         assertEquals(null, res.getPipeForward());
     }
 
+    @Test
+    public void testTwoHashesNotTheSame() throws Exception {
+        pipe.configure();
+
+        PipeRunResult res1 = doPipe(pipe, "a", session);
+        PipeRunResult res2 = doPipe(pipe, "a", session);
+        assertNotEquals(res1.getResult().asString(), res2.getResult().asString());
+    }
 
 
 

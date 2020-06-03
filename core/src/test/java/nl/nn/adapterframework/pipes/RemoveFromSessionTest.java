@@ -55,7 +55,7 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
     @Test
     public void testEmptySessionKeyEmptyInput() throws Exception {
         exception.expect(NullPointerException.class);
-        pipe.setSessionKey(null);
+        pipe.setSessionKey("");
         session.put("a", "123");
         PipeRunResult res = doPipe(pipe, null, session);
         assertEquals(res.getResult().toString(), "[null]");    }

@@ -43,22 +43,18 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
         pipe.setIncludeXmlDeclaration(true);
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
+        PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
-                "im in cdata</address>", res.getResult().asString());
+                "im not in cdata</address>", res.getResult().asString());
     }
 
     @Test
     public void testSuccessWithoutAdditionalProperties() throws Exception {
         pipe.setXmlTag("address");
-        pipe.setSplitLines(false);
-        pipe.setUseCdataSection(false);
-        pipe.setIncludeXmlDeclaration(true);
-        pipe.setReplaceNonXmlChars(false);
+        pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address>this is an example\n" +
-                "im in cdata</address>", res.getResult().asString());
+        PipeRunResult res = doPipe(pipe, "this will be in cdata tag\b", session);
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address><![CDATA[this will be in cdata tag¿]]></address>", res.getResult().asString());
     }
 
     /**

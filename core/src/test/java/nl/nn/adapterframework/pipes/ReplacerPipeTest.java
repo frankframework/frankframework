@@ -60,21 +60,20 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
     public void replaceNonXMLChar() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
-        pipe.setReplaceNonXmlChar("k");
+        pipe.setReplaceNonXmlChar("l");
         pipe.setReplaceNonXmlChars(true);
+        pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
+        PipeRunResult res = doPipe(pipe, "<test>\bolo</test>/jacjac:)", session);
         assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
     }
 
     @Test
     public void replaceStringSuccess() throws Exception{
-        pipe.setFind("test");
-        pipe.setReplace("head");
-        pipe.setReplaceNonXmlChars(true);
+        pipe.setReplaceNonXmlChars(false);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
+        PipeRunResult res = doPipe(pipe, "\b", session);
+        assertEquals("\b", res.getResult().asString());
     }
 
     @Test
