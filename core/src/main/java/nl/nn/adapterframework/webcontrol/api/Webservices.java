@@ -15,6 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,14 +27,25 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
+import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
+import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -137,6 +150,58 @@ public final class Webservices extends Base {
 		returnMap.put("apiListeners", apiListeners);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
+	
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/webservices/{adapterName}")
+	@Relation("webservices")
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getWsdl(
+		@PathParam("adapterName") String adapterName,
+		@DefaultValue("false") @QueryParam("zip") boolean zip,
+		@DefaultValue("true") @QueryParam("indent") boolean indent,
+		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
+	
+		if (StringUtils.isEmpty(adapterName)) {
+			return Response.status(Response.Status.BAD_REQUEST).build(); // TODO: proper error message
+		}
+		IAdapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		if (adapter == null) {
+			return Response.status(Response.Status.BAD_REQUEST).build(); // TODO: proper error message
+		}
+		try {
+			String servletName = "serviceuri"; // TODO: set proper serviceuri
+			String generationInfo = "by FrankConsole";
+			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
+			wsdl.setIndent(indent);
+			wsdl.setUseIncludes(useIncludes||zip);
+			wsdl.init();
+			StreamingOutput stream = new StreamingOutput() {
+				@Override
+				public void write(OutputStream out) throws IOException, WebApplicationException {
+					try {
+						if (zip) {
+							 wsdl.zip(out, servletName);
+						} else {
+							wsdl.wsdl(out, servletName);
+						}
+					} catch (ConfigurationException | XMLStreamException | NamingException e) {
+						throw new WebApplicationException(e);
+					}
+				}
+			};
+			ResponseBuilder responseBuilder = Response.ok(stream);
+			if (zip) {
+				responseBuilder.type(MediaType.APPLICATION_OCTET_STREAM);
+				responseBuilder.header("Content-Disposition", "attachment; filename=\""+adapterName+".zip\"");
+			}
+			return responseBuilder.build();
+
+		} catch (Exception e) {
+			throw new ApiException("exception on retrieving wsdl", e);
+		}
 	}
 
 	private String getWsdlExtension() {

@@ -64,16 +64,16 @@ public class ApiServiceDispatcher {
 	}
 
 	public ApiDispatchConfig findConfigForUri(String uri) {
-		return (ApiDispatchConfig)findMatchingConfigsForUri(uri, true); 
+		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(uri, true);
+		return configs.isEmpty()? null : configs.get(0); 
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
-		return (List<ApiDispatchConfig>)findMatchingConfigsForUri(uri, false); 
+		return findMatchingConfigsForUri(uri, false); 
 	}
 
-	private Object findMatchingConfigsForUri(String uri, boolean exactMatch) {
-		List<ApiDispatchConfig> results = exactMatch ? null : new ArrayList<>();
+	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
+		List<ApiDispatchConfig> results = new ArrayList<>();
 
 		String uriSegments[] = uri.split("/");
 
@@ -96,10 +96,10 @@ public class ApiServiceDispatcher {
 			}
 			if(matches == uriSegments.length) {
 				ApiDispatchConfig result = patternClients.get(uriPattern); 
-				if (exactMatch) {
-					return result;
-				}
 				results.add(result);
+				if (exactMatch) {
+					return results;
+				}
 			}
 		}
 		return results;
