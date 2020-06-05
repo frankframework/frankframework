@@ -8,8 +8,10 @@ angular.module('iaf.beheerconsole')
 	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout, gTag) {
 	$scope.loading = true;
 	$rootScope.adapters = {};
-	Pace.on("done", function() {
-		if(appConstants.init == 0) {
+	function initializeFrankConsole () {
+		Debug.log("initializing Frank!Console", appConstants.init);
+		if(appConstants.init < 2) {
+			appConstants.init = 1;
 			Api.Get("server/info", function(data) {
 				appConstants.init = 2;
 				if(!($location.path().indexOf("login") >= 0)) {
@@ -54,7 +56,6 @@ angular.module('iaf.beheerconsole')
 					$state.go("pages.errorpage");
 				}
 			});
-			appConstants.init = 1;
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
 					for (var configName in data["Application Constants"]) {
@@ -77,10 +78,15 @@ angular.module('iaf.beheerconsole')
 				}
 			});
 		}
-	});
 
-	var token = sessionStorage.getItem('authToken');
-	$scope.loggedin = (token != null && token != "null") ? true : false;
+		var token = sessionStorage.getItem('authToken');
+		$scope.loggedin = (token != null && token != "null") ? true : false;
+	};
+
+	Pace.on("done", initializeFrankConsole);
+	$scope.$on('initializeFrankConsole', initializeFrankConsole);
+
+	$scope.loggedin = false;
 
 	$scope.reloadRoute = function() {
 		$state.reload();
@@ -407,7 +413,9 @@ angular.module('iaf.beheerconsole')
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
 	Api.Get("server/health", function() {
 		$state.go("pages.status");
-	}, function(data) {
+	}, function(data, statusCode) {
+		if(statusCode == 401) return;
+
 		if(data.status == "SERVICE_UNAVAILABLE") {
 			$state.go("pages.status");
 		} else {
@@ -729,8 +737,9 @@ angular.module('iaf.beheerconsole')
 	authService.logout();
 }])
 
-.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'appConstants', 'Alert', '$interval', 
-	function($scope, authService, $timeout, appConstants, Alert, $interval) {
+.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'appConstants', 'Alert', '$interval', 'Toastr', 
+	function($scope, authService, $timeout, appConstants, Alert, $interval, Toastr) {
+	Toastr.error("Unauthorized", "Please authenticate");
 	/*$interval(function() {
 		$scope.notifications = Alert.get(true);
 	}, 200);*/
