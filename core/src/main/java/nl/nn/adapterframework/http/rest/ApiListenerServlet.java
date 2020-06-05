@@ -49,6 +49,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -91,6 +92,16 @@ public class ApiListenerServlet extends HttpServletBase {
 		super.destroy();
 	}
 
+	public void returnJson(HttpServletResponse response, int status, JsonObject json) throws IOException {
+		response.setStatus(status);
+		Map<String, Boolean> config = new HashMap<>();
+		config.put(JsonGenerator.PRETTY_PRINTING, true);
+		JsonWriterFactory factory = Json.createWriterFactory(config);
+		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"))) {
+			jsonWriter.write(json);
+		}
+	}
+	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -113,14 +124,18 @@ public class ApiListenerServlet extends HttpServletBase {
 		 */
 		if(uri.equalsIgnoreCase("openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
-			response.setStatus(200);
+			returnJson(response, 200, jsonSchema);
+			return;
+		}
 
-			Map<String, Boolean> config = new HashMap<>();
-			config.put(JsonGenerator.PRETTY_PRINTING, true);
-			JsonWriterFactory factory = Json.createWriterFactory(config);
-			JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
-			jsonWriter.write(jsonSchema);
-			jsonWriter.close();
+		/**
+		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+		 */
+		if(uri.endsWith("/openapi.json")) {
+			uri = uri.substring(0, uri.length()-"/openapi.json".length());
+			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
+			returnJson(response, 200, jsonSchema);
 			return;
 		}
 
@@ -240,7 +255,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.addCookie(authorizationCookie);
 				}
 
-				if(userPrincipal != null && authorizationToken != null) {
+				if(authorizationToken != null) {
 					userPrincipal.updateExpiry();
 					userPrincipal.setToken(authorizationToken);
 					cache.put(authorizationToken, userPrincipal, authTTL);
@@ -444,7 +459,15 @@ public class ApiListenerServlet extends HttpServletBase {
 			if (!ServletFileUpload.isMultipartContent(request)) {
 				body = Misc.streamToString(request.getInputStream(),"\n",false);
 			}
-			//TODO: String correlationId = request.getHeader("message-id");
+
+			String messageId = null;
+			if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
+				String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
+				if(StringUtils.isNotEmpty(messageIdHeader)) {
+					messageId = messageIdHeader;
+				}
+			}
+			PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 			String result = listener.processRequest(null, body, messageContext);
 
 			/**
