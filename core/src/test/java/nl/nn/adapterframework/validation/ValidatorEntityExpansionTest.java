@@ -112,7 +112,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
 		validatorHandler.setContentHandler(ch);
 
-		instance.validate(is, validatorHandler, session, context, false);
+		instance.validate(is, validatorHandler, session, context);
 
 		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
 		if (errorHandler.hasErrorOccured()) {

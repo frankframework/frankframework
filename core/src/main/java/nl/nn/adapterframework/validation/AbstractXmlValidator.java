@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -161,17 +161,13 @@ public abstract class AbstractXmlValidator {
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
-		return validate(input, session, logPrefix, validatorHandler, null, context, resolveExternalEntities);
+		return validate(input, session, logPrefix, validatorHandler, null, context);
 	}
 
 	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		return validate(input, session, logPrefix, validatorHandler, filter, context, false);
-	}
-
-	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -185,12 +181,12 @@ public abstract class AbstractXmlValidator {
 
 		InputSource is = getInputSource(Message.asMessage(input));
 
-		return validate(is, validatorHandler, session, context, resolveExternalEntities);
+		return validate(is, validatorHandler, session, context);
 	}
 
-	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
+	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
-			XMLReader reader = XmlUtils.getXMLReader(true, resolveExternalEntities, validatorHandler);
+			XMLReader reader = XmlUtils.getXMLReader(true, false, validatorHandler);
 			reader.setErrorHandler(context.getErrorHandler());
 
 			reader.parse(is);
