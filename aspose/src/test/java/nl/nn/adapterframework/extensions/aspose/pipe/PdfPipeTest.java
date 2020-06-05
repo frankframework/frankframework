@@ -51,9 +51,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return new PdfPipe();
 	}
 
-	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String fileContaingExpectedXml, String expectedFile) throws Exception {
+	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
 		String documentMetadata = executeConversion(pipeName, fileToConvert);
-		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
+		String expected = TestFileUtils.getTestFile(metadataXml);
 
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(documentMetadata), true);
 
@@ -66,12 +66,15 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			System.out.println("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
-			assertNotNull("cannot find expected file", expectedFileUrl);
+			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
 			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
+			//remove Aspose evaluation copy information
+			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
+//			pdfUtil.enableLog();
 			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
 			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
 		}
