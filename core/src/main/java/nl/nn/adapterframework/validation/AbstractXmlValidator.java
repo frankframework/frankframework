@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,7 +32,6 @@ import org.apache.xerces.xs.XSModel;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

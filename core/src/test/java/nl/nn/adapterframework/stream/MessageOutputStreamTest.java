@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.XmlUtils;
 

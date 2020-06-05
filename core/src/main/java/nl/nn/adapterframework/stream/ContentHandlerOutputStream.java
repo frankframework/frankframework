@@ -22,7 +22,6 @@ import java.io.PipedOutputStream;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;

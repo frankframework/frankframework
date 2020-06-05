@@ -16,9 +16,6 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
