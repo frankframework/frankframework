@@ -808,8 +808,7 @@ angular.module('iaf.beheerconsole')
 				var location = sessionStorage.getItem('location') || "status";
 				var absUrl = window.location.href.split("login")[0];
 				window.location.href = (absUrl + location);
-				//window.location.reload();
-				//$location.path(location);
+				window.location.reload();
 			},
 			loggedin: function() {
 				var token = sessionStorage.getItem('authToken');
@@ -1063,7 +1062,7 @@ angular.module('iaf.beheerconsole')
 			toaster.pop({type: 'success', title: title, body: text});
 		};
 	}]).config(['$httpProvider', function($httpProvider) {
-		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', function(appConstants, $q, Misc, Toastr) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function(appConstants, $q, Misc, Toastr, $location) {
 			return {
 				request: function(config) {
 					if (config.url.indexOf('views') !== -1 && ff_version != null) {
@@ -1087,7 +1086,8 @@ angular.module('iaf.beheerconsole')
 								}
 								break;
 							case 401:
-								Toastr.error("Unauthorized", "Please authenticate");
+								sessionStorage.clear();
+								$location.path("login");
 								break;
 							case 403:
 								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
