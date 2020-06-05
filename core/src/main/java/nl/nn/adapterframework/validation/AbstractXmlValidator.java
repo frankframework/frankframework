@@ -184,13 +184,10 @@ public abstract class AbstractXmlValidator {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
-			XMLReader reader = XmlUtils.getXMLReader(true, false, validatorHandler);
-			reader.setErrorHandler(context.getErrorHandler());
-
-			reader.parse(is);
-		} catch (IOException | SAXException | ParserConfigurationException e) {
+			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
+		} catch (IOException | SAXException e) {
 			return finalizeValidation(context, session, e);
 		}
 		return finalizeValidation(context, session, null);

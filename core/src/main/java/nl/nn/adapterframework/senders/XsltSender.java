@@ -276,7 +276,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 
 	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
-		return XmlUtils.getXMLReader(true, false, handler);
+		return XmlUtils.getXMLReader(handler);
 	}
 	
 

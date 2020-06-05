@@ -97,8 +97,7 @@ public class MessageOutputStreamTest {
 			ContentHandler handler = stream.asContentHandler();
 
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 			
 		}
 		String actual = new String (target.toString());
@@ -152,8 +151,7 @@ public class MessageOutputStreamTest {
 			ContentHandler handler = stream.asContentHandler();
 	
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 
 		}
 		String actual = new String (target.toString());
@@ -344,8 +342,7 @@ public class MessageOutputStreamTest {
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -399,8 +396,7 @@ public class MessageOutputStreamTest {
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));

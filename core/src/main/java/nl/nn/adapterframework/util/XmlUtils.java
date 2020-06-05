@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
@@ -72,7 +71,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -106,6 +104,7 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -511,24 +510,44 @@ public class XmlUtils {
 		return buffersize.intValue();
 	}
 
-	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
-		parseXml(handler,Message.asInputSource(source));
-	}
-
-	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
-		boolean namespaceAware=true;
-		boolean resolveExternalEntities=false;
-		XMLReader parser;
+	public static void parseXml(Resource resource, ContentHandler handler) throws IOException, SAXException {
 		try {
-			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
+			XMLReader reader = getXMLReader(resource, handler);
+			reader.parse(resource.asInputSource());
 		} catch (ParserConfigurationException e) {
 			throw new SaxException("Cannot configure parser",e);
 		}
-		parser.parse(source);
 	}
 
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(namespaceAware, resolveExternalEntities);
+	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
+		parseXml(Message.asInputSource(source),handler);
+	}
+
+	public static void parseXml(InputSource inputSource, ContentHandler handler) throws IOException, SAXException {
+		parseXml(inputSource, handler, null);
+	}
+	
+	public static void parseXml(InputSource inputSource, ContentHandler handler, ErrorHandler errorHandler) throws IOException, SAXException {
+		XMLReader xmlReader;
+		try {
+			xmlReader = getXMLReader(null, handler);
+			if (errorHandler != null) {
+				xmlReader.setErrorHandler(errorHandler);
+			}
+		} catch (ParserConfigurationException e) {
+			throw new SaxException("Cannot configure parser",e);
+		}
+		xmlReader.parse(inputSource);
+	}
+
+	public static XMLReader getXMLReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+		return getXMLReader(null, handler);
+	}
+	
+
+	
+	private static XMLReader getXMLReader(Resource classloaderProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, classloaderProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -539,35 +558,18 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, Resource classloaderProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (!resolveExternalEntities) {
+		if (classloaderProvider!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classloaderProvider.getClassLoader()));
+		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
 		return xmlReader;
 	}
 	
-	
-	public static Document buildDomDocument(File file)
-		throws DomBuilderException {
-		Reader in;
-		Document output;
-
-		try {
-			in = new FileReader(file);
-		} catch (FileNotFoundException e) {
-			throw new DomBuilderException(e);
-		}
-		output = buildDomDocument(in);
-		try {
-			in.close();
-		} catch (IOException e) {
-			log.debug("Exception closing file", e);
-		}
-		return output;
-	}
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
@@ -978,28 +980,19 @@ public class XmlUtils {
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
 		return stringToSourceForSingleUse(xmlString, isNamespaceAwareByDefault());
 	}
-
-	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
-		return stringToSourceForSingleUse(xmlString, namespaceAware, false);
-	}
-
-	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
-		return stringToSAXSource(xmlString, namespaceAware, false);
-	}
-
-	public static SAXSource stringToSAXSource(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
-		StringReader reader = new StringReader(xmlString);
-		return readerToSAXSource(reader,namespaceAware,resolveExternalEntities);
-	}
 	
-	public static SAXSource readerToSAXSource(Reader reader, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
+	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
+		StringReader reader = new StringReader(xmlString);
 		InputSource is = new InputSource(reader);
-		return inputSourceToSAXSource(is,namespaceAware,resolveExternalEntities);
+		return inputSourceToSAXSource(is, namespaceAware, null);
 	}	
 	
-	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
+	public static SAXSource inputSourceToSAXSource(InputSource is, Resource classloaderProvider) throws SAXException {
+		return inputSourceToSAXSource(is, true, classloaderProvider);
+	}
+	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, resolveExternalEntities), is);
+			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}
@@ -1689,12 +1682,8 @@ public class XmlUtils {
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
-			SAXSource saxSource = stringToSAXSource(input, true, false);
-			XMLReader xmlReader = saxSource.getXMLReader();
-			xmlReader.setContentHandler(xmlHandler);
-			// Prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
-			xmlReader.setErrorHandler(xmlValidatorErrorHandler);
-			xmlReader.parse(saxSource.getInputSource());
+			// set ErrorHandler to prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
+			parseXml(Message.asInputSource(input), xmlHandler, xmlValidatorErrorHandler);
 		} catch (Exception e) {
 			return false;
 		}
@@ -1703,38 +1692,14 @@ public class XmlUtils {
 
 	/**
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @return String (the complete and xml)
+	 * @return String (the complete and resolved xml)
 	 */
-	static public String identityTransform(Resource source) throws DomBuilderException {
-		StringWriter result = new StringWriter();
-		try {
-			TransformerPool tp = getIdentityTransformerPool();
-			TransformerHandler handler = tp.getTransformerHandler();
-			handler.setResult(new StreamResult(result));
-			
-			XMLReader reader = XmlUtils.getXMLReader(true, true, handler);
-			reader.setEntityResolver(new ClassLoaderEntityResolver(source));
-
-			reader.parse(source.asInputSource());
-		} catch (Exception tce) {
-			throw new DomBuilderException(tce);
-		}
-
-		return result.toString();
+	static public String identityTransform(Resource resource) throws  IOException, SAXException {
+		XmlWriter writer = new XmlWriter();
+		parseXml(resource, writer);
+		return writer.toString();
 	}
 
-//	static public String identityTransform(String input)
-//			throws DomBuilderException {
-//		String result = "";
-//		Document document = XmlUtils.buildDomDocument((String) input);
-//		try {
-//			result = nodeToString(document, false);
-//		} catch (TransformerException e) {
-//			throw new DomBuilderException(e);
-//		}
-//		return result;
-//	}
-//	
 	public static String getVersionInfo() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(AppConstants.getInstance().getProperty("application.name") + " "

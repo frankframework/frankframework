@@ -87,7 +87,7 @@ public class Resource {
 	}
 	
 	public Source asSource() throws SAXException, IOException {
-		return XmlUtils.inputSourceToSAXSource(asInputSource(), true, true);
+		return XmlUtils.inputSourceToSAXSource(asInputSource(), this);
 	}
 
 	public ClassLoader getClassLoader() {
