@@ -29,9 +29,10 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.util.Misc;
 
-public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
+public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 	@Mock
 	private IPipeLineSession session;
@@ -156,7 +157,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,input, session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(output, (Misc.streamToString(result)).trim());
 	}
 
@@ -190,7 +191,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, input.getBytes(), session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(output, (Misc.streamToString(result)).trim());
 	}
 
@@ -227,7 +228,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 		InputStream stream = new ByteArrayInputStream(input.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(output, (Misc.streamToString(result)).trim());
 	}
 
@@ -264,7 +265,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe,output, session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(input, (Misc.streamToString(result)).trim());
 	}
 
@@ -301,7 +302,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, output.getBytes(), session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(input, (Misc.streamToString(result)).trim());
 	}
 
@@ -341,7 +342,7 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 		InputStream stream = new ByteArrayInputStream(output.getBytes());
 		PipeRunResult prr = doPipe(pipe, stream, session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(input, (Misc.streamToString(result)).trim());
 	}
 }

@@ -21,7 +21,6 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.AppConstants;
@@ -51,7 +50,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return StringUtils.isEmpty(getGetInputFromSessionKey());
 	}
 
-	public boolean requiresOutputStream() {
+	public boolean canStreamToNextPipe() {
 		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
 	}
 
@@ -68,6 +67,16 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return provideOutputStream(session);
 	}
 	
+
+	/**
+	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
+	 */
+	protected MessageOutputStream getTargetStream(IPipeLineSession session) throws StreamingException {
+		if (canStreamToNextPipe()) {
+			return MessageOutputStream.getTargetStream(this, session, getNextPipe());
+		}
+		return new MessageOutputStreamCap(this, getNextPipe());
+	}
 
 
 	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})

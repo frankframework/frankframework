@@ -435,19 +435,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
 	}
 
+	@Override
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && !isCollectResults(); // when collectResults is false, streaming is not necessary or useful
+	}
 
 	@Override
 	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		try {
-			IForwardTarget forwardTarget = getNextPipe();
-			try (MessageOutputStream target=isCollectResults()?MessageOutputStream.getTargetStream(this, session, forwardTarget):new MessageOutputStreamCap(this, forwardTarget)) { 
-				try (Writer resultWriter = target.asWriter()) {
-					ItemCallback callback = createItemCallBack(session,sender, resultWriter);
-					iterateOverInput(input,session,threadContext, callback);
-				}
-				return target.getPipeRunResult();
+		try (MessageOutputStream target=getTargetStream(session)) { 
+			try (Writer resultWriter = target.asWriter()) {
+				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+				iterateOverInput(input,session,threadContext, callback);
 			}
+			return target.getPipeRunResult();
 		} catch (SenderException | TimeOutException | IOException e) {
 			throw e;
 		} catch (Exception e) {
