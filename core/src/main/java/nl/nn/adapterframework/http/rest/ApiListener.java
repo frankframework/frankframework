@@ -31,7 +31,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * 
@@ -139,8 +138,18 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
+	/**
+	 * Match request ContentType to consumes enum to see if the listener accepts the message
+	 */
 	public boolean isConsumable(String contentType) {
 		return consumes.isConsumable(contentType);
+	}
+
+	/**
+	 * Match accept header to produces enum to see if the client accepts the message
+	 */
+	public boolean accepts(String acceptHeader) {
+		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
 	}
 
 	public String getContentType() {

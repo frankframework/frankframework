@@ -256,12 +256,12 @@ public class ApiListenerServlet extends HttpServletBase {
 			/**
 			 * Evaluate preconditions
 			 */
-			String accept = request.getHeader("Accept");
-			if(accept != null && !accept.isEmpty() && !accept.equals("*/*")) {
-				if(!listener.getProduces().equals("ANY") && !accept.contains(listener.getContentType())) {
+			String acceptHeader = request.getHeader("Accept");
+			if(StringUtils.isNotEmpty(acceptHeader)) { //If an Accept header is present, make sure we comply to it!
+				if(!listener.accepts(acceptHeader)) {
 					response.setStatus(406);
-					response.getWriter().print("It appears you expected the MediaType ["+accept+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+accept+"] got ["+listener.getContentType()+"] instead");
+					response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
+					if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
 					return;
 				}
 			}
