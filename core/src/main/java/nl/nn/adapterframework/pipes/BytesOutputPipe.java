@@ -127,7 +127,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 
 		try {
 			FieldsContentHandler fieldsContentHandler = new FieldsContentHandler();
-			XmlUtils.parseXml(fieldsContentHandler, message.asInputSource());
+			XmlUtils.parseXml(message.asInputSource(), fieldsContentHandler);
 			result = fieldsContentHandler.getResult();
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "SAXException", e);

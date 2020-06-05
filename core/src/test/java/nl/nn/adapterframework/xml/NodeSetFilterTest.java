@@ -30,7 +30,7 @@ public class NodeSetFilterTest {
 		PrettyPrintFilter ppf = new PrefixMappingObservingFilter();
 		ppf.setContentHandler(xmlWriter);
 		targetElementFilter.setContentHandler(ppf);
-		XmlUtils.parseXml(targetElementFilter, input);
+		XmlUtils.parseXml(input, targetElementFilter);
 		assertEquals("testElementFilter "+(includeRoot?"container element":"target element")+" ["+element+"]",expected,xmlWriter.toString());
 	}
 

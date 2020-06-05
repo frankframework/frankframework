@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Integration Partners
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -484,7 +484,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
-			XmlUtils.parseXml(digesterXmlHandler, Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")));
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
 		} catch (SAXException e) {

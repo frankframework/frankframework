@@ -145,7 +145,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
 		aligner.setContentHandler(xml2object);
 
-		XmlUtils.parseXml(validatorHandler, xml);
+		XmlUtils.parseXml(xml, validatorHandler);
 	}
 
 	@Override

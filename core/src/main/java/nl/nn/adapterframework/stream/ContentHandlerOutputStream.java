@@ -64,7 +64,7 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 			try {
 				threadConnector.startThread(null);
 				InputSource inputSource = new InputSource(pipedInputStream);
-				XmlUtils.parseXml(handler, inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				threadConnector.endThread(null);
 			} catch (Exception e) {
 				Throwable t = threadConnector.abortThread(e);
