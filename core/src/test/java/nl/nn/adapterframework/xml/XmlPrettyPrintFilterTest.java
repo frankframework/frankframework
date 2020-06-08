@@ -48,6 +48,8 @@ public class XmlPrettyPrintFilterTest {
 
 		InputSource inputSource = new InputSource(new StringReader(input));
 		XMLReader xmlReader = XmlUtils.getXMLReader(filter);
+		// lexical handling is automatically set, when the contentHandler (filter in this case) implements  the interface LexicalHandler.
+		// To test the output of the PrettyPrintFilter without lexical handling, it must be switched off explicitly in the XmlReader
 		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
 
 		xmlReader.parse(inputSource);

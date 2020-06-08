@@ -992,10 +992,15 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, namespaceAware, null);
 	}	
 	
-	public static SAXSource inputSourceToSAXSource(InputSource is, Resource classloaderProvider) throws SAXException {
-		return inputSourceToSAXSource(is, true, classloaderProvider);
+	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
+		return inputSourceToSAXSource(resource.asInputSource(), true, resource);
 	}
-	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
+	
+	public static SAXSource inputSourceToSAXSource(InputSource is) throws SAXException {
+		return inputSourceToSAXSource(is, true, null);
+	}
+	
+	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
 		try {
 			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
 		} catch (ParserConfigurationException e) {

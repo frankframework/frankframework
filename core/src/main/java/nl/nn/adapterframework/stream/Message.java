@@ -241,7 +241,7 @@ public class Message implements Serializable {
 			return (Source) request;
 		}
 		log.debug("returning as Source");
-		return (XmlUtils.inputSourceToSAXSource(asInputSource(), null));
+		return (XmlUtils.inputSourceToSAXSource(asInputSource()));
 	}
 
 	/**
