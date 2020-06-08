@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
@@ -41,9 +40,12 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Basic browser of JMS Messages.
+ * @param <M> the payload message type as used by IMessageBrowser.
+ * @param <J> the physical JMS message to carry the payload.
+ * 
  * @author  Johan Verrips
  */
-public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade implements IMessageBrowser<M> {
+public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -151,16 +153,16 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 	}
 
 
-	protected Message doBrowse(Map<String,String> selectors) throws ListenerException {
+	protected javax.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
-		Message msg = null;
+		javax.jms.Message msg = null;
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
 			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
-				msg=(Message)msgenum.nextElement();
+				msg=(javax.jms.Message)msgenum.nextElement();
 			}
 			return msg;
 		} catch (Exception e) {
@@ -177,7 +179,7 @@ public abstract class JmsMessageBrowser<M, J extends Message> extends JMSFacade 
 		}
 	}
 
-	protected Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
+	protected javax.jms.Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
 		Map<String,String> selectorMap = new HashMap<>();
 		selectorMap.put(selectorKey, selectorValue);
 		return doBrowse(selectorMap);

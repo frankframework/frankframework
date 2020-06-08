@@ -15,15 +15,13 @@
 */
 package nl.nn.adapterframework.jms;
 
-import javax.jms.Message;
-
 import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * Basic browser of JMS Messages.
  * @author  Gerrit van Brakel
  */
-public class JmsBrowser<M extends Message> extends JmsMessageBrowser<M,M> {
+public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M,M> {
 
 	public JmsBrowser() {
 		super();
