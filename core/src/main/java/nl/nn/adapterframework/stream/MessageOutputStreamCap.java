@@ -24,7 +24,6 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeForward;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
