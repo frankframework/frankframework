@@ -46,10 +46,21 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		}
 	}
 	
+
+	/**
+	 * returns true when:
+	 *  a) the pipe can accept input by providing an OutputStream, and 
+	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe.
+	 */
 	public boolean canProvideOutputStream() {
-		return StringUtils.isEmpty(getGetInputFromSessionKey());
+		return StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(this.getStoreResultInSessionKey());
 	}
 
+	/**
+	 * returns true when:
+	 *  a) the operation needs to have an OutputStream, and 
+	 *  b) there are no side effects configured that require the output of this pipe to be available at the return of the doPipe() method.
+	 */
 	public boolean canStreamToNextPipe() {
 		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
 	}
