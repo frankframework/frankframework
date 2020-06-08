@@ -121,7 +121,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		private int closeCount=0;
 		
 		public CloseObservableCap(INamedObject owner) {
-			super(owner, (PipeForward)null);
+			super(owner, null);
 		}
 		
 		@Override

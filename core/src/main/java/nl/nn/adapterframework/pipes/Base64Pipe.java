@@ -140,7 +140,7 @@ public class Base64Pipe extends StreamingPipe {
 			targetStream = target.asStream();
 		}
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		return new MessageOutputStream(this, base64, target, null);
+		return new MessageOutputStream(this, base64, target);
 	}
 
 	
