@@ -437,7 +437,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	@Override
 	public boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && !isCollectResults(); // when collectResults is false, streaming is not necessary or useful
+		return !isCollectResults() && super.canStreamToNextPipe(); // when collectResults is false, streaming is not necessary or useful
 	}
 
 	@Override
