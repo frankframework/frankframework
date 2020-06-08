@@ -54,8 +54,8 @@ public class Base64Pipe extends StreamingPipe {
 	private int lineLength = 76;
 	private String lineSeparator = "auto";
 	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String outputType = "string";
-	private boolean convertToString = true;
+	private String outputType = "bytes";
+	private boolean convertToString = false;
 
 	private List<String> outputTypes = Arrays.asList("string", "bytes", "stream");
 
@@ -85,10 +85,9 @@ public class Base64Pipe extends StreamingPipe {
 			}
 		}
 
-		if(!convertToString) {
+		if (getDirection().equals("decode") && convertToString) {
 			//Allow this for backwards compatibility
-			if(getDirection().equals("decode"))
-				setOutputType("bytes");
+			setOutputType("string");
 		}
 	}
 
@@ -164,7 +163,7 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>auto</code>, <code>string</code>, <code>bytes</code>, <code>stream</code>", "auto"})
+	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "bytes"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
@@ -172,7 +171,7 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to encode or decode message to or from string. (only used when outputType=string or convert2string=true)", "utf-8"})
+	@IbisDoc({"3", "Character encoding to be used to encode or decode message to or from string. (Only used when outputType=string or convert2string=true)", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -180,7 +179,7 @@ public class Base64Pipe extends StreamingPipe {
 		return charset;
 	}
 
-	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
@@ -188,7 +187,7 @@ public class Base64Pipe extends StreamingPipe {
 		return lineSeparator;
 	}
 
-	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength &lt;= 0, then the output will not be divided into lines", "auto"})
+	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}
