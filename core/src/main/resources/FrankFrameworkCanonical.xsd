@@ -142,6 +142,11 @@
 		<xsd:attribute name="forceFixedForwarding"/>
 		<xsd:attribute name="transformNullMessage"/>
 		<xsd:attribute name="adapterToRunBeforeOnEmptyInput"/>
+		<xsd:attribute name="commitOnState"/>
+		<xsd:attribute name="storeOriginalMessageWithoutNamespaces"/>
+		<xsd:attribute name="transacted"/>
+		<xsd:attribute name="transactionAttributeNum"/>
+		<xsd:attribute name="transactionTimeout"/>
 	</xsd:complexType>
 	<xsd:complexType name="PipeType">
 		<xsd:all/>
