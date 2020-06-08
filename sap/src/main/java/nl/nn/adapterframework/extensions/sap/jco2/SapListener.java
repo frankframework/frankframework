@@ -161,7 +161,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(this, idoc.toXML());
+			handler.processRequest(this, null, idoc.toXML());
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}

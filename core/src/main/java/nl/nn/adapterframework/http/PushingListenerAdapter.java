@@ -83,7 +83,8 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, message, requestContext);
+			// serviceclient has no rawMessage, but it has no afterMessageProcessed either, therefor rawMessage can safely be null in handler.processRequest()
+			return handler.processRequest(this, correlationId, null, message, requestContext); 
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
