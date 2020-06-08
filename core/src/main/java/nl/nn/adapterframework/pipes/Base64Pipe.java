@@ -85,11 +85,9 @@ public class Base64Pipe extends StreamingPipe {
 			}
 		}
 
-		if(!convertToString) {
-			// Allow this for backwards compatibility
-			if(getDirection().equals("decode")) {
-				setOutputType("bytes");
-			}
+		// Allow this for backwards compatibility
+		if(!convertToString && getDirection().equals("decode")) {
+			setOutputType("bytes");
 		}
 	}
 
