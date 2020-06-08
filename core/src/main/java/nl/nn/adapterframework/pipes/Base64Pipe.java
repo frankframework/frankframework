@@ -54,8 +54,8 @@ public class Base64Pipe extends StreamingPipe {
 	private int lineLength = 76;
 	private String lineSeparator = "auto";
 	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String outputType = "bytes";
-	private boolean convertToString = false;
+	private String outputType = "string";
+	private boolean convertToString = true; // Deprecated, but set to true, apparently for backward compatibility. We could consider setting it false, avoiding needless conversions from bytes to string
 
 	private List<String> outputTypes = Arrays.asList("string", "bytes", "stream");
 
@@ -85,9 +85,11 @@ public class Base64Pipe extends StreamingPipe {
 			}
 		}
 
-		if (getDirection().equals("decode") && convertToString) {
-			//Allow this for backwards compatibility
-			setOutputType("string");
+		if(!convertToString) {
+			// Allow this for backwards compatibility
+			if(getDirection().equals("decode")) {
+				setOutputType("bytes");
+			}
 		}
 	}
 
