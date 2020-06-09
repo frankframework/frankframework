@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 				if (parameterLists.size() > 0) {
 					Handler handler = Handler.getHandler(parameterLists, log);
 					try {
-						XmlUtils.parseXml(handler, message);
+						XmlUtils.parseXml(message, handler);
 					} catch (Exception e) {
 						throw new SapException("exception parsing message", e);
 					}

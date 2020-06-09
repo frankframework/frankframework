@@ -42,7 +42,7 @@ public class NamespaceRemovingFilterTest {
 		NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
 		filter.setContentHandler(xmlWriter);
 		
-		XmlUtils.parseXml(filter, source);
+		XmlUtils.parseXml(source, filter);
 
 		String actual = new String (target.toString());
 		assertEquals(expected, actual);

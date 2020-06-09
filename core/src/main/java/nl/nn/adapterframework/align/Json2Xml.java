@@ -17,7 +17,6 @@ package nl.nn.adapterframework.align;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,20 +32,10 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
@@ -310,17 +299,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	
 	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
-
-		// create the ValidatorHandler
-		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
-
-		// create the XSModel
-		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
-		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
-		schemaInformation.add(xsModel);
+		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
+		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
 		// create the validator, setup the chain
 		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays,rootElement,strictSyntax);
@@ -332,26 +312,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			j2x.setTargetNamespace(targetNamespace);
 		}
 		j2x.setDeepSearch(deepSearch);
-		Source source = j2x.asSource(json);
-		StringWriter writer = new StringWriter();
-		StreamResult result = new StreamResult(writer);
-		String xml = null;
-		try {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			Transformer transformer = tf.newTransformer();
-			transformer.transform(source, result);
-			writer.flush();
-			xml = writer.toString();
-		} catch (TransformerConfigurationException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		} catch (TransformerException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		}
-		return xml;
+
+		return j2x.translate(json);
 	}
 
 	public boolean isReadAttributes() {

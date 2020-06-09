@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -97,8 +96,7 @@ public class MessageOutputStreamTest {
 			ContentHandler handler = stream.asContentHandler();
 
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 			
 		}
 		String actual = new String (target.toString());
@@ -152,8 +150,7 @@ public class MessageOutputStreamTest {
 			ContentHandler handler = stream.asContentHandler();
 	
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 
 		}
 		String actual = new String (target.toString());
@@ -344,8 +341,7 @@ public class MessageOutputStreamTest {
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -399,8 +395,7 @@ public class MessageOutputStreamTest {
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));

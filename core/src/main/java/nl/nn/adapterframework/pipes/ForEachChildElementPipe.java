@@ -354,7 +354,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		inputHandler=stopSensor;
 
 		try {
-			XmlUtils.parseXml(inputHandler,src);
+			XmlUtils.parseXml(src,inputHandler);
 		} catch (Exception e) {
 			try {
 				if (itemHandler.getTimeOutException()!=null) {
