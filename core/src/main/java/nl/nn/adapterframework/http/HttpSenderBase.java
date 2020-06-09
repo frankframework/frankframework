@@ -641,7 +641,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
 			//Set all headers
-			if(session != null && APPEND_MESSAGEID_HEADER) {
+			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
 				httpRequestBase.setHeader("Message-Id", session.getMessageId());
 			}
 			for (String param: headersParamsMap.keySet()) {
