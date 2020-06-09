@@ -17,8 +17,6 @@ package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
@@ -26,6 +24,8 @@ import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
@@ -57,7 +57,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 			LOG.info("Create service wrapper");
 		}
 
-		service.setCallContext(context);
+		service.setCallContext(context); //Update the CallContext
 
 		return service;
 	}
