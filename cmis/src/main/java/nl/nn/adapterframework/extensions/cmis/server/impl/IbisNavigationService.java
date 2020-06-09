@@ -18,8 +18,6 @@ package nl.nn.adapterframework.extensions.cmis.server.impl;
 import java.math.BigInteger;
 import java.util.List;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
@@ -80,9 +78,7 @@ public class IbisNavigationService implements NavigationService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			IPipeLineSession context = new PipeLineSessionBase();
-			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), context);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectInFolderList");
 
 			return CmisUtils.xml2ObjectsInFolderList(typesXml);
