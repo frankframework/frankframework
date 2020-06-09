@@ -143,7 +143,7 @@ public class Base64Pipe extends StreamingPipe {
 	}
 
 	
-	@IbisDoc({"1", "either <code>encode</code> or <code>decode</code>", "encode"})
+	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String string) {
 		direction = string.toLowerCase();
 	}
@@ -163,7 +163,7 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "bytes"})
+	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
