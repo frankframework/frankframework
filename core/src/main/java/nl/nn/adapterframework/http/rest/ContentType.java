@@ -27,11 +27,11 @@ public class ContentType {
 
 	public ContentType(MediaTypes mediaType) {
 		this.mediaType = mediaType;
-		this.charset = mediaType.getCharset(); // when charset = NULL it means setting it is disallowed
+		this.charset = mediaType.getDefaultCharset(); // when charset = NULL it means setting it is disallowed
 	}
 
 	public void setCharset(String charset) {
-		if(charset == null) {
+		if(this.charset == null) {
 			throw new UnsupportedCharsetException("provided mediatype does not support setting charset");
 		}
 

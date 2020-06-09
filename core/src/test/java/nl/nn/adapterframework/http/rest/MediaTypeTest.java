@@ -83,12 +83,12 @@ public class MediaTypeTest {
 
 	@Test
 	public void defaultJsonCharsetUtf8() {
-		assertEquals("json should not have utf-8 charset", "UTF-8", MediaTypes.JSON.getCharset().name());
+		assertEquals("json should not have utf-8 charset", "UTF-8", MediaTypes.JSON.getDefaultCharset().name());
 	}
 
 	@Test
 	public void noCharsetOnOctetstreams() {
-		assertNull("octet-stream should not have a charset", MediaTypes.OCTET.getCharset());
-		assertNull("pdf should not have a charset", MediaTypes.PDF.getCharset());
+		assertNull("octet-stream should not have a charset", MediaTypes.OCTET.getDefaultCharset());
+		assertNull("pdf should not have a charset", MediaTypes.PDF.getDefaultCharset());
 	}
 }

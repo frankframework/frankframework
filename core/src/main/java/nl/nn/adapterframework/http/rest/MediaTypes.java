@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http.rest;
 
 import java.nio.charset.Charset;
 
+import nl.nn.adapterframework.util.StreamUtil;
+
 public enum MediaTypes {
 
 	ANY("*/*", null),
@@ -30,28 +32,29 @@ public enum MediaTypes {
 	MULTIPART("multipart/*");
 
 	private final String mediaType;
-	private final Charset charset;
+	private final Charset defaultCharset;
 
 	/**
 	 * Creates a new MediaType with the default charset (UTF-8)
 	 */
 	private MediaTypes(String mediaType) {
-		this(mediaType, Charset.forName("utf-8"));
+		this(mediaType, Charset.forName(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 	}
 
 	/**
-	 * Creates a new MediaType with the given charset
+	 * Creates a new MediaType with the given charset.
+	 * `null` means no charset!
 	 */
 	private MediaTypes(String mediaType, Charset charset) {
 		this.mediaType = mediaType;
-		this.charset = charset;
+		this.defaultCharset = charset;
 	}
 
 	/**
 	 * returns the default charset for the given mediatype or null when non is allowed
 	 */
-	public Charset getCharset() {
-		return charset;
+	public Charset getDefaultCharset() {
+		return defaultCharset;
 	}
 
 	public String getContentType() {
