@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -46,10 +45,12 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.ExceptionCatchingFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NodeSetFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TimeOutSaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -286,6 +287,77 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 	}
+	
+	private class HandlerRecord {
+		ContentHandler inputHandler;
+		ItemCallbackCallingHandler itemHandler;
+		String errorMessage="Could not parse input";
+		TransformerErrorListener transformerErrorListener=null;
+	}
+	
+	protected void createHandler(HandlerRecord result, Message input, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+		result.itemHandler = new ItemCallbackCallingHandler(callback);
+		result.inputHandler=result.itemHandler;
+		
+		if (isRemoveNamespaces()) {
+			NamespaceRemovingFilter namespaceRemovingFilter = new NamespaceRemovingFilter();
+			namespaceRemovingFilter.setContentHandler(result.itemHandler);
+			result.inputHandler = namespaceRemovingFilter;
+		}
+		
+		if (getExtractElementsTp()!=null) {
+			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
+			transformerFilter.setContentHandler(result.inputHandler);
+			result.inputHandler=transformerFilter;
+			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getTransformer().getErrorListener();
+			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
+		} 
+		if (StringUtils.isNotEmpty(getTargetElement())) {
+			NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
+			targetElementFilter.setContentHandler(result.inputHandler);
+			result.inputHandler=targetElementFilter;
+		}
+		if (StringUtils.isNotEmpty(getContainerElement())) {
+			NodeSetFilter containerElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
+			containerElementFilter.setContentHandler(result.inputHandler);
+			result.inputHandler=containerElementFilter;
+		}
+		
+		StopSensor stopSensor = new StopSensor(result.itemHandler);
+		stopSensor.setContentHandler(result.inputHandler);
+		result.inputHandler=stopSensor;
+		
+		ExceptionCatchingFilter exceptionCatcher = new ExceptionCatchingFilter() {
+			@Override
+			protected void handleException(SAXException e) throws SAXException {
+				try {
+					if (result.itemHandler.getTimeOutException()!=null) {
+						throw new TimeOutSaxException(result.itemHandler.getTimeOutException());
+					}
+					if (!result.itemHandler.isStopRequested()) {
+						// Xalan rethrows any caught exception with the message, but without the cause.
+						// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+						if (result.transformerErrorListener!=null) {
+							TransformerException tex = result.transformerErrorListener.getFatalTransformerException();
+							if (tex!=null) {
+								throw new SaxException(result.errorMessage,tex);
+							}
+							IOException iox = result.transformerErrorListener.getFatalIOException();
+							if (iox!=null) {
+								throw new SaxException(result.errorMessage,iox);
+							}
+						}
+						throw new SaxException(result.errorMessage,e);
+					}
+				} finally {
+					result.itemHandler.endDocument();
+				}
+			}
+		};
+		exceptionCatcher.setContentHandler(result.inputHandler);
+		result.inputHandler = exceptionCatcher;
+	}
 
 	@Override
 	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
@@ -309,72 +381,25 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SenderException("could not get InputSource",e);
 			}
 		}
-		ItemCallbackCallingHandler itemHandler;
-		ContentHandler inputHandler;
-		String errorMessage="Could not parse input";
-		TransformerErrorListener transformerErrorListener=null;
+		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
-			itemHandler = new ItemCallbackCallingHandler(callback);
-			inputHandler=itemHandler;
-			
-			if (isRemoveNamespaces()) {
-				NamespaceRemovingFilter namespaceRemovingFilter = new NamespaceRemovingFilter();
-				namespaceRemovingFilter.setContentHandler(itemHandler);
-				inputHandler = namespaceRemovingFilter;
-			}
-			
-			if (getExtractElementsTp()!=null) {
-				if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
-				transformerFilter.setContentHandler(inputHandler);
-				inputHandler=transformerFilter;
-				ErrorListener errorListener = transformerFilter.getTransformer().getErrorListener();
-				if (errorListener!=null && errorListener instanceof TransformerErrorListener) {
-					transformerErrorListener = (TransformerErrorListener)errorListener;
-				}
-				transformerErrorListener=(TransformerErrorListener)transformerFilter.getTransformer().getErrorListener();
-				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
-			} 
-			if (StringUtils.isNotEmpty(getTargetElement())) {
-				NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
-				targetElementFilter.setContentHandler(inputHandler);
-				inputHandler=targetElementFilter;
-			}
-			if (StringUtils.isNotEmpty(getContainerElement())) {
-				NodeSetFilter containerElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
-				containerElementFilter.setContentHandler(inputHandler);
-				inputHandler=containerElementFilter;
-			}
+			createHandler(handlerRecord, input, session, callback);
 		} catch (TransformerException e) {
-			throw new SenderException(errorMessage, e);
+			throw new SenderException(handlerRecord.errorMessage, e);
 		}
-		
-		StopSensor stopSensor = new StopSensor(itemHandler);
-		stopSensor.setContentHandler(inputHandler);
-		inputHandler=stopSensor;
 
 		try {
-			XmlUtils.parseXml(src,inputHandler);
+			XmlUtils.parseXml(src,handlerRecord.inputHandler);
 		} catch (Exception e) {
-			try {
-				if (itemHandler.getTimeOutException()!=null) {
-					throw itemHandler.getTimeOutException();
+			if (e instanceof TimeOutSaxException) {
+				if (e.getCause() instanceof TimeOutException) {
+					throw (TimeOutException)e.getCause();
 				}
-				if (!itemHandler.isStopRequested()) {
-					// Xalan rethrows any caught exception with the message, but without the cause.
-					// For improved diagnosability of error situations, rethrow the original exception, where applicable.
-					rethrowTransformerException(transformerErrorListener, errorMessage);
-					throw new SenderException(errorMessage,e);
-				}
-			} finally {
-				try {
-					itemHandler.endDocument();
-				} catch (SAXException e1) {
-					throw new SenderException(errorMessage,e1);
-				}
+				throw handlerRecord.itemHandler.getTimeOutException();
 			}
+			throw new SenderException(e);
 		}
-		rethrowTransformerException(transformerErrorListener, errorMessage);
+		rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
 		
 	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
