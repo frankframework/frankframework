@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden
+   Copyright 2013-2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,27 +30,11 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
+//import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.ldap.LdapSender;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -64,6 +48,23 @@ import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.ldap.LdapSender;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Returns information about Tibco queues in a XML string.
@@ -114,8 +115,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private boolean hideMessage = false;
 	private String queueRegex;
 
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -125,13 +126,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
 		}
 
@@ -177,7 +175,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				boolean countOnly = ("true".equalsIgnoreCase(countOnly_work) ? true
 						: false);
 				if (countOnly) {
-					return getQueueMessageCountOnly(admin, queueName_work);
+					return new PipeRunResult(getForward(), getQueueMessageCountOnly(admin, queueName_work));
 				}
 			}
 
@@ -229,7 +227,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return result;
+		return new PipeRunResult(getForward(), result);
 	}
 
 	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {
@@ -298,8 +296,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (count == queueItem) {
 					qNameXml.addAttribute("item", count);
 					Object o = enm.nextElement();
-					if (o instanceof Message) {
-						Message msg = (Message) o;
+					if (o instanceof javax.jms.Message) {
+						javax.jms.Message msg = (javax.jms.Message) o;
 						XmlBuilder qMessageId = new XmlBuilder("qMessageId");
 						qMessageId.setCdataValue(msg.getJMSMessageID());
 						qMessageXml.addSubElement(qMessageId);
@@ -584,9 +582,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
-		String ldapRequest = "<req>" + principal + "</req>";
+		nl.nn.adapterframework.stream.Message ldapRequest = new nl.nn.adapterframework.stream.Message("<req>" + principal + "</req>");
 		try {
-			String ldapResult = ldapSender.sendMessage(null, ldapRequest);
+			String ldapResult = ldapSender.sendMessage(ldapRequest, null).asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(
 						ldapResult,

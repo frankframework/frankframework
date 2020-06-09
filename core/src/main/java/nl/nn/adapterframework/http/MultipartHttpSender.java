@@ -20,7 +20,7 @@ import java.io.InputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.w3c.dom.Element;
@@ -69,11 +69,11 @@ public class MultipartHttpSender extends HttpSender {
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		String contentType = responseHandler.getHeader("content-type");
 		if(contentType != null)
 			setMultipartResponse(contentType.contains("multipart"));
 
-		return super.extractResult(responseHandler, prc);
+		return super.extractResult(responseHandler, session);
 	}
 }

@@ -21,7 +21,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**

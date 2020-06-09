@@ -1,0 +1,10 @@
+
+http://localhost:8080/ibis4mock/api/getmock/tias
+ 
+http://localhost:8080/ibis4mock/api/getmock/baak
+ 
+http://localhost:8080/ibis4mock/api/getmock/zuidema
+ 
+http://localhost:8080/ibis4mock/api/getmock/ncoi
+ 
+http://localhost:8080/ibis4mock/api/getmock/nyenrode

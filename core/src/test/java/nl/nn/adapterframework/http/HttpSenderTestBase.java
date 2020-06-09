@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
@@ -64,11 +65,8 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
 	protected String getFile(String file) throws IOException {
-		return TestFileUtils.getTestFile(BASEDIR+file);
-//		URL url = this.getClass().getResource(BASEDIR+file);
-//		if (url == null) {
-//			throw new IOException("file ["+BASEDIR+file+"] not found");
-//		}
-//		return Misc.streamToString(url.openStream());
+		String content = TestFileUtils.getTestFile(BASEDIR+file);
+		assertNotNull("file ["+BASEDIR+file+"] not found", content);
+		return content;
 	}
 }

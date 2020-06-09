@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -55,6 +56,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	/**
 	 * Checks whether the proper forward is defined, a dateFormat is specified and the dateFormat is valid.
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -89,8 +91,8 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 
 		String formattedDate;
 		if(isGetCurrentTimeStampInMillis()) {
@@ -139,7 +141,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getForward(), message);
 	}
 	
 	@IbisDoc({"key of session variable to store systemdate in", "systemdate"})
@@ -163,7 +165,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		this.timeZone = TimeZone.getTimeZone(timeZone);
 	}
 
-	@IbisDoc({"set to a time in millisecond to create a value that is different to the previous returned value by a putsystemdateinsession pipe in this virtual machine. the thread will sleep for the specified time before recalculating a new value. set the timezone to a value without daylight saving time (like gmt+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> when you're looking for a guid parameter for you xslt it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.parameter}</a>", "-1 (disabled)"})
+	@IbisDoc({"set to a time in millisecond to create a value that is different to the previous returned value by a putsystemdateinsession pipe in this virtual machine. the thread will sleep for the specified time before recalculating a new value. set the timezone to a value without daylight saving time (like gmt+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> when you're looking for a guid parameter for you xslt it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.parameter}", "-1 (disabled)"})
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}

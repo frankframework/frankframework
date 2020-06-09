@@ -15,23 +15,27 @@
 */
 package nl.nn.adapterframework.xcom;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * XCom client voor het versturen van files via XCom.
@@ -62,9 +66,7 @@ public class XComSender extends SenderWithParametersBase {
 	private String workingDirName = ".";
 	private String xcomtcp = "xcomtcp";
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#configure()
-	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(fileOption) &&
 				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) &&
@@ -114,18 +116,20 @@ public class XComSender extends SenderWithParametersBase {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
-	 */
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
-	 */
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
+	@Override
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		String messageString;
+		try {
+			messageString = message.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
+		for (Iterator filenameIt = getFileList(messageString).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			log.debug("Start sending " + filename);
 
@@ -134,12 +138,12 @@ public class XComSender extends SenderWithParametersBase {
 
 			// execute command in a new operating process
 			try {
-				String cmd = getCommand(prc.getSession(), localFile, true);
+				String cmd = getCommand(session, localFile, true);
 
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 
 				// read the output of the process
-				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
 				StringBuffer output = new StringBuffer();
 				String line = null;
 				while ((line = br.readLine()) != null) {
@@ -151,6 +155,7 @@ public class XComSender extends SenderWithParametersBase {
 					p.waitFor();
 				}
 				catch(InterruptedException e) {
+					log.warn(getLogPrefix()+"has been interrupted");
 				}
 
 				log.debug("output for " + localFile.getName() + " = " + output.toString());
@@ -162,7 +167,7 @@ public class XComSender extends SenderWithParametersBase {
 				}
 			}
 			catch(IOException e) {
-				throw new SenderException("Error while executing command " + getCommand(prc.getSession(), localFile, false), e);
+				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);
 			}
 		}
 		return message;
@@ -241,16 +246,12 @@ public class XComSender extends SenderWithParametersBase {
 		return list;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.INamedObject#getName()
-	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
-	 */
+	@Override
 	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name = name;

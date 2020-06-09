@@ -23,7 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -48,9 +49,9 @@ import nl.nn.adapterframework.util.RunStateEnum;
  */
 public class Configuration {
     protected Logger log = LogUtil.getLogger(this);
-    private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+    private ClassLoader configurationClassLoader = null;
 
-	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("configurations.autoStart", true);
+	private Boolean autoStart = null;
 
     private AdapterService adapterService;
 
@@ -136,19 +137,22 @@ public class Configuration {
 		this.adapterService = adapterService;
 	}
 
-	public ClassLoader getClassLoader() {
-		return configurationClassLoader;
-	}
-
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
 
 	public boolean isAutoStart() {
+		if(autoStart == null && getClassLoader() != null) {
+			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("configurations.autoStart", true);
+		}
 		return autoStart;
 	}
 
 	public boolean isStubbed() {
+		if(getClassLoader() == null) {
+			return false;
+		}
+
 		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 	}
 
@@ -292,7 +296,27 @@ public class Configuration {
 		return version;
 	}
 
+	public void setClassLoader(ClassLoader classLoader) {
+		this.configurationClassLoader = classLoader;
+	}
+	public ClassLoader getClassLoader() {
+		return configurationClassLoader;
+	}
+
+	/**
+	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
+	 * Because of this, it may not always represent the correct or accurate type.
+	 */
 	public String getClassLoaderType() {
+		if(configurationClassLoader == null) { //Configuration has not been loaded yet
+			String type = AppConstants.getInstance().getProperty("configurations."+name+".classLoaderType");
+			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
+				return type;
+			} else {
+				return null;
+			}
+		}
+
 		return configurationClassLoader.getClass().getSimpleName();
 	}
 

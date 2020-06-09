@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -249,7 +249,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Load the contents of a properties file.
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
-	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
+	 * <code><pre>log4j2.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
@@ -296,10 +296,10 @@ public final class AppConstants extends Properties implements Serializable {
 					log.info("Application constants loaded from url [" + url.toString() + "]");
 				}
 
-				if (loadAdditionalPropertiesFiles) {
+				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additonal properties if it's defined...
+				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
-					String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
 					if (StringUtils.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
@@ -330,7 +330,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * 
 	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
 	 * to the {@link Hashtable}.
-	 * @Deprecated Use {@link #setProperty(String, String)} instead!
+	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */
 	@Deprecated
 	@Override

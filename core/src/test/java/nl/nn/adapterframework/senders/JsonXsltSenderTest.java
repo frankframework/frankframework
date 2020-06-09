@@ -11,8 +11,8 @@ import javax.json.JsonStructure;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -26,7 +26,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
 
 	@Test
-	public void basic() throws ConfigurationException, IOException, SenderException {
+	public void basic() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.configure();
 		sender.open();
@@ -34,13 +34,13 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		Message message = new Message(input);
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String jsonOut=result.toString();
+		PipeRunResult prr = sender.sendMessage(message, session, null);
+		String jsonOut=prr.getResult().asString();
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
 
 	@Test
-	public void xmlOut() throws ConfigurationException, IOException, SenderException {
+	public void xmlOut() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.setJsonResult(false);
 		sender.configure();
@@ -49,13 +49,13 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String xmlOut=result.toString();
+		PipeRunResult result = sender.sendMessage(message, session, null);
+		String xmlOut=result.getResult().asString();
 		assertEquals(expectedXml,xmlOut);
 	}
 
 	@Test
-	public void testXPath() throws ConfigurationException, IOException, SenderException {
+	public void testXPath() throws Exception {
 		sender.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
 		sender.setOutputType("text");
 		sender.setJsonResult(false);
@@ -65,8 +65,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedText="James";
-		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
-		String textOut=result.toString();
+		PipeRunResult result = sender.sendMessage(message, session, null);
+		String textOut=result.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
 	

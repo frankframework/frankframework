@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -204,7 +206,7 @@ public class Browse extends ActionBase {
 				} else if (listener!=null) {
 					msg = listener.getStringFromRawMessage(rawmsg, null);
 				} else {
-					msg=(String)rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
@@ -218,7 +220,7 @@ public class Browse extends ActionBase {
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response,"message ["+messageId+"]");
 				return null;
 			} else {
-				IMessageBrowsingIterator mbi=mb.getIterator(startDate,endDate,"true".equals(forceDescStr));
+				IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE);
 				try {
 					XmlBuilder messages=new XmlBuilder("messages");
 					messages.addAttribute("storageType",storageType);
@@ -278,7 +280,7 @@ public class Browse extends ActionBase {
 								if (listener!=null) {
 									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
 								} else {
-									msg=(String)rawmsg;
+									msg = Message.asString(rawmsg);
 								}
 								if (msg==null || msg.indexOf(messageTextMask)<0) {
 									continue;

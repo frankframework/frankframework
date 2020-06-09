@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,38 +81,38 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	private boolean jmsTransacted = false;
 	private String subscriberType = "DURABLE"; // DURABLE or TRANSIENT
 
-    private int ackMode = Session.AUTO_ACKNOWLEDGE;
-    private boolean persistent;
-	private long messageTimeToLive=0;
-    private String destinationName;
-    private boolean useTopicFunctions = false;
-    private String authAlias;
-    private boolean lookupDestination = true;
+	private int ackMode = Session.AUTO_ACKNOWLEDGE;
+	private boolean persistent;
+	private long messageTimeToLive = 0;
+	private String destinationName;
+	private boolean useTopicFunctions = false;
+	private String authAlias;
+	private boolean lookupDestination = true;
 
-    private String destinationType="QUEUE"; // QUEUE or TOPIC
+	private String destinationType = "QUEUE"; // QUEUE or TOPIC
 
-    protected MessagingSource messagingSource;
-    private Destination destination;
+	protected MessagingSource messagingSource;
+	private Destination destination;
 
-    private Map<String, ConnectionFactory> proxiedConnectionFactories;
-    private Map<String, String> proxiedDestinationNames;
+	private Map<String, ConnectionFactory> proxiedConnectionFactories;
+	private Map<String, String> proxiedDestinationNames;
 
-    //---------------------------------------------------------------------
-    // Queue fields
-    //---------------------------------------------------------------------
-    private String queueConnectionFactoryName;
-    //---------------------------------------------------------------------
-    // Topic fields
-    //---------------------------------------------------------------------
-    private String topicConnectionFactoryName;
+	// ---------------------------------------------------------------------
+	// Queue fields
+	// ---------------------------------------------------------------------
+	private String queueConnectionFactoryName;
+	// ---------------------------------------------------------------------
+	// Topic fields
+	// ---------------------------------------------------------------------
+	private String topicConnectionFactoryName;
 
-	//the MessageSelector will provide filter functionality, as specified
-	//javax.jms.Message.
-    private String messageSelector=null;
+	// the MessageSelector will provide filter functionality, as specified
+	// javax.jms.Message.
+	private String messageSelector = null;
 
-    private boolean correlationIdToHex=false;
-    private String correlationIdToHexPrefix="ID:";
-    private int correlationIdMaxLength=-1;
+	private boolean correlationIdToHex = false;
+	private String correlationIdToHexPrefix = "ID:";
+	private int correlationIdMaxLength = -1;
 
 	public static int stringToDeliveryMode(String mode) {
 		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
@@ -122,20 +122,20 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			return DeliveryMode.NON_PERSISTENT;
 		}
 		return 0;
-   }
+	}
 
-   public static String deliveryModeToString(int mode) {
-	   if (mode==0) {
-		   return "not set by application";
-	   }
-	   if (mode==DeliveryMode.PERSISTENT) {
-		   return MODE_PERSISTENT;
-	   }
-	   if (mode==DeliveryMode.NON_PERSISTENT) {
-		   return MODE_NON_PERSISTENT;
-	   }
-	   return "unknown delivery mode ["+mode+"]";
-   }
+	public static String deliveryModeToString(int mode) {
+		if (mode == 0) {
+			return "not set by application";
+		}
+		if (mode == DeliveryMode.PERSISTENT) {
+			return MODE_PERSISTENT;
+		}
+		if (mode == DeliveryMode.NON_PERSISTENT) {
+			return MODE_NON_PERSISTENT;
+		}
+		return "unknown delivery mode [" + mode + "]";
+	}
 
 	protected String getLogPrefix() {
 		return "["+getName()+"] ";
@@ -189,31 +189,30 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	protected MessagingSource getMessagingSource() throws JmsException {
 		// We use double-checked locking here
-        // We're aware of the risks involved, but consider them
-        // to be acceptable since this method is invoked first time
-        // from 'configure', at which time only 1 single thread will
-        // access the JMS Facade instance.
-        if (messagingSource == null) {
-            synchronized (this) {
-                if (messagingSource == null) {
-                    log.debug("instantiating MessagingSourceFactory");
-                    MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
-                    try {
-                        String connectionFactoryName = getConnectionFactoryName();
-                        log.debug("creating MessagingSource");
-						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName,getAuthAlias(), createDestination, useJms102);
-                    } catch (IbisException e) {
-                        if (e instanceof JmsException) {
-                                throw (JmsException)e;
-                        }
-                        throw new JmsException(e);
-                    }
-                }
-            }
+		// We're aware of the risks involved, but consider them
+		// to be acceptable since this method is invoked first time
+		// from 'configure', at which time only 1 single thread will
+		// access the JMS Facade instance.
+		if (messagingSource == null) {
+			synchronized (this) {
+				if (messagingSource == null) {
+					log.debug("instantiating MessagingSourceFactory");
+					MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
+					try {
+						String connectionFactoryName = getConnectionFactoryName();
+						log.debug("creating MessagingSource");
+						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName, getAuthAlias(), createDestination, useJms102);
+					} catch (IbisException e) {
+						if (e instanceof JmsException) {
+							throw (JmsException) e;
+						}
+						throw new JmsException(e);
+					}
+				}
+			}
 		}
 		return messagingSource;
 	}
-
 
 	/**
 	 * Returns a session on the connection for a topic or a queue
@@ -280,10 +279,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	public TextMessage createTextMessage(Session session, String correlationID, String message)
+	public Message createMessage(Session session, String correlationID, String message)
 			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
+		setMessageCorrelationID(textMessage, correlationID);
+		textMessage.setText(message);
+		return textMessage;
+	}
+
+	public void setMessageCorrelationID(Message message, String correlationID) 
+			throws JMSException {
 		if (null != correlationID) {
 			if (correlationIdMaxLength>=0) {
 				int cidlen;
@@ -307,38 +313,36 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				correlationID = hexCorrelationID;
 				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}
-			textMessage.setJMSCorrelationID(correlationID);
+			message.setJMSCorrelationID(correlationID);
 		}
-		textMessage.setText(message);
-		return textMessage;
 	}
-
-    public Destination getDestination() throws NamingException, JMSException, JmsException  {
-	    if (destination == null) {
-	    	String destinationName = getDestinationName();
-	    	if (StringUtils.isEmpty(destinationName)) {
-	    		throw new NamingException("no destinationName specified");
-	    	}
-	    	if (isLookupDestination()) {
-			    if (!useTopicFunctions || getPersistent()) {
-			        destination = getDestination(destinationName);
-			    } else {
+	
+	public Destination getDestination() throws NamingException, JMSException, JmsException {
+		if (destination == null) {
+			String destinationName = getDestinationName();
+			if (StringUtils.isEmpty(destinationName)) {
+				throw new NamingException("no destinationName specified");
+			}
+			if (isLookupDestination()) {
+				if (!useTopicFunctions || getPersistent()) {
+					destination = getDestination(destinationName);
+				} else {
 					TopicSession session = null;
-			    	try {
-						session = (TopicSession)createSession();
+					try {
+						session = (TopicSession) createSession();
 						destination = session.createTopic(destinationName);
-			    	} finally {
+					} finally {
 						closeSession(session);
-			    	}
-			    }
-	    	} else {
-	    		destination = getJmsMessagingSource().createDestination(destinationName);
-	    	}
-		    if (destination==null) {
-		    	throw new NamingException("cannot get Destination from ["+destinationName+"]");
-		    }
-	    }
-	    return destination;
+					}
+				}
+			} else {
+				destination = getJmsMessagingSource().createDestination(destinationName);
+			}
+			if (destination == null) {
+				throw new NamingException("cannot get Destination from [" + destinationName + "]");
+			}
+		}
+		return destination;
 	}
 
 	/**
@@ -443,6 +447,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
@@ -460,13 +465,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
-    /**
-     * Gets a queueReceiver value
-     * @see QueueReceiver
-     */
+	/**
+	 * Gets a queueReceiver value
+	 * @see QueueReceiver
+	 */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
-	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
-	    return queueReceiver;
+		QueueReceiver queueReceiver = session.createReceiver(destination, selector);
+		return queueReceiver;
 	}
 	
 	/**
@@ -486,18 +491,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws NamingException, JMSException {
 
-	    TopicSubscriber topicSubscriber;
-	    if (subscriberType.equalsIgnoreCase("DURABLE")) {
-	        topicSubscriber =
-	            session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + name  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+		TopicSubscriber topicSubscriber;
+		if (subscriberType.equalsIgnoreCase("DURABLE")) {
+			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
+			if (log.isDebugEnabled()) log.debug("[" + name + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 
-	    } else {
-	        topicSubscriber = session.createSubscriber(topic, selector, false);
+		} else {
+			topicSubscriber = session.createSubscriber(topic, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
-	    }
+		}
 
-	    return topicSubscriber;
+		return topicSubscriber;
 	}
 
 	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws NamingException, JMSException {
@@ -521,7 +525,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
-		TextMessage msg = createTextMessage(session, correlationId, message);
+		Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
 			if (useJms102()) {
@@ -572,8 +576,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
-
-
 	/**
 	 * Send a message
 	 * @param messageProducer
@@ -618,6 +620,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			}
 		}
 	}
+	
 	/**
 	 * Send a message
 	 * @param session
@@ -769,11 +772,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		this.destinationType = type;
 		if (destinationType.equalsIgnoreCase("TOPIC")) {
 			useTopicFunctions = true;
-        } else {
+		} else {
 			useTopicFunctions = false;
-        }
+		}
 	}
-    public String getDestinationType() {
+	public String getDestinationType() {
 		return destinationType;
 	}
 
@@ -880,17 +883,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return queueConnectionFactoryName;
 	}
 
-	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>true</code>.
-	 * The corresponding connection factory should support XA transactions.
-	 * @deprecated please use 'setQueueConnectionFactoryName()' instead
-	 */
-	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
-		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
-		}
-	}
-
 
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
@@ -904,16 +896,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return topicConnectionFactoryName;
 	}
 
-	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>true</code>.
-	 * The corresponding connection factory should support XA transactions.
-	 * @deprecated please use 'setTopicConnectionFactoryName()' instead
-	 */
-	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
-		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
-		}
-	}
 
 	/**
 	 * Controls the use of JMS transacted session.
@@ -928,6 +910,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * relied this specific functionality. New configurations should not use it.
 	 *
 	 */
+	@Deprecated
 	public void setJmsTransacted(boolean jmsTransacted) {
 		this.jmsTransacted = jmsTransacted;
 	}
@@ -984,6 +967,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Indicates whether messages are send under transaction control.
 	 * @see #setTransacted(boolean)
 	 */
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}

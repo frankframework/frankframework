@@ -21,13 +21,14 @@ import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.sap.ISapSender;
 import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
@@ -115,11 +116,13 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			pvl=prc.getValues(paramList);
+			if (paramList!=null) {
+				pvl = paramList.getValues(message, session);
+			}
 			SapSystem sapSystem = getSystem(pvl);
 			
 			JCoFunction function=getFunction(sapSystem, pvl);
@@ -130,10 +133,11 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			if (StringUtils.isEmpty(getFunctionName())) {
 				pvl.removeParameterValue(getFunctionNameParam());
 			}
-			message2FunctionCall(function, message, correlationID, pvl);
+			String correlationID = session==null ? null : session.getMessageId();
+			message2FunctionCall(function, message.asString(), correlationID, pvl);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
 
-			JCoDestination destination = getDestination(prc.getSession(), sapSystem);
+			JCoDestination destination = getDestination(session, sapSystem);
 			tid = getTid(destination,sapSystem);
 			if (StringUtils.isEmpty(tid)) {
 				function.execute(destination);
@@ -144,7 +148,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			if (isSynchronous()) {
 				return functionResult2message(function);
 			} else {
-				return tid;
+				return new Message(tid);
 			}
 		} catch (Exception e) {
 			throw new SenderException(e);

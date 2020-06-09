@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.align;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,20 +32,10 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
@@ -61,12 +50,11 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
 	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
 	
-	private static final boolean DEBUG=false; 
-	
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
 	private boolean readAttributes=true;
 	private String attributePrefix="@";
+	private String mixedContentLabel="#text";
 
 	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, insertElementContainerElements, rootElement, false);
@@ -134,6 +122,19 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		return container;
 	}
 
+	@Override
+	public void handleElementContents(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+		if (node instanceof JsonObject) {
+			JsonObject object = (JsonObject)node;
+			if (object.containsKey(mixedContentLabel)) {
+				JsonValue labelValue = object.get(mixedContentLabel);
+				super.handleElementContents(elementDeclaration, labelValue);
+				return;
+			}
+		} 
+		super.handleElementContents(elementDeclaration, node);
+	}
+
 
 	@Override
 	public String getNodeText(XSElementDeclaration elementDeclaration, JsonValue node) {
@@ -148,14 +149,14 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		if ("{}".equals(result)) {
 			result="";
 		}
-		if (DEBUG) log.debug("getText() node ["+ToStringBuilder.reflectionToString(node)+"] = ["+result+"]");
+		if (log.isTraceEnabled()) log.trace("getText() node ["+ToStringBuilder.reflectionToString(node)+"] = ["+result+"]");
 		return result;
 	}
 
 	@Override
 	public boolean isNil(XSElementDeclaration elementDeclaration, JsonValue node) {
 		boolean result=node==JsonValue.NULL;
-		if (DEBUG) log.debug("isNil() node ["+node+"] = ["+result+"]");
+		if (log.isTraceEnabled()) log.trace("isNil() node ["+node+"] = ["+result+"]");
 		return result;
 	}	
 	
@@ -165,12 +166,12 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			return null;
 		}
 		if (!(node instanceof JsonObject)) {
-			if (DEBUG) log.debug("getAttributes() parent node is not a JsonObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
+			if (log.isTraceEnabled()) log.trace("getAttributes() parent node is not a JsonObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
 			return null;
 		} 
 		JsonObject o = (JsonObject)node;
 		if (o.isEmpty()) {
-			if (DEBUG) log.debug("getAttributes() no children");
+			if (log.isTraceEnabled()) log.trace("getAttributes() no children");
 			return null;
 		}
 		try {
@@ -179,7 +180,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 				if (key.startsWith(attributePrefix)) {
 					String attributeName=key.substring(attributePrefix.length());
 					String value=getText(elementDeclaration, o.get(key));
-					if (DEBUG) log.debug("getAttributes() attribute ["+attributeName+"] = ["+value+"]");
+					if (log.isTraceEnabled()) log.trace("getAttributes() attribute ["+attributeName+"] = ["+value+"]");
 					result.put(attributeName, value);
 				}
 			}
@@ -192,14 +193,14 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	
 	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
-		if (DEBUG) log.debug("getAllChildNames() node isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] ["+node.getClass().getName()+"]["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getAllChildNames() node isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] ["+node.getClass().getName()+"]["+node+"]");
 		try {
 			if (isParentOfSingleMultipleOccurringChildElement()) {
 				if ((insertElementContainerElements || !strictSyntax) && node instanceof JsonArray) {
-					if (DEBUG) log.debug("getAllChildNames() parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");				
+					if (log.isTraceEnabled()) log.trace("getAllChildNames() parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");				
 					Set<String> result = new HashSet<String>(); 
 					result.addAll(getMultipleOccurringChildElements());
-					if (DEBUG) log.debug("getAllChildNames() isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");				
+					if (log.isTraceEnabled()) log.trace("getAllChildNames() isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");				
 					return result;
 				}
 				if ((insertElementContainerElements && strictSyntax) && !(node instanceof JsonArray)) {
@@ -207,19 +208,19 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 				}
 			}
 			if (!(node instanceof JsonObject)) {
-				if (DEBUG) log.debug("getAllChildNames() parent node is not a JsonObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
+				if (log.isTraceEnabled()) log.trace("getAllChildNames() parent node is not a JsonObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
 				return null;
 			} 
 			JsonObject o = (JsonObject)node;
 			if (o.isEmpty()) {
-				if (DEBUG) log.debug("getAllChildNames() no children");
+				if (log.isTraceEnabled()) log.trace("getAllChildNames() no children");
 				return new HashSet<String>();
 			}
 			Set<String> result = new HashSet<String>(); 
 			for (String key:o.keySet()) {
 				if (!readAttributes || !key.startsWith(attributePrefix)) {
 					result.add(key);
-					if (DEBUG) log.debug("getAllChildNames() key ["+key+"] added to set");
+					if (log.isTraceEnabled()) log.trace("getAllChildNames() key ["+key+"] added to set");
 				}
 			}
 			return result;
@@ -228,41 +229,42 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
+	
 	@Override
 	public Iterable<JsonValue> getNodeChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
-		if (DEBUG) log.debug("getChildrenByName() childname ["+name+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] isMultipleOccuringChildElement ["+isMultipleOccurringChildElement(name)+"] node ["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getChildrenByName() childname ["+name+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] isMultipleOccuringChildElement ["+isMultipleOccurringChildElement(name)+"] node ["+node+"]");
 		try {
 			if (!(node instanceof JsonObject)) {
-				if (DEBUG) log.debug("getChildrenByName() parent node is not a JsonObject, but a ["+node.getClass().getName()+"]");
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() parent node is not a JsonObject, but a ["+node.getClass().getName()+"]");
 				return null;
 			} 
 			JsonObject o = (JsonObject)node;
 			if (!o.containsKey(name)) {
-				if (DEBUG) log.debug("getChildrenByName() no children named ["+name+"] node ["+node+"]");
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() no children named ["+name+"] node ["+node+"]");
 				return null;
 			} 
 			JsonValue child = o.get(name);
 			List<JsonValue> result = new LinkedList<JsonValue>(); 
 			if (child instanceof JsonArray) {
-				if (DEBUG) log.debug("getChildrenByName() child named ["+name+"] is a JsonArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() child named ["+name+"] is a JsonArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
 				// if it could be necessary to insert elementContainers, we cannot return them as a list of individual elements now, because then the containing element would be duplicated
 				// we also cannot use the isSingleMultipleOccurringChildElement, because it is not valid yet
 				if (!isMultipleOccurringChildElement(name)) {
 					if (insertElementContainerElements || !strictSyntax) { 
 						result.add(child);
-						if (DEBUG) log.debug("getChildrenByName() singleMultipleOccurringChildElement ["+name+"] returning array node (insertElementContainerElements=true)");
+						if (log.isTraceEnabled()) log.trace("getChildrenByName() singleMultipleOccurringChildElement ["+name+"] returning array node (insertElementContainerElements=true)");
 					} else {
 						throw new SAXException(MSG_EXPECTED_SINGLE_ELEMENT+" ["+name+"]");
 					}
 				} else {
-					if (DEBUG) log.debug("getChildrenByName() childname ["+name+"] returning elements of array node (insertElementContainerElements=false or not singleMultipleOccurringChildElement)");
+					if (log.isTraceEnabled()) log.trace("getChildrenByName() childname ["+name+"] returning elements of array node (insertElementContainerElements=false or not singleMultipleOccurringChildElement)");
 					result.addAll((JsonArray)child);
 				}
 				return result;
 			}
 			result.add(child);
-			if (DEBUG) log.debug("getChildrenByName() name ["+name+"] returning ["+child+"]");
+			if (log.isTraceEnabled()) log.trace("getChildrenByName() name ["+name+"] returning ["+child+"]");
 			return result;
 		} catch (JsonException e) {
 			throw new SAXException(e);
@@ -275,7 +277,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	protected void processChildElement(JsonValue node, String name, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
 		String childElementName=childElementDeclaration.getName();
 		if  (node instanceof JsonArray) {
-			if (DEBUG) log.debug("Json2Xml.processChildElement() node is JsonArray, handling each of the elements as a ["+name+"]");
+			if (log.isTraceEnabled()) log.trace("Json2Xml.processChildElement() node is JsonArray, handling each of the elements as a ["+name+"]");
 			JsonArray ja=(JsonArray)node;
 			for (JsonValue child:ja) {
 				handleElement(childElementDeclaration, child);
@@ -297,17 +299,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	
 	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
-
-		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
-		// create the XSModel
-		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
-		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
-		schemaInformation.add(xsModel);
+		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
+		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
 		// create the validator, setup the chain
 		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays,rootElement,strictSyntax);
@@ -319,40 +312,15 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			j2x.setTargetNamespace(targetNamespace);
 		}
 		j2x.setDeepSearch(deepSearch);
-    	Source source=j2x.asSource(json);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        String xml=null;
-		try {
-	        TransformerFactory tf = TransformerFactory.newInstance();
-	        Transformer transformer = tf.newTransformer();
-	        transformer.transform(source, result);
-	        writer.flush();
-	        xml = writer.toString();
-		} catch (TransformerConfigurationException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		} catch (TransformerException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		}
-    	return xml;
- 	}
+
+		return j2x.translate(json);
+	}
 
 	public boolean isReadAttributes() {
 		return readAttributes;
 	}
 	public void setReadAttributes(boolean readAttributes) {
 		this.readAttributes = readAttributes;
-	}
-
-	public String getAttributePrefix() {
-		return attributePrefix;
-	}
-	public void setAttributePrefix(String attributePrefix) {
-		this.attributePrefix = attributePrefix;
 	}
 
 }

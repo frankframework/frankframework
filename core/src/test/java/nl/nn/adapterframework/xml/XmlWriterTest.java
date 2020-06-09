@@ -19,7 +19,7 @@ public class XmlWriterTest {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
-		XmlUtils.parseXml(xmlWriter, input);
+		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -30,7 +30,7 @@ public class XmlWriterTest {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeXmlDeclaration(true);
 		xmlWriter.setNewlineAfterXmlDeclaration(true);
-		XmlUtils.parseXml(xmlWriter, input);
+		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 
@@ -40,7 +40,7 @@ public class XmlWriterTest {
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsTextPlain.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
-		XmlUtils.parseXml(xmlWriter, input);
+		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 
@@ -50,7 +50,7 @@ public class XmlWriterTest {
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(true);
-		XmlUtils.parseXml(xmlWriter, input);
+		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -62,8 +62,10 @@ public class XmlWriterTest {
 		XmlWriter xmlWriter = new XmlWriter();
 		
 		InputSource inputSource = new InputSource(new StringReader(input));
-		XMLReader xmlReader = XmlUtils.getXMLReader(true, true);
-		xmlReader.setContentHandler(xmlWriter);
+		XMLReader xmlReader = XmlUtils.getXMLReader(xmlWriter);
+		// lexical handling is automatically set, when the contentHandler (xmlWriter in this case) implements  the interface LexicalHandler.
+		// To test the output of the XmlWriter without lexical handling, it must be switched off explicitly in the XmlReader
+		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
 
 		xmlReader.parse(inputSource);
 		assertEquals(expected,xmlWriter.toString());

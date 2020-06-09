@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
@@ -29,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -42,7 +44,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private final static String ME_START = "{sessionKey:";
 	private final static String ME_END = "}";
 
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		Object preservedObject = message;
 		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
@@ -56,16 +59,16 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-				message=pipeLineSession.get(pe.getGetInputFromSessionKey());
+				message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
-				message=pe.getGetInputFromFixedValue();
+				message=new Message(pe.getGetInputFromFixedValue());
 			}
 			if ((message == null || StringUtils.isEmpty(message.toString()))
 					&& StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing empty input for pipe ["+pe.getName()+"] with fixed value ["+pe.getEmptyInputReplacement()+"]");
-				message = pe.getEmptyInputReplacement();
+				message = new Message(pe.getEmptyInputReplacement());
 			}
 		}
 
@@ -75,7 +78,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		
 		if (pipeRunResult==null){
-			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		}
 		if (pipeRunResult==null){
 			throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
@@ -84,20 +87,24 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe !=null) {
 			if (pe.isRestoreMovedElements()) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
-					String resultString = (String)result;
-					pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
+				Message result = pipeRunResult.getResult();
+				if (!result.isEmpty()) {
+					try {
+						String resultString = result.asString();
+						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "cannot open stream of result", e);
+					}
 				}
 			}
 			
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
-					String resultString = (String)result;
+				Message result = pipeRunResult.getResult();
+				if (result!=null && !result.isEmpty()) {
 					try {
-						InputStream xmlInput = IOUtils.toInputStream(resultString, "UTF-8");
+						String resultString = result.asString();
+						InputStream xmlInput = result.asInputStream();
 						CompactSaxHandler handler = new CompactSaxHandler();
 						handler.setChompCharSize(pe.getChompCharSize());
 						handler.setElementToMove(pe.getElementToMove());
@@ -115,17 +122,17 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 							log.warn("Pipeline of adapter ["+owner.getName()+"] could not compact received message: " + e.getMessage());
 						}
 						handler = null;
+						pipeRunResult.setResult(resultString);
 					} catch (Exception e) {
 						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
 					}
-					pipeRunResult.setResult(resultString);
 				}
 			}
 			
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-				Object result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				Message result = pipeRunResult.getResult();
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.setResult(preservedObject);

@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Java Servlet Filter as security constraints workaround for non Websphere
@@ -95,7 +95,7 @@ public class LoginFilter implements Filter {
 	protected static final String AUTH_PATH_MODE_DATAADMIN = "DataAdmin";
 	protected static final String AUTH_PATH_MODE_TESTER = "Tester";
 
-	protected String otapStage;
+	protected String dtapStage;
 	protected String instanceName;
 	protected int ldapAuthModeNum;
 	protected String ldapAuthUrl;
@@ -103,14 +103,15 @@ public class LoginFilter implements Filter {
 	protected String ldapAuthObserverBase;
 	protected String ldapAuthDataAdminBase;
 	protected String ldapAuthTesterBase;
-	protected final List<String> allowedExtentions = new ArrayList<String>();
+	protected final List<String> allowedExtensions = new ArrayList<String>();
 	protected final List<String> allowedObserverPaths = new ArrayList<String>();
 	protected final List<String> allowedDataAdminPaths = new ArrayList<String>();
 	protected final List<String> allowedTesterPaths = new ArrayList<String>();
 
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		AppConstants appConstants = AppConstants.getInstance();
-		otapStage = appConstants.getResolvedProperty("otap.stage");
+		dtapStage = appConstants.getResolvedProperty("dtap.stage");
 		instanceName = appConstants.getResolvedProperty("instance.name");
 
 		String ldapAuthMode = appConstants.getString("ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
@@ -121,9 +122,9 @@ public class LoginFilter implements Filter {
 		}
 
 		if (ldapAuthModeNum >= LDAP_AUTH_MODE_SIMPLE) {
-			String allowedExtentionsString = filterConfig.getInitParameter("allowedExtentions");
-			if (allowedExtentionsString != null) {
-				allowedExtentions.addAll(Arrays.asList(allowedExtentionsString.split("\\s+")));
+			String allowedExtensionsString = filterConfig.getInitParameter("allowedExtensions");
+			if (allowedExtensionsString != null) {
+				allowedExtensions.addAll(Arrays.asList(allowedExtensionsString.split("\\s+")));
 			}
 
 			String allowedObserverPathsString = filterConfig.getInitParameter("allowedObserverPaths");
@@ -144,7 +145,7 @@ public class LoginFilter implements Filter {
 			if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
 				ldapAuthUrl = appConstants.getResolvedProperty("ldap.auth.url");
 				if (ldapAuthUrl == null) {
-					String ldapAuthUrlProp = "ldap.auth." + otapStage.toLowerCase() + ".url";
+					String ldapAuthUrlProp = "ldap.auth." + dtapStage.toLowerCase() + ".url";
 					ldapAuthUrl = appConstants.getResolvedProperty(ldapAuthUrlProp);
 				}
 
@@ -167,6 +168,7 @@ public class LoginFilter implements Filter {
 		}
 	}
 
+	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) servletRequest;
 		HttpServletResponse res = (HttpServletResponse) servletResponse;
@@ -226,7 +228,7 @@ public class LoginFilter implements Filter {
 	}
 
 	private boolean hasAllowedExtension(String path) {
-		for (String allowedExtension : allowedExtentions) {
+		for (String allowedExtension : allowedExtensions) {
 			if (FileUtils.extensionEqualsIgnoreCase(path, allowedExtension)) {
 				return true;
 			}
@@ -354,6 +356,7 @@ public class LoginFilter implements Filter {
 		return pos;
 	}
 
+	@Override
 	public void destroy() {
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,14 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -37,55 +41,71 @@ public class MessageOutputStream implements AutoCloseable {
 	private INamedObject owner;
 	protected Object requestStream;
 	private Object response;
+	private PipeForward forward;
 	
-	private MessageOutputStream next;
+	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
-
+	
+	
 	private ThreadConnector threadConnector;
 	
-	private MessageOutputStream(INamedObject owner, MessageOutputStream next) {
+	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, PipeForward forward) {
 		this.owner=owner;
-		connect(next);
+		connect(nextStream, forward);
+	}
+
+	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, IForwardTarget next) {
+		this.owner=owner;
+		connect(nextStream, next);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream next) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IForwardTarget next) {
+		this(owner, nextStream, next);
 		this.requestStream=stream;
 	}
 	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream next) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IForwardTarget next) {
+		this(owner, nextStream, next);
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
-		this(owner, next);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, nextStream, next);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream next, Object response) {
-		this(owner, stream, next);
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IForwardTarget next, Object response) {
+		this(owner, stream, nextStream, next);
 		this.response=response;
 	}
 	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream next, Object response) {
-		this(owner, writer, next);
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IForwardTarget next, Object response) {
+		this(owner, writer, nextStream, next);
 		this.response=response;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream next, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
-		this(owner, handler, next, threadLifeCycleEventListener, correlationID);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IForwardTarget next, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, handler, nextStream, next, threadLifeCycleEventListener, session);
 		this.response=response;
 	}
 
-	private void connect(MessageOutputStream next) {
-		this.next=next;
-		if (next==null) {
+	private void connect(MessageOutputStream nextStream, IForwardTarget next) {
+		PipeForward forward = new PipeForward("success", next==null?null:next.getName());
+		connect(nextStream, forward);
+	}
+	private void connect(MessageOutputStream nextStream, PipeForward forward) {
+		this.nextStream=nextStream;
+		if (nextStream==null) {
 			tail=this;			
 		} else {
-			tail=next.tail;
+			tail=nextStream.tail;
 		}
+		setForward(forward);
+	}
+
+	protected void setRequestStream(Object requestStream) {
+		this.requestStream = requestStream;
 	}
 
 	public void closeRequestStream() throws IOException {
@@ -108,8 +128,8 @@ public class MessageOutputStream implements AutoCloseable {
 			closeRequestStream();
 		} finally {
 			try {
-				if (next!=null) {
-					next.close();
+				if (nextStream!=null) {
+					nextStream.close();
 				}
 			} finally {
 				afterClose();
@@ -196,13 +216,45 @@ public class MessageOutputStream implements AutoCloseable {
 	public void setResponse(Object response) {
 		this.response = response;
 	}
-
 	public Object getResponse() {
-		return tail.response;
+		return response;
 	}
 
-	public String getResponseAsString() {
-		return getResponse() == null ? null : getResponse().toString();
+	public void setForward(PipeForward forward) {
+		this.forward = forward;
 	}
 
+
+	public PipeRunResult getPipeRunResult() {
+		Object response = tail.getResponse();
+		return new PipeRunResult(getForward(), response);
+	}
+
+	public PipeForward getForward() {
+		if (nextStream!=null) {
+			PipeForward result = nextStream.getForward();
+			if (result!=null) {
+				return result;
+			}
+		}
+		return forward;
+	}
+
+	/**
+	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
+	 */
+	public static MessageOutputStream getTargetStream(INamedObject owner, IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		IOutputStreamingSupport nextProvider=null;
+		if (next!=null && next instanceof IOutputStreamingSupport) {
+			nextProvider = (IOutputStreamingSupport)next;
+			if (next instanceof StreamingPipe && !((StreamingPipe)next).isStreamingActive()) {
+				nextProvider=null;
+			}
+		}
+		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
+		if (target==null) {
+			target=new MessageOutputStreamCap(owner, next);
+		}
+		return target;
+	}
 }

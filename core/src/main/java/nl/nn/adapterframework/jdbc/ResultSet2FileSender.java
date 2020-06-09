@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -29,13 +28,13 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -66,20 +65,21 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
-		String fileName = (String)prc.getSession().get(getFileNameSessionKey());
+		String fileName = (String)session.get(getFileNameSessionKey());
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
-			maxRecords = Integer.parseInt((String)prc.getSession().get(getMaxRecordsSessionKey()));
+			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
 		}
 
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
-			PreparedStatement statement=queryContext.getStatement();
+			QueryExecutionContext queryExecutionContext = blockHandle;
+			PreparedStatement statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {
@@ -132,7 +132,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset", e));
 			}
 		}
-		return "<result><rowsprocessed>" + counter + "</rowsprocessed></result>";
+		return new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {

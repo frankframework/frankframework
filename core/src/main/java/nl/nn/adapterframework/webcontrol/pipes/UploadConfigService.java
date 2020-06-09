@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class UploadConfigService extends FixedForwardPipe {
@@ -48,8 +49,7 @@ public class UploadConfigService extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result = null;
 
 		InputStream inputStream = (InputStream) session.get("file");
@@ -68,7 +68,7 @@ public class UploadConfigService extends FixedForwardPipe {
 
 		String name = null;
 		String version = null;
-		String formJmsRealm = null;
+		String datasource = null;
 		String remoteUser = (String) session.get("realPrincipal");
 		if (StringUtils.isEmpty(remoteUser)) {
 			remoteUser = (String) session.get("principal");
@@ -87,7 +87,7 @@ public class UploadConfigService extends FixedForwardPipe {
 			}
 
 			fileName = name + "-" + version + ".jar";
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, true, true, name, version, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, true, true, name, version, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
 				if (CONFIG_AUTO_DB_CLASSLOADER && ibisContext.getIbisManager().getConfiguration(name) == null) {
 					ibisContext.reload(name);
 				}

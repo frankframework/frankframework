@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import com.sap.mw.idoc.IDoc;
 import com.sap.mw.jco.JCO;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
@@ -48,13 +49,13 @@ import com.sap.mw.jco.JCO;
  */
 public class IdocSender extends SapSenderBase {
 
-	protected IDoc.Document parseIdoc(SapSystem sapSystem, String message) throws SenderException {
+	protected IDoc.Document parseIdoc(SapSystem sapSystem, Message message) throws SenderException {
 		
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 	
 		try {
 			log.debug(getLogPrefix()+"start parsing Idoc");
-			XmlUtils.parseXml(handler, message);	
+			XmlUtils.parseXml(message.asInputSource(), handler);	
 			log.debug(getLogPrefix()+"finished parsing Idoc");
 			return handler.getIdoc();
 		} catch (Exception e) {
@@ -65,11 +66,13 @@ public class IdocSender extends SapSenderBase {
 
 	
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			pvl=prc.getValues(paramList);
+			if (paramList!=null) {
+				pvl = paramList.getValues(message, session);
+			}
 			SapSystem sapSystem = getSystem(pvl);
 			
 			IDoc.Document idoc = parseIdoc(sapSystem,message);
@@ -84,7 +87,7 @@ public class IdocSender extends SapSenderBase {
 
 			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+idoc.toXML()+"]"); } 
 
-			JCO.Client client = getClient(prc.getSession(), sapSystem);
+			JCO.Client client = getClient(session, sapSystem);
 			try {
 				tid=getTid(client,sapSystem);
 				if (tid==null) {
@@ -94,7 +97,7 @@ public class IdocSender extends SapSenderBase {
 			} finally {
 				releaseClient(client,sapSystem);
 			}
-			return tid;
+			return new Message(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

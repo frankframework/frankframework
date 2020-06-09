@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -28,7 +27,8 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Process execution utilities.
@@ -42,7 +42,7 @@ public class ProcessUtil {
 	private static String readStream(InputStream stream) throws IOException {
 		StringBuffer result = new StringBuffer();
 
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+		BufferedReader bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 		String line = null;
 		// read() instead of readLine() results in JVM core dumps (this
 		// also happens when using InputStream or BufferedInputStream)

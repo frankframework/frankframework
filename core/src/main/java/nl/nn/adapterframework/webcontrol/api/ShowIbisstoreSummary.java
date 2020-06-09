@@ -15,15 +15,21 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToMap;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletResponse;
@@ -33,27 +39,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang.StringUtils;
-
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-
-/**
- * Executes a query.
- * 
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
@@ -68,19 +62,19 @@ public final class ShowIbisstoreSummary extends Base {
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
 		String query = null;
-		String realm = null;
+		String datasource = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasource")) {
+				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
 			}
 		}
 
-		if(realm == null)
+		if(datasource == null)
 			return response.status(Response.Status.BAD_REQUEST).build();
 
 		String result = "";
@@ -90,12 +84,12 @@ public final class ShowIbisstoreSummary extends Base {
 			qs.setSlotmap(getSlotmap());
 			try {
 				qs.setName("QuerySender");
-				qs.setJmsRealm(realm);
+				qs.setDatasourceName(datasource);
 				qs.setQueryType("select");
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
+				result = qs.sendMessage(new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query", t);
 			} finally {
@@ -107,7 +101,11 @@ public final class ShowIbisstoreSummary extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = XmlQueryResult2Map(result);
+			try {
+				resultMap = new QueryOutputToMap().parseString(result);
+			} catch (IOException | SAXException e) {
+				throw new ApiException("Query result could not be parsed.", e);
+			}
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result.");

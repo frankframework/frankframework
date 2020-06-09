@@ -207,7 +207,7 @@ public class XsltStreamingTest {
 		ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais,sc));
 		
-		tp.transform(source, result, null);
+		tp.transform(source, result);
 		assertTrue("switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 	}
 	

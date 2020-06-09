@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -34,7 +33,7 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
@@ -172,7 +171,7 @@ public class ClassUtils {
 
 	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
 		try {
-			return new InputStreamReader(urlToStream(url,timeoutMs),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 		} catch (UnsupportedEncodingException e) {
 			throw new IOException(e);
 		}
@@ -307,20 +306,17 @@ public class ClassUtils {
         return path;
     }
 
- 	/**
- 	 * returns the classname of the object, without the pacakge name.
- 	 */
+	/**
+	 * returns the className of the object, without the package name.
+	 */
 	public static String nameOf(Object o) {
 		if (o==null) {
 			return "<null>";
 		}
-		String name=o.getClass().getName();
-		int pos=name.lastIndexOf('.');
-		if (pos<0) {
-			return name;
-		} else {
-			return name.substring(pos+1);
+		if(o instanceof Class) {
+			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
 		}
+		return org.springframework.util.ClassUtils.getUserClass(o).getSimpleName();
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

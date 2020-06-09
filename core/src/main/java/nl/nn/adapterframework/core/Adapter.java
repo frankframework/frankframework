@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden
+   Copyright 2013-2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -31,6 +39,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -41,18 +50,12 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -87,6 +90,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
+	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
+
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
@@ -103,7 +108,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
-	
+
 	private class SenderLastExitState {
 		private String lastExitState = null;
 		private long lastExitStateDate = 0;
@@ -113,36 +118,40 @@ public class Adapter implements IAdapter, NamedBean {
 			this.lastExitState = lastExitState;
 		}
 	}
-	
+
 	private int numOfMessagesInProcess = 0;
-   
+
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
-	
+
+	private int hourOfLastMessageProcessed=-1;
 	private long[] numOfMessagesStartProcessingByHour = new long[24];
-	
+
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
-	
+
 	private RunStateManager runState = new RunStateManager();
 	private boolean configurationSucceeded = false;
 	private String description;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
-	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("adapters.autoStart", true);
-	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
-	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
+	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private boolean recover = false;
 	private boolean replaceNullMessage = false;
+	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
-	
+
 	private TaskExecutor taskExecutor;
-	
+
 	private String composedHideRegex;
+
+	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
+	private boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 
 	/**
 	 * Indicates whether the configuration succeeded.
@@ -150,7 +159,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public boolean configurationSucceeded() {
 		return configurationSucceeded;
 	}
-	
+
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
@@ -160,13 +169,15 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		msgLog = LogUtil.getMsgLogger(this);
+		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
 		messageKeeper = getMessageKeeper();
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			messageKeeper.add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			messageKeeper.add(msg, MessageKeeperLevel.ERROR);
 			throw new ConfigurationException(msg);
 		}
 		try {
@@ -214,7 +225,7 @@ public class Adapter implements IAdapter, NamedBean {
 		receiver.setAdapter(this);
 		try {
 			receiver.configure();
-			messageKeeper.add("Receiver [" + receiver.getName() + "] successfully configured");
+			getMessageKeeper().add("Receiver [" + receiver.getName() + "] successfully configured");
 		} catch (ConfigurationException e) {
 			error(true, "error initializing receiver [" + receiver.getName() + "]",e);
 		}
@@ -225,7 +236,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [" + getName() + "] "+msg);
-		getMessageKeeper().add("WARNING: " + msg, MessageKeeperMessage.WARN_LEVEL);
+		getMessageKeeper().add("WARNING: " + msg, MessageKeeperLevel.WARN);
 	}
 
 	/** 
@@ -236,7 +247,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
+		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperLevel.ERROR);
 	}
 
 
@@ -250,6 +261,23 @@ public class Adapter implements IAdapter, NamedBean {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(startTime);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			if (hourOfLastMessageProcessed!=hour) {
+				if (hourOfLastMessageProcessed>=0) {
+					if (hourOfLastMessageProcessed<hour) {
+						for(int i=hourOfLastMessageProcessed+1; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					} else {
+						for(int i=hourOfLastMessageProcessed+1; i<24; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+						for(int i=0; i<=hour; i++) {
+							numOfMessagesStartProcessingByHour[i]=0;
+						}
+					}
+				}
+				hourOfLastMessageProcessed=hour;
+			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
 	}
@@ -310,14 +338,12 @@ public class Adapter implements IAdapter, NamedBean {
 				originalMessage,
 				messageID,
 				receivedTime);
-			String logMsg = "Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
-			if (isMsgLogTerseEnabled()) {
-				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [SIZE=" + getFileSizeAsBytes(formattedErrorMessage) + "]");
-				} else {
-					msgLog.info(logMsg);
-				}
+
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage;
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Adapter [%s] messageId [%s] formatted errormessage, result [%s]", getName(), messageID, resultOrSize));
 			}
+
 			return formattedErrorMessage;
 		}
 		catch (Exception e) {
@@ -406,7 +432,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter cache=pipeline.getCache();
+			ICacheAdapter<String,String> cache=pipeline.getCache();
 			if (cache!=null && cache instanceof HasStatistics) {
 				((HasStatistics)cache).iterateOverStatistics(hski, recsData, action);
 			}
@@ -416,7 +442,7 @@ public class Adapter implements IAdapter, NamedBean {
 			hski.closeGroup(pipelineData);
 		}
 	}
-	
+
 	@Override
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
@@ -432,7 +458,6 @@ public class Adapter implements IAdapter, NamedBean {
 			doForEachStatisticsKeeperBody(hski,adapterData,action);
 		}
 		hski.closeGroup(adapterData);
-				
 	}
 
 	/**
@@ -486,7 +511,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class listenerClass) {
+	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
@@ -504,12 +529,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public Iterator<IReceiver> getReceiverIterator() {
 		return receivers.iterator();
 	}
-	
+
 	public PipeLine getPipeLine() {
 		return pipeline;
 	}
@@ -573,21 +598,19 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			//if (isRequestReplyLogging()) {
-			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.getResult() + "] from PipeLine";
-			if (isMsgLogTerseEnabled()) {
-				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.getResult()) + "] from PipeLine");
-				} else {
-					msgLog.info(logMsg);
-				}
+
+			String format = "Adapter [%s] messageId [%s] got exit-state [%s] and result [%s] from PipeLine";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult();
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageId, result.getState(), resultOrSize));
 			}
 			if (log.isDebugEnabled()) {
-				log.debug(logMsg);
+				log.debug(String.format(format, getName(), messageId, result.getState(), result.getResult()));
 			}
 			return result;
 		}
 	}
-	
+
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException {
 
@@ -600,30 +623,28 @@ public class Adapter implements IAdapter, NamedBean {
 		RunStateEnum currentRunState = getRunState();
 		if (!currentRunState.equals(RunStateEnum.STARTED) && !currentRunState.equals(RunStateEnum.STOPPING)) {
 
-			String msgAdapterNotOpen =
-				"Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
+			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
 		incNumOfMessagesInProcess(startTime);
-		String lastNDC=NDC.peek();
-		String newNDC="cid [" + messageId + "]";
+		String lastNDC= ThreadContext.peek();
+		String newNDC="mid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
 
 		try {
 			if (ndcChanged) {
-				NDC.push(newNDC);
+				ThreadContext.push(newNDC);
 			}
 
 			if (StringUtils.isNotEmpty(composedHideRegex)) {
-				LogUtil.setThreadHideRegex(composedHideRegex);
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 			}
 
-			//if (isRequestReplyLogging()) {
 			StringBuilder additionalLogging = new StringBuilder();
 
 			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-			if(xPathLogKeys != null && xPathLogKeys != "") {
+			if(StringUtils.isNotEmpty(xPathLogKeys)) {
 				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
 				while (tokenizer.hasMoreTokens()) {
 					String logName = tokenizer.nextToken();
@@ -633,42 +654,41 @@ public class Adapter implements IAdapter, NamedBean {
 					additionalLogging.append(" [" + xPathResult + "]");
 				}
 			}
-			
-			String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
-			if (isMsgLogTerseEnabled()) {
-				if (isMsgLogHidden()) {
-					String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
-					msgLog.info(logMessage);
-				} else {
-					msgLog.info(logMsg);
-				}
+
+			String format = "Adapter [%s] received message [%s] with messageId [%s]";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message;
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
 			}
 			if (log.isDebugEnabled()) { 
-				log.debug(logMsg);
-			} else {
-				logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
-				log.info(logMsg);
+				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
+			} else if(log.isInfoEnabled()) {
+				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
 			}
 
 			if (message == null && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = "";
 			}
-			result = pipeline.process(messageId, message,pipeLineSession);
-			String durationString = Misc.getAge(startTime);
-			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
-			if (isMsgLogTerseEnabled()) {
-				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.toString()) + "] from PipeLine");
-				} else {
-					msgLog.info(logMsg);
-				}
+			result = pipeline.process(messageId, message, pipeLineSession);
+
+			String duration;
+			if(msgLogHumanReadable) {
+				duration = Misc.getAge(startTime);
+			} else {
+				duration = Misc.getDurationInMs(startTime);
+			}
+
+			String format2 = "Adapter [%s] messageId [%s] duration [%s] got exit-state [%s] and result [%s] from PipeLine";
+			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.toString()) : result.toString();
+				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format2, getName(), messageId, duration, result.getState(), resultOrSize));
 			}
 			if (log.isDebugEnabled()) {
-				log.debug(logMsg);
+				log.debug(String.format(format2, getName(), messageId, duration, result.getState(), result.getResult()));
 			}
 			return result;
-	
+
 		} catch (Throwable t) {
 			ListenerException e;
 			if (t instanceof ListenerException) {
@@ -696,12 +716,12 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
-			LogUtil.removeThreadHideRegex();
+			IbisMaskingLayout.removeThreadLocalReplace();
 			if (ndcChanged) {
-				NDC.pop();
+				ThreadContext.pop();
 			}
-			if (NDC.getDepth() == 0) {
-				NDC.remove();
+			if (ThreadContext.getDepth() == 0) {
+				ThreadContext.removeStack();
 			}
 		}
 	}
@@ -734,7 +754,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("Adapter ["	+ name 	+ "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
 	}
-	
+
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
@@ -947,7 +967,7 @@ public class Adapter implements IAdapter, NamedBean {
 		configuration.addStopAdapterThread(runnable);
 		taskExecutor.execute(runnable);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -967,21 +987,18 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(String string) {
-		return Misc.toFileSize(string.getBytes().length, false, true);
+		return string==null?"null": Misc.toFileSize(string.getBytes().length, false, true);
 	}
-	
+
 	@Override
-	public String getAdapterConfigurationAsString() throws ConfigurationException {
+	public String getAdapterConfigurationAsString() {
 		String loadedConfig = getConfiguration().getLoadedConfiguration();
 		String encodedName = StringUtils.replace(getName(), "'", "''");
 		String xpath = "//adapter[@name='" + encodedName + "']";
-		try {
-			return XmlUtils.copyOfSelect(loadedConfig, xpath);
-		} catch (Exception e) {
-			throw new ConfigurationException(e);
-		}
+
+		return XmlUtils.copyOfSelect(loadedConfig, xpath);
 	}
-	
+
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
@@ -1003,17 +1020,14 @@ public class Adapter implements IAdapter, NamedBean {
 	public boolean isAutoStart() {
 		return autoStart;
 	}
-	
+
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
-			configWarnings.add(log, msg);
-			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=Terse");
+			msgLogLevel = MSGLOG_LEVEL_TERSE;
 		} else {
-			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
-			configWarnings.add(log, msg);
-			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
+			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
+			msgLogLevel = Level.toLevel("OFF");
 		}
 	}
 
@@ -1047,34 +1061,28 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr><tr><td colspan='1'>None</td> <td>none</td></tr><tr><td colspan='1'>Terse</td><td>at adapter level</td></tr><tr><td colspan='1'>Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr><tr><td colspan='1'>Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr></table>", "application default (None)"})
+	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. " +
+			"Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>" +
+			"<tr><td colspan='1'>Off</td> <td>No logging</td></tr>" +
+			"<tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>" +
+			"<tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>" +
+			"<tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>", "BASIC"})
 	public void setMsgLogLevel(String level) throws ConfigurationException {
-		msgLogLevel = MsgLogUtil.getMsgLogLevelNum(level);
-		if (msgLogLevel<0) {
+		Level toSet = Level.toLevel(level);
+		if (toSet.name().equalsIgnoreCase(level)) //toLevel falls back to DEBUG, so to make sure the level has been changed this explicity check is used.
+			msgLogLevel = toSet;
+		else
 			throw new ConfigurationException("illegal value for msgLogLevel ["+level+"]");
-		}
 	}
 
 	public String getMsgLogLevel() {
-		return MsgLogUtil.getMsgLogLevelString(msgLogLevel);
-	}
-
-	public void setMsgLogLevelNum(int i) {
-		msgLogLevel = i;
-	}
-
-	private boolean isMsgLogTerseEnabled() {
-		if (msgLogLevel>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
-			return true;
-		} 
-		return false;
+		return msgLogLevel.name();
 	}
 
 	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}
-
 	public boolean isMsgLogHidden() {
 		return msgLogHidden;
 	}

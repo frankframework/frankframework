@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
@@ -130,12 +132,16 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream in;
-		if (input instanceof InputStream) {
-			in=(InputStream)input;
+		if (!(message.asObject() instanceof String)) {
+			try {
+				in=message.asInputStream();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			}
 		} else {
-			String filename=(String)input;
+			String filename=(String)message.asObject();
 			try {
 				in=new FileInputStream(filename);
 			} catch (FileNotFoundException e) {

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2020 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,10 +51,6 @@ import nl.nn.adapterframework.util.DateUtils;
 
 @Path("/")
 public final class ShowAdapterStatistics extends Base {
-
-	private DecimalFormat countFormat=new DecimalFormat(ItemList.PRINT_FORMAT_COUNT);
-	private DecimalFormat timeFormat=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
-	private DecimalFormat percentageFormat=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -133,7 +130,7 @@ public final class ShowAdapterStatistics extends Base {
 		statisticsMap.put("receivers", receivers);
 
 		Map<String, Object> tmp = new HashMap<String, Object>();
-		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(tmp);
+		StatisticsKeeperToMap handler = new StatisticsKeeperToMap(tmp);
 		handler.configure();
 		Object handle = handler.start(null, null, null);
 		try {
@@ -149,54 +146,65 @@ public final class ShowAdapterStatistics extends Base {
 		return Response.status(Response.Status.CREATED).entity(statisticsMap).build();
 	}
 
-	private class StatisticsKeeperToXml implements StatisticsKeeperIterationHandler {
+	private class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
 
 		private Object parent;
 
-		public StatisticsKeeperToXml(Object parent) {
+		public StatisticsKeeperToMap(Object parent) {
 			super();
 			this.parent=parent;
 		}
 
+		@Override
 		public void configure() {
 		}
 
+		@Override
 		public Object start(Date now, Date mainMark, Date detailMark) {
 			return parent;
 		}
+
+		@Override
 		public void end(Object data) {
 		}
 
+		@Override
 		@SuppressWarnings("unchecked")
 		public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
 			if(sk == null) return;
 
-			((Map<String, Object>) data).put(sk.getName(), statisticsKeeperToMapBuilder(sk));
+			((List<Object>) data).add(statisticsKeeperToMapBuilder(sk));
 		}
 
-		public void handleScalar(Object data, String scalarName, long value){
-			handleScalar(data,scalarName,""+value);
+		@Override
+		public void handleScalar(Object data, String scalarName, long value) {
+			handleScalar(data, scalarName, ""+value);
 		}
-		public void handleScalar(Object data, String scalarName, Date value){
+
+		@Override
+		public void handleScalar(Object data, String scalarName, Date value) {
 			String result;
 			if (value!=null) {
 				result = DateUtils.format(value, DateUtils.FORMAT_FULL_GENERIC);
 			} else {
 				result = "-";
 			}
-			handleScalar(data,scalarName,result);
+			handleScalar(data, scalarName, result);
 		}
+
 		public void handleScalar(Object data, String scalarName, String value) {
 			//Not applicable for HashMaps...
 		}
 
+		@Override
 		@SuppressWarnings("unchecked")
 		public Object openGroup(Object parentData, String name, String type) {
-			Map<String, Object> o = new HashMap<String, Object>();
+			List<Object> o = new LinkedList<Object>();
 			((Map<String, Object>) parentData).put(type, o);
 			return o;
 		}
 
+		@Override
 		public void closeGroup(Object data) {
 		}
 	}
@@ -207,29 +215,38 @@ public final class ShowAdapterStatistics extends Base {
 		}
 
 		Map<String, Object> tmp = new HashMap<String, Object>();
+		tmp.put("name", sk.getName());
 		for (int i=0; i<sk.getItemCount(); i++) {
 			Object item = sk.getItemValue(i);
 			String key = sk.getItemName(i).replace("< ", "");
 			if (item==null) {
-				tmp.put(key, ItemList.ITEM_VALUE_NAN);
+				tmp.put(key, null);
 			} else {
-				String value = "";
 				switch (sk.getItemType(i)) {
-					case ItemList.ITEM_TYPE_INTEGER: 
-						if (countFormat==null) {
-							value = ""+ (Long)item;
+					case ItemList.ITEM_TYPE_INTEGER:
+						tmp.put(key, item);
+						break;
+					case ItemList.ITEM_TYPE_TIME:
+						if(item instanceof Long) {
+							tmp.put(key, item);
 						} else {
-							value = countFormat.format((Long)item);
+							Double val = (Double) item;
+							if(val.isNaN() || val.isInfinite()) {
+								tmp.put(key, null);
+							} else {
+								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
+							}
 						}
 						break;
-					case ItemList.ITEM_TYPE_TIME: 
-						value = timeFormat.format(item);
-						break;
 					case ItemList.ITEM_TYPE_FRACTION:
-						value = percentageFormat.format(((Double)item).doubleValue()*100)+ "%";
+						Double val = (Double) item;
+						if(val.isNaN() || val.isInfinite()) {
+							tmp.put(key, null);
+						} else {
+							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
+						}
 						break;
 				}
-				tmp.put(key, value);
 			}
 		}
 		return tmp;

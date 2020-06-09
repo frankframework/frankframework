@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -95,7 +96,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
   		IPipeLineSession session=new PipeLineSessionBase();
        try {
-      		PipeRunResult result=validator.doPipe(testXml, session);
+      		PipeRunResult result=validator.doPipe(new Message(testXml), session);
       		PipeForward forward=result.getPipeForward();
 	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
        } catch (Exception e) {
@@ -164,4 +165,31 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 //		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
 //	}
 
+	
+	public void testStoreRootElement(String schema, String root, String inputFile) throws Exception {
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(getSuccess());
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
+		validator.setRoot(root);
+		validator.setRootElementSessionKey("rootElement");
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		IPipeLineSession session = new PipeLineSessionBase();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals(root, (String)session.get("rootElement"));
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testStoreRootElement() throws Exception {
+		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
+	}
+	
 }

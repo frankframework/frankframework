@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -12,7 +13,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class NodeSetFilterTest {
 
-	private String document="<root xmlns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><a>y</a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
+	private String document;
 	
 	public void testTargetElementFilter(String targetElement, boolean includeRoot, String input, String expected) throws IOException, SAXException {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(null, targetElement,true,includeRoot);
@@ -29,24 +30,30 @@ public class NodeSetFilterTest {
 		PrettyPrintFilter ppf = new PrefixMappingObservingFilter();
 		ppf.setContentHandler(xmlWriter);
 		targetElementFilter.setContentHandler(ppf);
-		XmlUtils.parseXml(targetElementFilter, input);
+		XmlUtils.parseXml(input, targetElementFilter);
 		assertEquals("testElementFilter "+(includeRoot?"container element":"target element")+" ["+element+"]",expected,xmlWriter.toString());
 	}
 
-	@Test
-	public void testTargetElementFilter() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">x</a>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->\n" + 
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->";
-		testTargetElementFilter("a", false, document, expected);
+	@Before
+	public void setUp() throws IOException {
+		document = TestFileUtils.getTestFile("/NodeSetFilter/document.xml");
 	}
 	
+	@Test
+	public void testTargetElementFilter() throws Exception {
+		String expected = TestFileUtils.getTestFile("/NodeSetFilter/targetElementResult.txt");
+		//System.out.println(expected);
+		testTargetElementFilter("a", false, document, expected);
+	}
+
+	@Test
+	public void testNamespaceMapping() throws Exception {
+		String input = TestFileUtils.getTestFile("/NodeSetFilter/simpleIn.xml");
+		String expected = TestFileUtils.getTestFile("/NodeSetFilter/simpleOut.txt");
+		//System.out.println(expected);
+		testTargetElementFilter(null, false, input, expected);
+	}
+
 	@Test
 	public void testTargetElementFilterWithRoot() throws Exception {
 		String expected="<prefix- uri=\"urn:tja\">\n" +
@@ -178,8 +185,8 @@ public class NodeSetFilterTest {
 			
 		};
 
-		String document=TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/xdocs.xml");
-		String expected=TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/out.txt");
+		String document=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
+		String expected=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
 				
 		testNodeSetFilter(nodeSetFilter, targetElement, false, document, expected);
 	}
@@ -206,8 +213,8 @@ public class NodeSetFilterTest {
 			
 		};
 
-		String document=TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/xdocs.xml");
-		String expected=TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/out.txt");
+		String document=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
+		String expected=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
 				
 		testNodeSetFilter(nodeSetFilter, containerElement, false, document, expected);
 	}

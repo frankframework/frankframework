@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -62,7 +58,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
@@ -73,7 +68,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
@@ -96,16 +91,18 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
-import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -115,7 +112,6 @@ import nl.nn.adapterframework.xml.SaxException;
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
-	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XSLT=true;
 	public static final int DEFAULT_XSLT_VERSION = 2;
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -254,7 +250,7 @@ public class XmlUtils {
 	}
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transform(source, null);
+		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
 		Map<String,String> result = new LinkedHashMap<String,String>();
 		while (st1.hasMoreTokens()) {
@@ -512,24 +508,47 @@ public class XmlUtils {
 		return buffersize.intValue();
 	}
 
-	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
-		parseXml(handler,new Variant(source).asXmlInputSource());
-	}
-
-	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
-		boolean namespaceAware=true;
-		boolean resolveExternalEntities=false;
-		XMLReader parser;
+	public static void parseXml(Resource resource, ContentHandler handler) throws IOException, SAXException {
 		try {
-			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
+			XMLReader reader = getXMLReader(resource, handler);
+			reader.parse(resource.asInputSource());
 		} catch (ParserConfigurationException e) {
 			throw new SaxException("Cannot configure parser",e);
 		}
-		parser.parse(source);
 	}
 
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(namespaceAware, resolveExternalEntities);
+	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
+		parseXml(Message.asInputSource(source),handler);
+	}
+
+	public static void parseXml(InputSource inputSource, ContentHandler handler) throws IOException, SAXException {
+		parseXml(inputSource, handler, null);
+	}
+	
+	public static void parseXml(InputSource inputSource, ContentHandler handler, ErrorHandler errorHandler) throws IOException, SAXException {
+		XMLReader xmlReader;
+		try {
+			xmlReader = getXMLReader(null, handler);
+			if (errorHandler != null) {
+				xmlReader.setErrorHandler(errorHandler);
+			}
+		} catch (ParserConfigurationException e) {
+			throw new SaxException("Cannot configure parser",e);
+		}
+		xmlReader.parse(inputSource);
+	}
+
+	public static XMLReader getXMLReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+		return getXMLReader(null, handler);
+	}
+	
+	public static XMLReader getXMLReader(Configuration classLoaderProvider) throws ParserConfigurationException, SAXException {
+		return getXMLReader(true, classLoaderProvider.getClassLoader());
+	}
+
+	
+	private static XMLReader getXMLReader(Resource classloaderProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, classloaderProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -540,39 +559,22 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, Resource classLoaderProvider) throws ParserConfigurationException, SAXException {
+		return getXMLReader(namespaceAware, classLoaderProvider==null?null:classLoaderProvider.getClassLoader());
+	}
+	
+	private static XMLReader getXMLReader(boolean namespaceAware, ClassLoader classLoader) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (!resolveExternalEntities) {
+		if (classLoader!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
-		}
-
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-			return new NamespaceRemovingFilter(xmlReader);
 		}
 		return xmlReader;
 	}
 	
-	
-	public static Document buildDomDocument(File file)
-		throws DomBuilderException {
-		Reader in;
-		Document output;
-
-		try {
-			in = new FileReader(file);
-		} catch (FileNotFoundException e) {
-			throw new DomBuilderException(e);
-		}
-		output = buildDomDocument(in);
-		try {
-			in.close();
-		} catch (IOException e) {
-			log.debug("Exception closing file", e);
-		}
-		return output;
-	}
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
@@ -664,7 +666,7 @@ public class XmlUtils {
 		Document output;
 
 		try {
-			in = new InputStreamReader(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
+			in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
@@ -702,8 +704,15 @@ public class XmlUtils {
 	 * (namespace aware)
 	 */
 	public static Element buildElement(String s) throws DomBuilderException {
-
 		return buildDomDocument(s).getDocumentElement();
+	}
+
+	public static Element buildElement(Message s) throws DomBuilderException {
+		try {
+			return buildElement(s.asString());
+		} catch (IOException e) {
+			throw new DomBuilderException(e);
+		}
 	}
 	
 	public static String skipXmlDeclaration(String xmlString) {
@@ -821,12 +830,9 @@ public class XmlUtils {
 		}
 		try {
 			String xslt;
-			if (XPATH_NAMESPACE_REMOVAL_VIA_XSLT && StringUtils.isEmpty(namespaceDefs)) {
-				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, true, null, xsltVersion);
-			} else {
-				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
-			}
-			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs,!includeXmlDeclaration,false,xsltVersion);
+			xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
+			if (log.isDebugEnabled()) log.debug("xpath ["+xPathExpression+"] resulted in xslt ["+xslt+"]");
+			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs+"|"+xsltVersion,!includeXmlDeclaration,false,xsltVersion);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
 		}
@@ -979,28 +985,24 @@ public class XmlUtils {
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
 		return stringToSourceForSingleUse(xmlString, isNamespaceAwareByDefault());
 	}
-
-	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
-		return stringToSourceForSingleUse(xmlString, namespaceAware, false);
-	}
-
-	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
-		return stringToSAXSource(xmlString, namespaceAware, false);
-	}
-
-	public static SAXSource stringToSAXSource(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
-		StringReader reader = new StringReader(xmlString);
-		return readerToSAXSource(reader,namespaceAware,resolveExternalEntities);
-	}
 	
-	public static SAXSource readerToSAXSource(Reader reader, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
+	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws SAXException {
+		StringReader reader = new StringReader(xmlString);
 		InputSource is = new InputSource(reader);
-		return inputSourceToSAXSource(is,namespaceAware,resolveExternalEntities);
+		return inputSourceToSAXSource(is, namespaceAware, null);
 	}	
 	
-	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, boolean resolveExternalEntities) throws SAXException {
+	public static SAXSource inputSourceToSAXSource(Resource resource) throws SAXException, IOException {
+		return inputSourceToSAXSource(resource.asInputSource(), true, resource);
+	}
+	
+	public static SAXSource inputSourceToSAXSource(InputSource is) throws SAXException {
+		return inputSourceToSAXSource(is, true, null);
+	}
+	
+	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, resolveExternalEntities), is);
+			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}
@@ -1036,7 +1038,7 @@ public class XmlUtils {
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(ClassUtils.getCleanedFilePath(xsltUrl.toExternalForm()));
 			
-			return interpretXsltVersion(tpVersion.transform(stylesource, null));
+			return interpretXsltVersion(tpVersion.transform(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1044,7 +1046,7 @@ public class XmlUtils {
 
 
 
-	public static synchronized Transformer createTransformer(String xsltString) throws TransformerConfigurationException {
+	public static Transformer createTransformer(String xsltString) throws TransformerConfigurationException {
 		try {
 			return createTransformer(xsltString, detectXsltVersion(xsltString));
 		} catch (Exception e) {
@@ -1052,7 +1054,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static synchronized Transformer createTransformer(String xsltString, int xsltVersion) throws TransformerConfigurationException {
+	public static Transformer createTransformer(String xsltString, int xsltVersion) throws TransformerConfigurationException {
 
 		StringReader sr = new StringReader(xsltString);
 
@@ -1060,7 +1062,7 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 	
-	public static synchronized Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
+	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
 		try {
 			return createTransformer(url, detectXsltVersion(url));
 		} catch (Exception e) {
@@ -1068,7 +1070,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static synchronized Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+	public static Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
 
 		StreamSource stylesource = new StreamSource(url.openStream());
 		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
@@ -1076,23 +1078,23 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 	
-	public static synchronized Transformer createTransformer(Source source) throws TransformerConfigurationException {
+	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
 			return createTransformer(source, 0);
 	}
 
-	public static synchronized Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
+	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
 
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
 		Transformer result = tFactory.newTransformer(source);
 
 		return result;
-		}
+	}
 
 	public static TransformerFactory getTransformerFactory() {
 		return getTransformerFactory(0);
 	}
 
-	public static synchronized TransformerFactory getTransformerFactory(int xsltVersion) {
+	public static TransformerFactory getTransformerFactory(int xsltVersion) {
 		TransformerFactory factory;
 		switch (xsltVersion) {
 		case 2:
@@ -1124,11 +1126,11 @@ public class XmlUtils {
 		return factory;
 	}
 
-	public static synchronized SAXParserFactory getSAXParserFactory() {
+	public static SAXParserFactory getSAXParserFactory() {
 		return getSAXParserFactory(isNamespaceAwareByDefault());
 	}
 
-	public static synchronized SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
+	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
 		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
@@ -1686,18 +1688,12 @@ public class XmlUtils {
 			rootValidations = new HashSet<List<String>>();
 			rootValidations.add(path);
 		}
-		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
-				null, rootValidations, null, true);
-		XmlValidatorErrorHandler xmlValidatorErrorHandler =
-				new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
-			SAXSource saxSource = stringToSAXSource(input, true, false);
-			XMLReader xmlReader = saxSource.getXMLReader();
-			xmlReader.setContentHandler(xmlHandler);
-			// Prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
-			xmlReader.setErrorHandler(xmlValidatorErrorHandler);
-			xmlReader.parse(saxSource.getInputSource());
+			// set ErrorHandler to prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
+			parseXml(Message.asInputSource(input), xmlHandler, xmlValidatorErrorHandler);
 		} catch (Exception e) {
 			return false;
 		}
@@ -1706,38 +1702,14 @@ public class XmlUtils {
 
 	/**
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @return String (the complete and xml)
+	 * @return String (the complete and resolved xml)
 	 */
-	static public String identityTransform(Resource source) throws DomBuilderException {
-		StringWriter result = new StringWriter();
-		try {
-			TransformerPool tp = getIdentityTransformerPool();
-			TransformerHandler handler = tp.getTransformerHandler();
-			handler.setResult(new StreamResult(result));
-			
-			XMLReader reader = XmlUtils.getXMLReader(true, true, handler);
-			reader.setEntityResolver(new ClassLoaderEntityResolver(source));
-
-			reader.parse(source.asInputSource());
-		} catch (Exception tce) {
-			throw new DomBuilderException(tce);
-		}
-
-		return result.toString();
+	static public String identityTransform(Resource resource) throws  IOException, SAXException {
+		XmlWriter writer = new XmlWriter();
+		parseXml(resource, writer);
+		return writer.toString();
 	}
 
-//	static public String identityTransform(String input)
-//			throws DomBuilderException {
-//		String result = "";
-//		Document document = XmlUtils.buildDomDocument((String) input);
-//		try {
-//			result = nodeToString(document, false);
-//		} catch (TransformerException e) {
-//			throw new DomBuilderException(e);
-//		}
-//		return result;
-//	}
-//	
 	public static String getVersionInfo() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(AppConstants.getInstance().getProperty("application.name") + " "
@@ -1784,7 +1756,7 @@ public class XmlUtils {
 		if (removeNamespaces) {
 			try {
 				TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
-				return tp.transform(source,null);
+				return tp.transform(source);
 			} catch (Exception e) {
 				throw new TransformerException(e);
 			}
@@ -2040,9 +2012,7 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static Double evaluateXPathNumber(String input,
-			String xpathExpr) throws DomBuilderException,
-			XPathExpressionException {
+	public static Double evaluateXPathNumber(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Document doc = buildDomDocument(msg, true, true);
@@ -2052,9 +2022,7 @@ public class XmlUtils {
 		return (Double) result;
 	}
 
-	public static Map<String, String> evaluateXPathNodeSet(String input,
-			String xpathExpr, String keyElement, String valueElement)
-			throws DomBuilderException, XPathExpressionException {
+	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<String, String> m = new HashMap<String, String>();
@@ -2078,9 +2046,7 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static Collection<String> evaluateXPathNodeSet(String input,
-			String xpathExpr, String xpathExpr2) throws DomBuilderException,
-			XPathExpressionException {
+	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr, String xpathExpr2) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Collection<String> c = new LinkedList<String>();
@@ -2094,8 +2060,7 @@ public class XmlUtils {
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element) node;
 				XPathExpression xPathExpression2 = xPath.compile(xpathExpr2);
-				Object result2 = xPathExpression2.evaluate(element,
-						XPathConstants.STRING);
+				Object result2 = xPathExpression2.evaluate(element, XPathConstants.STRING);
 				c.add((String) result2);
 			}
 		}
@@ -2109,19 +2074,17 @@ public class XmlUtils {
 		String xhtmlString = null;
 		if (StringUtils.isNotEmpty(htmlString)) {
 			xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
-			if (xhtmlString.startsWith("<html>")
-					|| xhtmlString.startsWith("<html ")) {
+			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(xhtmlString);
-				xhtmlString = new SimpleXmlSerializer(props)
-						.getXmlAsString(tagNode);
+				xhtmlString = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
 			}
 		}
 		return xhtmlString;
 	}
 
-	public static synchronized XPathFactory getXPathFactory() {
+	public static XPathFactory getXPathFactory() {
 		return getXPathFactory(2);
 	}
 

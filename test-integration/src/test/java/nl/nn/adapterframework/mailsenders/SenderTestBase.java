@@ -7,6 +7,7 @@ import java.io.Reader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
@@ -15,10 +16,11 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class SenderTestBase<S extends ISender> {
 
-	protected Log log = LogFactory.getLog(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
 
 	@Mock

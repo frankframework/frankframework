@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -37,26 +38,29 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
  * <table align="top">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
+ * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>write</td><td>write contents to a file<td>
- *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
  *  At least one of the parameters must be specified.<br/>
  *  The missing parameter defaults to the input message.<br/>
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
  * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
- *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
  *  At least one of the parameters must be specified.<br/>
  *  The missing parameter defaults to the input message.<br/>
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel
@@ -65,7 +69,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
-	
+	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -94,26 +99,17 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && actor.canProvideOutputStream();
-	}
-	@Override
-	public boolean requiresOutputStream() {
-		return super.requiresOutputStream() && actor.requiresOutputStream();  
-	}
-	
-	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return actor.provideOutputStream(correlationID, session, target);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		return actor.provideOutputStream(session, next);
 	}
 
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList !=null) {
+				pvl=paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(
@@ -121,7 +117,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			return actor.doAction(message, pvl, prc.getSession());
+			Object result=actor.doAction(message, pvl, session);
+			if (result instanceof PipeRunResult) {
+				return (PipeRunResult)result;
+			}
+			return new PipeRunResult(null, result);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}
@@ -150,7 +150,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDoc({"1", "possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDocRef({"1", FILESYSTEMACTOR})
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -158,37 +158,44 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getAction();
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDocRef({"2", FILESYSTEMACTOR})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+
+	@IbisDocRef({"2", FILESYSTEMACTOR})
+	public void setDestination(String destination) {
+		actor.setDestination(destination);
+	}
+
+	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
+	
+	@IbisDocRef({"4", FILESYSTEMACTOR})
+	public void setCreateFolder(boolean createFolder) {
+		actor.setCreateFolder(createFolder);
+	}
 
-	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDocRef({"5", FILESYSTEMACTOR})
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
 
-	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDocRef({"6", FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDocRef({"7", FILESYSTEMACTOR})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDocRef({"8", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
-	}
-
-	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
-	public void setFilename(String filename) {
-		actor.setFilename(filename);
-	}
-	public String getFilename() {
-		return actor.getFilename();
 	}
 
 }

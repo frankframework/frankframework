@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.sshtools.j2ssh.SftpClient;
 import com.sshtools.j2ssh.SshClient;
@@ -240,6 +240,7 @@ public class FtpSession {
 				kbiAuthenticationClient.setUsername(credentialFactory.getUsername());
 				kbiAuthenticationClient.setKBIRequestHandler(
 					new KBIRequestHandler() {
+						@Override
 						public void showPrompts(String name, String instruction, KBIPrompt[] prompts) {
 							//deze 3 regels in x.zip naar Zenz gemaild, hielp ook niet
 							if(prompts==null) {

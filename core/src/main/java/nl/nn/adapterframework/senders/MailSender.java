@@ -118,7 +118,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
  * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
  * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
- * <tr><td>charSet</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>
+ * <tr><td>charSet</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: UTF-8)</td></tr>
  * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
  *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
  *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
@@ -260,7 +260,6 @@ public class MailSender extends MailSenderBase {
 					ByteArrayDataSource bads = new ByteArrayDataSource(attachment.getContent(), attachment.getMimeType());
 					bads.setName(attachment.getName());
 					messageBodyPart.setDataHandler(new DataHandler(bads));
-					messageBodyPart.setHeader("Content-Transfer-Encoding", "7bit");
 				} catch (IOException e) {
 					log.error("error attaching attachment to MailSession", e);
 				}

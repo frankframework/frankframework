@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,12 +24,12 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -80,9 +78,6 @@ public class Base64Pipe extends FixedForwardPipe {
 		}
 
 		if(!convertToString) {
-			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute convert2String is deprecated. Please specify an outputType instead";
-			ConfigurationWarnings.getInstance().add(log, msg, true);
-
 			//Allow this for backwards compatibility
 			if(getDirection().equals("decode"))
 				setOutputType("bytes");
@@ -94,21 +89,12 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		InputStream binaryInputStream;
-
-		if (input instanceof InputStream) {
-			binaryInputStream = (InputStream)input;
-		}
-		else if (input instanceof byte[]) {
-			binaryInputStream = new ByteArrayInputStream((byte[])input);
-		}
-		else { //Try parsing it as a String
-			try {
-				binaryInputStream = new ByteArrayInputStream(input.toString().getBytes(getCharset()));
-			} catch (UnsupportedEncodingException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot encode message using charset ["+getCharset()+"]",e);
-			}
+		try {
+			binaryInputStream = message.asInputStream(getCharset());
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		boolean direction = "encode".equals(getDirection());//TRUE encode - FALSE decode
@@ -151,6 +137,8 @@ public class Base64Pipe extends FixedForwardPipe {
 	 * @deprecated please use outputType instead
 	 * @param b convert result to string or outputStream depending on the direction used
 	 */
+	@Deprecated
+	@ConfigurationWarning("please specify outputType instead")
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}
@@ -180,7 +168,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return lineSeparator;
 	}
 
-	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength <= 0, then the output will not be divided into lines", "auto"})
+	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength &lt;= 0, then the output will not be divided into lines", "auto"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}

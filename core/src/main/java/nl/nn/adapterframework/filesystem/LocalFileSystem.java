@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -189,26 +190,41 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		f.renameTo(dest);
 		return dest;
 	}
-	@Override
-	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	
+	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
 		File toFolder = toFile(destinationFolder);
 		if (toFolder.exists()) {
 			if (!toFolder.isDirectory()) {
-				throw new FileSystemException("Cannot move file. Destination file ["+toFolder.getName()+"] is not a folder.");
+				throw new FileSystemException("Cannot "+action+" file. Destination ["+toFolder.getName()+"] is not a folder.");
 			}
 		} else {
 			if (createFolder)
 				createFolder(destinationFolder);
 			else {
-				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getName()+"] does not exist.");
+				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+toFolder.getName()+"] does not exist.");
 			}
 		}
 		File target=new File(toFolder,f.getName());
+		return target;
+	}
+	
+	@Override
+	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		File target = getDestinationFile(f, destinationFolder, createFolder, "move");
 		if (!f.renameTo(target)) {
 			return f;
 		}
 		return target;
-
+	}
+	@Override
+	public File copyFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		File target = getDestinationFile(f, destinationFolder, createFolder, "copy");
+		try {
+			FileUtils.copyFile(f, target);
+		} catch (IOException e) {
+			throw new FileSystemException("cannot copy file ["+f.getName()+"] to folder ["+destinationFolder+"]",e);
+		}
+		return target;
 	}
 
 

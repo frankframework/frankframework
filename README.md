@@ -27,6 +27,8 @@ Some example XML configurations:
 See them in action: http://ibis4example.ibissource.org/
 
 
+The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can be found at <http://frank-manual.readthedocs.io>. If you want to contribute to this manual, please go to <http://github.com/ibissource/frank-manual>.
+
 Releases
 ========
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Integration Partners
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import nl.nn.adapterframework.doc.objects.*;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -42,7 +42,6 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
@@ -51,10 +50,17 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
+import nl.nn.adapterframework.doc.objects.IbisBean;
+import nl.nn.adapterframework.doc.objects.IbisMethod;
+import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -65,6 +71,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class IbisDocPipe extends FixedForwardPipe {
+	private static Logger log = LogUtil.getLogger(IbisDocPipe.class);
 	private static Set<String> excludeFilters = new TreeSet<String>();
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
@@ -73,8 +80,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CommandSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.EchoSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.FixedResultSender");
@@ -152,7 +161,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static Map<String, TreeSet<IbisBean>> cachedGroups;
 	private static Map<String, String> errors = new HashMap<String, String>();
 
-	private static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
+	static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
 		if (cachedGroups == null) {
 			Map<String, TreeSet<IbisBean>> groups = new LinkedHashMap<String, TreeSet<IbisBean>>();
 			addIbisBeans("Listeners", getClass("nl.nn.adapterframework.core.IListener"), groups);
@@ -193,8 +202,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (clazz != null && clazz.isInterface()) {
 			Set<SpringBean> springBeans = getSpringBeans(clazz);
 			for (SpringBean springBean : springBeans) {
-				addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
-						springBean.getClazz(), ibisBeans);
+				if (clazz.isAssignableFrom(springBean.getClazz())) {
+					addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
+							springBean.getClazz(), ibisBeans);
+				}
 			}
 		}
 		groups.put(group, ibisBeans);
@@ -308,13 +319,14 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String uri = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				 uri = prc.getValues(getParameterList()).getParameterValue("uri").asStringValue(null);
+				ParameterValueList pvl = parameterList.getValues(message, session);
+				uri = pvl.getParameterValue("uri").asStringValue(null);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
@@ -331,7 +343,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = getJson();
+			result = new IbisDocExtractor().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -399,159 +411,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		session.put("contentType", contentType);
 		return new PipeRunResult(getForward(), result);
-	}
-
-	/**
-	 * Get the superclasses of a certain class.
-	 *
-	 * @param clazz - The class we have to derive the superclasses from
-	 * @return An ArrayList containing all the superclasses with priority given to them
-	 */
-	private ArrayList<String> getSuperClasses(Class clazz) {
-		ArrayList<String> superClasses = new ArrayList<String>();
-		while (clazz.getSuperclass() != null) {
-
-			// Assign a string with a priority number attached to it and add it to the array of superclasses
-			superClasses.add(clazz.getSuperclass().getSimpleName());
-			clazz = clazz.getSuperclass();
-		}
-		
-		return superClasses;
-	}
-
-	/**
-	 * Gets the IbisDoc values.
-	 *
-	 * @param ibisDocValues - The String[] containing all the ibisDocValues
-	 * @return The needed ibisDocValues
-	 */
-	private String[] getValues(String[] ibisDocValues) {
-		int order;
-		int desc;
-		int def;
-
-		if (ibisDocValues[0].matches("\\d+")) {
-			order = Integer.parseInt(ibisDocValues[0]);
-			desc = 1;
-			def = 2;
-		} else {
-			order = 999;
-			desc = 0;
-			def = 1;
-		}
-		if (ibisDocValues.length > def)
-			return new String[]{ibisDocValues[desc], ibisDocValues[def], "" + order };
-		else
-			return new String[]{ibisDocValues[desc], "", "" + order };
-	}
-
-	/**
-	 * Add properties of the FilePipe to the FileSender.
-	 *
-	 * @param ibisBean       - The IbisBean that should be the FilePipe
-	 * @param groups         - Contains all information
-	 * @param beanProperties - The properties of a class (in this case the FilePipe)
-	 */
-	private void addPropertiesFileSender(IbisBean ibisBean, Map<String, TreeSet<IbisBean>> groups, Map<String, Method> beanProperties) {
-		if (ibisBean.getName().equals("FilePipe")) {
-			for (IbisBean bean : groups.get("Senders")) {
-				if (bean.getName().equals("FileSender")) {
-					Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
-					beanProperties.putAll(senderProperties);
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Add the methods to the class object.
-	 *
-	 * @param beanProperties - The properties of a class
-	 * @param newClass       - The class object we have to add the methods to
-	 * @return the AClass with the added AMethods
-	 */
-	private AClass addMethods(Map<String, Method> beanProperties, AClass newClass) {
-		Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
-		while (iterator.hasNext()) {
-
-			String property = iterator.next();
-			Method method = beanProperties.get(property);
-
-			// Get the IbisDoc values from the annotations above the method
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
-			boolean isDeprecated = deprecated != null;
-
-			// If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
-			if (ibisDoc != null) {
-				String[] ibisdocValues = ibisDoc.value();
-				String[] values = getValues(ibisdocValues);
-				newClass.addMethod(new AMethod(property, method.getDeclaringClass().getSimpleName(), values[0], values[1], Integer.parseInt(values[2]), isDeprecated));
-			}
-		}
-		return newClass;
-	}
-
-	/**
-	 * Add classes to the folder object.
-	 *
-	 * @param groups - Contains all information
-	 * @param folder - The folder object we have to add the classes to
-	 */
-	private void addClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
-		for (IbisBean ibisBean : groups.get(folder.getName())) {
-			Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-			if (!beanProperties.isEmpty()) {
-
-				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
-				addPropertiesFileSender(ibisBean, groups, beanProperties);
-				
-				// Get the javadoc link for the class
-				String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-				
-				// Get the superclasses
-				ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
-
-				// Create a new class and add the methods (attributes) to it, then add it to the folder object
-				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink, superClasses);
-				AClass updatedClass = addMethods(beanProperties, newClass);
-				folder.addClass(updatedClass);
-			}
-		}
-	}
-
-	/**
-	 * Add folders to the Json.
-	 *
-	 * @param groups    - Contains all information
-	 * @param extractor - Class that converts the folders into objects
-	 */
-	private void addFolders(Map<String, TreeSet<IbisBean>> groups, IbisDocExtractor extractor) {
-		AFolder allFolder = new AFolder("All");
-
-		for (String folder : groups.keySet()) {
-			AFolder newFolder = new AFolder(folder);
-			addClasses(groups, newFolder);
-			extractor.addFolder(newFolder);
-		}
-		extractor.addFolder(allFolder);
-	}
-
-	/**
-	 * Get the Json containing all information concerning the IbisDoc.
-	 *
-	 * @return A string containing all information of the IbisDoc
-	 */
-	private String getJson() {
-		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		IbisDocExtractor extractor = new IbisDocExtractor();
-		addFolders(groups, extractor);
-
-//		extractor.addAllFolder();
-		extractor.writeToJsonUrl();
-
-		return extractor.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {
@@ -625,7 +484,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
-			XmlUtils.parseXml(digesterXmlHandler, Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")));
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
 		} catch (SAXException e) {
@@ -655,6 +514,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				classMethods = ibisBean.getClazz().getMethods();
 			} catch (NoClassDefFoundError e) {
 				//TODO Why is it trying to resolve (sub) interfaces?
+				log.warn("Cannot retrieve methods of [" + ibisBean.getName() + "] due to a NoClassDefFoundError");
 				return;
 			}
 			Arrays.sort(classMethods, new Comparator<Method>() {
@@ -784,6 +644,20 @@ public class IbisDocPipe extends FixedForwardPipe {
 						beanHtml.append("<td>" + property + "</td>");
 					}
 					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+					if (ibisDocRef != null) {
+						AMethod aMethod = new AMethod(property);
+						if (ibisDoc == null) {
+							String[] orderAndPackageName = ibisDocRef.value();
+							String packageName = null;
+							if(orderAndPackageName.length == 1) {
+								packageName = ibisDocRef.value()[0];
+							} else if(orderAndPackageName.length == 2) {
+								packageName = ibisDocRef.value()[1];
+							}
+							ibisDoc = aMethod.getIbisDocRef(packageName, method);
+						}
+					}
 					if (ibisDoc != null) {
 						String[] ibisDocValues = ibisDoc.value();
 						if (beanComplexType != null) {
@@ -843,7 +717,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return ignore;
 	}
 
-	private static Map<String, Method> getBeanProperties(Class<?> clazz) {
+	public static Map<String, Method> getBeanProperties(Class<?> clazz) {
 		Map<String, Method> result = new HashMap<String, Method>();
 		getBeanProperties(clazz, "set", result);
 		Set<String> remove = new HashSet<String>();
@@ -851,7 +725,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		getBeanProperties(clazz, "get", getMethods);
 		getBeanProperties(clazz, "is", getMethods);
 		for (String name : result.keySet()) {
-			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class)) {
+			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class) && !result.get(name).isAnnotationPresent(IbisDocRef.class)) {
 				remove.add(name);
 			}
 		}

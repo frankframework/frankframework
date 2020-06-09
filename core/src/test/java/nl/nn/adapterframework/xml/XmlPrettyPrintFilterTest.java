@@ -21,7 +21,7 @@ public class XmlPrettyPrintFilterTest {
 		XmlWriter xmlWriter = new XmlWriter();
 		PrettyPrintFilter filter =  new PrettyPrintFilter();
 		filter.setContentHandler(xmlWriter);
-		XmlUtils.parseXml(filter, input);
+		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -33,7 +33,7 @@ public class XmlPrettyPrintFilterTest {
 		xmlWriter.setTextMode(true);
 		PrettyPrintFilter filter =  new PrettyPrintFilter();
 		filter.setContentHandler(xmlWriter);
-		XmlUtils.parseXml(filter, input);
+		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 
@@ -47,8 +47,10 @@ public class XmlPrettyPrintFilterTest {
 		filter.setContentHandler(xmlWriter);
 
 		InputSource inputSource = new InputSource(new StringReader(input));
-		XMLReader xmlReader = XmlUtils.getXMLReader(true, true);
-		xmlReader.setContentHandler(filter);
+		XMLReader xmlReader = XmlUtils.getXMLReader(filter);
+		// lexical handling is automatically set, when the contentHandler (filter in this case) implements  the interface LexicalHandler.
+		// To test the output of the PrettyPrintFilter without lexical handling, it must be switched off explicitly in the XmlReader
+		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
 
 		xmlReader.parse(inputSource);
 		assertEquals(expected,xmlWriter.toString());

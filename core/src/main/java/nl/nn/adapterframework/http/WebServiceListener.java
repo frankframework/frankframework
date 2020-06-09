@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 - 2019 Nationale-Nederlanden
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,21 +24,21 @@ import java.util.StringTokenizer;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.extensions.cxf.MessageProvider;
+import org.apache.cxf.jaxws.EndpointImpl;
+import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.BusFactory;
-import org.apache.cxf.jaxws.EndpointImpl;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -48,7 +48,7 @@ import org.apache.cxf.jaxws.EndpointImpl;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
+public class WebServiceListener extends PushingListenerAdapter<String> implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,9 +67,9 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
 		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
@@ -91,26 +91,29 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		}
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
-			ConfigurationWarnings.getInstance().add(log, msg, true);
+			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
+			ConfigurationWarnings.add(this, log, msg);
 		}
 	}
 
 	@Override
 	public void open() throws ListenerException {
-		super.open();
-
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher");
-			endpoint = new EndpointImpl(BusFactory.getDefaultBus(), new MessageProvider(this, getMultipartXmlSessionKey()));
+			Bus cxfBus = BusFactory.getDefaultBus(false);
+			if(cxfBus == null) {
+				throw new ListenerException("unable to find SpringBus");
+			}
+			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
+			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
-			if(endpoint.isPublished())
-				log.debug("published listener ["+getName()+"] on CXF endpoint["+getAddress()+"] with SpringBus["+endpoint.getBus().getId()+"]");
-			else
-				log.error("unable to publish listener ["+getName()+"] on CXF endpoint["+getAddress()+"]");
+			if(endpoint.isPublished()) {
+				log.debug("published listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+			} else {
+				log.error("unable to publish listener ["+getName()+"] on CXF endpoint ["+getAddress()+"]");
+			}
 		}
 
 		//Can bind on multiple endpoints
@@ -122,6 +125,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this); //Backwards compatibility
 		}
+
+		super.open();
 	}
 
 	@Override
@@ -131,12 +136,18 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		if(endpoint != null && endpoint.isPublished())
 			endpoint.stop();
 
-		//TODO maybe unregister oldschool rpc based serviceclients!?
-		//How does this work when reloading a configuration??
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		}
+		else {
+			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			ServiceDispatcher.getInstance().unregisterServiceClient(getName()); //Backwards compatibility
+		}
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
 		if (attachmentSessionKeysList.size() > 0) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
@@ -176,6 +187,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		return "WebServiceListener ["+getName()+"] listening on ["+getPhysicalDestinationName()+"] ";
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if(StringUtils.isNotEmpty(getAddress())) {
 			return "address ["+getAddress()+"]";
@@ -210,7 +222,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		setApplicationFaultsAsExceptions(b);
 	}
 
-	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/<address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
+	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/</address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
 			if(address.startsWith("/"))
@@ -244,6 +256,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		return multipartXmlSessionKey;
 	}
 
+	@Override
 	public Object getSpecialDefaultValue(String attributeName,
 			Object defaultValue, Map<String, String> attributes) {
 		if ("address".equals(attributeName)) {

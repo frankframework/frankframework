@@ -25,16 +25,17 @@ import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
  * Sender to work with Amazon S3. 
@@ -89,9 +90,9 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
-			return super.sendMessage(correlationID, message, prc, target);
+			return super.sendMessage(message, session, next);
 		}
 
 		String result = null;
@@ -103,9 +104,9 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		}
 
 		ParameterValueList pvl = null;
-		if (prc != null && paramList != null) {
+		if (paramList != null) {
 			try {
-				pvl = prc.getValues(paramList);
+				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
@@ -116,18 +117,20 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		} else if (getAction().equalsIgnoreCase("deleteBucket")) { //deleteBucket block
 			result = getFileSystem().deleteBucket();
 		} else if (getAction().equalsIgnoreCase("copy")) { //copy file block
-			if (pvl.getParameterValue("destinationFileName") != null)
+			if (pvl.getParameterValue("destinationFileName") != null) {
 				if (pvl.getParameterValue("destinationFileName").getValue() != null) {
 					String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
 					result = getFileSystem().copyObject(fileName, destinationFileName);
-				} else
+				} else {
 					throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
-			else
+				}
+			} else {
 				throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
-		} else if (getAction().equalsIgnoreCase("restore")) //restore block
+			}
+		} else if (getAction().equalsIgnoreCase("restore")) { //restore block
 			result = getFileSystem().restoreObject(fileName);
-		
-		return result;
+		}
+		return new PipeRunResult(null, result);
 	}
 	
 	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })
@@ -199,5 +202,16 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
 		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
 	}
+	
+	@IbisDoc({ "setting proxy host", "" })
+	public void setProxyHost(String proxyHost) {
+		getFileSystem().setProxyHost(proxyHost);
+	}
+	
+	@IbisDoc({ "setting proxy port", "" })
+	public void setProxyPort(Integer proxyPort) {
+		getFileSystem().setProxyPort(proxyPort);
+	}
+
 	
 }

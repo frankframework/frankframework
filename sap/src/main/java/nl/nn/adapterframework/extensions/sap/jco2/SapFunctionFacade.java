@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.sap.mw.jco.IFunctionTemplate;
 import com.sap.mw.jco.IRepository;
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
@@ -270,7 +271,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 		return result;
 	}
 
-	public String functionResult2message(JCO.Function function) {
+	public Message functionResult2message(JCO.Function function) {
 		JCO.ParameterList export = function.getExportParameterList();
 		
 		int replyFieldIndex = findFieldIndex(export, getReplyFieldIndex(), getReplyFieldName());
@@ -292,7 +293,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 			}
 			result+="</response>";
 		}
-		return result;
+		return new Message(result);
 	}
 
 	public void message2FunctionCall(JCO.Function function, String request, String correlationId, ParameterValueList pvl) throws SapException {

@@ -16,7 +16,14 @@ import java.util.TreeMap;
 import javax.json.Json;
 import javax.json.JsonStructure;
 
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MatchUtils {
 	
@@ -50,6 +57,38 @@ public class MatchUtils {
 		assertEquals(expStr,actStr);
 	}
  
+	public static String xmlPretty(String xml, boolean removeNamespaces) {
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeComments(false);
+		PrettyPrintFilter ppf = new PrettyPrintFilter();
+		ppf.setContentHandler(xmlWriter);
+		ContentHandler contentHandler = ppf;
+		if (removeNamespaces) {
+			NamespaceRemovingFilter nrf = new NamespaceRemovingFilter();
+			nrf.setContentHandler(contentHandler);
+			contentHandler=nrf;
+		}
+		try {
+			XmlUtils.parseXml(xml, contentHandler);
+			return xmlWriter.toString();
+		} catch (IOException | SAXException e) {
+			return "ERROR: could not prettyfy: ("+e.getClass().getName()+") "+e.getMessage();
+		}
+	}
+
+	public static void assertXmlEquals(String xmlExp, String xmlAct) {
+		assertXmlEquals(null, xmlExp, xmlAct);
+	}
+
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
+		assertXmlEquals(description, xmlExp, xmlAct, false);
+	}
+	
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
+		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces);
+		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);
+		assertEquals(description,xmlExpPretty,xmlActPretty);
+	}
 	
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
@@ -76,6 +115,6 @@ public class MatchUtils {
 		String testFile = TestFileUtils.getTestFile(file1);
 		assertNotNull("testFile ["+file1+"] is null",testFile);
 
-		assertEquals(testFile.trim(), file2.trim());
+		TestAssertions.assertEqualsIgnoreWhitespaces(testFile.trim(), file2.trim());
 	}
 }

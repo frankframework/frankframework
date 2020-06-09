@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,15 +40,20 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
@@ -330,8 +335,7 @@ public class TransformerPool {
 					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
 					if (xsltVersion!=detectedXsltVersion) {
-						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-						configWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
+						ConfigurationWarnings.add(null, log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
 					}
 				}
 			} catch (IOException e) {
@@ -407,6 +411,10 @@ public class TransformerPool {
 		return transform(new DOMSource(d),parameters);
 	}
 
+	public String transform(Message m, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
+		return transform(m.asSource(),parameters);
+	}
+
 	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s),parameters);
 	}
@@ -415,10 +423,24 @@ public class TransformerPool {
 		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware),parameters);
 	}
 
+	public String transform(Source s) throws TransformerException, IOException {
+		return transform(s,(Map<String,Object>)null);
+	}
+	
+	public String transform(Source s, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+		return transform(s, null, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
+	}
+	
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
+	public String transform(Source s, Result r) throws TransformerException, IOException {
+		return transform(s, r, (Map<String,Object>)null);
+	}
+	public String transform(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException, ParameterException {
+		return transform(s, r, pvl==null? (Map<String,Object>)null : pvl.getValueMap());
+	}
 	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
@@ -465,8 +487,8 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID, boolean expectChildThreads) throws TransformerConfigurationException {
-		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, correlationID, expectChildThreads);
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads) throws TransformerConfigurationException {
+		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, session, expectChildThreads);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {
@@ -497,6 +519,15 @@ public class TransformerPool {
 	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException, SAXException {
 		Map<String,String> configMap=getConfigMap();
 		String setting=configMap.get("output-omit-xml-declaration");
+		if (setting==null) {
+			return null;
+		}
+		return "yes".equals(setting);
+	}
+
+	public Boolean getIndent() throws TransformerException, IOException, SAXException {
+		Map<String,String> configMap=getConfigMap();
+		String setting=configMap.get("output-indent");
 		if (setting==null) {
 			return null;
 		}

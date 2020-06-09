@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -55,6 +67,7 @@ import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -64,21 +77,9 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -93,6 +94,7 @@ import org.springframework.transaction.TransactionStatus;
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -518,10 +520,10 @@ public class JobDef {
 								}
 								String msg = "error while setting lock: " + e.getMessage();
 								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 									log.info(getLogPrefix()+msg);
 								} else {
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 									log.error(getLogPrefix()+msg);
 								}
 							}
@@ -542,7 +544,7 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 									log.warn(getLogPrefix()+msg);
 								}
 							}
@@ -561,7 +563,7 @@ public class JobDef {
 			}
 		} else {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		}
 	}
@@ -744,13 +746,11 @@ public class JobDef {
 	private void checkReload(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		
-		String configJmsRealm = JmsRealmFactory.getInstance()
-				.getFirstDatasourceJmsRealm();
+		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
 			List<String> configNames = new ArrayList<String>();
@@ -776,14 +776,12 @@ public class JobDef {
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
-									configVersion)) {
-								log.info(getLogPrefix() + "configuration ["
-										+ configName + "] with version ["
-										+ configVersion
-										+ "] will be reloaded with new version ["
-										+ ibisConfigVersion + "]");
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+							}
+							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
 								configsToReload.add(configName);
 							}
 						}
@@ -792,8 +790,8 @@ public class JobDef {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				qs.close();
 				JdbcUtil.fullClose(conn, rs);
+				qs.close();
 			}
 
 			if (!configsToReload.isEmpty()) {
@@ -806,7 +804,7 @@ public class JobDef {
 				// load new (activated) configs
 				List<String> dbConfigNames = null;
 				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm);
+					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
 				} catch (ConfigurationException e) {
 					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
@@ -840,7 +838,7 @@ public class JobDef {
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperLevel.ERROR);
 			return;
 		}
 
@@ -941,8 +939,8 @@ public class JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
@@ -966,11 +964,11 @@ public class JobDef {
 			qs.setTimeout(getQueryTimeout());
 			qs.configure(true);
 			qs.open();
-			String result = qs.sendMessage("dummy", getQuery());
+			Message result = qs.sendMessage(new Message(getQuery()), null);
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		} finally {
 			qs.close();
@@ -989,6 +987,10 @@ public class JobDef {
 			}
 			if (StringUtils.isNotEmpty(getAdapterName())) {
 				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
+				if (iAdapter == null) {
+					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
+					return;
+				}
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}
@@ -996,8 +998,8 @@ public class JobDef {
 			localSender.open();
 			try {
 				//sendMessage message cannot be NULL
-				String message = (getMessage()==null) ? "" : getMessage();
-				localSender.sendMessage(null, message);
+				Message message = new Message((getMessage()==null) ? "" : getMessage());
+				localSender.sendMessage(message, null);
 			}
 			finally {
 				localSender.close();
@@ -1005,7 +1007,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg, e);
 		}
 	}
@@ -1224,7 +1226,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) throws ConfigurationException {
 		try {
 			this.function = JobDefFunctions.fromValue(function);
@@ -1301,7 +1303,7 @@ public class JobDef {
 			+ "applies both to database transactions and XA transactions. "
 	        + "In general, a transactionAttribute is used to start a new transaction or suspend the current one when required. "
 			+ "For developers: it is equal "
-	        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
+	        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
 	        + "Possible values for transactionAttribute: "
 	        + "  <table border=\"1\">"
 	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
@@ -1339,7 +1341,7 @@ public class JobDef {
     	    + "<tr><td>2</td><td>Mandatory</td></tr>"
     	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
     	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td><tr>"
+    	    + "<tr><td>5</td><td>Never</td></tr>"
     	    + "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
@@ -1348,7 +1350,7 @@ public class JobDef {
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)</code>"})
+	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}

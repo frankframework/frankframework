@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * PipelineProcessor that handles caching.
@@ -29,13 +32,20 @@ import nl.nn.adapterframework.core.PipeRunException;
  */
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	@Override
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		ICacheAdapter<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		
-		String key=cache.transformKey(message, pipeLineSession);
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(pipeLine.getPipe(firstPipe), "cannot open stream", e);
+		}
+		String key=cache.transformKey(input, pipeLineSession);
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
@@ -44,8 +54,8 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		String result;
 		String state;
 		synchronized (cache) {
-			result = cache.getString("r"+key);
-			state = cache.getString("s"+key);
+			result = cache.get("r"+key);
+			state = cache.get("s"+key);
 		}
 		if (result!=null && state!=null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
@@ -59,8 +69,8 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 		String cacheValue=cache.transformValue(prr.getResult(), pipeLineSession);
 		synchronized (cache) {
-			cache.putString("r"+key, cacheValue);
-			cache.putString("s"+key, prr.getState());
+			cache.put("r"+key, cacheValue);
+			cache.put("s"+key, prr.getState());
 		}
 		return prr;
 	}

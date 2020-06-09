@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.w3c.dom.Element;
 
@@ -38,9 +39,11 @@ public class IbisNavigationService implements NavigationService {
 
 	private NavigationService navigationService;
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private CallContext callContext;
 
-	public IbisNavigationService(NavigationService navigationService) {
+	public IbisNavigationService(NavigationService navigationService, CallContext callContext) {
 		this.navigationService = navigationService;
+		this.callContext = callContext;
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
@@ -75,7 +78,7 @@ public class IbisNavigationService implements NavigationService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML());
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectInFolderList");
 
 			return CmisUtils.xml2ObjectsInFolderList(typesXml);

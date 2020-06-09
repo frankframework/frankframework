@@ -15,13 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.stream.Message;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -31,16 +31,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Executes a query.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -48,24 +48,37 @@ import nl.nn.adapterframework.util.XmlUtils;
 @Path("/")
 public final class ExecuteJdbcQuery extends Base {
 
-	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
+	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
 
 		Map<String, Object> result = new HashMap<String, Object>();
+		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
 
-		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size() == 0)
-			jmsRealms.add("no realms defined");
-		result.put("jmsRealms", jmsRealms);
+		List<String> jmsRealms = realmFactory.getRegisteredDatasourceRealmNamesAsList();
+		List<String> datasources = new ArrayList<>();
+		if (jmsRealms.size() == 0) {
+			datasources.add("no datasources found in jmsRealms");
+		} else {
+			for (String jmsRealm : jmsRealms) {
+				JmsRealm realm = realmFactory.getJmsRealm(jmsRealm);
+				String datasourceName = realm.getDatasourceName();
+				if(!datasources.contains(datasourceName)) { //It's possible multiple realms use the same datasourceName
+					datasources.add(datasourceName);
+				}
+			}
+		}
+
+		result.put("datasources", datasources);
 
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
+		resultTypes.add("json");
 		result.put("resultTypes", resultTypes);
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
@@ -78,12 +91,11 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
-		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
-		Object returnEntity = null;
+		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasource")) {
+				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("resultType")) {
 				resultType = entry.getValue().toString().toLowerCase();
@@ -100,8 +112,8 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 		}
 
-		if(realm == null || resultType == null || query == null) {
-			throw new ApiException("Missing data, realm, resultType and query are expected.", 400);
+		if(datasource == null || resultType == null || query == null) {
+			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 
 		//We have all info we need, lets execute the query!
@@ -109,41 +121,34 @@ public final class ExecuteJdbcQuery extends Base {
 		try {
 			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			log.error(e);
-			throw new ApiException("An error occured on creating or closing the connection!", 500);
+			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
 		try {
 			qs.setName("QuerySender");
-			qs.setJmsRealm(realm);
+			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();
-			result = qs.sendMessage("dummy", query);
+			Message message = qs.sendMessage(new Message(query), null);
+
 			if (resultType.equalsIgnoreCase("csv")) {
-				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
-				if (url!=null) {
-					Transformer t = XmlUtils.createTransformer(url);
-					result = XmlUtils.transformXml(t,result);
-				}
+				AbstractQueryOutputTransformer filter = new QueryOutputToCSV();
+				result = filter.parse(message);
+			} else if (resultType.equalsIgnoreCase("json")) {
+				AbstractQueryOutputTransformer filter = new QueryOutputToJson();
+				result = filter.parse(message);
+			} else {
+				result = message.asString();
 			}
+
 		} catch (Throwable t) {
-			throw new ApiException("An error occured on executing jdbc query: " + t.getMessage(), 400);
+			throw new ApiException("Error executing query", t);
 		} finally {
 			qs.close();
 		}
 
-		if(resultType.equalsIgnoreCase("json")) {
-			if(XmlUtils.isWellFormed(result)) {
-				returnEntity = XmlQueryResult2Map(result);
-			}
-			if(returnEntity == null)
-				throw new ApiException("Invalid query result", 400);
-		}
-		else
-			returnEntity = result;
-
-		return Response.status(Response.Status.CREATED).type(returnType).entity(returnEntity).build();
+		return Response.status(Response.Status.CREATED).type(returnType).entity(result).build();
 	}
 }

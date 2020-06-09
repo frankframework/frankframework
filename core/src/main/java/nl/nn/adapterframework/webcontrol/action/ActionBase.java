@@ -28,14 +28,14 @@ import javax.servlet.http.HttpSession;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
@@ -178,31 +178,30 @@ public abstract class ActionBase extends Action {
 	    }
 	    return (DynaActionForm) form;
 	}
- 
- 	/**
- 	 * Initializes the fields in the <code>Action</code> for this specific
- 	 * application. Most important: it retrieves the Configuration object
- 	 * from the servletContext.
- 	 * @see nl.nn.adapterframework.configuration.Configuration
- 	 */ 
-	public void initAction(HttpServletRequest request) {
-        locale = getLocale(request);
-        messageResources = getResources(request);
-        errors = new ActionErrors();
 
-        session = request.getSession();
-        String attributeKey=AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext) getServlet().getServletContext().getAttribute(attributeKey);
-        ibisManager = null;
-        if (ibisContext != null) {
-        	ibisManager = ibisContext.getIbisManager();
-        } 
+	/**
+	 * Initializes the fields in the <code>Action</code> for this specific
+	 * application. Most important: it retrieves the Configuration object
+	 * from the servletContext.
+	 * @see nl.nn.adapterframework.configuration.Configuration
+	 */ 
+	public void initAction(HttpServletRequest request) {
+		locale = getLocale(request);
+		messageResources = getResources(request);
+		errors = new ActionErrors();
+
+		session = request.getSession();
+		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(getServlet().getServletContext());
+		ibisManager = null;
+		if (ibisContext != null) {
+			ibisManager = ibisContext.getIbisManager();
+		} 
 		if (ibisManager==null) {
 			log.warn("Could not retrieve ibisManager from context");
 		} else {
-			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
+			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context");
 		}
-    }
+	}
 
     /**
      * removes formbean <br/>

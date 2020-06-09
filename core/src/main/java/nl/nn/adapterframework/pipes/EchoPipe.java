@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns simply the input message.
@@ -31,9 +32,10 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @since   4.2
  */
 public class EchoPipe extends FixedForwardPipe {
-	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
-		return new PipeRunResult(getForward(),input);
+
+	@Override
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) {
+		return new PipeRunResult(getForward(),message);
 	}
 
 }

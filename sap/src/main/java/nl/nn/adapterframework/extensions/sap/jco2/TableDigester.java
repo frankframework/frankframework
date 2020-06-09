@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.io.IOException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -163,7 +163,7 @@ public class TableDigester {
 	public void digestTableXml(JCO.ParameterList tableParams, String xml) throws IOException, SAXException  {
 		
 		ContentHandler ch = new TableHandler(tableParams);
-		XmlUtils.parseXml(ch,xml);
+		XmlUtils.parseXml(xml,ch);
 		
 //		Digester digester = new Digester();
 //		digester.setUseContextClassLoader(false);

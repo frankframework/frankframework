@@ -5,6 +5,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
@@ -74,13 +75,14 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	@Test
 	public void multiNamespace() throws Exception {
 		setStyleSheetName("/Xslt/MultiNamespace/toText.xsl");
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 		String input = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = prr.getResult().toString();
+		String result = Message.asString(prr.getResult());
 		
 		assertResultsAreCorrect(expected, result, session);
 	}

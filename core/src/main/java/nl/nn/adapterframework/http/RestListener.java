@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -32,7 +32,9 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -45,7 +47,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */
-public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class RestListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private String uriPattern;
 	private String method;
@@ -154,16 +156,25 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String transformToJson(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection("xml2json");
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
-		return (String) pipeResult.getResult();
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		try {
+			return pipeResult.getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(null,"cannot transform result",e);
+		}
 	}
 
 	public String transformToXml(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
-		return (String) pipeResult.getResult();
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		try {
+			return pipeResult.getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(null,"cannot transform result",e);
+		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
 	}
@@ -176,7 +187,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return uriPattern;
 	}
 
-	@IbisDoc({"uri pattern to match. ", ""})
+	@IbisDoc({"uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -223,8 +234,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return view;
 	}
 
-	public Object getSpecialDefaultValue(String attributeName,
-			Object defaultValue, Map<String, String> attributes) {
+	@Override
+	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("view".equals(attributeName)) {
 			if (attributes.get("method").equalsIgnoreCase("GET")) {
 				return true;

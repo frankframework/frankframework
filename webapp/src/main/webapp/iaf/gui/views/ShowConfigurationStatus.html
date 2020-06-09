@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight">
+<div class="wrapper wrapper-content">
 <!--     <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert> -->
 
     <ul ng-if="alerts.length > 0" class="alert p-n m-n">
@@ -17,10 +17,10 @@
             <i class="m-r-md fa fa-info-circle"></i>
             <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
         </li>
-        <li class="list-group-item" ng-repeat="alert in alerts" ng-class="['alert-' + alert.type]" ng-if="selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
+        <li class="list-group-item" ng-repeat="alert in alerts" ng-class="['alert-' + alert.type]" ng-if="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
             <i class="m-r-md fa" ng-class="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
-            <span ng-if="selectedConfiguration=='All'">Configuration [{{::alert.configuration}}] - {{::alert.message}}</span>
-            <span ng-if="selectedConfiguration!='All'">{{::alert.message}}</span>
+            <span ng-if="selectedConfiguration=='All' && alert.configuration!=''">Configuration [{{::alert.configuration}}] - {{::alert.message}}</span>
+            <span ng-if="selectedConfiguration!='All' || alert.configuration==''">{{::alert.message}}</span>
         </li>
     </ul>
 
@@ -40,7 +40,7 @@
                 </div>
                 <div class="ibox-content">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -102,7 +102,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                         </div>
                     </div>
                 </div>
@@ -316,7 +316,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="receiver in adapter.receivers">
+                                        <tr ng-repeat="receiver in adapter.receivers" ng-class="::{'text-danger' : (receiver.state == 'error')}">
                                             <td>{{::receiver.name}}</td>
                                             <td>{{::receiver.listener.class}} ({{::receiver.listener.destination}})</td>
                                             <td>{{::receiver.messages.retried}}</td>
@@ -334,7 +334,8 @@
                                                 <span class="pull-right">
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
 
                                                     <span class="text-danger">
                                                         <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">

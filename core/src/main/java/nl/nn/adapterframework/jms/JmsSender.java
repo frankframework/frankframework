@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
+//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPostboxSender;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -44,10 +44,10 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * This class sends messages with JMS.
@@ -63,7 +63,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
  * @author Gerrit van Brakel
  */
 
-public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
+public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -140,23 +140,25 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null);
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		return sendMessage(message, session, null);
 	}
 
-	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, prc, null);
-	}
-
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
+		String correlationID = session==null ? null : session.getMessageId();
 
+		String message;
+		try {
+			message = input.asString();
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(),e);
+		}
 		ParameterValueList pvl=null;
-		if (prc != null && paramList != null) {
+		if (paramList != null) {
 			try {
-				pvl=prc.getValues(paramList);
+				pvl=paramList.getValues(input, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
 			}
@@ -178,11 +180,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 		try {
 			s = createSession();
-			mp = getMessageProducer(s, getDestination(prc));
+			mp = getMessageProducer(s, getDestination(session));
 			Destination replyQueue = null;
 
 			// create message
-			Message msg = createTextMessage(s, correlationID, message);
+			javax.jms.Message msg = createMessage(s, correlationID, message);
 
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());
@@ -243,7 +245,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
 				try {
-					Message rawReplyMsg = mc.receive(getReplyTimeout());
+					javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 					if (rawReplyMsg==null) {
 						throw new TimeOutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
 					}
@@ -252,11 +254,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 						while(propertyNames.hasMoreElements()) {
 							String jmsProperty = (String) propertyNames.nextElement();
 							if(getResponseHeadersList().contains(jmsProperty)) {
-								prc.getSession().put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
+								session.put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
 							}
 						}
 					}
-					return getStringFromRawMessage(rawReplyMsg, prc!=null?prc.getSession():null, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					return new Message(getStringFromRawMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper));
 				} finally {
 					if (mc != null) { 
 						try { 
@@ -267,7 +269,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 					}
 				}
 			}
-			return msg.getJMSMessageID();
+			return new Message(msg.getJMSMessageID());
 		} catch (JMSException e) {
 			throw new SenderException(e);
 		} catch (IOException e) {
@@ -292,14 +294,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 	}
 
-	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(IPipeLineSession session) throws JmsException, NamingException, JMSException {
 		return getDestination();
 	}
 
 	/**
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
-	private void setProperties(Message msg, ParameterValueList msgProperties) throws JMSException {
+	private void setProperties(javax.jms.Message msg, ParameterValueList msgProperties) throws JMSException {
 		for (int i=0; i<msgProperties.size(); i++) {
 			ParameterValue property = msgProperties.getParameterValue(i);
 			String type = property.getDefinition().getType();
@@ -373,8 +375,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public void setDeliveryMode(String deliveryMode) {
 		int newMode = stringToDeliveryMode(deliveryMode);
 		if (newMode==0) {
-			ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
-			cw.add(log,getLogPrefix()+"unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
+			ConfigurationWarnings.add(this, log, "unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
 		} else
 			this.deliveryMode=newMode;
 	}

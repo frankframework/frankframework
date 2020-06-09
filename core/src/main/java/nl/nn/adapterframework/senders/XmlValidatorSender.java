@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 
@@ -52,10 +52,6 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID,message,null);
-	}
-	@Override
 	public void addParameter(Parameter p) { 
 		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
 	}
@@ -67,11 +63,10 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		IPipeLineSession session=prc.getSession();
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String fullReasons="tja";
 		try {
-			String resultEvent = validate(message, session, getLogPrefix(),null,null,false);
+			String resultEvent = validate(message, session, getLogPrefix(),null,null);
 			
 			if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 				return message;

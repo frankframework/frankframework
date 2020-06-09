@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.senders.JsonXsltSender;
 import nl.nn.adapterframework.senders.XsltSender;
 
@@ -30,19 +30,21 @@ import nl.nn.adapterframework.senders.XsltSender;
  */
 
 public class JsonXsltPipe extends XsltPipe {
-	
+
+	private final String JSONXSLTSENDER = "nl.nn.adapterframework.senders.JsonXsltSender";
+
 	@Override
 	protected XsltSender createXsltSender() {
 		return new JsonXsltSender();
 	}
 
-	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	@IbisDocRef({"1", JSONXSLTSENDER})
 	public void setJsonResult(boolean jsonResult) {
 		((JsonXsltSender)getSender()).setJsonResult(jsonResult);
 	}
 
 	@Override
-	@IbisDoc({"2", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	@IbisDocRef({"2", JSONXSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

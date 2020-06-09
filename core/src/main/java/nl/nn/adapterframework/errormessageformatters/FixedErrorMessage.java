@@ -42,13 +42,8 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	private String replaceTo = null;
 	private String styleSheetName = null;
 
-	public String format(
-		String message,
-		Throwable t,
-		INamedObject location,
-		String originalMessage,
-		String messageId,
-		long receivedTime) {
+	@Override
+	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
 
 		String stringToReturn = getReturnString();
 		if (stringToReturn==null) {
@@ -62,7 +57,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 			}
 		}  
 		if (StringUtils.isEmpty(stringToReturn)) {
-			stringToReturn = super.format(message, t, location, originalMessage, messageId, receivedTime);
+			stringToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 		}
 
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {

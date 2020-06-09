@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provides a base-class for a Pipe that always has the same forward.
@@ -41,30 +41,29 @@ import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
  * </p>
  * @author Gerrit van Brakel
  */
-public class FixedForwardPipe extends AbstractPipe {
+public abstract class FixedForwardPipe extends AbstractPipe {
 
-    private String forwardName = "success";
-    private PipeForward forward;
-	private boolean skipOnEmptyInput=false;
+	private String forwardName = "success";
+	private PipeForward forward;
+	private boolean skipOnEmptyInput = false;
 	private String ifParam = null;
 	private String ifValue = null;
-	
-    /**
-     * checks for correct configuration of forward
-     */
-    @Override
-    public void configure() throws ConfigurationException {
-    	super.configure();
-        forward = findForward(forwardName);
-        if (forward == null)
-            throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
-    }
 
+	/**
+	 * checks for correct configuration of forward
+	 */
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		forward = findForward(forwardName);
+		if (forward == null)
+			throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
+	}
 
-    /**
-     * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
-     */
-    public PipeRunResult doInitialPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	/**
+	 * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
+	 */
+	public PipeRunResult doInitialPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
 			return new PipeRunResult(getForward(), input);
 		}
@@ -73,9 +72,8 @@ public class FixedForwardPipe extends AbstractPipe {
 
 			ParameterValueList pvl = null;
 			if (getParameterList() != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 				try {
-					pvl = prc.getValues(getParameterList());
+					pvl = getParameterList().getValues(input, session);
 				} catch (ParameterException e) {
 					throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 				}

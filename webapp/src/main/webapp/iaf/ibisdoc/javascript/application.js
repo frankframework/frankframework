@@ -147,7 +147,7 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
                 		parentIndex : parentIndex
                 	});
                 	
-                	parentIndex =  parentIndex + 1
+                	parentIndex = parentIndex + 1
                 });
                 // Notify the methodsCtrl in which package we currently are
                 $rootScope.$broadcast('packageName', clas.packageName);
@@ -161,6 +161,14 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
                         let index = $scope.potentialParents.findIndex(parent => parent.name === method.originalClassName);
                         if (index !== -1) {
                             $scope.potentialParents[index].attributes.push(method);
+                        } else {
+                            $scope.potentialParents.push({
+                                name : method.originalClassName,
+                                attributes : [method],
+                                parentIndex : parentIndex
+                            });
+
+                            parentIndex = parentIndex + 1
                         }
                     }
                 });

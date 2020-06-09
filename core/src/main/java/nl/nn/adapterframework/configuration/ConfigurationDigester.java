@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
@@ -33,14 +34,13 @@ import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -84,12 +84,13 @@ import nl.nn.adapterframework.xml.SaxException;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	private static final Logger LOG = LogUtil.getLogger(ConfigurationDigester.class);
+	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
 
-	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
+	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
+	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
@@ -101,23 +102,21 @@ public class ConfigurationDigester {
 	private class XmlErrorHandler implements ErrorHandler  {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			configWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			configWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			configWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 
-	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
-		Digester digester = new Digester() {
+	public Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
+		XMLReader reader = XmlUtils.getXMLReader(configuration);
+		Digester digester = new Digester(reader) {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
@@ -132,7 +131,7 @@ public class ConfigurationDigester {
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+		URL digesterRulesURL = ClassUtils.getResourceURL(configuration.getClassLoader(), getDigesterRules());
 		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 		digester.addRuleSet(ruleSet);
 
@@ -181,7 +180,11 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", "AdapterFramework.xsd");
+			URL xsdUrl = ClassUtils.getResourceURL(this, CONFIGURATION_VALIDATION_SCHEMA);
+			if (xsdUrl==null) {
+				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			}
+			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
 			XmlErrorHandler xeh = new XmlErrorHandler();
 			digester.setErrorHandler(xeh);
 		}
@@ -199,7 +202,7 @@ public class ConfigurationDigester {
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
-			URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+			URL digesterRulesURL = ClassUtils.getResourceURL(classLoader, getDigesterRules());
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
@@ -208,7 +211,7 @@ public class ConfigurationDigester {
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
-			if(LOG.isDebugEnabled()) LOG.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"] configLogAppend ["+configLogAppend+"]");
+			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"] configLogAppend ["+configLogAppend+"]");
 
 			String original = XmlUtils.identityTransform(configurationResource);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
@@ -220,8 +223,8 @@ public class ConfigurationDigester {
 			}
 			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
 			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
-			loaded = ConfigurationUtils.getUglifiedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getUglifiedConfiguration(configuration, loadedHide);
+			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
+			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
@@ -253,12 +256,12 @@ public class ConfigurationDigester {
 		try (FileWriter fileWriter = new FileWriter(file, append)) {
 			fileWriter.write(config);
 		} catch (IOException e) {
-			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
+			log.warn("Could not write configuration to file ["+file.getPath()+"]",e);
 		}
 	}
 	
 	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
-		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
+		URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
 		}

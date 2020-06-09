@@ -17,13 +17,13 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -46,15 +46,15 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 	private boolean forceReload = false;
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws TimeOutException, SenderException {
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		String configName = null;
 		String activeVersion = null;
 
 		ParameterValueList pvl = null;
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (paramList != null) {
+				pvl = paramList.getValues(message, session);
 				if(pvl.getParameterValue("name") != null)
 					configName = (String) pvl.getParameterValue("name").getValue();
 				if(pvl.getParameterValue("forceReload") != null)
@@ -66,16 +66,14 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 
 		try {
 			if(configName == null)
-				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message,
-					"row/field[@name='NAME']");
+				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='NAME']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
 		}
 
 		try {
 			if(!getForceReload())
-				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message,
-					"row/field[@name='VERSION']");
+				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
@@ -87,12 +85,12 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 			if (getForceReload() || (latestVersion != null && !activeVersion.equals(latestVersion))) {
 				IbisContext ibisContext = configuration.getIbisManager().getIbisContext();
 				ibisContext.reload(configName);
-				return "Reload " + configName + " succeeded";
+				return new Message("Reload " + configName + " succeeded");
 			}
-			return "Reload " + configName + " skipped";
+			return new Message("Reload " + configName + " skipped");
 		}
 		log.warn("Configuration [" + configName + "] not loaded yet");
-		return "Reload " + configName + " skipped"; 
+		return new Message("Reload " + configName + " skipped"); 
 	}
 
 	@Override

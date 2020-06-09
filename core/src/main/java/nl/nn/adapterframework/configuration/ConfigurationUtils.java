@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -42,18 +43,20 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -69,9 +72,10 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
-	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
+	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
@@ -88,38 +92,36 @@ public class ConfigurationUtils {
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+		return transformConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
 	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return getTweakedConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+		return transformConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getUglifiedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return getTweakedConfiguration(configuration, originalConfig, UGLIFY_XSLT, null);
+	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
 	}
 
-	public static String getTweakedConfiguration(Configuration configuration,
-			String originalConfig, String tweakXslt,
-			Map<String, Object> parameters) throws ConfigurationException {
-		URL tweak_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), tweakXslt);
-		if (tweak_xsltSource == null) {
-			throw new ConfigurationException("cannot find resource [" + tweakXslt + "]");
+	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
+		URL xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), xslt);
+		if (xsltSource == null) {
+			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}
 		try {
-			Transformer tweak_transformer = XmlUtils.createTransformer(tweak_xsltSource);
-			XmlUtils.setTransformerParameters(tweak_transformer, parameters);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			XmlUtils.setTransformerParameters(transformer, parameters);
 			// Use namespaceAware=true, otherwise for some reason the
 			// transformation isn't working with a SAXSource, in system out it
 			// generates:
 			// jar:file: ... .jar!/xml/xsl/active.xsl; Line #34; Column #13; java.lang.NullPointerException
-			return XmlUtils.transformXml(tweak_transformer, originalConfig, true);
+			return XmlUtils.transformXml(transformer, originalConfig, true);
 		} catch (IOException e) {
-			throw new ConfigurationException("cannot retrieve [" + tweakXslt + "]", e);
+			throw new ConfigurationException("cannot retrieve [" + xslt + "]", e);
 		} catch (SAXException|TransformerConfigurationException e) {
-			throw new ConfigurationException("got error creating transformer from file [" + tweakXslt + "]", e);
+			throw new ConfigurationException("got error creating transformer from file [" + xslt + "]", e);
 		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + tweak_xsltSource.toString() + "] from [" + tweakXslt + "]", te);
+			throw new ConfigurationException("got error transforming resource [" + xsltSource.toString() + "] from [" + xslt + "]", te);
 		}
 	}
 
@@ -140,21 +142,31 @@ public class ConfigurationUtils {
 		return configurationFile;
 	}
 
+	/**
+	 * Get the version (configuration.version + configuration.timestmap) 
+	 * from the configuration's AppConstants
+	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
-		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
+		return getConfigurationVersion(AppConstants.getInstance(classLoader));
 	}
 
+	private static String getConfigurationVersion(Properties properties) {
+		return getVersion(properties, "configuration.version", "configuration.timestamp");
+	}
+
+	/**
+	 * Get the application version (instance.version + instance.timestamp)
+	 */
 	public static String getApplicationVersion() {
-		return getVersion(ConfigurationUtils.class.getClassLoader(), "instance.version", "instance.timestamp");
+		return getVersion(AppConstants.getInstance(), "instance.version", "instance.timestamp");
 	}
 
-	private static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
-		AppConstants constants = AppConstants.getInstance(classLoader);
+	private static String getVersion(Properties properties, String versionKey, String timestampKey) {
 		String version = null;
-		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
-			version = constants.getProperty(versionKey);
-			if (StringUtils.isNotEmpty(constants.getProperty(timestampKey))) {
-				version = version + "_" + constants.getProperty(timestampKey);
+		if (StringUtils.isNotEmpty(properties.getProperty(versionKey))) {
+			version = properties.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(properties.getProperty(timestampKey))) {
+				version = version + "_" + properties.getProperty(timestampKey);
 			}
 		}
 		return version;
@@ -226,24 +238,124 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String jmsRealm, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		ConfigurationValidator configDefails = new ConfigurationValidator(file);
+		return addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDefails.getName(), configDefails.getVersion(), fileName, configDefails.getJar(), ruser);
+	}
+
+	/**
+	 * Validates if the buildinfo is present, and if the name and version properties are set
+	 */
+	public static class ConfigurationValidator {
+		private String name = null;
+		private String version = null;
+		private byte[] jar = null;
+		private String buildInfoFilename = null;
+
+		public ConfigurationValidator(InputStream stream) throws ConfigurationException {
+			String buildInfoFilename = "BuildInfo";
+			if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
+				buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
+			}
+			this.buildInfoFilename = buildInfoFilename + ".properties";
+
+			try {
+				jar = Misc.streamToBytes(stream);
+
+				read();
+				validate();
+			} catch(IOException e) {
+				throw new ConfigurationException("unable to read jarfile", e);
+			}
+		}
+
+		private void read() throws IOException, ConfigurationException {
+			boolean isBuildInfoPresent = false;
+			try (JarInputStream zipInputStream = new JarInputStream(getJar())) {
+				ZipEntry zipEntry;
+				while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
+					if (!zipEntry.isDirectory()) {
+						String entryName = zipEntry.getName();
+						String fileName = FilenameUtils.getName(entryName);
+
+						if(buildInfoFilename.equals(fileName)) {
+							name = FilenameUtils.getPathNoEndSeparator(entryName);
+							Properties props = new Properties();
+							props.load(zipInputStream);
+							version = getConfigurationVersion(props);
+
+							isBuildInfoPresent = true;
+							break;
+						}
+					}
+				}
+			}
+			if(!isBuildInfoPresent) {
+				throw new ConfigurationException("no ["+buildInfoFilename+"] persent in configuration");
+			}
+		}
+
+		private void validate() throws ConfigurationException {
+			if(StringUtils.isEmpty(name))
+				throw new ConfigurationException("unknown configuration name");
+			if(StringUtils.isEmpty(version))
+				throw new ConfigurationException("unknown configuration version");
+		}
+
+		public InputStream getJar() {
+			return new ByteArrayInputStream(jar);
+		}
+		public String getName() {
+			return name;
+		}
+		public String getVersion() {
+			return version;
+		}
+	}
+
+	public static String processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+		String result = "";
+		if (file.available() > 0) {
+			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
+				int counter = 1;
+				ZipEntry zipEntry;
+				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+					String entryName = zipEntry.getName();
+
+					String fileName = "file_zipentry" + counter;
+					if (StringUtils.isNotEmpty(result)) {
+						result += "\n";
+					}
+
+					result += entryName + ":" + 
+					ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, fileName, zipInputStream, ruser);
+	
+					counter++;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		if (StringUtils.isEmpty(datasource)) {
+			String workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(workJmsRealm)) {
 				return false;
 			}
+			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(workJmsRealm);
+			datasource = jmsRealm.getDatasourceName();
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setDatasourceName(datasource);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -287,8 +399,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -323,8 +435,8 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
@@ -376,8 +488,8 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
@@ -419,21 +531,17 @@ public class ConfigurationUtils {
 				return stmt.executeUpdate() > 0;
 			}
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 		return false;
 	}
 
 	/**
 	 * 
-	 * @param ibisContext
-	 * @return A map with all configurations to load (KEY = configName, VALUE = ClassLoader)
+	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
-		// For now only database configurations are returned, but also
-		// configuration from other resources (like file system directories) can
-		// be added
 		Map<String, String> allConfigNameItems = new LinkedHashMap<String, String>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
@@ -441,6 +549,27 @@ public class ConfigurationUtils {
 			allConfigNameItems.put(tokenizer.nextToken(), null);
 		}
 
+		if (CONFIG_AUTO_FS_CLASSLOADER) {
+			try {
+				String configDir = AppConstants.getInstance().getProperty("configurations.directory");
+				if(StringUtils.isEmpty(configDir))
+					throw new IOException("property [configurations.directory] not set");
+	
+				File directory = new File(configDir);
+				if(!directory.exists())
+					throw new IOException("failed to open configurations.directory ["+configDir+"]");
+				if(!directory.isDirectory())
+					throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
+	
+				for (File subFolder : directory.listFiles()) {
+					if(subFolder.isDirectory()) {
+						allConfigNameItems.put(subFolder.getName(), "DirectoryClassLoader");
+					}
+				}
+			} catch (Exception e) {
+				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperLevel.WARN, e);
+			}
+		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			log.info("scanning database for configurations");
 			try {
@@ -459,7 +588,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperMessage.WARN_LEVEL, e);
+				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperLevel.WARN, e);
 			}
 		}
 
@@ -469,6 +598,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -487,6 +620,9 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if (onlyAutoReload) {
+				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();
@@ -501,49 +637,20 @@ public class ConfigurationUtils {
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 	}
 
-	public static String[] retrieveBuildInfo(InputStream inputStream)
-			throws IOException {
-		ZipInputStream zipInputStream = new ZipInputStream(
-				new BufferedInputStream(inputStream));
-		ZipEntry zipEntry;
+	@Deprecated
+	public static String[] retrieveBuildInfo(InputStream inputStream) throws IOException {
 		String name = null;
 		String version = null;
-		boolean buildInfoFound = false;
-		while ((zipEntry = zipInputStream.getNextEntry()) != null
-				&& !buildInfoFound) {
-			if (!zipEntry.isDirectory()) {
-				String entryName = zipEntry.getName();
-				String entryNameMinusPath = FilenameUtils.getName(entryName);
-
-				String buildInfoFilename = "BuildInfo";
-				if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX))
-					buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
-
-				if((buildInfoFilename+".properties").equals(entryNameMinusPath)) {
-					name = FilenameUtils.getPathNoEndSeparator(entryName);
-					byte[] b = new byte[4096];
-					int rb = 0;
-					int direct;
-					while ((direct = zipInputStream.read(b, 0,
-							b.length)) >= 0) {
-						rb = rb + direct;
-					}
-					String buildInfoContent = new String(b, 0, rb);
-					Properties props = new Properties();
-					props.load(new StringReader(buildInfoContent));
-					version = props.getProperty("configuration.version") + "_"
-							+ props.getProperty("configuration.timestamp");
-					buildInfoFound = true;
-				}
-			}
-			zipInputStream.closeEntry();
-		}
-		zipInputStream.close();
+		try {
+			ConfigurationValidator configDefails = new ConfigurationValidator(inputStream);
+			name = configDefails.getName();
+			version = configDefails.getVersion();
+		} catch (ConfigurationException e) { } //Do nothing
 		return new String[] { name, version };
 	}
 }

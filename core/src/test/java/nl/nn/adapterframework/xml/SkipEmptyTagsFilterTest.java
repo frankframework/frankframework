@@ -20,7 +20,7 @@ public class SkipEmptyTagsFilterTest {
 		ppf.setIndent("");
 		ppf.setContentHandler(xmlWriter);
 		filter.setContentHandler(ppf);
-		XmlUtils.parseXml(filter, input);
+		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 

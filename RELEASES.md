@@ -9,8 +9,26 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.4...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+- reset Adapter Statistics by the hour when entering a new hour time slot
+- introduced property jdbc.datasource.default, with default value jdbc/${instance.name.lc}
+- introduced attribute combineBlocks on ForEachChildElementPipe, that can be set to false to leverage BlockEnhancedCapabilites of the configured sender
+- Add possibility to put error details in ESB SOAP body response
+- Improve MessageStoreListener by adding peekUntransacted attribute
+- Add support for single pipeline SOAP 1.1 & 1.2 and REST JSON & XML, backed by XML-Schema validation, with OpenAPI 3.0 JSON Schema generation
+
+
+
+
+7.5-RC1
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.4...v7.5-RC1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
@@ -57,18 +75,23 @@ Upcoming
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
-- HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 - Add option to use username and password from authAlias in Paramter values
-
+- Bugfix autoReload new configuration on other nodes
+- Support XML-Schema 1.1 for XML validation
+- Detect character set of input streams by examining BOM
+- Accept XML 1.1 valid characters in XML 1.0 documents while STAX parsing, to solve illegal XML problems in ExchangeMailListener.
+- Rotate message.log by size instead of by day.
+- Add character set to each outbound HTTP request.
 
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
-  fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
+  fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 - jdbc.convertFieldnamesToUppercase has been set to true by default
 - FileSystemSenders with read action no longer encode base64 by default.
+- HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 
 
 

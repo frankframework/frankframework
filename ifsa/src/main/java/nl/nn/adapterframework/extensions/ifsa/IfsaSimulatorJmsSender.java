@@ -16,10 +16,10 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 
 import javax.jms.Destination;
@@ -296,14 +296,16 @@ public class IfsaSimulatorJmsSender extends JmsSender {
     	}
 	}
 
-	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+	@Override
+	public Destination getDestination(IPipeLineSession session) throws JmsException, NamingException, JMSException {
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
-			return (Destination) prc.getSession().get("replyTo");
+			return (Destination) session.get("replyTo");
 		} else {
-			return super.getDestination(prc);
+			return super.getDestination(session);
 		}
 	}
 
+	@Override
 	public void setMessageType(String string) {
 		messageType = string;
 	}

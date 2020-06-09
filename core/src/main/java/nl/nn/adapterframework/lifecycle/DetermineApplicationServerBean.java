@@ -1,0 +1,138 @@
+/*
+   Copyright 2020 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.lifecycle;
+
+import java.io.File;
+import java.net.URL;
+
+import javax.servlet.ServletContext;
+
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.context.ServletContextAware;
+
+@IbisInitializer
+public class DetermineApplicationServerBean implements ServletContextAware {
+
+	private ServletContext servletContext;
+	private Logger log = LogUtil.getLogger(this);
+
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		this.servletContext = servletContext;
+
+		setUploadPathInServletContext();
+		checkAndCorrectLegacyServerTypes();
+		determineApplicationServerType();
+		checkSecurityConstraintEnabled();
+	}
+
+	private void checkSecurityConstraintEnabled() {
+		AppConstants appConstants = AppConstants.getInstance();
+		String stage = appConstants.getString("dtap.stage", "LOC");
+		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
+			try {
+				String web = "/WEB-INF"+File.separator+"web.xml";
+				URL webXml = servletContext.getResource(web);
+				if(webXml != null) {
+					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
+						ConfigurationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+				}
+			} catch (Exception e) {
+				ConfigurationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+			}
+		}
+	}
+
+	private void setUploadPathInServletContext() {
+		try {
+			// set the directory for struts upload, that is used for instance in 'test a pipeline'
+			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
+			// if the path is not found
+			if (StringUtils.isEmpty(path)) {
+				path="/tmp";
+			}
+			log.debug("setting path for Struts file-upload to ["+path+"]");
+			File tempDirFile = new File(path);
+			servletContext.setAttribute("javax.servlet.context.tempdir",tempDirFile);
+		} catch (Exception e) {
+			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
+		}
+	}
+
+	/**
+	 * Log the message in System.out, the Ibis console and the Log4j logger
+	 * @param message to log
+	 */
+	private void log2ContextAndGui(String message) {
+		servletContext.log(message);
+		ConfigurationWarnings.add(log, message);
+	}
+
+	private void checkAndCorrectLegacyServerTypes() {
+		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
+		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		if (StringUtils.isNotEmpty(applicationServerType)) {
+			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
+				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
+			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
+				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
+			}
+		}
+	}
+
+	private void determineApplicationServerType() {
+		String serverInfo = servletContext.getServerInfo();
+		String defaultApplicationServerType = null;
+		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
+			defaultApplicationServerType = "WLP";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
+			defaultApplicationServerType = "WAS";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
+			defaultApplicationServerType = "TOMCAT";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
+			defaultApplicationServerType = "JBOSS";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
+			defaultApplicationServerType = "JBOSS";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
+			String javaHome = System.getProperty("java.home");
+			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
+				defaultApplicationServerType = "TIBCOAMX";
+			} else {
+				defaultApplicationServerType = "JETTYMVN";
+			}
+		} else {
+			defaultApplicationServerType = "TOMCAT";
+			log2ContextAndGui("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
+		}
+
+		//has it explicitly been set? if not, set the property
+		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
+			log2ContextAndGui("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+defaultApplicationServerType+"]");
+		}
+		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
+			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+		}
+	}
+}

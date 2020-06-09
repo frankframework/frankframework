@@ -2,6 +2,8 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
+import javax.wsdl.WSDLException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -13,9 +15,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-import javax.wsdl.WSDLException;
 
 @RunWith(value=JUnit4.class)
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
@@ -50,8 +52,13 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         }
         PipeRunResult result;
 		try {
-			result = val.doPipe(input, session);
-	        String resultStr=(String)result.getResult();
+			result = val.doPipe(new Message(input), session);
+	        String resultStr=null;
+			try {
+				resultStr = Message.asString(result);
+			} catch (IOException e) {
+				fail("cannot open stream: "+description +": "+ e.getMessage());
+			}
 	        System.out.println("result of ["+description+"]\n"+resultStr);
 	        if (resultStr.indexOf(targetContent1)<0) { 
 	        	fail("result of ["+description+"] does not contain target content ["+targetContent1+"]"); 
@@ -77,6 +84,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.setSoapBody(soapBody);
+        val.setValidateJsonToRootElementOnly(false);
         val.configure();
 
         boolean compactJsonArrays=false;
@@ -131,8 +139,8 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         
         PipeRunResult result;
 		try {
-			result = val.doPipe(input, session);
-	        String resultStr=(String)result.getResult();
+			result = val.doPipe(new Message(input), session);
+	        String resultStr=Message.asString(result.getResult());
 	        fail("expected error ["+expectedError+"]");
 		} catch (PipeRunException e) {
 			String msg=e.getMessage();

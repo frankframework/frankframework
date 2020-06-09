@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -32,8 +33,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -148,29 +148,38 @@ public class XmlSwitch extends AbstractPipe {
 	 * transformer is re-initialized.
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String forward="";
-	    String sInput=(String) input;
-	    PipeForward pipeForward=null;
+		PipeForward pipeForward = null;
 
-		if (StringUtils.isNotEmpty(getSessionKey())) {
-			sInput = (String) session.get(sessionKey);
-		}
 		if (transformerPool!=null) {
 			ParameterList parameterList = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(sInput, session, isNamespaceAware());
 			try {
 				Map<String,Object> parametervalues = null;
-				if (getParameterList()!=null) {
-					parameterList =  getParameterList();
-					parametervalues = prc.getValueMap(parameterList);
+				parameterList =  getParameterList();
+				if (parameterList!=null) {
+					message.preserve();
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
-				forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = transformerPool.transform(Message.asMessage(session.get(sessionKey)), parametervalues);
+				} else {
+					message.preserve();
+					forward = transformerPool.transform(message, parametervalues);
+				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
 			}
 		} else {
-			forward=sInput;
+			try {
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = Message.asString(session.get(sessionKey));
+				} else {
+					forward = message.asString();
+				}
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			}
 		}
 
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
@@ -193,9 +202,9 @@ public class XmlSwitch extends AbstractPipe {
 		}
 		
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
-		return new PipeRunResult(pipeForward, input);
+		return new PipeRunResult(pipeForward, message);
 	}
 	
 	/**
@@ -218,7 +227,7 @@ public class XmlSwitch extends AbstractPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"3", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"3", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -259,15 +268,13 @@ public class XmlSwitch extends AbstractPipe {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
+	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
-		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
 }

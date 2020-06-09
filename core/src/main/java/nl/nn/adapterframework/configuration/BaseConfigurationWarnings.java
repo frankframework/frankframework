@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import org.apache.logging.log4j.Logger;
+
 import java.util.LinkedList;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 
 /**
  * Base class for the configuration warnings.
@@ -41,15 +42,18 @@ public class BaseConfigurationWarnings extends LinkedList<String> {
 		}
 	}
 
-	public boolean containsDefaultValueExceptions(String key) {
+	/**
+	 * These are the exceptions thrown when a setter is invoked but the default value has not been changed.
+	 * @param key
+	 * @return
+	 */
+	public boolean containsDefaultValueException(String key) {
 		return defaultValueExceptions.contains(key);
 	}
 
-	public boolean addDefaultValueExceptions(String key) {
-		if (containsDefaultValueExceptions(key)) {
-			return true;
-		} else {
-			return defaultValueExceptions.add(key);
+	public void addDefaultValueException(String key) {
+		if (!containsDefaultValueException(key)) {
+			defaultValueExceptions.add(key);
 		}
 	}
 }

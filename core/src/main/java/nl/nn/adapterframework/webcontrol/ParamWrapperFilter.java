@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -40,9 +39,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * ParamWrapperFilter.
@@ -118,12 +118,9 @@ public class ParamWrapperFilter implements Filter {
 				if (inputStream != null) {
 					String characterEncoding = this.getCharacterEncoding();
 					if (characterEncoding == null) {
-						bufferedReader = new BufferedReader(
-								new InputStreamReader(inputStream));
+						bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(inputStream));
 					} else {
-						bufferedReader = new BufferedReader(
-								new InputStreamReader(inputStream,
-										characterEncoding));
+						bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(inputStream, characterEncoding));
 					}
 					char[] charBuffer = new char[BUFFER_SIZE];
 					int bytesRead = -1;

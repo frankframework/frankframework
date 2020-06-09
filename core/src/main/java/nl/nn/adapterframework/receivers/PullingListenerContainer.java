@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
@@ -27,8 +28,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.SchedulingAwareRunnable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -146,7 +147,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
 			receiver.stopRunning();
 			receiver.closeAllResources();
-			NDC.remove();
+			ThreadContext.removeStack();
 		}
 	}
     
@@ -173,10 +174,21 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							if (receiver.isTransacted()) {
-								txStatus = txManager.getTransaction(txNew);
+							boolean retrieveMessage = true;
+							if (isIdle() && listener instanceof IPeekableListener) {
+								IPeekableListener peekableListener = (IPeekableListener) listener;
+								if (peekableListener.isPeekUntransacted()) {
+									retrieveMessage = peekableListener.hasRawMessageAvailable();
+								}
 							}
-							rawMessage = listener.getRawMessage(threadContext);
+							if (!retrieveMessage) {
+								rawMessage = null;
+							} else {
+								if (receiver.isTransacted()) {
+									txStatus = txManager.getTransaction(txNew);
+								}
+								rawMessage = listener.getRawMessage(threadContext);
+							}
 							resetRetryInterval();
 							setIdle(rawMessage==null);
 						} catch (Exception e) {
@@ -206,7 +218,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 								receiver.processRawMessage(listener, rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
-										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
+										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 										txManager.rollback(txStatus);
 									} else {
 										txManager.commit(txStatus);
@@ -217,9 +229,9 @@ public class PullingListenerContainer implements IThreadCountControllable {
 									txManager.rollback(txStatus);
 								}
 								if (receiver.isOnErrorContinue()) {
-									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
+									receiver.error("caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
+									receiver.error("stopping receiver after exception in processing message", e);
 									receiver.stopRunning();
 								}
 							}
@@ -231,7 +243,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					}
 				}
 			} catch (Throwable e) {
-				receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
+				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
 				if (!pollTokenReleased && pollToken != null) {
@@ -242,10 +254,10 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
+						receiver.error("Exception closing listener", e);
 					}
 				}
-				NDC.remove();
+				ThreadContext.removeStack();
 			}
 		}
     }

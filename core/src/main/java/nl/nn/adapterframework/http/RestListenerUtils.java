@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2018 Nationale-Nederlanden
+   Copyright 2016-2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -34,11 +34,10 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
  * Some utilities for working with
@@ -56,12 +55,10 @@ public class RestListenerUtils {
 	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
 		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);
 		if (servletContext != null) {
-			String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-			IbisContext ibisContext = (IbisContext) servletContext.getAttribute(attributeKey);
-			if (ibisContext != null) {
-				return ibisContext.getIbisManager();
-			}
+			IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
+			return ibisContext.getIbisManager();
 		}
+
 		return null;
 	}
 
@@ -128,31 +125,32 @@ public class RestListenerUtils {
 		return Integer.toOctalString(restPath.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
 
-	public static boolean restartShowConfigurationStatus(
-			ServletContext servletContext) {
+	public static boolean restartShowConfigurationStatus(ServletContext servletContext) {
 		// it's possible the adapter and/or receiver wasn't stopped completely
 		// yet, so it couldn't be restarted
-		int maxTries = 3;
-		while (maxTries-- > 0) {
-			try {
-				boolean restarted = doRestartShowConfigurationStatus(
-						servletContext);
-				if (restarted) {
-					return true;
+		try {
+			IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
+
+			int maxTries = 3;
+			while (maxTries-- > 0) {
+				try {
+					boolean restarted = doRestartShowConfigurationStatus(ibisContext);
+					if (restarted) {
+						return true;
+					}
+					Thread.sleep(1000);
+				} catch (InterruptedException ignore) {
 				}
-				Thread.sleep(1000);
-			} catch (InterruptedException ignore) {
 			}
+			return false;
+		} catch (IllegalStateException ignore) {
+			//The ibis failed to start up, abort straight away!
+			return false;
 		}
-		return false;
 	}
 
-	private static boolean doRestartShowConfigurationStatus(
-			ServletContext servletContext) {
-		String attributeKey = AppConstants.getInstance()
-				.getProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext) servletContext
-				.getAttribute(attributeKey);
+	private static boolean doRestartShowConfigurationStatus(IbisContext ibisContext) {
+
 		IAdapter adapter = null;
 		IReceiver receiver = null;
 		if (ibisContext != null) {

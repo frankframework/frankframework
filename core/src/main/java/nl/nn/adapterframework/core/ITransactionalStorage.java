@@ -31,6 +31,12 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
 
+	public static final String TYPE_ERRORSTORAGE="E";
+	public static final String TYPE_MESSAGESTORAGE="M";
+	public static final String TYPE_MESSAGELOG_PIPE="L";
+	public static final String TYPE_MESSAGELOG_RECEIVER="A";
+
+
 	/**
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called

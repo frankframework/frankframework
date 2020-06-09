@@ -270,8 +270,8 @@ public class WsdlTest {
         when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
         when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
         return simple;
-
     }
+
     static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory docBuilderFactory = XmlUtils.getDocumentBuilderFactory();
         docBuilderFactory.setNamespaceAware(true);

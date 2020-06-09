@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -52,16 +51,21 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database-oriented utility functions.
@@ -239,9 +243,9 @@ public class JdbcUtil {
 			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (blobIsCompressed) {
-			result = new InputStreamReader(new InflaterInputStream(input), charset);
+			result = StreamUtil.getCharsetDetectingInputStreamReader(new InflaterInputStream(input), charset);
 		} else {
-			result = new InputStreamReader(input, charset);
+			result = StreamUtil.getCharsetDetectingInputStreamReader(input, charset);
 		}
 		return result;
 	}
@@ -394,7 +398,7 @@ public class JdbcUtil {
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {
-					rawMessage = (String)result;
+					rawMessage = Message.asString(result);
 				}
 			} else {
 				rawMessage = new String(buf,charset);
@@ -868,6 +872,17 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				return rs.isAfterLast();
+			} catch (SQLException e) {
+				throw new JdbcException("could not obtain value using query [" + query + "]", e);
+			}
+		} catch (SQLException e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
+		}
+	}
 
 	public static void executeStatement(Connection connection, String query) throws JdbcException {
 		executeStatement(connection,query,null,null);
@@ -1139,6 +1154,12 @@ public class JdbcUtil {
 			sb.append(parameterValues.getParameterValue(i).getValue() + "]");
 		}
 		return sb.toString();
+	}
+
+	public static void applyParameters(PreparedStatement statement, ParameterList parameters, Message message, IPipeLineSession session) throws SQLException, JdbcException, ParameterException {
+		if (parameters != null) {
+			applyParameters(statement,parameters.getValues(message, session));
+		}
 	}
 
 	public static void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {

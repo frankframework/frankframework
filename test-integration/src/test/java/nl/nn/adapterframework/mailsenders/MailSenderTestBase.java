@@ -17,7 +17,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * MailSender can be replaced with MailSenderNew to test MailSenderNew vice versa
@@ -126,15 +126,13 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
 		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, "<dummy><a>s</a></dummy>", prc);
-		assertEquals(input, result);
+		String correlationId = "FakeCorrelationId";
+		String result = sender.sendMessage(new Message("<dummy><a>s</a></dummy>"), session).asString();
+		assertEquals(correlationId, result);
 	}
 
 	@Test
@@ -187,16 +185,14 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
 		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
 
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(null, session).asString();
+		assertEquals(correlationID, result);
 	}
 
 	@Test
@@ -253,15 +249,12 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 				+ "<attachment name=\"email.xml\" sessionKey=\"attachment\"> </attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
-
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(null, session).asString();
+		assertEquals(correlationID, result);
 	}
 
 	@Test
@@ -305,15 +298,13 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 				"<attachment name=\"filename1\" base64=\"true\" type=\"txt\">VGhpcyBpcyB0aGUgZmlyc3QgYXR0YWNobWVudA==</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
 		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
 		sender.configure();
 		sender.open();
 
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, null, prc);
-		assertEquals(input, result);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(null, session).asString();
+		assertEquals(correlationID, result);
 	}
 
 	public void sendMessage(String filePath)
@@ -330,9 +321,9 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		}
 		bufReader.close();
 		String xml2String = sb.toString();
-		String sampleMailXML = xml2String;
-		String input = "<dummy/>";
-		String result = sender.sendMessage(input, sampleMailXML);
-		assertEquals(input, result);
+		Message sampleMailXML = new Message(xml2String);
+		String correlationID = "fakeCorrelationID";
+		String result = sender.sendMessage(sampleMailXML, session).asString();
+		assertEquals(correlationID, result);
 	}
 }

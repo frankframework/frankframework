@@ -28,22 +28,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
-import nl.nn.adapterframework.cache.EhCache;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
-import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
-
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-//import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
+import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
+import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
@@ -60,6 +53,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
 /**
@@ -79,6 +81,8 @@ import org.xml.sax.XMLReader;
  * @author Jaco de Groot
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
+
+	private String DEFAULT_XML_SCHEMA_VERSION="1.1";
 
 	/** Property identifier: grammar pool. */
 	public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
@@ -106,6 +110,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 	protected static final String SECURITY_MANAGER_PROPERTY_ID = Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
+	protected static final String XML_SCHEMA_VERSION_PROPERTY = Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
@@ -115,20 +121,17 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private String preparseResultId;
 	private PreparseResult preparseResult;
 
-	private static EhCache cache;
+	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache();
+			cache = new EhCache<PreparseResult>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log,
-						"Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)",
-						e);
+				ConfigurationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 			cache.open();
 		}
@@ -136,6 +139,17 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 	public XercesXmlValidator() {
 		preparseResultId = "" + counter.getAndIncrement();
+	}
+
+	@Override
+	public void configure(String logPrefix) throws ConfigurationException {
+		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
+			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
+			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
+				throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0 and 1.1, no ["+getXmlSchemaVersion()+"]");
+			}
+		}
+		super.configure(logPrefix);
 	}
 
 	@Override
@@ -149,18 +163,18 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				if (cache == null || isIgnoreCaching()) {
 					this.preparseResult = preparseResult;
 				} else {
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
 	}
 
-    private static class SymbolTableSingletonHelper{
-        private static final SymbolTable INSTANCE = new SymbolTable(sharedSymbolTableSize);
-    }
+	private static class SymbolTableSingletonHelper {
+		private static final SymbolTable INSTANCE = new SymbolTable(sharedSymbolTableSize);
+	}
 
-    public static SymbolTable getSymbolTableInstance() {
-    	return SymbolTableSingletonHelper.INSTANCE;
+	public static SymbolTable getSymbolTableInstance() {
+		return SymbolTableSingletonHelper.INSTANCE;
 	}
 
 	private SymbolTable getSymbolTable() {
@@ -182,6 +196,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparser.setFeature(VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+		try {
+			preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
+		} catch (NoSuchFieldError e) {
+			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ("+org.apache.xerces.impl.Version.getVersion()+"]";
+			if (isXmlSchema1_0()) {
+				log.warn(msg+", assuming XML-Schema version 1.0 will be supported", e);
+			} else {
+				throw new ConfigurationException(msg, e);
+			}
+		}
 		MyErrorHandler errorHandler = new MyErrorHandler();
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
@@ -201,11 +225,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static Grammar preparse(XMLGrammarPreparser preparser,
 			String schemasId, Schema schema) throws ConfigurationException {
 		try {
-			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
-					stringToXMLInputSource(schema));
+			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXMLInputSource(schema));
 		} catch (IOException e) {
-			throw new ConfigurationException("cannot compile schema's ["
-					+ schemasId + "]", e);
+			throw new ConfigurationException("cannot compile schema's [" + schemasId + "]", e);
 		}
 	}
 
@@ -236,10 +258,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 					preparseResult = this.preparseResult;
 				}
 			} else {
-				preparseResult = (PreparseResult)cache.getObject(preparseResultId);
+				preparseResult = cache.get(preparseResultId);
 				if (preparseResult == null) {
 					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-					cache.putObject(preparseResultId, preparseResult);
+					cache.put(preparseResultId, preparseResult);
 				}
 			}
 		}
@@ -258,13 +280,20 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return result;
 	}
 	
+	@Override
+	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+		ValidatorHandler validatorHandler;
 
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
-
-		ValidatorHandler validatorHandler=null;
 		try {
-			XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
-			javax.xml.validation.Schema schemaObject=schemaFactory.newSchema(((XercesValidationContext)context).getGrammarPool());
+			javax.xml.validation.Schema schemaObject;
+			if (isXmlSchema1_0()) {
+				XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
+				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+			} else {
+				XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
+				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+			}
+
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
 			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
@@ -274,6 +303,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			validatorHandler.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+
+
+			SecurityManager securityManager = new SecurityManager();
+			securityManager.setEntityExpansionLimit(entityExpansionLimit);
+			validatorHandler.setProperty(SECURITY_MANAGER_PROPERTY_ID, securityManager);
+
+			validatorHandler.setContentHandler(context.getContentHandler());
 			validatorHandler.setErrorHandler(context.getErrorHandler());
 		} catch (SAXNotRecognizedException e) {
 			throw new ConfigurationException(logPrefix + "ValidatorHandler does not recognize necessary feature", e);
@@ -318,6 +355,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// See comment in method XmlValidator.getSchemas() too.
 		// See ClassLoaderXmlEntityResolver too.
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+	}
+
+	@Override
+	public List<XSModel> getXSModels() {
+		return preparseResult.getXsModels();
 	}
 
 }
@@ -418,7 +460,7 @@ class MyErrorHandler implements XMLErrorHandler {
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
@@ -426,19 +468,18 @@ class MyErrorHandler implements XMLErrorHandler {
 	public void error(String domain, String key, XMLParseException e) throws XNIException {
 		// In case the XSD doesn't exist throw an exception to prevent the
 		// the adapter from starting.
-		if (e.getMessage() != null
-				&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			ConfigurationWarnings.add(null, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

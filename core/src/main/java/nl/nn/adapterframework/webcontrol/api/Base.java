@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,38 +15,25 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.StringReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -62,9 +49,6 @@ public abstract class Base {
 	private IbisContext ibisContext = null;
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
-	private static final String ADAPTER2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
-
 	/**
 	 * Retrieves the IbisContext from <code>servletConfig</code>.
 	 */
@@ -73,12 +57,7 @@ public abstract class Base {
 			throw new ApiException(new IllegalStateException("no ServletConfig found to retrieve IbisContext from"));
 		}
 
-		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
-
-		if(ibisContext == null) {
-			throw new ApiException(new IllegalStateException("Unable to retrieve IbisContext from ServletContext attribute ["+attributeKey+"]"));
-		}
+		ibisContext = IbisApplicationServlet.getIbisContext(servletConfig.getServletContext());
 	}
 
 	public IbisContext getIbisContext() {
@@ -107,73 +86,15 @@ public abstract class Base {
 	}
 
 	public ClassLoader getClassLoader() {
-		return this.getClassLoader();
+		return this.getClass().getClassLoader();
 	}
 
-	protected String getFlow(IAdapter adapter) {
+	protected FlowDiagramManager getFlowDiagramManager() {
 		try {
-			return generateFlow(adapter.getAdapterConfigurationAsString(), ADAPTER2DOT_XSLT);
-		} catch (ConfigurationException e) {
-			throw new ApiException(e);
+			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			throw new ApiException("failed to initalize FlowDiagramManager", e);
 		}
-	}
-
-	protected String getFlow(Configuration config) {
-		return generateFlow(config.getLoadedConfiguration(), CONFIGURATION2DOT_XSLT);
-	}
-
-	protected String getFlow(List<Configuration> configurations) {
-		String dotInput = "<configs>";
-		for (Configuration configuration : configurations) {
-			dotInput = dotInput + XmlUtils.skipXmlDeclaration(configuration.getLoadedConfiguration());
-		}
-		dotInput = dotInput + "</configs>";
-
-		return generateFlow(dotInput, CONFIGURATION2DOT_XSLT);
-	}
-
-	private String generateFlow(String dotInput, String xslt) {
-		try {
-			URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), xslt);
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			String dotOutput = XmlUtils.transformXml(transformer, dotInput);
-
-			return dotOutput;
-		}
-		catch (Exception e) {
-			throw new ApiException(e);
-		}
-	}
-
-	protected List<Map<String, String>> XmlQueryResult2Map(String xml) {
-		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
-		Document xmlDoc = null;
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(xml));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
-		}
-		catch (Exception e) {
-			return null;
-		}
-		NodeList rowset = xmlDoc.getElementsByTagName("row");
-		for (int i = 0; i < rowset.getLength(); i++) {
-			Element row = (Element) rowset.item(i);
-			NodeList fieldsInRowset = row.getChildNodes();
-			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				Map<String, String> tmp = new HashMap<String, String>();
-				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
-					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
-						Element field = (Element) fieldsInRowset.item(j);
-						tmp.put(field.getAttribute("name"), field.getTextContent());
-					}
-				}
-				resultList.add(tmp);
-			}
-		}
-		return resultList;
 	}
 
 	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {

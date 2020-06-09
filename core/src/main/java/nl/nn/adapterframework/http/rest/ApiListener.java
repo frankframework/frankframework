@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2019 Integration Partners B.V.
+Copyright 2017-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,16 +25,19 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * 
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
@@ -48,6 +51,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private MediaTypes consumes = MediaTypes.ANY;
 	private MediaTypes produces = MediaTypes.ANY;
 	private String multipartBodyName = null;
+
+	private IReceiver receiver;
+
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -233,9 +241,34 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return null;
 	}
 
+	@IbisDoc({"8", "name of the header which contains the message-id", "message-id"})
+	public void setMessageIdHeader(String messageIdHeader) {
+		this.messageIdHeader = messageIdHeader;
+	}
+
+	public String getMessageIdHeader() {
+		return messageIdHeader;
+	}
+
 	@Override
 	public String toString() {
-		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
-				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+		final StringBuilder builder = new StringBuilder();
+		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
+		builder.append(" uriPattern["+getUriPattern()+"]");
+		builder.append(" produces["+getProduces()+"]");
+		builder.append(" consumes["+getConsumes()+"]");
+		builder.append(" contentType["+getContentType()+"]");
+		builder.append(" updateEtag["+getUpdateEtag()+"]");
+		return builder.toString();
+	}
+
+	@Override
+	public void setReceiver(IReceiver receiver) {
+		this.receiver = receiver;
+	}
+
+	@Override
+	public IReceiver getReceiver() {
+		return receiver;
 	}
 }
