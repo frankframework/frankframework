@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
-import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -40,19 +41,18 @@ import org.w3c.dom.Node;
 public class IbisRepositoryService implements RepositoryService {
 
 	private RepositoryService repositoryService;
+	private CmisVersion cmisVersion;
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private CallContext callContext;
 
-	public IbisRepositoryService(RepositoryService repositoryService) {
+	public IbisRepositoryService(RepositoryService repositoryService, CallContext callContext) {
 		this.repositoryService = repositoryService;
+		this.cmisVersion = callContext.getCmisVersion();
+		this.callContext = callContext;
 	}
 
 	private CmisVersion getCmisVersion() {
-		CallContext context = HttpSessionCmisService.callContext.get();
-		if(context != null) {
-			return HttpSessionCmisService.callContext.get().getCmisVersion();
-		}
-
-		return CmisVersion.CMIS_1_1;
+		return cmisVersion;
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
@@ -72,7 +72,10 @@ public class IbisRepositoryService implements RepositoryService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML());
+
+			IPipeLineSession context = new PipeLineSessionBase();
+			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML(), context);
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 
 			List<RepositoryInfo> repositoryInfoList = new ArrayList<RepositoryInfo>();
@@ -92,7 +95,10 @@ public class IbisRepositoryService implements RepositoryService {
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.toXML());
+
+			IPipeLineSession context = new PipeLineSessionBase();
+			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.toXML(), context);
 
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 			Element repository = XmlUtils.getFirstChildTag(repositories, "repository");
@@ -122,7 +128,9 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("depth", depth));
 			cmisXml.addSubElement(buildXml("includePropertyDefinitions", includePropertyDefinitions));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML());
+			IPipeLineSession context = new PipeLineSessionBase();
+			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML(), context);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDescendants");
 
 			return CmisUtils.xml2TypeDescendants(typesXml, getCmisVersion());
@@ -140,7 +148,9 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML());
+			IPipeLineSession context = new PipeLineSessionBase();
+			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML(), context);
 
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDefinitions");
 

@@ -224,6 +224,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String protocol=null;
 	private String resultStatusCodeSessionKey;
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
+	private boolean disableCookies = false;
 
 	private TransformerPool transformerPool=null;
 
@@ -460,6 +461,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfig.build());
+
+		if(areCookiesDisabled()) {
+			httpClientBuilder.disableCookieManagement();
+		}
 
 		// The redirect strategy used to only redirect GET, DELETE and HEAD.
 		httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
@@ -936,6 +941,13 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
+	@IbisDoc({"36", "Disables the use of cookies, making the sender completely stateless", "false"})
+	public void setDisableCookies(boolean disableCookies) {
+		this.disableCookies = disableCookies;
+	}
+	public boolean areCookiesDisabled() {
+		return disableCookies;
+	}
 
 
 	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
@@ -978,7 +990,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return keyManagerAlgorithm;
 	}
 
-	
+
 	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		truststore = string;
