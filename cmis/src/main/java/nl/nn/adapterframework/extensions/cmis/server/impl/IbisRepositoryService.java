@@ -19,8 +19,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
@@ -135,9 +133,7 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));
 
-			IPipeLineSession context = new PipeLineSessionBase();
-			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML(), context);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML(), callContext);
 
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDefinitions");
 
