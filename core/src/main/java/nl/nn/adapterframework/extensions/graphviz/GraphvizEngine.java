@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,23 +15,18 @@
 */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-
-import com.eclipsesource.v8.V8;
-import edu.emory.mathcs.backport.java.util.Arrays;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.Nashorn;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.URL;
 
 //TODO: consider moving this to a separate module
 /**

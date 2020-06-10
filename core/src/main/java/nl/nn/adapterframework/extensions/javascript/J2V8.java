@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,16 +51,16 @@ public class J2V8 implements JavascriptEngine<V8> {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
 				String absPath = new File("").getAbsolutePath();
-				if (absPath != null) {
+				if(absPath != null) {
 					file = new File(absPath, directory);
 				}
 			}
-			if (!file.exists()) {
+			if(!file.exists()) {
 				file.mkdirs();
 			}
 			String fileDir = file.getPath();
-			if (StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path [" + ((StringUtils.isEmpty(fileDir)) ? "NULL" : fileDir) + "], unable to load J2V8 binaries");
+			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
+				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir) + "], unable to load J2V8 binaries");
 			}
 			directory = file.getAbsolutePath();
 		}
