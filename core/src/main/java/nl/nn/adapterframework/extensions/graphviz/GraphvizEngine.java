@@ -17,8 +17,10 @@ package nl.nn.adapterframework.extensions.graphviz;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import com.eclipsesource.v8.V8;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
@@ -156,23 +158,47 @@ public class GraphvizEngine {
 
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
-
-		JavascriptEngine<NashornScriptEngine> jsEngine = new Nashorn();
-		final ResultHandler resultHandler = new ResultHandler();
+		private JavascriptEngine<?> jsEngine;
+		private ResultHandler resultHandler;
 
 		/**
 		 * It's important to register the JS scripts under the same alias so it can be cached
 		 * Use the log.dir to extract the SO/DLL files into, make sure this is using an absolute path and not a relative one!!
 		 */
 		Env(String initScript, String graphvisJsLibrary, String alias) {
-			log.info("starting V8 runtime...");
-			jsEngine.setScriptAlias(alias);
-			jsEngine.startRuntime();
-			log.info("started V8 runtime. Initializing graphviz...");
-			jsEngine.executeScript(graphvisJsLibrary);
-			jsEngine.executeScript(initScript);
-			jsEngine.setResultHandler(resultHandler);
-			log.info("initialized graphviz");
+			// Available JS Engines. Lower index has priority.
+			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
+
+			for (int i = 0; i < engines.length && jsEngine == null; i++) {
+				try {
+					log.debug("Trying Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					JavascriptEngine<?> engine = ((JavascriptEngine<?>) engines[i].newInstance());
+					ResultHandler resultHandler = new ResultHandler();
+
+					startEngine(engine, resultHandler, initScript, graphvisJsLibrary, alias);
+
+					log.info("Using Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					jsEngine = engine;
+					this.resultHandler = resultHandler;
+				} catch (Exception e) {
+					e.printStackTrace();
+					log.error("Javascript engine [" + engines[i].getName() + "] could not be initialized.", e);
+				}
+			}
+
+			if (jsEngine == null)
+				throw new UnsupportedOperationException("Javascript engines could not be initialized.");
+		}
+
+		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary, String alias) throws Exception {
+			log.info("Starting runtime for Javascript Engine...");
+			engine.setScriptAlias(alias);
+			engine.startRuntime();
+			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
+			engine.executeScript(graphvisJsLibrary);
+			engine.executeScript(initScript);
+			engine.setResultHandler(resultHandler);
+			log.info("Initialized Graphviz");
 		}
 
 		public String execute(String call) throws GraphvizException {
