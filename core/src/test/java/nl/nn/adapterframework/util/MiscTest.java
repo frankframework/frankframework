@@ -123,7 +123,6 @@ public class MiscTest {
     }
 
 
-
     /**
      * Method: asHex(byte[] buf)
      */
@@ -254,6 +253,7 @@ public class MiscTest {
         //Misc.resourceToString()
         assertEquals(Misc.fileToString(file.getName()), "inside the lebron file");
     }
+
     @Test
     public void testFileToStringFileNameEndLine() throws Exception {
         //Misc.resourceToString()
@@ -292,7 +292,6 @@ public class MiscTest {
         String s = Misc.readerToString(r, "23", true);
         assertEquals(s, "&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r");
     }
-
 
 
     /**
@@ -372,15 +371,21 @@ public class MiscTest {
      */
     @Test
     public void testCompressed() throws Exception {
-        String s = "#@!@$#@#@";
-        String s1 = "testest";
-        String s3 = "123213";
+        String s = "#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$";
+        String s1 = "teststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststests";
+        String s3 = "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123";
         byte[] compressedSymbols = Misc.compress(s);
         byte[] compressedText = Misc.compress(s1);
         byte[] compressedNumbers = Misc.compress(s3);
-        assertEquals(compressedNumbers[0], 120); assertEquals(compressedNumbers[1], -38);
-        assertEquals(compressedText[0], 120); assertEquals(compressedText[1], -38);
-        assertEquals(compressedSymbols[0], 120); assertEquals(compressedSymbols[1], -38);
+        assertTrue(compressedNumbers.length < s3.length());
+        assertEquals(compressedNumbers[0], 120);
+        assertEquals(compressedNumbers[1], -38);
+        assertTrue(compressedText.length < s1.length());
+        assertEquals(compressedText[0], 120);
+        assertEquals(compressedText[1], -38);
+        assertTrue(compressedSymbols.length < s.length());
+        assertEquals(compressedSymbols[0], 120);
+        assertEquals(compressedSymbols[1], -38);
     }
 
     @Test
@@ -448,9 +453,11 @@ public class MiscTest {
         String collectionDescription = "First 3 letters of the alphabet";
         Misc.addItemsToList(stringCollection, list, collectionDescription, true);
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add("a");  arrayList.add("b"); arrayList.add("c");
+        arrayList.add("a");
+        arrayList.add("b");
+        arrayList.add("c");
         assertTrue(stringCollection.size() == 3);
-        assertEquals(stringCollection.get(stringCollection.size()-1), "c");
+        assertEquals(stringCollection.get(stringCollection.size() - 1), "c");
     }
 
     /**
@@ -458,14 +465,16 @@ public class MiscTest {
      */
     @Test
     public void testGetFileSystemTotalSpace() throws Exception {
-assertFalse(Misc.getFileSystemTotalSpace().isEmpty());    }
+        assertFalse(Misc.getFileSystemTotalSpace().isEmpty());
+    }
 
     /**
      * Method: getFileSystemFreeSpace()
      */
     @Test
     public void testGetFileSystemFreeSpace() throws Exception {
-assertFalse(Misc.getFileSystemFreeSpace().isEmpty());    }
+        assertFalse(Misc.getFileSystemFreeSpace().isEmpty());
+    }
 
     /**
      * Method: getAge(long value)
@@ -474,6 +483,7 @@ assertFalse(Misc.getFileSystemFreeSpace().isEmpty());    }
     public void testGetAge() throws Exception {
         assertFalse(Misc.getAge(1).isEmpty());
     }
+
     /**
      * Method: getDurationInMs(long value)
      */
@@ -500,7 +510,7 @@ assertFalse(Misc.getFileSystemFreeSpace().isEmpty());    }
         String regex = "\\d";
         String res = Misc.cleanseMessage(s, regex, " does not matter");
         assertEquals(res, "Donald Duck **  Hey hey  **  Wooo");
-        }
+    }
 
     /**
      * Method: hideFirstHalf(String inputString, String regex)
@@ -520,7 +530,8 @@ assertFalse(Misc.getFileSystemFreeSpace().isEmpty());    }
     @Test
     public void testGetBuildOutputDirectory() throws Exception {
         String outputDirectory = Misc.getBuildOutputDirectory();
-assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirectory.length()), pathSeperator+"iaf"+pathSeperator+"core"+pathSeperator+"target"+pathSeperator+"test-classes");    }
+        assertEquals(outputDirectory.substring(outputDirectory.length() - 29, outputDirectory.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
+    }
 
     /**
      * Method: getProjectBaseDir()
@@ -528,7 +539,7 @@ assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirect
     @Test
     public void testGetProjectBaseDir() throws Exception {
         String baseDir = Misc.getBuildOutputDirectory();
-        assertEquals(baseDir.substring(baseDir.length()-29, baseDir.length()), pathSeperator+"iaf"+pathSeperator+"core"+pathSeperator+"target"+pathSeperator+"test-classes");
+        assertEquals(baseDir.substring(baseDir.length() - 29, baseDir.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
     }
 
     /**
@@ -536,17 +547,18 @@ assertEquals(outputDirectory.substring(outputDirectory.length()-29, outputDirect
      */
     @Test
     public void testToSortName() throws Exception {
-assertEquals(Misc.toSortName("new_name"), "NEW*NAME");    }
+        assertEquals(Misc.toSortName("new_name"), "NEW*NAME");
+    }
 
     /**
      * Method: countRegex(String string, String regex)
      */
     @Test
     public void testCountRegex() throws Exception {
-String s = "12ab34";
-    String regex = "\\d";
-    int regexCount = Misc.countRegex(s, regex);
-    assertEquals(regexCount, 4);
+        String s = "12ab34";
+        String regex = "\\d";
+        int regexCount = Misc.countRegex(s, regex);
+        assertEquals(regexCount, 4);
     }
 
     /**
@@ -554,10 +566,9 @@ String s = "12ab34";
      */
     @Test
     public void testResourceToStringResource() throws Exception {
-        URL resource = new URL("http://example.com/");
+        URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource);
-        String res = TestFileUtils.getTestFileMessage("/Misc/html_resource").asString();
-        assertEquals(s1.substring(0, 1255), res); // had to do this for a weird newline bug.
+        assertEquals(s1.substring(0, 62), "<!doctype txt>this is a text file.\r\nnew line in the text file.");
     }
 
     /**
@@ -565,17 +576,15 @@ String s = "12ab34";
      */
     @Test
     public void testResourceToStringForResourceEndOfLineStringXmlEncode() throws Exception {
-        URL resource = new URL("http://example.com/");
-        String s1 = Misc.resourceToString(resource, "end of the page", true);
-        String res = TestFileUtils.getTestFileMessage("/Misc/html_resource_oneline_with_xml").asString();
-        assertEquals(s1, res);
+        URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
+        String s1 = Misc.resourceToString(resource, " newly added string ", true);
+        assertEquals(s1, "&lt;!doctype txt&gt;this is a text file. newly added string new line in the text file.");
     }
 
     @Test
     public void testResourceToStringForResourceEndOfLineString() throws Exception {
-        URL resource = new URL("http://example.com/");
-        String s1 = Misc.resourceToString(resource, "end of the page");
-        String res = TestFileUtils.getTestFileMessage("/Misc/html_resource_endoflinestring").asString();
-        assertEquals(s1, res);
+        URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
+        String s1 = Misc.resourceToString(resource, " newly added string ");
+        assertEquals(s1, "<!doctype txt>this is a text file. newly added string new line in the text file.");
     }
 }
