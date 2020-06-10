@@ -24,7 +24,7 @@ import org.xml.sax.SAXParseException;
 
 public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 
-	protected abstract void handleException(SAXException e) throws SAXException;
+	protected abstract void handleException(Exception e) throws SAXException;
 	
 	@Override
 	public void startDocument() throws SAXException {
@@ -38,7 +38,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endDocument() throws SAXException {
 		try {
 			super.endDocument();
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -47,7 +47,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		try {
 			super.startElement(uri, localName, qName, atts);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -56,7 +56,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		try {
 			super.characters(ch, start, length);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -65,7 +65,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		try {
 			super.endElement(uri, localName, qName);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -75,7 +75,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		try {
 			super.comment(ch, start, length);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -84,7 +84,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void startCDATA() throws SAXException {
 		try {
 			super.startCDATA();
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -93,7 +93,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endCDATA() throws SAXException {
 		try {
 			super.endCDATA();
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -102,7 +102,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
 		try {
 			super.startDTD(name, publicId, systemId);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -111,7 +111,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endDTD() throws SAXException {
 		try {
 			super.endDTD();
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -120,7 +120,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void startEntity(String name) throws SAXException {
 		try {
 			super.startEntity(name);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -129,7 +129,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endEntity(String name) throws SAXException {
 		try {
 			super.endEntity(name);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -139,7 +139,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		try {
 			super.startPrefixMapping(prefix, uri);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -148,7 +148,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void endPrefixMapping(String prefix) throws SAXException {
 		try {
 			super.endPrefixMapping(prefix);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -158,7 +158,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void warning(SAXParseException e) throws SAXException {
 		try {
 			super.warning(e);
-		} catch (SAXException se) {
+		} catch (Exception se) {
 			handleException(se);
 		}
 	}
@@ -167,7 +167,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void error(SAXParseException e) throws SAXException {
 		try {
 			super.error(e);
-		} catch (SAXException se) {
+		} catch (Exception se) {
 			handleException(se);
 		}
 	}
@@ -176,7 +176,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void fatalError(SAXParseException e) throws SAXException {
 		try {
 			super.fatalError(e);
-		} catch (SAXException se) {
+		} catch (Exception se) {
 			handleException(se);
 		}
 	}
@@ -185,7 +185,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 		try {
 			super.ignorableWhitespace(ch, start, length);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -194,7 +194,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void notationDecl(String name, String publicId, String systemId) throws SAXException {
 		try {
 			super.notationDecl(name, publicId, systemId);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -203,7 +203,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void processingInstruction(String target, String data) throws SAXException {
 		try {
 			super.processingInstruction(target, data);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -212,7 +212,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 		try {
 			return super.resolveEntity(publicId, systemId);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 			throw e;
 		}
@@ -222,7 +222,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void skippedEntity(String name) throws SAXException {
 		try {
 			super.skippedEntity(name);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}
@@ -232,7 +232,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 	public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
 		try {
 			super.unparsedEntityDecl(name, publicId, systemId, notationName);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			handleException(e);
 		}
 	}

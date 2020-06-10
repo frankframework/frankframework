@@ -31,7 +31,7 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 	}
 
 	@Override
-	protected void handleException(SAXException e) throws SAXException {
+	protected void handleException(Exception e) throws SAXException {
 		Throwable t = threadConnector.abortThread(e);
 		if (t instanceof SAXException) {
 			throw (SAXException) t;

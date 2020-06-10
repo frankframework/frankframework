@@ -39,6 +39,8 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.SaxAbortException;
+import nl.nn.adapterframework.stream.SaxTimeoutException;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -50,7 +52,6 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NodeSetFilter;
 import nl.nn.adapterframework.xml.SaxException;
-import nl.nn.adapterframework.xml.TimeOutSaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -290,18 +291,17 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	
 	private class HandlerRecord {
 		ContentHandler inputHandler;
-		ItemCallbackCallingHandler itemHandler;
 		String errorMessage="Could not parse input";
 		TransformerErrorListener transformerErrorListener=null;
 	}
 	
 	protected void createHandler(HandlerRecord result, Message input, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
-		result.itemHandler = new ItemCallbackCallingHandler(callback);
-		result.inputHandler=result.itemHandler;
+		ItemCallbackCallingHandler itemHandler = new ItemCallbackCallingHandler(callback);
+		result.inputHandler=itemHandler;
 		
 		if (isRemoveNamespaces()) {
 			NamespaceRemovingFilter namespaceRemovingFilter = new NamespaceRemovingFilter();
-			namespaceRemovingFilter.setContentHandler(result.itemHandler);
+			namespaceRemovingFilter.setContentHandler(itemHandler);
 			result.inputHandler = namespaceRemovingFilter;
 		}
 		
@@ -324,34 +324,38 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			result.inputHandler=containerElementFilter;
 		}
 		
-		StopSensor stopSensor = new StopSensor(result.itemHandler);
+		StopSensor stopSensor = new StopSensor(itemHandler);
 		stopSensor.setContentHandler(result.inputHandler);
 		result.inputHandler=stopSensor;
 		
 		ExceptionCatchingFilter exceptionCatcher = new ExceptionCatchingFilter() {
 			@Override
-			protected void handleException(SAXException e) throws SAXException {
+			protected void handleException(Exception e) throws SAXException {
 				try {
-					if (result.itemHandler.getTimeOutException()!=null) {
-						throw new TimeOutSaxException(result.itemHandler.getTimeOutException());
+					if (itemHandler.getTimeOutException()!=null) {
+						throw new SaxTimeoutException(itemHandler.getTimeOutException());
 					}
-					if (!result.itemHandler.isStopRequested()) {
-						// Xalan rethrows any caught exception with the message, but without the cause.
-						// For improved diagnosability of error situations, rethrow the original exception, where applicable.
-						if (result.transformerErrorListener!=null) {
-							TransformerException tex = result.transformerErrorListener.getFatalTransformerException();
-							if (tex!=null) {
-								throw new SaxException(result.errorMessage,tex);
-							}
-							IOException iox = result.transformerErrorListener.getFatalIOException();
-							if (iox!=null) {
-								throw new SaxException(result.errorMessage,iox);
-							}
+					if (itemHandler.isStopRequested()) {
+						if (e instanceof SaxAbortException) {
+							throw (SaxAbortException)e;
 						}
-						throw new SaxException(result.errorMessage,e);
+						throw new SaxAbortException(e);
 					}
+					// Xalan rethrows any caught exception with the message, but without the cause.
+					// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+					if (result.transformerErrorListener!=null) {
+						TransformerException tex = result.transformerErrorListener.getFatalTransformerException();
+						if (tex!=null) {
+							throw new SaxException(result.errorMessage,tex);
+						}
+						IOException iox = result.transformerErrorListener.getFatalIOException();
+						if (iox!=null) {
+							throw new SaxException(result.errorMessage,iox);
+						}
+					}
+					throw new SaxException(result.errorMessage,e);
 				} finally {
-					result.itemHandler.endDocument();
+					itemHandler.endDocument();
 				}
 			}
 		};
@@ -391,13 +395,15 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		try {
 			XmlUtils.parseXml(src,handlerRecord.inputHandler);
 		} catch (Exception e) {
-			if (e instanceof TimeOutSaxException) {
+			if (e instanceof SaxTimeoutException) {
 				if (e.getCause() instanceof TimeOutException) {
 					throw (TimeOutException)e.getCause();
 				}
-				throw handlerRecord.itemHandler.getTimeOutException();
+				throw new TimeOutException(e);
 			}
-			throw new SenderException(e);
+			if (!(e instanceof SaxAbortException)) {
+				throw new SenderException(e);
+			}
 		}
 		rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
