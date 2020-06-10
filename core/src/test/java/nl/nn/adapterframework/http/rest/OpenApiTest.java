@@ -43,6 +43,8 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
 		//getPets.start(getPets, postPet, getPet); //Async start
 
+		Thread.sleep(1200); //Adding a small timeout to fix async starting issues
+
 		assertNotNull("unable to find DispatchConfig for uri [pets]", dispatcher.findConfigForUri("pets"));
 		assertEquals("not all listener uri [pets] are registered on the dispatcher", 2, dispatcher.findConfigForUri("pets").getMethods().size());
 		assertNotNull("unable to find DispatchConfig for uri [pets/a]", dispatcher.findConfigForUri("pets/a"));
