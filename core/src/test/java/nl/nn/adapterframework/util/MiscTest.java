@@ -568,7 +568,7 @@ public class MiscTest {
     public void testResourceToStringResource() throws Exception {
         URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource);
-        assertEquals(s1.substring(0, 62), "<!doctype txt>this is a text file.\nnew line in the text file.");
+        assertEquals(s1.substring(0, 62), "<!doctype txt>this is a text file.\r\nnew line in the text file.");
     }
 
     /**
