@@ -173,7 +173,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
-		return new MessageOutputStream(this, handler, target, null, threadLifeCycleEventListener, session);
+		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session);
 	}
 
 	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {

@@ -180,7 +180,10 @@ public class ApiServiceDispatcher {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
 					methodBuilder.add("operationId", adapter.getName());
-					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
+
+					//ContentType may have more parameters such as charset and formdata-boundry
+					MediaTypes produces = MediaTypes.valueOf(listener.getProduces());
+					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
 
 				methods.add(method.toLowerCase(), methodBuilder);
@@ -204,7 +207,7 @@ public class ApiServiceDispatcher {
 		return null;
 	}
 
-	private JsonObjectBuilder mapResponses(IAdapter adapter, String contentType, JsonObjectBuilder schemas) {
+	private JsonObjectBuilder mapResponses(IAdapter adapter, MediaTypes contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
@@ -237,9 +240,9 @@ public class ApiServiceDispatcher {
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
 				if(schema == null) {
-					content.addNull(contentType);
+					content.addNull(contentType.getContentType());
 				} else {
-					content.add(contentType, schema);
+					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);
 			}
