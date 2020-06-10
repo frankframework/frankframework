@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -48,7 +47,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         param.setName("param1");
         param.setValue("abs");
         param.setSessionKey("*");
-        session1.put("param1","yarr");;
+        session1.put("param1","yarr");
         return param;
     }
 
