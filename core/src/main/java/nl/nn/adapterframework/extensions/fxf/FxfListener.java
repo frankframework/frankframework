@@ -74,8 +74,8 @@ public class FxfListener extends EsbJmsListener {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.
 		// The message will be placed in the errorstore due to this, 

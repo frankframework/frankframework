@@ -224,7 +224,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							// found a message, process it
 							startProcessingTimestamp = System.currentTimeMillis();
 							try {
-								receiver.processRawMessage(listener, rawMessage, threadContext);
+								receiver.processRawMessage(rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
 										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
@@ -234,14 +234,19 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									}
 								}
 							} catch (Exception e) {
-								if (txStatus != null && !txStatus.isCompleted()) {
-									txManager.rollback(txStatus);
-								}
-								if (receiver.isOnErrorContinue()) {
-									receiver.error("caught Exception processing message, will continue processing next message", e);
-								} else {
-									receiver.error("stopping receiver after exception in processing message", e);
-									receiver.stopRunning();
+								try {
+									if (txStatus != null && !txStatus.isCompleted()) {
+										txManager.rollback(txStatus);
+									}
+								} catch (Exception e2) {
+									receiver.error("caught Exception rolling back transaction after catching Exception", e2);
+								} finally {
+									if (receiver.isOnErrorContinue()) {
+										receiver.error("caught Exception processing message, will continue processing next message", e);
+									} else {
+										receiver.error("stopping receiver after Exception in processing message", e);
+										receiver.stopRunning();
+									}
 								}
 							}
 						}

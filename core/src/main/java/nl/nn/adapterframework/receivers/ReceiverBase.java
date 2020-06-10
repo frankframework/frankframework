@@ -867,26 +867,26 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(IListener, String, Object, String, Map, long)}.
+	 * Process the received message with {@link #processRequest(String, Object, String, Map, long)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	@Override
-	public String processRequest(IListener<M> origin, M rawMessage, String message) throws ListenerException {
-		return processRequest(origin, null, rawMessage, message, null, -1);
+	public String processRequest(M rawMessage, String message) throws ListenerException {
+		return processRequest(null, rawMessage, message, null, -1);
 	}
 
 	@Override
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message)  throws ListenerException{
-		return processRequest(origin, correlationId, rawMessage, message, null, -1);
+	public String processRequest(String correlationId, M rawMessage, String message)  throws ListenerException{
+		return processRequest(correlationId, rawMessage, message, null, -1);
 	}
 
 	@Override
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException {
-		return processRequest(origin, correlationId, rawMessage, message, context, -1);
+	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException {
+		return processRequest(correlationId, rawMessage, message, context, -1);
 	}
 
 	@Override
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException {
+	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException {
 		if (getRunState() != RunStateEnum.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
 		}
@@ -912,23 +912,23 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		String messageId = (String) context.get("id");
-		return processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, context, waitingTime, false);
+		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, waitingTime, false);
 	}
 
 
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null, -1);
+	public void processRawMessage(M rawMessage) throws ListenerException {
+		processRawMessage(rawMessage, null, -1);
 	}
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object> context) throws ListenerException {
-		processRawMessage(origin, rawMessage, context, -1);
+	public void processRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
+		processRawMessage(rawMessage, context, -1);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object>threadContext, long waitingDuration) throws ListenerException {
-		processRawMessage(origin, rawMessage, threadContext, waitingDuration, false);
+	public void processRawMessage(M rawMessage, Map<String,Object>threadContext, long waitingDuration) throws ListenerException {
+		processRawMessage(rawMessage, threadContext, waitingDuration, false);
 	}
 
 	/**
@@ -937,7 +937,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	 * Assumes that a transation has been started where necessary.
 	 */
-	private void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
+	private void processRawMessage(Object rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		if (rawMessage==null) {
 			log.debug(getLogPrefix()+"received null message, returning directly");
 			return;
@@ -949,7 +949,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		String message = null;
 		String technicalCorrelationId = null;
 		try {
-			message = origin.getStringFromRawMessage(rawMessage, threadContext);
+			message = getListener().getStringFromRawMessage((M)rawMessage, threadContext); // the cast to M might cause a classCastException in case of a retry, if rawMessage is in fact a MessageWrapper
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { 
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
@@ -961,7 +961,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		try {
-			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
@@ -970,48 +970,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		processMessageInAdapter(rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
-	public IListener<Serializable> getErrorStorageRetryHelperListener() {
-		return new IListener<Serializable>() {
-
-			@Override
-			public String getName() {
-				return null;
-			}
-
-			@Override
-			public void setName(String name) {
-			}
-
-			@Override
-			public void configure() throws ConfigurationException {
-			}
-
-			@Override
-			public void open() throws ListenerException {
-			}
-
-			@Override
-			public void close() throws ListenerException {
-			}
-
-			@Override
-			public String getIdFromRawMessage(Serializable rawMessage, Map<String,Object> context) throws ListenerException {
-				return null;
-			}
-
-			@Override
-			public String getStringFromRawMessage(Serializable rawMessage, Map<String,Object> context) throws ListenerException {
-				return null;
-			}
-
-			@Override
-			public void afterMessageProcessed(PipeLineResult processResult, Serializable rawMessage, Map<String,Object> context) throws ListenerException {
-			}
-		};
-	}
 	
 	public void retryMessage(String messageId) throws ListenerException {
 		if (getErrorStorage()==null) {
@@ -1027,7 +988,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			try {
 				ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 				msg = errorStorage.getMessage(messageId);
-				processRawMessage((IListener<M>)getErrorStorageRetryHelperListener(), (M)msg, threadContext, -1, true); // listener and message are not really 'M', but are both the same ('Serializable'). That is what matters.
+				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
 				txStatus.setRollbackOnly();
 				throw new ListenerException(t);
@@ -1063,7 +1024,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private String processMessageInAdapter(IListener<M> origin, M rawMessage, String message, String messageId, String technicalCorrelationId, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
+	private String processMessageInAdapter(Object rawMessageOrWrapper, String message, String messageId, String technicalCorrelationId, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
@@ -1152,7 +1113,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		try {
-			if (hasProblematicHistory(origin, messageId, manualRetry, rawMessage, message, threadContext, businessCorrelationId)) {
+			if (hasProblematicHistory(messageId, manualRetry, rawMessageOrWrapper, message, threadContext, businessCorrelationId)) {
 				if (!isTransacted()) {
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
@@ -1187,10 +1148,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		boolean messageInError = false;
 		try {
 			String pipelineMessage;
-			if (origin instanceof IBulkDataListener) {
+			if (getListener() instanceof IBulkDataListener) { // always need the original listener to retrieve bulkdata
 				try {
-					IBulkDataListener bdl = (IBulkDataListener)origin;
-					pipelineMessage=bdl.retrieveBulkData(rawMessage,message,threadContext);
+					IBulkDataListener bdl = (IBulkDataListener)getListener(); 
+					pipelineMessage=bdl.retrieveBulkData(rawMessageOrWrapper,message,threadContext);
 				} catch (Throwable t) {
 					errorMessage = t.getMessage();
 					messageInError = true;
@@ -1282,7 +1243,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
 			if (!isTransacted() && messageInError) {
 				if (!manualRetry) {
-					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
+					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 				}
 			}
 			try {
@@ -1296,13 +1257,17 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					afterMessageProcessedMap=pipelineSession;
 				}
 				try {
-					origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+					getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
 				} catch (Exception e) {
-					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-					// this might cause class cast exceptions.
-					// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-					// like JdbcListener
-					error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+					if (manualRetry) {
+						// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. 
+						// This might cause class cast exceptions.
+						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+						// like JdbcListener
+						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e); 
+					} else {
+						error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+					}
 					throw wrapExceptionAsListenerException(e);
 				}
 			} finally {
@@ -1358,15 +1323,16 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * returns true if message should not be processed
 	 */
 	@SuppressWarnings("unchecked")
-	private boolean hasProblematicHistory(IListener<M> origin, String messageId, boolean manualRetry, M rawMessage, String message, Map<String,Object>threadContext, String correlationId) throws ListenerException {
+	private boolean hasProblematicHistory(String messageId, boolean manualRetry, Object rawMessageOrWrapper, String message, Map<String,Object>threadContext, String correlationId) throws ListenerException {
 		if (!manualRetry) {
+			IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
 			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 			if (prci==null) {
 				if (getMaxDeliveries()!=-1) {
 					int deliveryCount=-1;
 					if (origin instanceof IKnowsDeliveryCount) {
-						deliveryCount = ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage);
+						deliveryCount = ((IKnowsDeliveryCount<M>)origin).getDeliveryCount((M)rawMessageOrWrapper); // cast to M is done only if !manualRetry
 					}
 					if (deliveryCount>1) {
 						log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
@@ -1375,7 +1341,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 						warn("message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
 						String comments="too many deliveries";
 						increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxDeliveries=["+getMaxDeliveries()+"]");
-						moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, rawMessage, message, threadContext, prci, comments);
+						moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
 						return true;
 					}
 				}
@@ -1396,7 +1362,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				if (prci.tryCount>getMaxRetries()+1) {
 					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
-				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, rawMessage, message, threadContext, prci, comments);
+				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
 				return true;
 			}
 		} 

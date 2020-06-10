@@ -143,10 +143,10 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 		}
 		if (throwException) {
-			return handler.processRequest(this, correlationId, message, message, context);
+			return handler.processRequest(correlationId, message, message, context);
 		} else {
 			try {
-				return handler.processRequest(this, correlationId, message, message, context);
+				return handler.processRequest(correlationId, message, message, context);
 			}
 			catch (ListenerException e) {
 				return handler.formatException(null,correlationId, message,e);
@@ -193,7 +193,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, String rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 	}
 

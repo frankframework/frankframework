@@ -640,34 +640,34 @@ public class ApiListenerServletTest extends Mockito {
 	private class MessageHandler implements IMessageHandler<String> {
 
 		@Override
-		public void processRawMessage(IListener<String> origin, String message, Map<String, Object> context) throws ListenerException {
+		public void processRawMessage(String message, Map<String, Object> context) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<String> origin, String message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public void processRawMessage(String message, Map<String, Object> context, long waitingTime) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<String> origin, String message) throws ListenerException {
+		public void processRawMessage(String message) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String rawMessage, String message) throws ListenerException {
+		public String processRequest(String rawMessage, String message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message) throws ListenerException {
+		public String processRequest(String correlationId, String rawMessage, String message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message, Map<String, Object> context) throws ListenerException {
+		public String processRequest(String correlationId, String rawMessage, String message, Map<String, Object> context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}
@@ -680,7 +680,7 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public String processRequest(String correlationId, String rawMessage, String message, Map<String, Object> context, long waitingTime) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}

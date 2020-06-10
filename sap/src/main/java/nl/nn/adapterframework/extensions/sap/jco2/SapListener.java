@@ -151,7 +151,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		try {
 			log.debug("SapListener.procesFunctionCall()");
-			handler.processRawMessage(this, function, null);
+			handler.processRawMessage(function, null);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
@@ -161,7 +161,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(this, null, idoc.toXML());
+			handler.processRequest(null, idoc.toXML());
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}

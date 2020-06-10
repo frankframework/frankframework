@@ -75,7 +75,7 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 		return (String) rawMessage;
 	}
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		// descendants can override this method when specific actions are required
 	}
 
@@ -84,7 +84,7 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
 			// serviceclient has no rawMessage, but it has no afterMessageProcessed either, therefor rawMessage can safely be null in handler.processRequest()
-			return handler.processRequest(this, correlationId, null, message, requestContext); 
+			return handler.processRequest(correlationId, null, message, requestContext); 
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
