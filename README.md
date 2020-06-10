@@ -3,6 +3,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ibissource/iaf/blob/master/LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
 [![codecov](https://codecov.io/gh/ibissource/iaf/branch/master/graph/badge.svg)](https://codecov.io/gh/ibissource/iaf)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f191c229880d40738b919ef38712b533)](https://app.codacy.com/manual/nielsm5/iaf?utm_source=github.com&utm_medium=referral&utm_content=ibissource/iaf&utm_campaign=Badge_Grade_Dashboard)
+
 
 Community website
 =================
