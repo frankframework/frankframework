@@ -235,9 +235,7 @@ public class XmlSwitch extends AbstractPipe {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"4", "name of the key in the <code>pipelinesession</code> to retrieve the input message from. (n.b. same as <code>getInputFromSessionKey</code>)", ""})
-	@Deprecated
-	@ConfigurationWarning("please use getInputFromSessionKey instead")
+	@IbisDoc({"4", "name of the key in the <code>pipelinesession</code> to retrieve the input message from. (n.b. same as <code>getinputfromsessionkey</code>)", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
