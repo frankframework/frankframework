@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -42,6 +43,15 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     }
 
+    public static Parameter setUp(IPipeLineSession session1){
+        Parameter param = new Parameter();
+        param.setName("param1");
+        param.setValue("abs");
+        param.setSessionKey("*");
+        session1.put("param1","yarr");;
+        return param;
+    }
+
 
 
     /**
@@ -49,11 +59,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
      */
     @Test
     public void testSuccess() throws Exception {
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setFileName(sourceFolderPath);
@@ -68,11 +74,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     @Test
     public void testFailAsWrongDirectory() throws Exception {
         exception.expectMessage("Pipe [FixedResult under test] cannot find resource [/Pipes/2.txt/something]");
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setFileName(sourceFolderPath + "/something");
         pipe.setReplaceFrom("param1");
@@ -92,11 +94,9 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     @Test
     public void xsltSuccess() throws Exception{
-        Parameter param = new Parameter(); pipe.setSubstituteVars(true);
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
+        pipe.setSubstituteVars(true);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
@@ -110,11 +110,8 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     @Test
     public void xsltFailForTransformation() throws Exception{
         exception.expect(PipeRunException.class);
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
@@ -128,11 +125,8 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     @Test
     public void xsltFailForFindingFileButSuceed() throws Exception{
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNsddsotFound/namdsfe2.xsl");

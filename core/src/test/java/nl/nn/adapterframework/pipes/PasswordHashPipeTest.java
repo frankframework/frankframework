@@ -25,6 +25,8 @@ public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
     }
 
 
+
+
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
      */
