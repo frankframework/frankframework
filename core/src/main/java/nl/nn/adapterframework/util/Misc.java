@@ -97,7 +97,7 @@ public class Misc {
 	/**
 	 *
 	 * @param buf
-	 * @return the hexadecimal string repreentation of the byte array.
+	 * @return the hexadecimal string representation of the byte array.
 	 */
     public static String asHex(byte[] buf)
     {
@@ -158,7 +158,7 @@ public class Misc {
 	 * Misc.unsignedByteToInt(new Btye(12)) returns 12
 	 * Misc.unsignedByteToInt(new Byte(-12)) returns 244
 	 * </pre></blockquote>
-	 * @param b
+	 * @param b byte to be converted.
 	 * @return integer that is converted from unsigned byte.
 	 */
 	public static int unsignedByteToInt(byte b) {
@@ -190,8 +190,8 @@ public class Misc {
 	 * Closes the input stream if specified.
 	 * @param input
 	 * @param output
-	 * @param closeInput: if set to 'true', the input stream gets closed.
-	 * @throws IOException
+	 * @param closeInput if set to 'true', the input stream gets closed.
+	 * @throws IOException  if an I/O error occurs.
 	 */
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
