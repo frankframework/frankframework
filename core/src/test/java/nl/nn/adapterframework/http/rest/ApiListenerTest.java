@@ -56,6 +56,16 @@ public class ApiListenerTest {
 		assertEquals("XML", listener.getProduces());
 	}
 
+	@Test
+	public void testProducesTextWithCharset() throws ConfigurationException {
+		listener.setProduces("TEXT");
+		listener.setCharacterEncoding("utf-8");
+		listener.configure();
+
+		assertEquals("TEXT", listener.getProduces());
+		assertEquals("text/plain;charset=UTF-8", listener.getContentType());
+	}
+
 	@Test(expected=IllegalArgumentException.class)
 	public void testUnknownProduces() throws ConfigurationException {
 		listener.setProduces("unknown");
@@ -88,7 +98,7 @@ public class ApiListenerTest {
 			listener.setProduces(type.name());
 			listener.configure(); //Check if the mediatype passes the configure checks
 
-			assertEquals(type.getContentType(), listener.getContentType());
+			assertTrue(listener.getContentType().startsWith(type.getContentType()));
 		}
 
 		//Check empty produces
@@ -143,6 +153,42 @@ public class ApiListenerTest {
 
 			assertTrue("can parse ["+header+"]", listener.isConsumable(acceptHeader));
 		}
+	}
+
+	@Test
+	public void listenerAcceptsAll() throws ConfigurationException {
+		String contentType = "application/octet-stream";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("ANY");
+		assertTrue("accepts anything", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void clientAcceptsAll() throws ConfigurationException {
+		String contentType = "application/xhtml+xml, application/xml";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertTrue("accepts anything", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void doesNotAcceptOctetStreamWhenJSON() throws ConfigurationException {
+		String contentType = "application/octet-stream";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertFalse("does not accept an octet-stream when set to JSON", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void acceptsJson() throws ConfigurationException {
+		String contentType = "application/json";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertTrue("accepts JSON", listener.accepts(acceptHeader));
 	}
 
 	@Test(expected = ConfigurationException.class)
