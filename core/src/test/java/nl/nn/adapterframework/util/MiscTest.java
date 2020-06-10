@@ -371,6 +371,19 @@ public class MiscTest {
      * Method: compress(String input)
      */
     @Test
+    public void testCompressed() throws Exception {
+        String s = "#@!@$#@#@";
+        String s1 = "testest";
+        String s3 = "123213";
+        byte[] compressedSymbols = Misc.compress(s);
+        byte[] compressedText = Misc.compress(s1);
+        byte[] compressedNumbers = Misc.compress(s3);
+        assertEquals(compressedNumbers[0], 120); assertEquals(compressedNumbers[1], -38);
+        assertEquals(compressedText[0], 120); assertEquals(compressedText[1], -38);
+        assertEquals(compressedSymbols[0], 120); assertEquals(compressedSymbols[1], -38);
+    }
+
+    @Test
     public void testCompressDecompressInput() throws Exception {
         String s = "test";
         byte[] compressed = Misc.compress(s);
