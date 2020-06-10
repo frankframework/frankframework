@@ -49,61 +49,56 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	private ThreadConnector threadConnector;
 	
-	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, PipeForward forward) {
+	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
-		connect(nextStream, forward);
+		tail=this;
+		setForward(new PipeForward("success", next==null?null:next.getName()));
 	}
-
-	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, IForwardTarget next) {
+	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream) {
 		this.owner=owner;
-		connect(nextStream, next);
+		connect(nextStream);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IForwardTarget next) {
-		this(owner, nextStream, next);
+	public MessageOutputStream(INamedObject owner, OutputStream stream, IForwardTarget next) {
+		this(owner, next);
+		this.requestStream=stream;
+	}
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream) {
+		this(owner, nextStream);
 		this.requestStream=stream;
 	}
 	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IForwardTarget next) {
-		this(owner, nextStream, next);
+	public MessageOutputStream(INamedObject owner, Writer writer, IForwardTarget next) {
+		this(owner, next);
+		this.requestStream=writer;
+	}
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream) {
+		this(owner, nextStream);
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
-		this(owner, nextStream, next);
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, next);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
-	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, IForwardTarget next, Object response) {
-		this(owner, stream, nextStream, next);
-		this.response=response;
-	}
-	
-	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, IForwardTarget next, Object response) {
-		this(owner, writer, nextStream, next);
-		this.response=response;
-	}
-	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, IForwardTarget next, Object response, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
-		this(owner, handler, nextStream, next, threadLifeCycleEventListener, session);
-		this.response=response;
-	}
 
-	private void connect(MessageOutputStream nextStream, IForwardTarget next) {
-		PipeForward forward = new PipeForward("success", next==null?null:next.getName());
-		connect(nextStream, forward);
-	}
-	private void connect(MessageOutputStream nextStream, PipeForward forward) {
+	
+	private void connect(MessageOutputStream nextStream) {
 		this.nextStream=nextStream;
 		if (nextStream==null) {
 			tail=this;			
 		} else {
 			tail=nextStream.tail;
 		}
-		setForward(forward);
 	}
-
+	
 	protected void setRequestStream(Object requestStream) {
 		this.requestStream = requestStream;
 	}

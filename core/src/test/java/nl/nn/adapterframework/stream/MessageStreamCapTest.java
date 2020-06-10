@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 public class MessageStreamCapTest {
@@ -19,7 +19,7 @@ public class MessageStreamCapTest {
 	@Test
 	public void testStringCap() throws Exception {
 		INamedObject owner = new Owner();
-		PipeForward forward = null;
+		IForwardTarget forward = null;
 		String responseMessage = "fakeResponseMessage";
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			try (Writer capWriter = cap.asWriter()) {
@@ -40,7 +40,7 @@ public class MessageStreamCapTest {
 	@Test
 	public void testBytesCap() throws Exception {
 		INamedObject owner = new Owner();
-		PipeForward forward = null;
+		IForwardTarget forward = null;
 		byte[] responseMessage = "fakeResponseMessage".getBytes();
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			try (OutputStream capStream = cap.asStream()) {
@@ -65,7 +65,7 @@ public class MessageStreamCapTest {
 	 */
 	public void testContentHandlerCap() throws Exception {
 		INamedObject owner = new Owner();
-		PipeForward forward = null;
+		IForwardTarget forward = null;
 		String expectedResponseMessage = "<root/>";
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			ContentHandler capContentHandler = cap.asContentHandler();
@@ -91,7 +91,7 @@ public class MessageStreamCapTest {
 	 */
 	public void testNativeCap() throws Exception {
 		INamedObject owner = new Owner();
-		PipeForward forward = null;
+		IForwardTarget forward = null;
 		String responseMessage = "fakeResponseMessage";
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			Object capNative = cap.asNative();
