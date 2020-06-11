@@ -21,10 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class NashornTest {
-	Nashorn engine;
+	private Nashorn engine;
 
 	@Before
-	public void setup() {
+	public void setUp() {
 		engine = new Nashorn();
 		engine.startRuntime();
 	}

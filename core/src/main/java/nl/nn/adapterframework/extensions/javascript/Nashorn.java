@@ -78,6 +78,7 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 
 	@Override
 	public void closeRuntime() {
+		//Nothing to close :)
 	}
 
 	@Override
