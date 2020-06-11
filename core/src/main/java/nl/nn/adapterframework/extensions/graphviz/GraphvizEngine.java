@@ -176,7 +176,6 @@ public class GraphvizEngine {
 					jsEngine = engine;
 					this.resultHandler = resultHandler;
 				} catch (Exception e) {
-					e.printStackTrace();
 					log.error("Javascript engine [" + engines[i].getName() + "] could not be initialized.", e);
 				}
 			}
