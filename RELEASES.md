@@ -20,7 +20,8 @@ Upcoming
 - Improve MessageStoreListener by adding peekUntransacted attribute
 - Add support for single pipeline SOAP 1.1 & 1.2 and REST JSON & XML, backed by XML-Schema validation, with OpenAPI 3.0 JSON Schema generation
 
-
+### Non backwards compatible changes
+- LdapFindMemberPipe now requires baseDN to be set
 
 
 7.5-RC1
