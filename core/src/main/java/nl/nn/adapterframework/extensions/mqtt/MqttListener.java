@@ -147,7 +147,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		try {
-			messageHandler.processRawMessage(message);
+			messageHandler.processRawMessage(this, message);
 		} catch(Throwable t) {
 			log.error("Could not process raw message", t);
 		}

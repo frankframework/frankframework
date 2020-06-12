@@ -130,10 +130,12 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
-			message2FunctionResult(rawMessage, processResult.getResult());
+			if (rawMessageOrWrapper instanceof JCO.Function) {
+				message2FunctionResult((JCO.Function)rawMessageOrWrapper, processResult.getResult());
+			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
 		}
@@ -151,7 +153,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		try {
 			log.debug("SapListener.procesFunctionCall()");
-			handler.processRawMessage(function, null);
+			handler.processRawMessage(this, function, null);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
@@ -161,7 +163,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(null, idoc.toXML());
+			handler.processRequest(this, null, idoc.toXML());
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}

@@ -867,26 +867,29 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(String, Object, String, Map, long)}.
+	 * Process the received message with {@link #processRequest(IListener, String, Object, String, Map, long)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	@Override
-	public String processRequest(M rawMessage, String message) throws ListenerException {
-		return processRequest(null, rawMessage, message, null, -1);
+	public String processRequest(IListener<M> origin, M rawMessage, String message) throws ListenerException {
+		return processRequest(origin, null, rawMessage, message, null, -1);
 	}
 
 	@Override
-	public String processRequest(String correlationId, M rawMessage, String message)  throws ListenerException{
-		return processRequest(correlationId, rawMessage, message, null, -1);
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message)  throws ListenerException{
+		return processRequest(origin, correlationId, rawMessage, message, null, -1);
 	}
 
 	@Override
-	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException {
-		return processRequest(correlationId, rawMessage, message, context, -1);
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException {
+		return processRequest(origin, correlationId, rawMessage, message, context, -1);
 	}
 
 	@Override
-	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException {
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException {
+		if (origin!=getListener()) {
+			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+		}
 		if (getRunState() != RunStateEnum.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
 		}
@@ -918,16 +921,19 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 
 	@Override
-	public void processRawMessage(M rawMessage) throws ListenerException {
-		processRawMessage(rawMessage, null, -1);
+	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
+		processRawMessage(origin, rawMessage, null, -1);
 	}
 	@Override
-	public void processRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
-		processRawMessage(rawMessage, context, -1);
+	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object> context) throws ListenerException {
+		processRawMessage(origin, rawMessage, context, -1);
 	}
 
 	@Override
-	public void processRawMessage(M rawMessage, Map<String,Object>threadContext, long waitingDuration) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object>threadContext, long waitingDuration) throws ListenerException {
+		if (origin!=getListener()) {
+			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+		}
 		processRawMessage(rawMessage, threadContext, waitingDuration, false);
 	}
 
@@ -937,7 +943,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	 * Assumes that a transation has been started where necessary.
 	 */
-	private void processRawMessage(Object rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
+	private void processRawMessage(M rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		if (rawMessage==null) {
 			log.debug(getLogPrefix()+"received null message, returning directly");
 			return;
@@ -949,7 +955,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		String message = null;
 		String technicalCorrelationId = null;
 		try {
-			message = getListener().getStringFromRawMessage((M)rawMessage, threadContext); // the cast to M might cause a classCastException in case of a retry, if rawMessage is in fact a MessageWrapper
+			message = getListener().getStringFromRawMessage(rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { 
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
@@ -961,7 +967,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		}
 		try {
-			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessage, threadContext);
+			technicalCorrelationId = getListener().getIdFromRawMessage(rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
@@ -988,7 +994,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			try {
 				ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 				msg = errorStorage.getMessage(messageId);
-				processRawMessage(msg, threadContext, -1, true);
+				processRawMessage((M)msg, threadContext, -1, true);
 			} catch (Throwable t) {
 				txStatus.setRollbackOnly();
 				throw new ListenerException(t);
@@ -1148,7 +1154,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		boolean messageInError = false;
 		try {
 			String pipelineMessage;
-			if (getListener() instanceof IBulkDataListener) { // always need the original listener to retrieve bulkdata
+			if (getListener() instanceof IBulkDataListener) {
 				try {
 					IBulkDataListener bdl = (IBulkDataListener)getListener(); 
 					pipelineMessage=bdl.retrieveBulkData(rawMessageOrWrapper,message,threadContext);

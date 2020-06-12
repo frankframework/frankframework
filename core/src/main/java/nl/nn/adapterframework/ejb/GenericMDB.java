@@ -61,7 +61,7 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
             }
 
             IMessageHandler handler = this.listener.getHandler();
-            handler.processRawMessage(message);
+            handler.processRawMessage(listener,message);
         } catch (ListenerException ex) {
             log.error(ex, ex);
             listener.getExceptionListener().exceptionThrown(listener, ex);

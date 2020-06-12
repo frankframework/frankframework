@@ -30,30 +30,30 @@ public interface IMessageHandler<M> {
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
 	 */
-	public void processRawMessage(M message, Map<String,Object> context) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context) throws ListenerException;
 	
 	/**
-	 * Same as {@link #processRawMessage(Object,Map)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(M message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(Object,Map)}, but now without context, for convenience
+	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now without context, for convenience
 	 */
-	public void processRawMessage(M message) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
 	
 	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
-	public String processRequest(M rawMessage, String message) throws ListenerException;
+	public String processRequest(IListener<M> origin, M rawMessage, String message) throws ListenerException;
 
 	/**
 	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
 	 */	
-	public String processRequest(String correlationId, M rawMessage, String message) throws ListenerException;
-	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException;
-	public String processRequest(String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

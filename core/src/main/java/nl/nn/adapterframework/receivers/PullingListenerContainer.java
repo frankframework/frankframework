@@ -178,7 +178,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					if (threadContext == null) {
 						threadContext = new HashMap<>();
 					}
-					long startProcessingTimestamp;
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
 					try {
@@ -222,9 +221,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
-							startProcessingTimestamp = System.currentTimeMillis();
 							try {
-								receiver.processRawMessage(rawMessage, threadContext);
+								receiver.processRawMessage(listener, rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
 										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");

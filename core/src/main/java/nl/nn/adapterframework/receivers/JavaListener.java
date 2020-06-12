@@ -143,10 +143,10 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 		}
 		if (throwException) {
-			return handler.processRequest(correlationId, message, message, context);
+			return handler.processRequest(this, correlationId, message, message, context);
 		} else {
 			try {
-				return handler.processRequest(correlationId, message, message, context);
+				return handler.processRequest(this, correlationId, message, message, context);
 			}
 			catch (ListenerException e) {
 				return handler.formatException(null,correlationId, message,e);
