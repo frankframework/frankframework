@@ -15,10 +15,15 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
@@ -30,6 +35,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -107,6 +113,26 @@ public abstract class Base {
 			throw new ApiException("Key ["+key+"] may not be empty");
 		}
 		return result;
+	}
+
+	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
+		Attachment msg = inputDataMap.getAttachment(key);
+		if(msg != null) {
+			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
+				encoding = msg.getContentType().getParameters().get("charset");
+			}
+			InputStream is = msg.getObject(InputStream.class);
+
+			try {
+				return Misc.streamToString(is, "\n", encoding, false);
+			} catch (UnsupportedEncodingException e) {
+				throw new ApiException("unsupported file encoding ["+encoding+"]");
+			} catch (IOException e) {
+				throw new ApiException("error parsing value of key ["+key+"]", e);
+			}
+		}
+		return null;
 	}
 
 	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {

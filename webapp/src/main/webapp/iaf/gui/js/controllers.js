@@ -2178,8 +2178,10 @@ angular.module('iaf.beheerconsole')
 			fd.append("adapter", formData.adapter);
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
-		if(formData.message && formData.message != "")
-			fd.append("message", new Blob([formData.message], {type: "text/plain; charset="+formData.encoding+""}), 'message');
+		if(formData.message && formData.message != "") {
+			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
+		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 

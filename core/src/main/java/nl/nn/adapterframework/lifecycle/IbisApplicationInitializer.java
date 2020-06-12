@@ -46,6 +46,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
 		applicationContext.setConfigLocation(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		applicationContext.setDisplayName("IbisApplicationInitializer");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -87,26 +87,24 @@ public final class TestServiceListener extends Base {
 		InputStream file = null;
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
-/*
+
 		try {
-			if(inputDataMap.get("message") != null) {
-				InputPart part = inputDataMap.get("message").get(0);
-				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
-				message = part.getBodyAsString();
-			}
-			if(inputDataMap.get("service") != null) {
+			if(inputDataMap.getAttachment("service") != null) {
 				serviceName = resolveStringFromMap(inputDataMap, "service");
 			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				message = Misc.streamToString(file, "\n", fileEncoding, false);
+			if(inputDataMap.getAttachment("file") != null) {
+				file = inputDataMap.getAttachment("file").getObject(InputStream.class);
 
 				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding, false);
 			}
 			else {
-				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
+				message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 			}
-			
+
+			if(message == null && file == null) {
+				throw new ApiException("must provide either a message or file", 400);
+			}
+
 			if(!ServiceDispatcher.getInstance().isRegisteredServiceListener(serviceName)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
@@ -124,7 +122,7 @@ public final class TestServiceListener extends Base {
 		} catch (IOException e) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-*/
+
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 }

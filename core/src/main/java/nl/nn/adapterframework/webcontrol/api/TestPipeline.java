@@ -17,7 +17,6 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -91,38 +90,26 @@ public final class TestPipeline extends Base {
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
 
-		try {
-			Attachment part = inputDataMap.getAttachment("file");
-			if(part != null) {
-				fileName = part.getContentDisposition().getParameter( "filename" );
-				file = part.getObject(InputStream.class);
+		Attachment filePart = inputDataMap.getAttachment("file");
+		if(filePart != null) {
+			fileName = filePart.getContentDisposition().getParameter( "filename" );
 
-				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
-					try {
-						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
-					} catch (Exception e) {
-						throw new ApiException("An exception occurred while processing zip file", e);
-					}
-				} else {
-					message = Misc.streamToString(file, "\n", fileEncoding, false);
+			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+				try {
+					file = filePart.getObject(InputStream.class);
+					processZipFile(result, file, fileEncoding, adapter, secLogMessage);
+				} catch (Exception e) {
+					throw new ApiException("An exception occurred while processing zip file", e);
 				}
 			} else {
-				if(inputDataMap.getAttachment("message") != null) {
-					getAttachmentPart(inputDataMap, "message");
-					Attachment msg = inputDataMap.getAttachment("message");
-					System.out.println(msg.getContentType());
-//					part.setMediaType(part.getMediaType().withCharset(fileEncoding));
-					message = msg.getObject(String.class);
-				}
+				message = resolveStringWithEncoding(inputDataMap, "file", fileEncoding);
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
-		} catch (IOException e) {
-			throw new ApiException(e);
+		} else {
+			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(message == null && file == null) {
-			throw new ApiException("must provide either a message or file");
+			throw new ApiException("must provide either a message or file", 400);
 		}
 
 		if (StringUtils.isNotEmpty(message)) {
@@ -136,11 +123,6 @@ public final class TestPipeline extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
-	}
-
-	private void getAttachmentPart(MultipartBody inputDataMap, String string) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {

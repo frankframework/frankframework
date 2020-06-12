@@ -34,11 +34,16 @@ import javax.ws.rs.ext.Provider;
  */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<ApiException>
-{
+public class ApiExceptionHandler implements ExceptionMapper<Exception> {
+
 	@Override
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response toResponse(ApiException exception) {
+	public Response toResponse(Exception exception) {
+		//If the message has already been wrapped in an exception we don't need to `convert` it!
+		if(exception instanceof ApiException) {
+			return ((ApiException) exception).getResponse();
+		}
+
 		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
 		String message = exception.getMessage();
 

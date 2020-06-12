@@ -74,16 +74,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 		log.debug("initialize IAFAPI servlet");
 		super.init(servletConfig);
-/*
-		if(log.isDebugEnabled()) {
-			StringTokenizer resources = new StringTokenizer(getInitParameter("resteasy.resources"), ",");
-			while (resources.hasMoreTokens()) {
-				String resource = resources.nextToken();
-				log.debug("loading resource["+resource.trim()+"]");
-			}
-		}
-		mappingPrefix = getInitParameter("resteasy.servlet.mapping.prefix");
-*/
+
 		if(!CORS_ALLOW_ORIGIN.isEmpty()) {
 			StringTokenizer tokenizer = new StringTokenizer(CORS_ALLOW_ORIGIN, ",");
 			while (tokenizer.hasMoreTokens()) {
