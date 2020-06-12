@@ -12,7 +12,7 @@ jdk:
 install: echo 'Skipping separate install phase'
 
 script:
-  - mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource
+  - mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource,codecoverage
 
 cache:
   directories:
