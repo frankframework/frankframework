@@ -18,8 +18,6 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
-import javax.jms.Message;
-
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
