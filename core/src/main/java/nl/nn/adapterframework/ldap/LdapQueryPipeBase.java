@@ -76,6 +76,9 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 				throw new ConfigurationException(getLogPrefix(null) + "either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
 			}
 		}
+		if(StringUtils.isEmpty(getBaseDN())) {
+			throw new ConfigurationException(getLogPrefix(null) + "baseDN must be specified");
+		}
 		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
 			notFoundForward = findForward(getNotFoundForwardName());
