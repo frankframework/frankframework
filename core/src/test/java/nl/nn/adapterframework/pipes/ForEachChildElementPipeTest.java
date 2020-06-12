@@ -105,10 +105,10 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	private IPipeLineSession session = new PipeLineSessionBase();
 
-    @Override
-    public ForEachChildElementPipe createPipe() {
-        return new ForEachChildElementPipe();
-    }
+	@Override
+	public ForEachChildElementPipe createPipe() {
+		return new ForEachChildElementPipe();
+	}
 
 	protected ISender getElementRenderer() {
 		return getElementRenderer(null, null);
@@ -124,7 +124,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
 		EchoSender sender = new EchoSender() {
-			
+
 			@Override
 			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
