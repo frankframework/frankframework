@@ -19,6 +19,11 @@
 	<bean id="apiExceptionHandler" class="nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler" />
 	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
+	<bean id="swagger" class="nl.nn.adapterframework.webcontrol.api.Swagger">
+		<property name="scanAllResources" value="true"/> <!-- this is very slow -->
+		<property name="resourcePackage" value="nl.nn.adapterframework.webcontrol.api"/>
+	</bean>
+
 <!-- 	<bean id="authorizationFilter" class="nl.nn.adapterframework.webcontrol.api.AuthorizationFilter"> -->
 		<!-- authorization bean properties -->
 <!-- 	</bean> -->
@@ -29,5 +34,8 @@
 			<ref bean="apiExceptionHandler" />
 			<ref bean="jsonProvider" />
 		</jaxrs:providers>
+		<jaxrs:features>
+			<ref bean="swagger" />
+		</jaxrs:features>
 	</jaxrs:server>
 </beans>
