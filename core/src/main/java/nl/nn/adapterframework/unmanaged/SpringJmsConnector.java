@@ -270,7 +270,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				txStatus = txManager.getTransaction(TX);
 			}
 
-			Map<String,Session> threadContext = new HashMap<>();
+			Map<String,Object> threadContext = new HashMap<>();
 			try {
 				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);

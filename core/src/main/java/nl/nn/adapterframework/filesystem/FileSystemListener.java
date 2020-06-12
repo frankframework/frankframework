@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -198,27 +199,37 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
-		try {
-			if (StringUtils.isNotEmpty(getLogFolder())) {
-				FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+		if ((rawMessageOrWrapper instanceof MessageWrapper)) { 
+			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
+			MessageWrapper wrapper = (MessageWrapper)rawMessageOrWrapper;
+			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
+				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
 			}
-			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
-				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+		} else {
+			@SuppressWarnings("unchecked") 
+			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F 
+			try {
+				if (StringUtils.isNotEmpty(getLogFolder())) {
+					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				}
+				if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
+					if (StringUtils.isNotEmpty(getErrorFolder())) {
+						FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+						return;
+					}
+				}
+				if (isDelete()) {
+					fileSystem.deleteFile(rawMessage);
 					return;
 				}
+				if (StringUtils.isNotEmpty(getProcessedFolder())) {
+					FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				}
+			} catch (FileSystemException e) {
+				throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
 			}
-			if (isDelete()) {
-				fileSystem.deleteFile(rawMessage);
-				return;
-			}
-			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
-			}
-		} catch (FileSystemException e) {
-			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
 		}
 	}
 
