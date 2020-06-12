@@ -20,7 +20,7 @@ import nl.nn.adapterframework.xml.SaxException;
 /**
  * SAXException thrown to signal that the consumer of a stream does not want to receive more of it.
  */
-public class SaxAbortException extends SaxException {
+public class SaxAbortException extends SaxException implements IAbortException {
 	
 	public SaxAbortException() {
 		super();

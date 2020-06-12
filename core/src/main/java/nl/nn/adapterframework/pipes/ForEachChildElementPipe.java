@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
@@ -33,14 +34,18 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ITimeoutException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IAbortException;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.SaxAbortException;
 import nl.nn.adapterframework.stream.SaxTimeoutException;
+import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -148,10 +153,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
 		private boolean stopRequested;
-		private TimeOutException timeOutException;
 
 
-		
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			super(null, null, false, false);
 			setContentHandler(xmlWriter);
@@ -197,8 +200,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			try {
 				stopRequested = !callback.handleItem(xmlWriter.toString());
 			} catch (Exception e) {
-				if (e instanceof TimeOutException) {
-					timeOutException = (TimeOutException)e;
+				if (e instanceof ITimeoutException) {
+					throw new SaxTimeoutException(e);
 				}
 				throw new SaxException(e);
 			}
@@ -264,13 +267,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			return stopRequested;
 		}
 
-		public TimeOutException getTimeOutException() {
-			return timeOutException;
-		}
-
-
-
-
 	}
 
 	private class StopSensor extends FullXmlFilter {
@@ -284,7 +280,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			super.endElement(uri, localName, qName);
 			if (itemHandler.isStopRequested()) {
-				throw new SAXException("stop requested");
+				throw new SaxAbortException("stop requested");
 			}
 		}
 	}
@@ -295,7 +291,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		TransformerErrorListener transformerErrorListener=null;
 	}
 	
-	protected void createHandler(HandlerRecord result, Message input, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		ItemCallbackCallingHandler itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=itemHandler;
 		
@@ -331,38 +327,62 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		ExceptionCatchingFilter exceptionCatcher = new ExceptionCatchingFilter() {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
-				try {
-					if (itemHandler.getTimeOutException()!=null) {
-						throw new SaxTimeoutException(itemHandler.getTimeOutException());
-					}
-					if (itemHandler.isStopRequested()) {
-						if (e instanceof SaxAbortException) {
-							throw (SaxAbortException)e;
-						}
-						throw new SaxAbortException(e);
-					}
-					// Xalan rethrows any caught exception with the message, but without the cause.
-					// For improved diagnosability of error situations, rethrow the original exception, where applicable.
-					if (result.transformerErrorListener!=null) {
-						TransformerException tex = result.transformerErrorListener.getFatalTransformerException();
-						if (tex!=null) {
-							throw new SaxException(result.errorMessage,tex);
-						}
-						IOException iox = result.transformerErrorListener.getFatalIOException();
-						if (iox!=null) {
-							throw new SaxException(result.errorMessage,iox);
-						}
-					}
-					throw new SaxException(result.errorMessage,e);
-				} finally {
-					itemHandler.endDocument();
+				if (e instanceof SaxTimeoutException) {
+					throw (SaxTimeoutException)e;
 				}
+				if (e instanceof ITimeoutException) {
+					throw new SaxTimeoutException(e);
+				}
+				if (itemHandler.isStopRequested()) {
+					if (e instanceof SaxAbortException) {
+						throw (SaxAbortException)e;
+					}
+					throw new SaxAbortException(e);
+				}
+				// Xalan rethrows any caught exception with the message, but without the cause.
+				// For improved diagnosability of error situations, rethrow the original exception, where applicable.
+				if (result.transformerErrorListener!=null) {
+					TransformerException tex = result.transformerErrorListener.getFatalTransformerException();
+					if (tex!=null) {
+						throw new SaxException(result.errorMessage,tex);
+					}
+					IOException iox = result.transformerErrorListener.getFatalIOException();
+					if (iox!=null) {
+						throw new SaxException(result.errorMessage,iox);
+					}
+				}
+				throw new SaxException(result.errorMessage,e);
 			}
 		};
 		exceptionCatcher.setContentHandler(result.inputHandler);
 		result.inputHandler = exceptionCatcher;
 	}
 
+	@Override
+	public boolean canProvideOutputStream() {
+		return !isProcessFile() && super.canProvideOutputStream();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			return null;
+		}
+		HandlerRecord handlerRecord = new HandlerRecord();
+		try {
+			MessageOutputStream target=getTargetStream(session);
+			Writer resultWriter = target.asWriter();
+			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
+			createHandler(handlerRecord, session, callback);
+			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, session);
+		} catch (TransformerException e) {
+			throw new StreamingException(handlerRecord.errorMessage, e);
+		}
+	}
+
+	
+	
+	
 	@Override
 	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputSource src;
@@ -387,7 +407,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
-			createHandler(handlerRecord, input, session, callback);
+			createHandler(handlerRecord, session, callback);
 		} catch (TransformerException e) {
 			throw new SenderException(handlerRecord.errorMessage, e);
 		}
@@ -395,19 +415,31 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		try {
 			XmlUtils.parseXml(src,handlerRecord.inputHandler);
 		} catch (Exception e) {
-			if (e instanceof SaxTimeoutException) {
-				if (e.getCause() instanceof TimeOutException) {
-					throw (TimeOutException)e.getCause();
+			try {
+				if (e instanceof ITimeoutException) {
+					if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
+						throw (TimeOutException)e.getCause();
+					}
+					throw new TimeOutException(e);
 				}
-				throw new TimeOutException(e);
-			}
-			if (!(e instanceof SaxAbortException)) {
-				throw new SenderException(e);
+				if (!(e instanceof IAbortException)) {
+					throw new SenderException(e);
+				}
+			} finally {
+				try {
+					handlerRecord.inputHandler.endDocument();
+				} catch (Exception e2) {
+					log.warn("Exception in endDocument()",e2);
+				}
 			}
 		}
-		rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
+		// 2020-06-12 removing below 'rethrowTransformerException()', as it does not break the tests, and cannot be implemented when providing an OutputStream.
+		// However, if cases popup of errors not being signaled, this modification could be the cause.
+		//rethrowTransformerException(handlerRecord.transformerErrorListener, handlerRecord.errorMessage);
 	}
-		
+
+	
+	
 	private void rethrowTransformerException(TransformerErrorListener transformerErrorListener, String errorMessage) throws SenderException {
 		if (transformerErrorListener!=null) {
 			TransformerException tex = transformerErrorListener.getFatalTransformerException();

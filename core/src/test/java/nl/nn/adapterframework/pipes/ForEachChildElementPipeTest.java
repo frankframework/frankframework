@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
@@ -123,12 +124,23 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
 		EchoSender sender = new EchoSender() {
-
+			
 			@Override
 			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
 				try {
 					if (message.asString().contains("error")) {
+						if (e!=null) {
+							if (e instanceof SenderException) {
+								throw (SenderException)e;
+							}
+							if (e instanceof TimeOutException) {
+								throw (TimeOutException)e;
+							}
+							if (e instanceof RuntimeException) {
+								throw (RuntimeException)e;
+							}
+						}
 						throw new SenderException("Exception triggered", e);
 					}
 				} catch (IOException e) {
@@ -182,11 +194,12 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.start();
 
 		try {
-		PipeRunResult prr = doPipe(pipe, messageError, session);
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
-	}
+		}
 	}
 
 	@Test
@@ -198,11 +211,45 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.start();
 
 		try {
-		PipeRunResult prr = doPipe(pipe, messageError, session);
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
 	}
+
+	@Test
+	public void testTimeout() throws Exception {
+		Exception targetException = new TimeOutException("FakeTimeout");
+		pipe.setSender(getElementRenderer(targetException));
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
+	}
+
+	@Test
+	public void testTimeoutXpath() throws Exception {
+		Exception targetException = new TimeOutException("FakeTimeout");
+		pipe.setSender(getElementRenderer(targetException));
+		pipe.setElementXPathExpression("/root/sub");
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
 	}
 
 	private void assertCauseChainEndsAtOriginalException(Exception expectedCause,Exception actual) {

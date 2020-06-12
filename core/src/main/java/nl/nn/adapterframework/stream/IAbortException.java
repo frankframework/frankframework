@@ -15,24 +15,6 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.ITimeoutException;
-import nl.nn.adapterframework.xml.SaxException;
+public interface IAbortException {
 
-/**
- * SAXException thrown to signal that a timeout occurred in consuming the stream.
- */
-public class SaxTimeoutException extends SaxException implements ITimeoutException {
-	
-	public SaxTimeoutException() {
-		super();
-	}
-	public SaxTimeoutException(String message) {
-		super(message);
-	}
-	public SaxTimeoutException(String message, Exception cause) {
-		super(message, cause);
-	}
-	public SaxTimeoutException(Exception cause) {
-		super(cause);
-	}
 }
