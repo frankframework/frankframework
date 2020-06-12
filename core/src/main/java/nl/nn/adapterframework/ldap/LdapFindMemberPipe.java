@@ -15,32 +15,17 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
-import javax.naming.CommunicationException;
-import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.naming.ldap.InitialLdapContext;
-
 import org.apache.commons.lang.StringUtils;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
 /**
  * Pipe that checks if a specified dn exists as 'member' in another specified dn

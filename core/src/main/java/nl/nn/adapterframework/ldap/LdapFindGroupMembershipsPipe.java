@@ -15,21 +15,13 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.cache.ICacheEnabled;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
