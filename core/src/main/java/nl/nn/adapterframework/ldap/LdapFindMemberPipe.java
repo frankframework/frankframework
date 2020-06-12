@@ -52,43 +52,6 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	private String dnSearchIn;
 	private String dnFind;
 	private boolean recursiveSearch = true;
-	
-	private LdapClient ldapClient;
-	private ICacheAdapter<String, Set<String>> cache;
-	
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		Map<String,Object> options=new HashMap<String,Object>();
-		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
-		options.put(Context.SECURITY_AUTHENTICATION, "simple");
-		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
-		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
-		ldapClient= new LdapClient(options);
-		ldapClient.registerCache(cache);
-		ldapClient.configure();
-	}
-
-	@Override
-	public void start() throws PipeStartException {
-		super.start();
-		try {
-			ldapClient.open();
-		} catch (SenderException e) {
-			throw new PipeStartException(e);
-		}
-	}
-
-	@Override
-	public void stop() {
-		try {
-			ldapClient.close();
-		} catch (SenderException e) {
-			log.warn(getLogPrefix(null)+"cannot close ldapClient",e);
-		} finally {
-			super.stop();
-		}
-	}
 
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {

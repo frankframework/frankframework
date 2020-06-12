@@ -15,13 +15,23 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.naming.Context;
+
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -32,7 +42,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * 
  * @author Gerrit van Brakel
  */
-public abstract class LdapQueryPipeBase extends FixedForwardPipe {
+public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICacheEnabled<String,Set<String>> {
 	
 	private String ldapProviderURL;
 	private String host;
@@ -51,6 +61,9 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	protected PipeForward notFoundForward;
 	protected PipeForward exceptionForward;
 
+	protected LdapClient ldapClient;
+	protected ICacheAdapter<String, Set<String>> cache;
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -70,8 +83,38 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getExceptionForwardName())) {
 			exceptionForward = findForward(getExceptionForwardName());
 		}
+		
+		Map<String,Object> options=new HashMap<String,Object>();
+		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
+		options.put(Context.SECURITY_AUTHENTICATION, "simple");
+		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
+		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
+		ldapClient= new LdapClient(options);
+		ldapClient.registerCache(cache);
+		ldapClient.configure();
 	}
 
+	@Override
+	public void start() throws PipeStartException {
+		super.start();
+		try {
+			ldapClient.open();
+		} catch (SenderException e) {
+			throw new PipeStartException(e);
+		}
+	}
+
+	@Override
+	public void stop() {
+		try {
+			ldapClient.close();
+		} catch (SenderException e) {
+			log.warn(getLogPrefix(null)+"cannot close ldapClient",e);
+		} finally {
+			super.stop();
+		}
+	}
+	
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {
@@ -102,6 +145,14 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return url + d;
 	}
 
+	@Override
+	public void registerCache(ICacheAdapter<String, Set<String>> cache) {
+		this.cache=cache;
+	}
+	@Override
+	public ICacheAdapter<String, Set<String>> getCache() {
+		return cache;
+	}
 
 	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://insim.biz'.", ""})
 	public void setLdapProviderURL(String string) {

@@ -62,47 +62,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Gerrit van Brakel
  */
-public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
+public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase {
 	
 	private boolean recursiveSearch = true;
-	
-	private LdapClient ldapClient;
-	private ICacheAdapter<String, Set<String>> cache;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		Map<String,Object> options=new HashMap<String,Object>();
-		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
-		options.put(Context.SECURITY_AUTHENTICATION, "simple");
-		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
-		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
-		ldapClient= new LdapClient(options);
-		ldapClient.registerCache(cache);
-		ldapClient.configure();
-	}
-
-	@Override
-	public void start() throws PipeStartException {
-		super.start();
-		try {
-			ldapClient.open();
-		} catch (SenderException e) {
-			throw new PipeStartException(e);
-		}
-	}
-
-	@Override
-	public void stop() {
-		try {
-			ldapClient.close();
-		} catch (SenderException e) {
-			log.warn(getLogPrefix(null)+"cannot close ldapClient",e);
-		} finally {
-			super.stop();
-		}
-	}
-
 
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
@@ -132,16 +94,6 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}
-	}
-
-
-	@Override
-	public void registerCache(ICacheAdapter<String, Set<String>> cache) {
-		this.cache=cache;
-	}
-	@Override
-	public ICacheAdapter<String, Set<String>> getCache() {
-		return cache;
 	}
 
 	
