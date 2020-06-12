@@ -31,7 +31,7 @@ import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 public interface JavascriptEngine<E> {
 
 	/**
-	 * @param alias		a string describing the source, such as a filename
+	 * @param alias An identifier which describes the script(s) that are being executed.
 	 */
 	void setScriptAlias(String alias);
 

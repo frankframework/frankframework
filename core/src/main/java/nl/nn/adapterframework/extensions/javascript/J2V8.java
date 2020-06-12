@@ -44,6 +44,10 @@ public class J2V8 implements JavascriptEngine<V8> {
 		this.alias = alias;
 	}
 
+	/**
+	 * Use the ${ibis.tmpdir} to extract the SO/DLL files into.
+	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 */
 	private String getTempDirectory() {
 		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 
@@ -70,14 +74,10 @@ public class J2V8 implements JavascriptEngine<V8> {
 		return StringUtils.isEmpty(directory) ? null : directory;
 	}
 
-	/**
-	 * If path is null or empty, it will use the log.dir
-	 * If the log.dir is relative it will turn it into an absolute path
-	 */
 	@Override
 	public void startRuntime() {
 		String directory = getTempDirectory();
-		v8 = V8.createV8Runtime(alias, directory);
+		v8 = V8.createV8Runtime(alias, directory); // The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path. Defaults to ${ibis.tmpdir}
 	}
 
 	@Override

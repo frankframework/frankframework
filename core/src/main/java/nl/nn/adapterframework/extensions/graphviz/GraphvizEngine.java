@@ -124,7 +124,7 @@ public class GraphvizEngine {
 		if(null == ENVS.get()) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS"));
+			ENVS.set(new Env(getVisJsWrapper(), visJsSource));
 		}
 		return ENVS.get();
 	}
@@ -156,11 +156,7 @@ public class GraphvizEngine {
 		private JavascriptEngine<?> jsEngine;
 		private ResultHandler resultHandler;
 
-		/**
-		 * It's important to register the JS scripts under the same alias so it can be cached
-		 * Use the log.dir to extract the SO/DLL files into, make sure this is using an absolute path and not a relative one!!
-		 */
-		Env(String initScript, String graphvisJsLibrary, String alias) {
+		Env(String initScript, String graphvisJsLibrary) {
 			// Available JS Engines. Lower index has priority.
 			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
 
@@ -170,7 +166,7 @@ public class GraphvizEngine {
 					JavascriptEngine<?> engine = ((JavascriptEngine<?>) engines[i].newInstance());
 					ResultHandler resultHandler = new ResultHandler();
 
-					startEngine(engine, resultHandler, initScript, graphvisJsLibrary, alias);
+					startEngine(engine, resultHandler, initScript, graphvisJsLibrary);
 
 					log.info("Using Javascript engine [" + engines[i].getName() + "] for Graphviz.");
 					jsEngine = engine;
@@ -184,9 +180,9 @@ public class GraphvizEngine {
 				throw new UnsupportedOperationException("Javascript engines could not be initialized.");
 		}
 
-		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary, String alias) throws Exception {
+		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
 			log.info("Starting runtime for Javascript Engine...");
-			engine.setScriptAlias(alias);
+			engine.setScriptAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
 			engine.startRuntime();
 			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
 			engine.executeScript(graphvisJsLibrary);
