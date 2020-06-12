@@ -240,6 +240,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private List<StatisticsKeeper> idleStatistics = new ArrayList<>();
 	private List<StatisticsKeeper> queueingStatistics;
 
+	private StatisticsKeeper messageExtractionStatistics = new StatisticsKeeper("request extraction");
+
 //	private StatisticsKeeper requestSizeStatistics = new StatisticsKeeper("request size");
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
 
@@ -272,22 +274,13 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private EventHandler eventHandler=null;
 
 	/**
-	 * The cache for poison messages acts as a sort of poor-mans error
+	 * The processResultCache acts as a sort of poor-mans error
 	 * storage and is always available, even if an error-storage is not.
 	 * Thus messages might be lost if they cannot be put in the error
 	 * storage, but unless the server crashes, a message that has been
-	 * put in the poison-cache will not be reprocessed even if it's
+	 * put in the processResultCache will not be reprocessed even if it's
 	 * offered again.
 	 */
-	private Map<String,String> poisonMessageIdCache = new LinkedHashMap<String,String>() {
-
-		@Override
-		protected boolean removeEldestEntry(Entry<String,String> eldest) {
-			return size() > getPoisonMessageIdCacheSize();
-		}
-
-	};
-
 	private Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
 
 		@Override
@@ -818,7 +811,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
-		cachePoisonMessageId(originalMessageId);
 		ISender errorSender = getErrorSender();
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
@@ -943,11 +935,12 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	 * Assumes that a transation has been started where necessary.
 	 */
-	private void processRawMessage(M rawMessage, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
-		if (rawMessage==null) {
+	private void processRawMessage(Object rawMessageOrWrapper, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
+		if (rawMessageOrWrapper==null) {
 			log.debug(getLogPrefix()+"received null message, returning directly");
 			return;
-		}		
+		}
+		long startExtractingMessage = System.currentTimeMillis();
 		if (threadContext==null) {
 			threadContext = new HashMap<>();
 		}
@@ -955,28 +948,30 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		String message = null;
 		String technicalCorrelationId = null;
 		try {
-			message = getListener().getStringFromRawMessage(rawMessage, threadContext);
+			message = getListener().getStringFromRawMessage((M)rawMessageOrWrapper, threadContext);
 		} catch (Exception e) {
-			if(rawMessage instanceof MessageWrapper) { 
+			if(rawMessageOrWrapper instanceof MessageWrapper) { 
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
-				message = ((MessageWrapper)rawMessage).getText();
+				message = ((MessageWrapper)rawMessageOrWrapper).getText();
 			} else {
 				throw new ListenerException(e);
 			}
 		}
 		try {
-			technicalCorrelationId = getListener().getIdFromRawMessage(rawMessage, threadContext);
+			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, threadContext);
 		} catch (Exception e) {
-			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
+			if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
+				technicalCorrelationId = ((MessageWrapper)rawMessageOrWrapper).getId();
 			} else {
 				throw new ListenerException(e);
 			}
 		}
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		long endExtractingMessage = System.currentTimeMillis();
+		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
+		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
 	
@@ -994,7 +989,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			try {
 				ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 				msg = errorStorage.getMessage(messageId);
-				processRawMessage((M)msg, threadContext, -1, true);
+				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
 				txStatus.setRollbackOnly();
 				throw new ListenerException(t);
@@ -1058,9 +1053,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				handler.setElementToMoveChain(getElementToMoveChain());
 				handler.setElementToMoveSessionKey(getElementToMoveSessionKey());
 				handler.setRemoveCompactMsgNamespaces(isRemoveCompactMsgNamespaces());
-				if (threadContext != null) {
-					handler.setContext(threadContext);
-				}
+				handler.setContext(threadContext);
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				parserFactory.setNamespaceAware(true);
 				SAXParser saxParser = parserFactory.newSAXParser();
@@ -1253,14 +1246,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 			}
 			try {
-				Map<String,Object> afterMessageProcessedMap;
-				if (threadContext!=null) {
-					afterMessageProcessedMap=threadContext;
-					if (pipelineSession!=null) {
-						threadContext.putAll(pipelineSession);
-					}
-				} else {
-					afterMessageProcessedMap=pipelineSession;
+				Map<String,Object> afterMessageProcessedMap=threadContext;
+				if (pipelineSession!=null) {
+					threadContext.putAll(pipelineSession);
 				}
 				try {
 					getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
@@ -1296,13 +1284,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return result;
 	}
 
-	private synchronized void cachePoisonMessageId(String messageId) {
-		poisonMessageIdCache.put(messageId, messageId);
-	}
-	private synchronized boolean isMessageIdInPoisonCache(String messageId) {
-		return poisonMessageIdCache.containsKey(messageId);
-	}
-
 	@SuppressWarnings("synthetic-access")
 	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
@@ -1317,9 +1298,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		}
 		cacheItem.comments=errorMessage;
 		processResultCache.put(messageId, cacheItem);
-	}
-	private synchronized boolean isMessageIdInProcessResultCache(String messageId) {
-		return processResultCache.containsKey(messageId);
 	}
 	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
 		return processResultCache.get(messageId);
@@ -1482,6 +1460,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		numReceived.performAction(action);
 		numRetried.performAction(action);
 		numRejected.performAction(action);
+		messageExtractionStatistics.performAction(action);
 		Iterator<StatisticsKeeper> statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,null,"procStats");
 		if (statsIter != null) {

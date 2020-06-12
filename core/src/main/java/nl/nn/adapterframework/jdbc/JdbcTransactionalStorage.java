@@ -1703,7 +1703,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	}
 	
 	@Override
-	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -1713,7 +1712,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	}
 
 	@Override
-	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}

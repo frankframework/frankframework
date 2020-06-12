@@ -202,13 +202,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		if ((rawMessageOrWrapper instanceof MessageWrapper)) { 
-			// if it is a MessageWrapper, it comes from an errorStorage, and then we can assume there are 
+			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
 			MessageWrapper wrapper = (MessageWrapper)rawMessageOrWrapper;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
 			}
 		} else {
-			F rawMessage = (F)rawMessageOrWrapper; 
+			@SuppressWarnings("unchecked") 
+			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F 
 			try {
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());

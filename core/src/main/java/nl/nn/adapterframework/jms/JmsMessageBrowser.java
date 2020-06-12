@@ -34,7 +34,6 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -52,8 +51,6 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
-	private final String IMESSAGEBROWSER = "nl.nn.adapterframework.core.IMessageBrowser";
 	
 	public JmsMessageBrowser() {
 		super();
@@ -243,7 +240,6 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 	@Override
-	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -253,7 +249,6 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 	@Override
-	@IbisDocRef({IMESSAGEBROWSER})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}
