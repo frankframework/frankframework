@@ -286,9 +286,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 	
 	private class HandlerRecord {
-		ContentHandler inputHandler;
-		String errorMessage="Could not parse input";
-		TransformerErrorListener transformerErrorListener=null;
+		private ContentHandler inputHandler;
+		private String errorMessage="Could not parse input";
+		private TransformerErrorListener transformerErrorListener=null;
 	}
 	
 	protected void createHandler(HandlerRecord result, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
