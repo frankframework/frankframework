@@ -15,7 +15,10 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
 
 import javax.naming.CommunicationException;
 import javax.naming.Context;
@@ -27,10 +30,14 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
@@ -45,7 +52,43 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	private String dnSearchIn;
 	private String dnFind;
 	private boolean recursiveSearch = true;
+	
+	private LdapClient ldapClient;
+	private ICacheAdapter<String, Set<String>> cache;
+	
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		Map<String,Object> options=new HashMap<String,Object>();
+		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
+		options.put(Context.SECURITY_AUTHENTICATION, "simple");
+		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
+		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
+		ldapClient= new LdapClient(options);
+		ldapClient.registerCache(cache);
+		ldapClient.configure();
+	}
 
+	@Override
+	public void start() throws PipeStartException {
+		super.start();
+		try {
+			ldapClient.open();
+		} catch (SenderException e) {
+			throw new PipeStartException(e);
+		}
+	}
+
+	@Override
+	public void stop() {
+		try {
+			ldapClient.close();
+		} catch (SenderException e) {
+			log.warn(getLogPrefix(null)+"cannot close ldapClient",e);
+		} finally {
+			super.stop();
+		}
+	}
 
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
@@ -72,7 +115,15 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		if (StringUtils.isNotEmpty(dnSearchIn_work)
 				&& StringUtils.isNotEmpty(dnFind_work)) {
 			try {
-				found = findMember(getHost(), getPort(), dnSearchIn_work, isUseSsl(), dnFind_work, isRecursiveSearch());
+				Set<String> members;
+				
+				if (isRecursiveSearch()) {
+					members = ldapClient.searchRecursivelyViaAttributes(dnSearchIn, getBaseDN(), "member", dnFind);
+				} else {
+					members = ldapClient.searchObjectForMultiValuedAttribute(dnSearchIn, getBaseDN(), "member");
+				}
+				
+				found = members.contains(dnFind_work);
 			} catch (NamingException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 			}
@@ -89,56 +140,6 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		}
 		return new PipeRunResult(getForward(), message);
 	}
-
-	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
-		Hashtable<String,Object> env = new Hashtable<String,Object>();
-		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
-		env.put(Context.PROVIDER_URL, provUrl);
-		if (StringUtils.isNotEmpty(cf.getUsername())) {
-			env.put(Context.SECURITY_AUTHENTICATION, "simple");
-			env.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
-			env.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
-		} else {
-			env.put(Context.SECURITY_AUTHENTICATION, "none");
-		}
-		DirContext ctx = null;
-		try {
-			try {
-				ctx = new InitialDirContext(env);
-			} catch (CommunicationException e) {
-				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
-				env.put("java.naming.ldap.factory.socket", DummySSLSocketFactory.class.getName());
-				ctx = new InitialLdapContext(env, null);
-			}
-			Attribute attrs = ctx.getAttributes("").get("member");
-			if (attrs != null) {
-				boolean found = false;
-				for (int i = 0; i < attrs.size() && !found; i++) {
-					String dnFound = (String) attrs.get(i);
-					if (dnFound.equalsIgnoreCase(dnFind)) {
-						found = true;
-					} else {
-						if (recursiveSearch) {
-							found = findMember(host, port, dnFound, useSsl,
-									dnFind, recursiveSearch);
-						}
-					}
-				}
-				return found;
-			}
-		} finally {
-			if (ctx != null) {
-				try {
-					ctx.close();
-				} catch (NamingException e) {
-					log.warn("Exception closing DirContext", e);
-				}
-			}
-		}
-		return false;
-	}
-
 
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
