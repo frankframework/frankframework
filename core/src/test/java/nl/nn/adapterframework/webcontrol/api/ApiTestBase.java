@@ -29,14 +29,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.jaxrs.impl.MetadataMap;
+import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
+
+import com.google.common.net.HttpHeaders;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -133,16 +138,17 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 //			Class<?>[] parameters = method.getParameterTypes();
 			try {
 				Object[] object = new Object[0]; //TODO: figure out how to deal with QueryParams and MultipartRequests
-				Response response = spy( (Response) method.invoke(jaxRsResource, object));
+				ResponseImpl response = (ResponseImpl) method.invoke(jaxRsResource, object);
+				MultivaluedMap<String, Object> meta = new MetadataMap<>();
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);
 				if(produces != null) {
 					String mediaType = produces.value()[0];
 					MediaType type = MediaType.valueOf(mediaType);
-					when(response.getMediaType()).thenReturn(type);
-
-					return response;
+					meta.add(HttpHeaders.CONTENT_TYPE, type);
 				}
+
+				response.addMetadata(meta);
 				return response;
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				e.printStackTrace();

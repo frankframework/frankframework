@@ -193,7 +193,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public Map<String, String> getParameters() {
 		Map<String, String> parameters = new HashMap<>();
-		parameters.put("config-location", "iaf-api.xml");
+		parameters.put("config-location", "FrankFrameworkApiContext.xml");
 		return parameters;
 	}
 }
