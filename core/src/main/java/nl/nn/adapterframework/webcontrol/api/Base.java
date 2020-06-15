@@ -23,12 +23,17 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -45,12 +50,24 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @author	Niels Meijer
  */
 
-public abstract class Base {
+public abstract class Base implements ApplicationContextAware {
 	@Context ServletConfig servletConfig;
 
-	protected Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext = null;
+	private JAXRSServiceFactoryBean serviceFactory = null;
+
+	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
+		serviceFactory = server.getServiceFactory();
+	}
+
+	protected JAXRSServiceFactoryBean getJAXRSService() {
+		return serviceFactory;
+	}
 
 	/**
 	 * Retrieves the IbisContext from <code>servletConfig</code>.

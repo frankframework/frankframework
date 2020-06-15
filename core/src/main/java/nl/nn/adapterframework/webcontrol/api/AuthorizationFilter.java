@@ -134,7 +134,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	private boolean doAuth(SecurityContext securityContext, final Set<String> rolesSet) {
 		for (String role : rolesSet) {
-			if(securityContext.isUserInRole(role) == true) {
+			if(securityContext.isUserInRole(role)) {
 				return true;
 			}
 		}

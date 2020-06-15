@@ -35,13 +35,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.MethodDispatcher;
 import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.util.AppConstants;
@@ -55,18 +51,9 @@ import nl.nn.adapterframework.util.AppConstants;
 
 @Path("/")
 public class Init extends Base implements ApplicationContextAware {
-
-	private JAXRSServiceFactoryBean serviceFactory;
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
-		serviceFactory = server.getServiceFactory();
-	}
+	@Context HttpServletRequest httpServletRequest;
 
 	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
-
-	@Context HttpServletRequest httpServletRequest;
 
 	@GET
 	@PermitAll
@@ -81,7 +68,7 @@ public class Init extends Base implements ApplicationContextAware {
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
 			requestPath.setLength(requestPath.length()-1);
 
-		for (ClassResourceInfo cri : serviceFactory.getClassResourceInfo()) {
+		for (ClassResourceInfo cri : getJAXRSService().getClassResourceInfo()) {
 			MethodDispatcher methods = cri.getMethodDispatcher();
 			for (OperationResourceInfo operation : methods.getOperationResourceInfos()) {
 				Method method = operation.getMethodToInvoke();
