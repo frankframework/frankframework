@@ -64,8 +64,14 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
-		String searchedDN = message.toString();
 		
+		String searchedDN;
+		try {
+			searchedDN = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
+		}
+
 		Set<String> memberships;
 		try {
 			if (isRecursiveSearch()) {
