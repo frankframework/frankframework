@@ -17,6 +17,7 @@ package nl.nn.adapterframework.xml;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -29,8 +30,8 @@ public class RootElementToSessionKeyFilter extends FullXmlFilter {
 	
 	private boolean rootElementParsed;
 
-	public RootElementToSessionKeyFilter(IPipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey) {
-		super();
+	public RootElementToSessionKeyFilter(IPipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey, ContentHandler handler) {
+		super(handler);
 		if (session!=null) {
 			this.session=session;
 			this.rootElementSessionKey=rootElementSessionKey;

@@ -19,8 +19,7 @@ public class XmlPrettyPrintFilterTest {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrinted.xml");
 		XmlWriter xmlWriter = new XmlWriter();
-		PrettyPrintFilter filter =  new PrettyPrintFilter();
-		filter.setContentHandler(xmlWriter);
+		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter);
 		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
@@ -31,8 +30,7 @@ public class XmlPrettyPrintFilterTest {
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedAsText.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
-		PrettyPrintFilter filter =  new PrettyPrintFilter();
-		filter.setContentHandler(xmlWriter);
+		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter);
 		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
@@ -43,8 +41,7 @@ public class XmlPrettyPrintFilterTest {
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedNoLexicalHandler.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		
-		PrettyPrintFilter filter =  new PrettyPrintFilter();
-		filter.setContentHandler(xmlWriter);
+		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter);
 
 		InputSource inputSource = new InputSource(new StringReader(input));
 		XMLReader xmlReader = XmlUtils.getXMLReader(filter);

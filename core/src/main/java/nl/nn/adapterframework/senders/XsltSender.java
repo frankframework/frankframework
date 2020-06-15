@@ -161,9 +161,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	protected ContentHandler filterInput(ContentHandler input, IPipeLineSession session) {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
-			XMLFilterImpl filter = new NamespaceRemovingFilter();
-			filter.setContentHandler(input);
-			return filter;
+			return new NamespaceRemovingFilter(input);
 		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
@@ -247,25 +245,18 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 			if (indentXml) {
-				PrettyPrintFilter indentingFilter = new PrettyPrintFilter();
-				indentingFilter.setContentHandler(handler);
-				handler=indentingFilter;
+				handler = new PrettyPrintFilter(handler);
 			}
 			if (isSkipEmptyTags()) {
-				SkipEmptyTagsFilter skipEmptyTagsFilter = new SkipEmptyTagsFilter();
-				skipEmptyTagsFilter.setContentHandler(handler);
-				handler=skipEmptyTagsFilter;
+				handler = new SkipEmptyTagsFilter(handler);
 			}
 			
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, handler);
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
-			mainFilter.setContentHandler(handler);
-			handler=mainFilter;
-			
-			handler=filterInput(handler, session);
+			handler=filterInput(mainFilter, session);
 			
 			return handler;
 		} catch (Exception e) {
