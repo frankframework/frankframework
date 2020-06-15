@@ -232,7 +232,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	private boolean checkIndices;	
 
 	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
-	private final String IMESSAGEBROWSER = "nl.nn.adapterframework.core.IMessageBrowser";
 
 	public JdbcTransactionalStorage() {
 		super();

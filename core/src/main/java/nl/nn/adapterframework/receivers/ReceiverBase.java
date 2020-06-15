@@ -618,7 +618,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser()!=null) {
-					ConfigurationWarnings.add(this, log, "configuration overrided default errorStorageBrowser provided by listener");
+					ConfigurationWarnings.add(this, log, "Default errorStorageBrowser provided by listener is overridden by configured errorStorage");
 				}				
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
@@ -635,8 +635,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser()!=null) {
-					ConfigurationWarnings.add(this, log, "configuration overrided default messageLogBrowser provided by listener");
-				}				
+					ConfigurationWarnings.add(this, log, "Default messageLogBrowser provided by listener is overridden by configured messageLog");
+				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
 					this.messageLog = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
@@ -1750,7 +1750,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return errorStorage;
 	}
 	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed message. If present, this storage will be managed by the Receiver.
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getErrorStorage() {
 		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
@@ -1797,7 +1797,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return messageLog;
 	}
 	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed succesfully. If present, this storage will be managed by the Receiver.
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
 		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
