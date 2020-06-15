@@ -92,11 +92,24 @@ angular.module('iaf.beheerconsole')
 		this.Delete = function () { // uri, callback, error || uri, object, callback, error
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
-			var request = {url:buildURI(uri), method: "delete" };
-			if(args.length == 4) { //if 3 args are left, we have an object!
-				request.data = args.shift();
+			var request = {url:buildURI(uri), method: "delete", headers:{} };
+			var callback;
+
+			var object = args.shift(); // this can be a function or an object.
+			if(object instanceof Function) { //we have a callback function, that means no object is present!
+				callback = object; // set the callback method accordingly
+			} else {
+				if(object instanceof FormData) {
+					request.data = object;
+					request.headers["Content-Type"] = undefined;
+				} else {
+					request.data = JSON.stringify(object);
+					request.headers["Content-Type"] = "application/json";
+				}
+
+				callback = args.shift(); // the previous argument was an object, that means the next object is the callback!
 			}
-			var callback = args.shift();
+
 			var error = args.shift();
 			request.intercept = args.shift();
 
