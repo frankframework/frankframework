@@ -15,7 +15,8 @@
 			</exits>
 			<pipe
 				name="HelloWorld"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="Hello World"
 				>
 				<forward name="success" path="EXIT"/>
 			</pipe>

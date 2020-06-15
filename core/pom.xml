@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -49,13 +47,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 		</dependency>
-		<!--LOG4J SLF4J Binding -->
+		<!--LOG4J SLF4J Binding-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j2.version}</version>
 		</dependency>
-		<!--Apache Commons Logging Binding -->
+		<!--Apache Commons Logging Binding-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
@@ -132,8 +130,7 @@
 			<artifactId>sendgrid-java</artifactId>
 			<version>4.3.0</version>
 			<exclusions>
-				<!-- exclude mockito from the main build path. It should not be there, 
-					and it causes problems with Hamcrest Matchers -->
+				<!-- exclude mockito from the main build path. It should not be there, and it causes problems with Hamcrest Matchers -->
 				<exclusion>
 					<groupId>org.mockito</groupId>
 					<artifactId>mockito-core</artifactId>
@@ -240,10 +237,8 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-struts</artifactId>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, 
-				NullPointerExceptions in System.arraycopy appear, probably due to a mal-initialized 
-				writer. Probably also needed when running on WAS, see comment about SJSXP 
-				in XmlUtils.java -->
+		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, NullPointerExceptions in System.arraycopy appear,
+		probably due to a mal-initialized writer.  Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
@@ -504,8 +499,7 @@
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${cxf.version}</version>
 		</dependency>
-		<!-- Add the excluded files from the CXF dependency explicitly which prevents 
-			duplicates in war files -->
+		<!-- Add the excluded files from the CXF dependency explicitly which prevents duplicates in war files -->
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
@@ -540,16 +534,15 @@
 			<version>2.2.0</version>
 			<exclusions>
 				<exclusion>
-					<!-- #475 exclude to avoid excessive logging of other slf4j enabled 
-						components like quartz -->
+					<!-- #475 exclude to avoid excessive logging of other slf4j enabled components like quartz -->
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- Bouncy GPG uses this version. However another dependency uses 1.60, 
-			and causes problems during loading from classpath. So, it requires to add 
-			explicit dependency. -->
+<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
+			and causes problems during loading from classpath.
+			So, it requires to add explicit dependency.-->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
@@ -635,8 +628,7 @@
 			<id>ibm-jdk</id>
 			<dependencies>
 				<!-- Gerrit says: required when compiling with IBM JDK -->
-				<!-- Niels says: The POM for org.ibissource:ibis-adapterframework-core:jar 
-					is invalid! -->
+				<!-- Niels says: The POM for org.ibissource:ibis-adapterframework-core:jar is invalid! -->
 				<dependency>
 					<groupId>com.sun.net</groupId>
 					<artifactId>ssl</artifactId>
