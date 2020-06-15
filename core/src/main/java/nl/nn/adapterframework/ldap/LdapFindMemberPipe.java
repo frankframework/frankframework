@@ -67,7 +67,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				Set<String> members;
 				
 				if (isRecursiveSearch()) {
-					members = ldapClient.searchRecursivelyViaAttributes(dnSearchIn_work, getBaseDN(), "member", dnFind);
+					members = ldapClient.searchRecursivelyViaAttributes(dnSearchIn_work, getBaseDN(), "member", dnFind_work);
 				} else {
 					members = ldapClient.searchObjectForMultiValuedAttribute(dnSearchIn_work, getBaseDN(), "member");
 				}
