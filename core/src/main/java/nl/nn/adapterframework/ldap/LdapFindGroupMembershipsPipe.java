@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.io.IOException;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -63,8 +64,8 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
-		String searchedDN=message.toString();
-
+		String searchedDN = message.toString();
+		
 		Set<String> memberships;
 		try {
 			if (isRecursiveSearch()) {

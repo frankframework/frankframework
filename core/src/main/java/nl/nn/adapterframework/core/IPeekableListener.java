@@ -24,11 +24,11 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * were out of sync which resulted in hanging distributed transactions.
  **/
 
-public interface IPeekableListener extends IPullingListener {
+public interface IPeekableListener<M> extends IPullingListener<M> {
 
 	boolean hasRawMessageAvailable() throws ListenerException;
 
-	@IbisDoc({"when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true", "false"})
+	@IbisDoc({"when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server", "false"})
 	public void setPeekUntransacted(boolean b);
 	boolean isPeekUntransacted();
 }

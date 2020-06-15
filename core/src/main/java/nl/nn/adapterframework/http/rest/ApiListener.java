@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware<String> {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
@@ -53,7 +53,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private ContentType producedContentType;
 	private String multipartBodyName = null;
 
-	private IReceiver receiver;
+	private IReceiver<String> receiver;
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
@@ -289,12 +289,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	}
 
 	@Override
-	public void setReceiver(IReceiver receiver) {
+	public void setReceiver(IReceiver<String> receiver) {
 		this.receiver = receiver;
 	}
 
 	@Override
-	public IReceiver getReceiver() {
+	public IReceiver<String> getReceiver() {
 		return receiver;
 	}
 }

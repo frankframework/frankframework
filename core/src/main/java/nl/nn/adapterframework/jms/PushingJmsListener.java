@@ -153,7 +153,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
@@ -168,7 +168,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageReceived=rawMessage;
+					javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper; // cast can be safely done because javax.jms.Message is serializable, so no MessageWrapper in this case
 					long expiration=messageReceived.getJMSExpiration();
 					if (expiration!=0) {
 						timeToLive=expiration-new Date().getTime();

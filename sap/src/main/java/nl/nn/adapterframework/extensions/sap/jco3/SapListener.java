@@ -211,10 +211,10 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (rawMessage instanceof JCoFunction) {
-				message2FunctionResult(rawMessage, processResult.getResult());
+			if (rawMessageOrWrapper instanceof JCoFunction) {
+				message2FunctionResult((JCoFunction)rawMessageOrWrapper, processResult.getResult());
 			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
@@ -241,7 +241,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try {
-				handler.processRequest(this, xmlProcessor.render(doc));
+				handler.processRequest(this, null, xmlProcessor.render(doc));
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

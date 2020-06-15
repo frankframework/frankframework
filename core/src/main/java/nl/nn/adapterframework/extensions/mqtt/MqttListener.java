@@ -18,6 +18,10 @@ package nl.nn.adapterframework.extensions.mqtt;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -28,10 +32,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -57,17 +57,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  * @author Niels Meijer
  */
 
-public class MqttListener extends MqttFacade implements ReceiverAware, IPushingListener<MqttMessage>, MqttCallbackExtended {
+public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessage>, IPushingListener<MqttMessage>, MqttCallbackExtended {
 
-	private ReceiverBase receiver;
+	private ReceiverBase<MqttMessage> receiver;
 	private IMessageHandler<MqttMessage> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
 
-	public void setReceiver(IReceiver receiver) {
-		this.receiver = (ReceiverBase)receiver;
+	@Override
+	public void setReceiver(IReceiver<MqttMessage> receiver) {
+		this.receiver = (ReceiverBase<MqttMessage>)receiver;
 	}
 
-	public IReceiver getReceiver() {
+	@Override
+	public IReceiver<MqttMessage> getReceiver() {
 		return receiver;
 	}
 
@@ -81,6 +83,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 		this.ibisExceptionListener = ibisExceptionListener;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
 		receiver.setOnError(ReceiverBase.ONERROR_RECOVER);
@@ -91,6 +94,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			super.open();
@@ -101,6 +105,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 		}
 	}
 
+	@Override
 	public void close() {
 		// Prevent log.warn() when trying to recover. Recover will be triggered
 		// when connectionLost was called or listener could not start in which
@@ -168,6 +173,6 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
 	}
 }
