@@ -34,8 +34,8 @@ angular.module('iaf.beheerconsole')
 				$interval(updateTime, 1000);
 				updateTime();
 
-				$rootScope.instanceName = data.name;
-				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
+				$rootScope.instanceName = data.instance.name;
+				angular.element(".iaf-info").html(data.framework.name+" "+data.framework.version+": "+data.instance.name+" "+data.instance.version);
 
 				$rootScope.dtapStage = data["dtap.stage"];
 				$rootScope.dtapSide = data["dtap.side"];
