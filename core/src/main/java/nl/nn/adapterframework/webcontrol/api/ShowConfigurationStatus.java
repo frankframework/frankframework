@@ -58,6 +58,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
@@ -640,8 +641,7 @@ public final class ShowConfigurationStatus extends Base {
 						sender = ((HasSender)listener).getSender();
 					}
 					//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-					ITransactionalStorage ts;
-					ts=rb.getErrorStorage();
+					IMessageBrowser ts = rb.getErrorStorageBrowser();
 					receiverInfo.put("hasErrorStorage", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -651,11 +651,11 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in errorstore", e);
 							receiverInfo.put("errorStorageCount", "error");
 						}
 					}
-					ts=rb.getMessageLog();
+					ts=rb.getMessageLogBrowser();
 					receiverInfo.put("hasMessageLog", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -665,7 +665,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("messageLogCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in messageLog", e);
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}

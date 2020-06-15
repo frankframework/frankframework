@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
@@ -402,14 +403,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int totalCounter = 0;
 		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 			ReceiverBase receiver = (ReceiverBase) receiverIt.next();
-			ITransactionalStorage errorStorage = receiver.getErrorStorage();
+			IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 			if (errorStorage != null) {
 				int counter;
 				try {
 					counter = getErrorStorageMessageCountWithTimeout(errorStorage, 10);
 				} catch (Exception e) {
-					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName()
-							+ "]", e);
+					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName() + "]", e);
 					return -1;
 				}
 				totalCounter += counter;
@@ -418,8 +418,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return totalCounter;
 	}
 
-	private int getErrorStorageMessageCountWithTimeout(ITransactionalStorage errorStorage,
-			int timeout) throws ListenerException, TimeOutException {
+	private int getErrorStorageMessageCountWithTimeout(IMessageBrowser errorStorage, int timeout) throws ListenerException, TimeOutException {
 		if (timeout <= 0) {
 			return errorStorage.getMessageCount();
 		}
@@ -521,9 +520,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return adapterXML;
 	}
 
-	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter,
-			ShowConfigurationStatusManager showConfigurationStatusManager,
-			ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
+	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager, ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
 		Iterator recIt = adapter.getReceiverIterator();
 		if (!recIt.hasNext()) {
 			return null;
@@ -579,8 +576,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (listener instanceof HasSender) {
 						sender = ((HasSender) listener).getSender();
 					}
-					ITransactionalStorage ts;
-					ts = rb.getErrorStorage();
+					IMessageBrowser ts = rb.getErrorStorageBrowser();
 					receiverXML.addAttribute("hasErrorStorage", "" + (ts != null));
 					if (ts != null) {
 						try {
@@ -594,7 +590,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							receiverXML.addAttribute("errorStorageCount", "error");
 						}
 					}
-					ts = rb.getMessageLog();
+					ts = rb.getMessageLogBrowser();
 					receiverXML.addAttribute("hasMessageLog", "" + (ts != null));
 					if (ts != null) {
 						try {

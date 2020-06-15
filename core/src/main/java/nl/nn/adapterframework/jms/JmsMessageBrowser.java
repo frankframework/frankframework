@@ -87,6 +87,19 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		}
 	}
 
+	@Override
+	public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		Object msg = browseJmsMessage(originalMessageId);
+		return msg != null;
+	}
+
+	@Override
+	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		log.warn("could not determine correct presence of a message with correlationId [" + correlationId + "], assuming it doesnot exist");
+		// TODO: check presence of a message with correlationId
+		return false;
+	}
+
 	public int getMessageCount() throws ListenerException {
 		QueueBrowser queueBrowser=null;
 		Session session = null;

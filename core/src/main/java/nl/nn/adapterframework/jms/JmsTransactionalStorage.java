@@ -94,13 +94,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		log.warn("could not determine correct presence of a message with correlationId [" + correlationId + "], assuming it doesnot exist");
-		// TODO: check presence of a message with correlationId
-		return false;
-	}
-
-	@Override
 	public S browseMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(messageId);

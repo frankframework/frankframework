@@ -54,10 +54,12 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiver;
@@ -250,11 +252,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	private IListener<M> listener;
 	private ISender errorSender=null;
-	private ITransactionalStorage<Serializable> errorStorage=null;
+	private IMessageBrowser<Serializable> errorStorage=null;
 	// See configure() for explanation on this field
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private ISender sender=null; // answer-sender
-	private ITransactionalStorage<Serializable> messageLog=null;
+	private IMessageBrowser<Serializable> messageLog=null;
 	
 	private int maxDeliveries=5;
 	private int maxRetries=1;
@@ -528,7 +530,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				if (this.errorSender == null && this.errorStorage == null) {
 					this.errorStorage = this.tmpInProcessStorage;
 					info("has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-					errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
+					getErrorStorage().setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
 				} else {
 					info("has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
 				}
@@ -615,6 +617,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
 				}
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
+			} else {
+				if (getListener() instanceof IProvidesMessageBrowsers) {
+					this.errorStorage = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+				}
 			}
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
 			if (messageLog!=null) {
@@ -624,6 +630,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
+				}
+			} else {
+				if (getListener() instanceof IProvidesMessageBrowsers) {
+					this.messageLog = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
 				}
 			}
 			if (isTransacted()) {
@@ -976,7 +986,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	
 	public void retryMessage(String messageId) throws ListenerException {
-		if (getErrorStorage()==null) {
+		if (getErrorStorageBrowser()==null) {
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
 		}
 		PlatformTransactionManager txManager = getTxManager(); 
@@ -987,7 +997,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		Serializable msg=null;
 		try {
 			try {
-				ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+				IMessageBrowser<Serializable> errorStorage = getErrorStorageBrowser();
 				msg = errorStorage.getMessage(messageId);
 				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
@@ -1006,8 +1016,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 						log.warn(getLogPrefix()+IPipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
-						errorStorage.deleteMessage(messageId);
-						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
+						if (errorStorage instanceof ITransactionalStorage) {
+							errorStorage.deleteMessage(messageId);
+							((ITransactionalStorage)errorStorage).storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
+						}
 					}
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
@@ -1359,16 +1371,16 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/*
 	 * returns true if message should not be processed
 	 */
-	private boolean isDuplicateAndSkip(ITransactionalStorage<Serializable> transactionStorage, String messageId, String correlationId) throws ListenerException {
+	private boolean isDuplicateAndSkip(IMessageBrowser<Serializable> transactionStorage, String messageId, String correlationId) throws ListenerException {
 		if (isCheckForDuplicates() && transactionStorage != null) {
 			if ("CORRELATIONID".equalsIgnoreCase(getCheckForDuplicatesMethod())) {
 				if (transactionStorage.containsCorrelationId(correlationId)) {
-					warn("message with correlationId [" + correlationId + "] already exists in [" + transactionStorage.getName() + "], will not process");
+					warn("message with correlationId [" + correlationId + "] already exists in messageLog, will not process");
 					return true;
 				}
 			} else {
 				if (transactionStorage.containsMessageId(messageId)) {
-					warn("message with messageId [" + messageId + "] already exists in [" + transactionStorage.getName() + "], will not process");
+					warn("message with messageId [" + messageId + "] already exists in in messageLog, will not process");
 					return true;
 				}
 			}
@@ -1719,8 +1731,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return errorSender;
 	}
 
-	public ITransactionalStorage<Serializable> getErrorStorage() {
+	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
 		return errorStorage;
+	}
+	public ITransactionalStorage<Serializable> getErrorStorage() {
+		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
 	}
 
 	/**
@@ -1756,8 +1771,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
-	public ITransactionalStorage<Serializable> getMessageLog() {
+	public IMessageBrowser<Serializable> getMessageLogBrowser() {
 		return messageLog;
+	}
+	public ITransactionalStorage<Serializable> getMessageLog() {
+		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
 	}
 
 
