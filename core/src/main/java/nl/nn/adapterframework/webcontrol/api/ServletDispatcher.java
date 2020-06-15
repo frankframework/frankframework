@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2018, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,20 +17,28 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.cxf.transport.servlet.CXFServlet;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+
 import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 
 /**
  * Main dispatcher for all API resources.
@@ -39,7 +47,8 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
  * @author	Niels Meijer
  */
 
-public class ServletDispatcher extends HttpServletDispatcher {
+@IbisInitializer
+public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 1L;
 
@@ -65,15 +74,6 @@ public class ServletDispatcher extends HttpServletDispatcher {
 
 		log.debug("initialize IAFAPI servlet");
 		super.init(servletConfig);
-
-		if(log.isDebugEnabled()) {
-			StringTokenizer resources = new StringTokenizer(getInitParameter("resteasy.resources"), ",");
-			while (resources.hasMoreTokens()) {
-				String resource = resources.nextToken();
-				log.debug("loading resource["+resource.trim()+"]");
-			}
-		}
-		mappingPrefix = getInitParameter("resteasy.servlet.mapping.prefix");
 
 		if(!CORS_ALLOW_ORIGIN.isEmpty()) {
 			StringTokenizer tokenizer = new StringTokenizer(CORS_ALLOW_ORIGIN, ",");
@@ -149,5 +149,51 @@ public class ServletDispatcher extends HttpServletDispatcher {
 		if (!method.equals("OPTIONS")) {
 			super.service(request, response);
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		if(getBus() != null) {
+			super.onApplicationEvent(event);
+		}
+	}
+
+	@Override
+	public String getName() {
+		return "IAF-API";
+	}
+
+	@Override
+	public int loadOnStartUp() {
+		return -1;
+	}
+
+	@Override
+	public HttpServlet getServlet() {
+		return this;
+	}
+
+	@Override
+	public String[] getRoles() {
+		return null;
+	}
+
+	@Autowired
+	public void setServletManager(ServletManager servletManager) {
+		servletManager.register(this);
+	}
+
+	@Override
+	public String getUrlMapping() {
+		// TODO Auto-generated method stub
+		return "iaf/api/*";
+	}
+
+	
+	@Override
+	public Map<String, String> getParameters() {
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("config-location", "FrankFrameworkApiContext.xml");
+		return parameters;
 	}
 }
