@@ -2196,7 +2196,7 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
-		if(!formData.message && !formData.file) {
+		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;
 		}
@@ -2252,7 +2252,7 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify a service!");
 			return;
 		}
-		if(!formData.message && !formData.file) {
+		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;
 		}
