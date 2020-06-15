@@ -54,6 +54,11 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 */
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 	
+	/**
+	 * Retrieves and deletes the message.
+	 */
+	public S getMessage(String messageId) throws ListenerException;
+
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.

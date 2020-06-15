@@ -50,15 +50,11 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	/**
 	 * Retrieves the message, but does not delete. 
 	 */
-	M browseMessage(String messageId) throws ListenerException;
-	/**
-	 * Retrieves and deletes the message.
-	 */
-	M getMessage(String messageId) throws ListenerException;
+	public M browseMessage(String messageId) throws ListenerException;
 	/**
 	 * Deletes the message.
 	 */
-	void   deleteMessage(String messageId) throws ListenerException;
+	public void deleteMessage(String messageId) throws ListenerException;
 	public int getMessageCount() throws ListenerException;
 
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})

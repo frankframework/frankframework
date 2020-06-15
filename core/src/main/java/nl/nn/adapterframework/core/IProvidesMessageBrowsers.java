@@ -21,7 +21,16 @@ package nl.nn.adapterframework.core;
  */
 public interface IProvidesMessageBrowsers<M> {
 
+	/**
+	 * returns a {@link IMessageBrowser browser} of messages that have been processed successfully, and are stored in a 
+	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog in the configuration).
+	 */
 	public IMessageBrowser<M> getMessageLogBrowser();
+	
+	/**
+	 * returns a {@link IMessageBrowser browser} of messages that have been processed in error, and are stored in a 
+	 * storage managed by the listener itself (as opposed to a storage configured as a errorStore in the configuration).
+	 */
 	public IMessageBrowser<M> getErrorStoreBrowser();
 	
 }

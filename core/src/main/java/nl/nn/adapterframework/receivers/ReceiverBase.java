@@ -617,6 +617,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
 				}
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
+				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser()!=null) {
+					ConfigurationWarnings.add(this, log, "configuration overrided default errorStorageBrowser provided by listener");
+				}				
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
 					this.errorStorage = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
@@ -631,6 +634,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
+				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser()!=null) {
+					ConfigurationWarnings.add(this, log, "configuration overrided default messageLogBrowser provided by listener");
+				}				
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
 					this.messageLog = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
@@ -989,15 +995,23 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		if (getErrorStorageBrowser()==null) {
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
 		}
+		Map<String,Object>threadContext = new HashMap<>();
+		if (getErrorStorage()==null) {
+			// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
+			// then the management of the errorStorage is left to the listener.
+			IMessageBrowser errorStorageBrowser = getErrorStorageBrowser();
+			Object msg = errorStorageBrowser.browseMessage(messageId);
+			processRawMessage(msg, threadContext, -1, true);
+			return;
+		} 
 		PlatformTransactionManager txManager = getTxManager(); 
 		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
 		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
-		Map<String,Object>threadContext = new HashMap<>();
 		Serializable msg=null;
+		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		try {
 			try {
-				IMessageBrowser<Serializable> errorStorage = getErrorStorageBrowser();
 				msg = errorStorage.getMessage(messageId);
 				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
@@ -1016,10 +1030,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 						log.warn(getLogPrefix()+IPipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
-						if (errorStorage instanceof ITransactionalStorage) {
-							errorStorage.deleteMessage(messageId);
-							((ITransactionalStorage)errorStorage).storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
-						}
+						errorStorage.deleteMessage(messageId);
+						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
 					}
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
@@ -1731,9 +1743,15 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return errorSender;
 	}
 
+	/**
+	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
+	 */
 	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
 		return errorStorage;
 	}
+	/**
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed message. If present, this storage will be managed by the Receiver.
+	 */
 	public ITransactionalStorage<Serializable> getErrorStorage() {
 		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
 	}
@@ -1771,9 +1789,16 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
+
+	/**
+	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
+	 */
 	public IMessageBrowser<Serializable> getMessageLogBrowser() {
 		return messageLog;
 	}
+	/**
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed succesfully. If present, this storage will be managed by the Receiver.
+	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
 		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
 	}

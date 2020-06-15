@@ -62,13 +62,13 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, getMessage(messageId));
+		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(messageId));
 	}
 
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
 		try {
-			return fileSystem.exists(fileSystem.toFile(originalMessageId));
+			return fileSystem.exists(fileSystem.toFile(folder, originalMessageId));
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -81,15 +81,6 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public F browseMessage(String messageId) throws ListenerException {
-		try {
-			return fileSystem.toFile(folder, messageId);
-		} catch (FileSystemException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	@Override
-	public F getMessage(String messageId) throws ListenerException {
 		try {
 			return fileSystem.toFile(folder, messageId);
 		} catch (FileSystemException e) {
