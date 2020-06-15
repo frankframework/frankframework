@@ -1,0 +1,9 @@
+#!RESULT ERROR
+#!CONNECTION ldap://localhost:10389
+#!DATE 2020-06-15T09:24:12.323
+#!ERROR ENTRY_ALREADY_EXISTS: failed for MessageType : ADD_REQUEST Message ID : 13     Add Request : Entry     dn: dc=ibissource,dc=org     objectClass: top     objectClass: domain     dc: ibissource : ERR_250_ENTRY_ALREADY_EXISTS dc=ibissource,dc=org already exists!
+dn: dc=ibissource,dc=org
+objectClass: top
+objectClass: domain
+dc: ibissource
+
