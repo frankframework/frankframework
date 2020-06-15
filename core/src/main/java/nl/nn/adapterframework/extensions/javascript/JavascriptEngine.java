@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 
 /** 
  * Javascript engine interface, allows the use of a javascript engine to execute javascript code functions.
@@ -28,6 +29,11 @@ import nl.nn.adapterframework.core.ISender;
  */
 
 public interface JavascriptEngine<E> {
+
+	/**
+	 * @param alias An identifier which describes the script(s) that are being executed.
+	 */
+	void setScriptAlias(String alias);
 
 	/**
 	 * Initialize the runtime for the specified engine
@@ -69,4 +75,10 @@ public interface JavascriptEngine<E> {
 	 * @param sender		The sender given in the adapter configuration
 	 */
 	public void registerCallback(ISender sender, IPipeLineSession session);
+
+	/**
+	 * Registers the result and error functions to be handled by the given result handler.
+	 * @param resultHandler Object to handle results and errors.
+	 */
+	void setResultHandler(ResultHandler resultHandler);
 }
