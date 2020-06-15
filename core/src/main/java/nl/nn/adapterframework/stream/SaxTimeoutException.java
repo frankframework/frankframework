@@ -15,13 +15,12 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.ITimeoutException;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * SAXException thrown to signal that a timeout occurred in consuming the stream.
  */
-public class SaxTimeoutException extends SaxException implements ITimeoutException {
+public class SaxTimeoutException extends SaxException {
 	
 	public SaxTimeoutException() {
 		super();

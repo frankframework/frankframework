@@ -34,12 +34,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ITimeoutException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.IAbortException;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -200,7 +198,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			try {
 				stopRequested = !callback.handleItem(xmlWriter.toString());
 			} catch (Exception e) {
-				if (e instanceof ITimeoutException) {
+				if (e instanceof TimeOutException) {
 					throw new SaxTimeoutException(e);
 				}
 				throw new SaxException(e);
@@ -330,9 +328,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				if (e instanceof SaxTimeoutException) {
 					throw (SaxTimeoutException)e;
 				}
-				if (e instanceof ITimeoutException) {
-					throw new SaxTimeoutException(e);
-				}
 				if (itemHandler.isStopRequested()) {
 					if (e instanceof SaxAbortException) {
 						throw (SaxAbortException)e;
@@ -416,13 +411,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			XmlUtils.parseXml(src,handlerRecord.inputHandler);
 		} catch (Exception e) {
 			try {
-				if (e instanceof ITimeoutException) {
+				if (e instanceof SaxTimeoutException) {
 					if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
 						throw (TimeOutException)e.getCause();
 					}
 					throw new TimeOutException(e);
 				}
-				if (!(e instanceof IAbortException)) {
+				if (!(e instanceof SaxAbortException)) {
 					throw new SenderException(e);
 				}
 			} finally {

@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.IbisException;
 /**
  * Exception thrown to signal that the consumer of a stream does not want to receive more of it.
  */
-public class AbortException extends IbisException implements IAbortException {
+public class AbortException extends IbisException {
 	
 	public AbortException() {
 		super();
