@@ -94,7 +94,6 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}
 	}
-
 	
 	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
