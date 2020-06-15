@@ -854,7 +854,8 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		private String prefix;
 		private SwitchCounter sc;
 		
-		SaxLogger(String prefix, SwitchCounter sc) {
+		SaxLogger(String prefix, SwitchCounter sc, ContentHandler handler) {
+			super(handler);
 			this.prefix=prefix;
 			this.sc=sc;
 		}

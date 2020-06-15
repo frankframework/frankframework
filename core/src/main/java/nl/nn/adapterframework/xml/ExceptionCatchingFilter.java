@@ -18,11 +18,16 @@ package nl.nn.adapterframework.xml;
 import java.io.IOException;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 public abstract class ExceptionCatchingFilter extends FullXmlFilter {
+
+	public ExceptionCatchingFilter(ContentHandler handler) {
+		super(handler);
+	}
 
 	protected abstract void handleException(Exception e) throws SAXException;
 	

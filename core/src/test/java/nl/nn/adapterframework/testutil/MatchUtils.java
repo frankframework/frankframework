@@ -60,13 +60,9 @@ public class MatchUtils {
 	public static String xmlPretty(String xml, boolean removeNamespaces) {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
-		PrettyPrintFilter ppf = new PrettyPrintFilter();
-		ppf.setContentHandler(xmlWriter);
-		ContentHandler contentHandler = ppf;
+		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter);
 		if (removeNamespaces) {
-			NamespaceRemovingFilter nrf = new NamespaceRemovingFilter();
-			nrf.setContentHandler(contentHandler);
-			contentHandler=nrf;
+			contentHandler = new NamespaceRemovingFilter(contentHandler);
 		}
 		try {
 			XmlUtils.parseXml(xml, contentHandler);

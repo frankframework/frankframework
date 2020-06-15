@@ -154,7 +154,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
-			super(null, null, false, false);
+			super(null, null, false, false, null);
 			setContentHandler(xmlWriter);
 			this.callback=callback;
 		}
@@ -271,7 +271,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		
 		private ItemCallbackCallingHandler itemHandler;
 		
-		public StopSensor(ItemCallbackCallingHandler itemHandler) {
+		public StopSensor(ItemCallbackCallingHandler itemHandler, ContentHandler handler) {
+			super(handler);
 			this.itemHandler=itemHandler;
 		}
 		@Override
@@ -294,35 +295,26 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		result.inputHandler=itemHandler;
 		
 		if (isRemoveNamespaces()) {
-			NamespaceRemovingFilter namespaceRemovingFilter = new NamespaceRemovingFilter();
-			namespaceRemovingFilter.setContentHandler(itemHandler);
-			result.inputHandler = namespaceRemovingFilter;
+			result.inputHandler = new NamespaceRemovingFilter(result.inputHandler);
 		}
 		
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt);
-			transformerFilter.setContentHandler(result.inputHandler);
+			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, result.inputHandler);
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getTransformer().getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 		} 
 		if (StringUtils.isNotEmpty(getTargetElement())) {
-			NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
-			targetElementFilter.setContentHandler(result.inputHandler);
-			result.inputHandler=targetElementFilter;
+			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(), true, true, result.inputHandler);
 		}
 		if (StringUtils.isNotEmpty(getContainerElement())) {
-			NodeSetFilter containerElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
-			containerElementFilter.setContentHandler(result.inputHandler);
-			result.inputHandler=containerElementFilter;
+			result.inputHandler = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(), false, true, result.inputHandler);
 		}
 		
-		StopSensor stopSensor = new StopSensor(itemHandler);
-		stopSensor.setContentHandler(result.inputHandler);
-		result.inputHandler=stopSensor;
+		result.inputHandler = new StopSensor(itemHandler, result.inputHandler);
 		
-		ExceptionCatchingFilter exceptionCatcher = new ExceptionCatchingFilter() {
+		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
 				if (e instanceof SaxTimeoutException) {
@@ -349,8 +341,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SaxException(result.errorMessage,e);
 			}
 		};
-		exceptionCatcher.setContentHandler(result.inputHandler);
-		result.inputHandler = exceptionCatcher;
 	}
 
 	@Override

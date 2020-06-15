@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.xml;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -25,8 +26,8 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
 	private ThreadConnector threadConnector;
 	
-	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
-		super();
+	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, ContentHandler handler) {
+		super(handler);
 		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 

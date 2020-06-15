@@ -31,7 +31,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.XMLFilter;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.Json2Xml;
@@ -207,14 +207,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		XmlAligner aligner = new XmlAligner(validatorHandler);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 
-		XMLFilter sourceFilter = aligner;
+		XMLFilterImpl handler = xml2json;
+
 		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
-			XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey());
-			aligner.setContentHandler(storeRootFilter);
-			sourceFilter=storeRootFilter;
+			handler = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), handler);
 		}
 		
-		sourceFilter.setContentHandler(xml2json);
+		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
 		
 		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
@@ -258,10 +257,12 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.setOverrideValues(parametervalues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
-			
-			XMLFilter sourceFilter = aligner;
+	
+			// cannot build filter chain as usual backwardly, because it ends differently. 
+			// This will be fixed once an OutputStream can be provided to Xml2Json
+			XMLFilterImpl sourceFilter = aligner;
 			if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
-				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey());
+				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null);
 				aligner.setContentHandler(storeRootFilter);
 				sourceFilter=storeRootFilter;
 			}
@@ -272,14 +273,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.startParse(jsonStructure);
 				out=xml2json.toString();
 			} else {
-				if (isProduceNamespaceLessXml()) {
-					XMLFilterImpl removeNamespaces = new NamespaceRemovingFilter();
-					sourceFilter.setContentHandler(removeNamespaces);
-					sourceFilter=removeNamespaces;
-				}
 				XmlWriter xmlWriter = new XmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
-				sourceFilter.setContentHandler(xmlWriter);
+				ContentHandler handler = xmlWriter;
+				if (isProduceNamespaceLessXml()) {
+					handler = new NamespaceRemovingFilter(handler);
+				}
+				sourceFilter.setContentHandler(handler);
 				aligner.startParse(jsonStructure);
 				out = xmlWriter.toString();
 			}
