@@ -1306,6 +1306,7 @@ angular.module('iaf.beheerconsole')
 		for(i in $scope.selectedMessages) {
 			if($scope.selectedMessages[i]) {
 				messageIds.push(i);
+				$scope.selectedMessages[i] = false;//unset the messageId
 			}
 		}
 
