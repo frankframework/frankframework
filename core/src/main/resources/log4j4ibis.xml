@@ -23,7 +23,7 @@
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
 		</Appender>
 		<Appender type="RollingFile" name="XML" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
 			<Filters>
@@ -33,28 +33,28 @@
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="galm" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log.%i">
 			<Layout type="PatternLayout" pattern="%m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="100KB" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="5"/>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="msg" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}"/>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="security" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}"/>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="heartbeat" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
 			<Layout type="PatternLayout">
@@ -63,7 +63,7 @@
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}"/>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 	</Appenders>
 
