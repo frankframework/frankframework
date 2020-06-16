@@ -137,7 +137,10 @@ public abstract class Base implements ApplicationContextAware {
 		if(msg != null) {
 			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : Misc.DEFAULT_INPUT_STREAM_ENCODING;
 			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
-				encoding = msg.getContentType().getParameters().get("charset");
+				String charset = msg.getContentType().getParameters().get("charset");
+				if(StringUtils.isNotEmpty(charset)) {
+					encoding = charset;
+				}
 			}
 			InputStream is = msg.getObject(InputStream.class);
 
