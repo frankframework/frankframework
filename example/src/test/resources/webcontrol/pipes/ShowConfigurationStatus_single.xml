@@ -13,7 +13,6 @@
       </configurationMessages>
       <warnings>
          <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
-         <warning>The class [nl.nn.adapterframework.jdbc.XmlQuerySender] is used one or more times. Please change to [nl.nn.adapterframework.jdbc.FixedQuerySender] to avoid potential SQL injections!</warning>
       </warnings>
       <adapter config="Ibis4Example"
                configUC="IBIS4EXAMPLE"
