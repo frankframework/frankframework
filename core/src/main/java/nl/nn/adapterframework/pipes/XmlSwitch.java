@@ -207,10 +207,7 @@ public class XmlSwitch extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 	
-	/**
-	 * Set the stylesheet to use. The stylesheet should return a <code>String</code>
-	 * that indicates the name of the Forward or Pipe to execute.
-	 */
+
 	@IbisDoc({"1", "stylesheet may return a string representing the forward to look up", "<i>a stylesheet that returns the name of the root-element</i>"})
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
 		serviceSelectionStylesheetFilename = newServiceSelectionStylesheetFilename;
@@ -235,7 +232,9 @@ public class XmlSwitch extends AbstractPipe {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"4", "name of the key in the <code>pipelinesession</code> to retrieve the input message from. (n.b. same as <code>getinputfromsessionkey</code>)", ""})
+	@IbisDoc({"4", "Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a serviceSelectionStylesheetFilename or a xpathExpression is specified. " + 
+					"If no serviceSelectionStylesheetFilename or xpathExpression is specified, the value of the session variable is used as the name of the forward. " + 
+					"If none of sessionKey, serviceSelectionStylesheetFilename or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
@@ -243,7 +242,7 @@ public class XmlSwitch extends AbstractPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"5", "forward returned when the pipename derived from the stylesheet could not be found.", ""})
+	@IbisDoc({"5", "Forward returned when the pipename derived from the stylesheet could not be found.", ""})
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}
@@ -251,7 +250,7 @@ public class XmlSwitch extends AbstractPipe {
 		return notFoundForwardName;
 	}
 
-	@IbisDoc({"6", "forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used.", ""})
+	@IbisDoc({"6", "Forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used.", ""})
 	public void setEmptyForwardName(String empty){
 		emptyForwardName=empty;
 	}
@@ -260,7 +259,7 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	
-	@IbisDoc({"7", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"7", "If set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -269,9 +268,6 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
 	@Deprecated
 	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
