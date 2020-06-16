@@ -19,7 +19,7 @@ public class CounterTest {
     @Test
     public void testDecrease() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.decrease(), 14);
+        assertEquals(14, c.decrease());
     }
 
     /**
@@ -28,7 +28,7 @@ public class CounterTest {
     @Test
     public void testDecreaseAmount() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.decrease(10), 5);
+        assertEquals(5, c.decrease(10));
     }
 
     /**
@@ -37,7 +37,7 @@ public class CounterTest {
     @Test
     public void testIncrease() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.increase(), 16);
+        assertEquals(16, c.increase());
     }
 
     /**
@@ -46,7 +46,7 @@ public class CounterTest {
     @Test
     public void testIncreaseAmount() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.increase(10), 25);
+        assertEquals(25, c.increase(10));
     }
 
     /**
@@ -56,7 +56,7 @@ public class CounterTest {
     public void testClear() throws Exception {
         Counter c = new Counter(15);
         c.clear();
-        assertEquals(c.getValue(), 0);
+        assertEquals(0, c.getValue());
     }
 
     /**
@@ -65,7 +65,7 @@ public class CounterTest {
     @Test
     public void testGetValue() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.getValue(), 15);
+        assertEquals(15, c.getValue());
     }
 
     /**
@@ -75,7 +75,7 @@ public class CounterTest {
     public void testSetValue() throws Exception {
         Counter c = new Counter(15);
         c.setValue(30);
-        assertEquals(c.getValue(), 30);
+        assertEquals(30, c.getValue());
     }
 
 
