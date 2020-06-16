@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -568,7 +569,7 @@ public class MiscTest {
     public void testResourceToStringResource() throws Exception {
         URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource);
-        assertEquals(s1.substring(0, 61), "<!doctype txt>this is a text file.\nnew line in the text file.");
+        TestAssertions.assertEqualsIgnoreWhitespaces(s1, "<!doctype txt>this is a text file.\nnew line in the text file.");
     }
 
     /**
@@ -587,5 +588,5 @@ public class MiscTest {
         String s1 = Misc.resourceToString(resource, " newly added string ");
         assertEquals(s1, "<!doctype txt>this is a text file. newly added string new line in the text file.");
     }
-    
+
 }
