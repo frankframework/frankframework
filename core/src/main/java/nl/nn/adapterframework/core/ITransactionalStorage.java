@@ -55,12 +55,10 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 	
 	/**
-	 * Check if the storage contains message with the given original messageId 
-	 * (as passed to storeMessage).
+	 * Retrieves and deletes the message.
 	 */
-	public boolean containsMessageId(String originalMessageId) throws ListenerException;
+	public S getMessage(String messageId) throws ListenerException;
 
-	public boolean containsCorrelationId(String correlationId) throws ListenerException;
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
@@ -76,6 +74,5 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	
 	public boolean isActive();
 	
-	public int getMessageCount() throws ListenerException;
 
 }

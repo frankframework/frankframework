@@ -31,12 +31,6 @@ public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M
 		super(selector);
 	}
 	
-	
-	@Override
-	public M getMessage(String messageId) throws ListenerException {
-		return getJmsMessage(messageId);
-	}
-
 	@Override
 	public M browseMessage(String messageId) throws ListenerException {
 		return browseJmsMessage(messageId);

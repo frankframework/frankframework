@@ -41,17 +41,21 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException;
 
 	/**
+	 * Check if the storage contains message with the given original messageId 
+	 * (as passed to storeMessage).
+	 */
+	public boolean containsMessageId(String originalMessageId) throws ListenerException;
+	public boolean containsCorrelationId(String correlationId) throws ListenerException;
+
+	/**
 	 * Retrieves the message, but does not delete. 
 	 */
-	M browseMessage(String messageId) throws ListenerException;
-	/**
-	 * Retrieves and deletes the message.
-	 */
-	M getMessage(String messageId) throws ListenerException;
+	public M browseMessage(String messageId) throws ListenerException;
 	/**
 	 * Deletes the message.
 	 */
-	void   deleteMessage(String messageId) throws ListenerException;
+	public void deleteMessage(String messageId) throws ListenerException;
+	public int getMessageCount() throws ListenerException;
 
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex);

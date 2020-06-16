@@ -306,28 +306,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						ITransactionalStorage errorStorage = rb.getErrorStorage();
 						if (errorStorage == null) {
-							log.error("action ["
-									+ action
-									+ "] is only allowed for receivers with an ErrorStorage");
+							log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
 						} else {
 							if (errorStorage instanceof JdbcTransactionalStorage) {
 								JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb.getErrorStorage();
 								IListener listener = rb.getListener();
 								if (listener instanceof EsbJmsListener) {
 									EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
-									EsbUtils.receiveMessageAndMoveToErrorStorage(
-											esbJmsListener, jdbcErrorStorage);
+									EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
 								} else {
-									log.error("action ["
-											+ action
-											+ "] is currently only allowed for EsbJmsListener, not for type ["
-											+ listener.getClass().getName() + "]");
+									log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
 								}
 							} else {
-								log.error("action ["
-										+ action
-										+ "] is currently only allowed for JdbcTransactionalStorage, not for type ["
-										+ errorStorage.getClass().getName() + "]");
+								log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
 							}
 						}
 					}

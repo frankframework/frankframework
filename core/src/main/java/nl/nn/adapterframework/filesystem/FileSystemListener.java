@@ -25,6 +25,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -45,7 +47,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
-public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination {
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -284,6 +286,21 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
+	@Override
+	public IMessageBrowser<F> getMessageLogBrowser() {
+		if (StringUtils.isEmpty(getProcessedFolder())) {
+			return null;
+		}
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, getProcessedFolder());
+	}
+	
+	@Override
+	public IMessageBrowser<F> getErrorStoreBrowser() {
+		if (StringUtils.isEmpty(getErrorFolder())) {
+			return null;
+		}
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
+	}
 
 
 
