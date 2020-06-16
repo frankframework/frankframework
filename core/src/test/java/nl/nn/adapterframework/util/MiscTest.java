@@ -587,4 +587,5 @@ public class MiscTest {
         String s1 = Misc.resourceToString(resource, " newly added string ");
         assertEquals(s1, "<!doctype txt>this is a text file. newly added string new line in the text file.");
     }
+    
 }
