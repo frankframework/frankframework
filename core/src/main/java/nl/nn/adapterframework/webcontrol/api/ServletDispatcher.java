@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +154,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void setBus(Bus bus) {
-		getServletContext().log("Successfully created IAF API with SpringBus ["+bus.getId()+"]");
+		getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
 
 		super.setBus(bus);
 	}
