@@ -8,9 +8,15 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
 
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<bean id="ff-api-bus" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+		<property name="id" value="ff-api-bus"/>
+	</bean>
 
-	<jaxrs:server id="IAF-API" address="/" basePackages="nl.nn.adapterframework.webcontrol.api">
+	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
+	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
+	<bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
+
+	<jaxrs:server id="IAF-API" bus="ff-api-bus" address="/" basePackages="nl.nn.adapterframework.webcontrol.api">
 		<jaxrs:providers>
 			<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 		</jaxrs:providers>
