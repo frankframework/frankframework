@@ -524,6 +524,7 @@ public class MiscTest {
         assertEquals(res, "****************Hey hey     Wooo");
     }
 
+
     /**
      * Method: toSortName(String name)
      */

@@ -60,7 +60,9 @@ public final class ShowEnvironmentVariables extends Base {
 
 		Map<String, Object> configVars = new HashMap<String, Object>();
 		for(Configuration config : getIbisManager().getConfigurations()) {
-			configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));
+			if(config.getClassLoader() != null) {
+				configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));
+			}
 		}
 		envVars.put("Application Constants", configVars);
 		envVars.put("System Properties", convertPropertiesToMap(System.getProperties(), propsToHide));

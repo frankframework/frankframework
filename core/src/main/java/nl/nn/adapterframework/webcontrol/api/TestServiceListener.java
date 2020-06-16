@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -81,30 +80,31 @@ public final class TestServiceListener extends Base {
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postServiceListeners(MultipartFormDataInput input) throws ApiException {
+	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		String message = null, serviceName = null, dispatchResult = null;
 		InputStream file = null;
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("service") != null) {
-				serviceName = inputDataMap.get("service").get(0).getBodyAsString();
-			}
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-				message = Misc.streamToString(file, "\n", fileEncoding, false);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
 
-				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);
+		try {
+			if(inputDataMap.getAttachment("service") != null) {
+				serviceName = resolveStringFromMap(inputDataMap, "service");
+			}
+			if(inputDataMap.getAttachment("file") != null) {
+				file = inputDataMap.getAttachment("file").getObject(InputStream.class);
+
+				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding, false);
 			}
 			else {
-				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
+				message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 			}
-			
+
+			if(message == null && file == null) {
+				throw new ApiException("must provide either a message or file", 400);
+			}
+
 			if(!ServiceDispatcher.getInstance().isRegisteredServiceListener(serviceName)) {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}

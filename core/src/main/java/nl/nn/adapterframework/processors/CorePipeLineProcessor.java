@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,10 +51,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		// Object is the object that is passed to and returned from Pipes
-		PipeRunResult pipeRunResult;
-		// the PipeLineResult
-		PipeLineResult pipeLineResult=new PipeLineResult();
 
 		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
@@ -167,11 +163,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
-		boolean outputValidated=false;
+		PipeLineResult pipeLineResult=new PipeLineResult();
+		boolean outputValidationFailed=false;
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
+				PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 				message=pipeRunResult.getResult();
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
@@ -220,20 +217,29 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						if ((outputValidator !=null) && !outputValidated) {
-							outputValidated=true;
-							log.debug("validating PipeLineResult");
-							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
-							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-								PipeForward validationForward=validationResult.getPipeForward();
-								if (validationForward.getPath()==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
-								}
-								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
-								pipeToRun = pipeLine.getPipe(validationForward.getPath());
-								if (pipeToRun==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+						if ((outputValidator !=null)) {
+							if (outputValidationFailed) {
+								log.debug("validating error message after PipeLineResult validation failed");
+							} else {
+								log.debug("validating PipeLineResult");
+							}
+							PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
+							if (!validationResult.getPipeForward().getName().equals("success")) {
+								if (!outputValidationFailed) {
+									outputValidationFailed=true;
+									PipeForward validationForward=validationResult.getPipeForward();
+									if (validationForward.getPath()==null) {
+										throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+									}
+									log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+									pipeToRun = pipeLine.getPipe(validationForward.getPath());
+									if (pipeToRun==null) {
+										throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+									}
+								} else {
+									log.warn("validation of error message by validator ["+outputValidator.getName()+"] failed, returning result anyhow"); // to avoid endless looping
+									message = validationResult.getResult();
+									ready=true;
 								}
 							} else {
 								log.debug("validation succeeded");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,17 +43,17 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
 	
 	/**
-	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage().
+	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
-	public String processRequest(IListener<M> origin, String message) throws ListenerException;
+	public String processRequest(IListener<M> origin, M rawMessage, String message) throws ListenerException;
 
 	/**
-	 * Does a processRequest() with a correlationId from the client. This is usefull for logging purposes,
+	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
 	 */	
-	public String processRequest(IListener<M> origin, String correlationId, String message) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String,Object> context) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

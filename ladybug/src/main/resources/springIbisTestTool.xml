@@ -47,7 +47,6 @@
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
-<!--property name="loggingStorage"><ref bean="runStorage"/></property-->
 	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
@@ -58,13 +57,11 @@
 		</property>
 	</bean>
 
-<!-- TODO hernoemen naar debugStorage? wordt autowired op (o.a.?) testTool? -->
+	<!-- TODO rename to debugStorage? -->
 	<bean name="logStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
 		<property name="name" value="Logging"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-		<!-- property name="reportsFilename" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0\logs\testtool4${instance.name.lc}.tts"/>
-		<property name="metadataFilename" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0\logs\testtool4${instance.name.lc}.ttm"/ -->
 		<property name="persistentMetadata">
 			<list>
 				<value>storageId</value>
@@ -80,15 +77,13 @@
 		</property>
 	</bean>
 
-<!--
-ergens documentern dat storageId en storageSize verplicht zijn?
-en/of beter foutmelding geven, nu in log: Invalid header in metadata file 'E:\nn\software\installed\Tomcat\apache-tomcat-6.0.30\..\..\..\..\logdir\testtool4ija_bipa_run.ttm'
-of zorgen dat die altijd aanwezig zijn en je ze niet via spring hoeft/kan zetten?
-
-path gewoon in name field doen?!
-testStorage noemen?
--->
-	<bean name="runStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<!-- TODO rename to testStorage? -->
+	<bean name="runStorage,runStoragexxx,runStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+		<property name="name" value="Test"/>
+		<property name="metadataFile" value="${ibistesttool.directory}/testtool4${instance.name.lc}.xml"/>
+		<property name="reportsFolder" value="${ibistesttool.directory}"/>
+	</bean>
+	<bean name="runStorageDEV,runStorageTST,runStorageACC,runStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -101,25 +96,6 @@ testStorage noemen?
 			</list>
 		</property>
 	</bean>
-	<!-- bean name="runStorage" class="nl.nn.testtool.storage.diff.Storage" autowire="byName" init-method="init">
-		<property name="name" value="Run"/>
-		<!- - property name="reportsFilename" value="${rootRealPath}/../TestTool/reports.xml"/ - ->
-		<!- - property name="reportsFilename" value="${log.dir}/reports.xml"/ - ->
-		<property name="reportsDirectory" value="${rootRealPath}/../TestTool"/>
-	</bean -->
-	<!-- bean name="runStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
-		<property name="name" value="Run"/>
-		<property name="reportsFilename" value="C:/Temp/testtool4${instance.name.lc}.tts"/>
-		<property name="metadataFilename" value="C:/Temp/testtool4${instance.name.lc}.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>path</value>
-				<value>name</value>
-			</list>
-		</property>
-	</bean -->
 
 	<bean name="whiteBoxViewMetadataNames" class="java.util.ArrayList">
 		<constructor-arg>
@@ -215,7 +191,7 @@ testStorage noemen?
 			<ref bean="testTool"/>
 		</property>
 		<property name="runStorage">
-			<ref bean="runStorage"/>
+			<ref bean="runStorage${dtap.stage}"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -232,7 +208,7 @@ testStorage noemen?
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.run.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="runStorage"/>
+					<ref bean="runStorage${dtap.stage}"/>
 				</property>
 			</bean>
 		</property>
@@ -247,7 +223,7 @@ testStorage noemen?
 							<ref bean="logStorage"/>
 						</property>
 						<property name="runStorage">
-							<ref bean="runStorage"/>
+							<ref bean="runStorage${dtap.stage}"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -266,7 +242,7 @@ testStorage noemen?
 			<ref bean="testTool"/>
 		</property>
 		<property name="runStorage">
-			<ref bean="runStorage"/>
+			<ref bean="runStorage${dtap.stage}"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">

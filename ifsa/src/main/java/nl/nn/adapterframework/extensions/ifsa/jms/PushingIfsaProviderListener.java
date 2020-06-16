@@ -206,14 +206,14 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {	
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {	
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			    		    
 	    // on request-reply send the reply.
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 			Message originalRawMessage;
-			if (rawMessage instanceof Message) { 
-				originalRawMessage = (Message)rawMessage;
+			if (rawMessageOrWrapper instanceof Message) { 
+				originalRawMessage = (Message)rawMessageOrWrapper;
 			} else {
 				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}

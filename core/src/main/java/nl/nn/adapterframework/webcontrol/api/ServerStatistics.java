@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -73,7 +72,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 @Path("/")
 public class ServerStatistics extends Base {
-	@Context ServletConfig servletConfig;
+
 	@Context Request request;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -93,13 +92,12 @@ public class ServerStatistics extends Base {
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() == null) {
-				cfg.put("type", configuration.getClassLoaderType());
-			} else {
+			cfg.put("type", configuration.getClassLoaderType());
+			if(configuration.getConfigurationException() != null) {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 
-			ClassLoader classLoader = configuration.getClassLoader().getParent();
+			ClassLoader classLoader = configuration.getClassLoader();
 			if(classLoader instanceof DatabaseClassLoader) {
 				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
@@ -125,8 +123,15 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("name", getIbisContext().getApplicationName());
+		Map<String, Object> framework = new HashMap<String, Object>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<String, Object>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
 
 		String dtapStage = appConstants.getProperty("dtap.stage");
 		returnMap.put("dtap.stage", dtapStage);
@@ -145,7 +150,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", getIbisContext().getUptimeDate());
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
 	@GET

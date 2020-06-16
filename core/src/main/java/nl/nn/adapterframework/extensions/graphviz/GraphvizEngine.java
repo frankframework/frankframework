@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,18 @@
 */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
-
 import nl.nn.adapterframework.extensions.javascript.J2V8;
+import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.URL;
 
 //TODO: consider moving this to a separate module
 /**
@@ -127,7 +124,7 @@ public class GraphvizEngine {
 		if(null == ENVS.get()) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS"));
+			ENVS.set(new Env(getVisJsWrapper(), visJsSource));
 		}
 		return ENVS.get();
 	}
@@ -156,38 +153,47 @@ public class GraphvizEngine {
 
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
+		private JavascriptEngine<?> jsEngine;
+		private ResultHandler resultHandler;
 
-		J2V8 V8Instance = new J2V8();
-		final ResultHandler resultHandler = new ResultHandler();
+		Env(String initScript, String graphvisJsLibrary) {
+			// Available JS Engines. Lower index has priority.
+			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
 
-		/**
-		 * It's important to register the JS scripts under the same alias so it can be cached
-		 * Use the log.dir to extract the SO/DLL files into, make sure this is using an absolute path and not a relative one!!
-		 */
-		Env(String initScript, String graphvisJsLibrary, String alias) {
-			log.info("starting V8 runtime...");
-			V8Instance.startRuntime(alias, null);
-			log.info("started V8 runtime. Initializing graphviz...");
-			V8Instance.executeScript(graphvisJsLibrary);
-			V8Instance.executeScript(initScript);
-			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
-				@Override
-				public void invoke(V8Object receiver, V8Array parameters) {
-					resultHandler.setResult(parameters.getString(0));
+			for (int i = 0; i < engines.length && jsEngine == null; i++) {
+				try {
+					log.debug("Trying Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					JavascriptEngine<?> engine = ((JavascriptEngine<?>) engines[i].newInstance());
+					ResultHandler resultHandler = new ResultHandler();
+
+					startEngine(engine, resultHandler, initScript, graphvisJsLibrary);
+
+					log.info("Using Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					jsEngine = engine;
+					this.resultHandler = resultHandler;
+				} catch (Exception e) {
+					log.error("Javascript engine [" + engines[i].getName() + "] could not be initialized.", e);
 				}
-			}, "result");
-			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
-				@Override
-				public void invoke(V8Object receiver, V8Array parameters) {
-					resultHandler.setError(parameters.getString(0));
-				}
-			}, "error");
-			log.info("initialized graphviz");
+			}
+
+			if (jsEngine == null)
+				throw new UnsupportedOperationException("Javascript engines could not be initialized.");
+		}
+
+		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
+			log.info("Starting runtime for Javascript Engine...");
+			engine.setScriptAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
+			engine.startRuntime();
+			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
+			engine.executeScript(graphvisJsLibrary);
+			engine.executeScript(initScript);
+			engine.setResultHandler(resultHandler);
+			log.info("Initialized Graphviz");
 		}
 
 		public String execute(String call) throws GraphvizException {
 			try {
-				V8Instance.executeScript(call);
+				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (Exception e) {
 				throw new GraphvizException(e);
@@ -195,7 +201,7 @@ public class GraphvizEngine {
 		}
 
 		public void close() {
-			V8Instance.closeRuntime();
+			jsEngine.closeRuntime();
 		}
 	}
 }
