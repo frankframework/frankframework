@@ -154,7 +154,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void setBus(Bus bus) {
-		getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
+		if(bus != null) {
+			getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
+		}
 
 		super.setBus(bus);
 	}
@@ -193,7 +195,6 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public String getUrlMapping() {
-		// TODO Auto-generated method stub
 		return "iaf/api/*";
 	}
 
