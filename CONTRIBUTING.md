@@ -7,6 +7,8 @@ I'm really glad you're reading this, because we need volunteer developers to hel
 If you haven't already, come find us on our [community forums](https://ibissource.org/forum). We want you working on things you're excited about.
 
 
+##### We use our own repository manager for snapshot builds. Either use our public `ibissource` or private `proprietary` profile when running Maven. #####
+
 
 ## Running the IBIS Adapter Framework
 
