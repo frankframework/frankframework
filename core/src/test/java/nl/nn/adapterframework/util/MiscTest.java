@@ -524,25 +524,6 @@ public class MiscTest {
         assertEquals(res, "****************Hey hey     Wooo");
     }
 
-
-    /**
-     * Method: getBuildOutputDirectory()
-     */
-    @Test
-    public void testGetBuildOutputDirectory() throws Exception {
-        String outputDirectory = Misc.getBuildOutputDirectory();
-        assertEquals(outputDirectory.substring(outputDirectory.length() - 29, outputDirectory.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
-    }
-
-    /**
-     * Method: getProjectBaseDir()
-     */
-    @Test
-    public void testGetProjectBaseDir() throws Exception {
-        String baseDir = Misc.getBuildOutputDirectory();
-        assertEquals(baseDir.substring(baseDir.length() - 29, baseDir.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
-    }
-
     /**
      * Method: toSortName(String name)
      */
