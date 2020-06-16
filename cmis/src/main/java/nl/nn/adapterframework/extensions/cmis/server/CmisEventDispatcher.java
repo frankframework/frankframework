@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
@@ -55,8 +56,14 @@ public class CmisEventDispatcher {
 		eventListeners.remove(listener.getEvent());
 	}
 
-	public Element trigger(CmisEvent event, String message) {
-		return trigger(event, message, new PipeLineSessionBase());
+	/**
+	 * Convenience method to create a IPipeLineSession and set the cmis CallContext
+	 */
+	public Element trigger(CmisEvent event, String message, CallContext callContext) {
+		IPipeLineSession context = new PipeLineSessionBase();
+		context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
+
+		return trigger(event, message, context);
 	}
 
 	public Element trigger(CmisEvent event, String message, IPipeLineSession messageContext) {

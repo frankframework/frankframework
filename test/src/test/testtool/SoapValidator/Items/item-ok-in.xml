@@ -1,0 +1,6 @@
+<Item_Request xmlns="urn:items">
+	<Status>a</Status>
+	<Item>
+		<Id>1</Id>
+	</Item>
+</Item_Request>

@@ -466,10 +466,21 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && 
+				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFileName()) && getMessageLog()==null && getListener()==null;
+	}
 
-		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
-			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
+	@Override
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
 			return null;
 		}
 		MessageOutputStream result=null;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDocRef;
 
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
+public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -49,8 +49,8 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	private String slotId=null;
 	private String type=null;
 	private boolean active=true;   
-	private String hideRegex = null;
-	private String hideMethod = "all";
+
+	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
 	public JmsTransactionalStorage() {
 		super();
@@ -65,7 +65,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();
@@ -101,20 +101,20 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	@Override
-	public Object browseMessage(String messageId) throws ListenerException {
+	public S browseMessage(String messageId) throws ListenerException {
 		try {
-			ObjectMessage msg=(ObjectMessage)super.browseMessage(messageId);
-			return msg.getObject();
+			ObjectMessage msg=browseJmsMessage(messageId);
+			return(S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
 
 	@Override
-	public Object getMessage(String messageId) throws ListenerException {
+	public S getMessage(String messageId) throws ListenerException {
 		try {
-			ObjectMessage msg=(ObjectMessage)super.getMessage(messageId);
-		return msg.getObject();
+			ObjectMessage msg=getJmsMessage(messageId);
+		return (S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
@@ -133,7 +133,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 
 
 	@Override
-	@IbisDoc({"Optional identifier for this storage, to be able to share the physical storage between a number of receivers", ""})
+	@IbisDocRef({"1", ITRANSACTIONALSTORAGE})
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -143,6 +143,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	@Override
+	@IbisDocRef({"2", ITRANSACTIONALSTORAGE})
 	public void setType(String string) {
 		type = string;
 	}
@@ -159,24 +160,4 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		return active;
 	}
 	
-	@Override
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
-	}
-
 }

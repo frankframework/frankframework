@@ -89,7 +89,7 @@
 
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
 		<!-- Logger name="nl.nn.adapterframework.configuration.IbisContext" level="ERROR" additivity="true">
-			<appender-ref ref="stdout"/>
+			<AppenderRef ref="stdout"/>
 		</Logger -->
 
 		<Root level="${ctx:log.level}">

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -872,6 +872,17 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				return rs.isAfterLast();
+			} catch (SQLException e) {
+				throw new JdbcException("could not obtain value using query [" + query + "]", e);
+			}
+		} catch (SQLException e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
+		}
+	}
 
 	public static void executeStatement(Connection connection, String query) throws JdbcException {
 		executeStatement(connection,query,null,null);

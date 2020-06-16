@@ -50,8 +50,8 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -618,11 +618,11 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
 							JmsListenerBase jlb = (JmsListenerBase) listener;
-							JmsMessageBrowser jmsBrowser;
+							JmsBrowser<javax.jms.Message> jmsBrowser;
 							if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-								jmsBrowser = new JmsMessageBrowser();
+								jmsBrowser = new JmsBrowser<>();
 							} else {
-								jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
+								jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
 							}
 							jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 							jmsBrowser.setJmsRealm(jlb.getJmsRealName());
@@ -801,10 +801,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
 			adapterMessage.addAttribute("level", level);
 			adapterMessages.addSubElement(adapterMessage);
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperLevel.ERROR.name())) {
 				showConfigurationStatusManager.countMessagesError++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperLevel.WARN.name())) {
 					showConfigurationStatusManager.countMessagesWarn++;
 				} else {
 					showConfigurationStatusManager.countMessagesInfo++;
@@ -823,10 +823,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int cmi = 0;
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperLevel.ERROR.name())) {
 				cme++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperLevel.WARN.name())) {
 					cmw++;
 				} else {
 					cmi++;
@@ -843,8 +843,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
 					.getMessageLevel();
 			adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
-			if (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
-					|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL)) {
+			if (lastMessageLevel.equals(MessageKeeperLevel.ERROR.name())
+					|| lastMessageLevel.equals(MessageKeeperLevel.WARN.name())) {
 				showConfigurationStatusAdapterManager.logAlert = true;
 			}
 		}

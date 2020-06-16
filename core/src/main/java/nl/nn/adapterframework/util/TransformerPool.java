@@ -40,9 +40,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -487,8 +487,8 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads) throws TransformerConfigurationException {
-		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, session, expectChildThreads);
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads, ContentHandler handler) throws TransformerConfigurationException {
+		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, session, expectChildThreads, handler);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {

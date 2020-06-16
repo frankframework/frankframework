@@ -30,13 +30,14 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * 
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware<String> {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
@@ -49,9 +50,14 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private MediaTypes consumes = MediaTypes.ANY;
 	private MediaTypes produces = MediaTypes.ANY;
+	private ContentType producedContentType;
 	private String multipartBodyName = null;
 
-	private IReceiver receiver;
+	private IReceiver<String> receiver;
+
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
+	private String charset = null;
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
@@ -74,6 +80,10 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(!methods.contains(getMethod()))
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
+		producedContentType = new ContentType(produces);
+		if(charset != null) {
+			producedContentType.setCharset(charset);
+		}
 	}
 
 	@Override
@@ -128,12 +138,22 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
+	/**
+	 * Match request ContentType to consumes enum to see if the listener accepts the message
+	 */
 	public boolean isConsumable(String contentType) {
 		return consumes.isConsumable(contentType);
 	}
 
+	/**
+	 * Match accept header to produces enum to see if the client accepts the message
+	 */
+	public boolean accepts(String acceptHeader) {
+		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
+	}
+
 	public String getContentType() {
-		return produces.getContentType();
+		return producedContentType.getContentType();
 	}
 
 	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
@@ -180,7 +200,17 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return produces.name();
 	}
 
-	@IbisDoc({"5", "automatically generate and validate etags", "true"})
+	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
+	public void setCharacterEncoding(String charset) {
+		if(StringUtils.isNotEmpty(charset)) {
+			this.charset = charset;
+		}
+	}
+	public String getCharacterEncoding() {
+		return charset;
+	}
+
+	@IbisDoc({"6", "automatically generate and validate etags", "true"})
 	public void setUpdateEtag(boolean updateEtag) {
 		this.updateEtag = updateEtag;
 	}
@@ -190,7 +220,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	//TODO add authenticationType
 
-	@IbisDoc({"6", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
+	@IbisDoc({"7", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
 	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
 		try {
 			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
@@ -208,7 +238,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return this.authenticationMethod;
 	}
 
-	@IbisDoc({"6", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
+	@IbisDoc({"8", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
 	public void setAuthenticationRoles(String authRoles) {
 		List<String> roles = new ArrayList<String>();
 		if (StringUtils.isNotEmpty(authRoles)) {
@@ -226,7 +256,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return authenticationRoles;
 	}
 
-	@IbisDoc({"7", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
+	@IbisDoc({"9", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
 	public void setMultipartBodyName(String multipartBodyName) {
 		this.multipartBodyName = multipartBodyName;
 	}
@@ -237,6 +267,15 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return null;
 	}
 
+	@IbisDoc({"10", "name of the header which contains the message-id", "message-id"})
+	public void setMessageIdHeader(String messageIdHeader) {
+		this.messageIdHeader = messageIdHeader;
+	}
+
+	public String getMessageIdHeader() {
+		return messageIdHeader;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -244,18 +283,18 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		builder.append(" uriPattern["+getUriPattern()+"]");
 		builder.append(" produces["+getProduces()+"]");
 		builder.append(" consumes["+getConsumes()+"]");
-		builder.append(" contentType["+getContentType()+"]");
+		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();
 	}
 
 	@Override
-	public void setReceiver(IReceiver receiver) {
+	public void setReceiver(IReceiver<String> receiver) {
 		this.receiver = receiver;
 	}
 
 	@Override
-	public IReceiver getReceiver() {
+	public IReceiver<String> getReceiver() {
 		return receiver;
 	}
 }

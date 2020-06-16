@@ -53,7 +53,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, String rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 	}
 
 	@Override
