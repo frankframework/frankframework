@@ -31,6 +31,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -91,7 +94,7 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
-		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
+		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -108,7 +111,21 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
-				if(query.toLowerCase().indexOf("select") == -1) queryType = "other";
+			}
+			if(key.equalsIgnoreCase("type")) {
+				queryType = entry.getValue().toString();
+			}
+		}
+
+		if(StringUtils.isEmpty(queryType)) {
+			queryType = "other"; // defaults to other
+
+			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select
+			for (String command : commands) {
+				if(query.toLowerCase().startsWith(command)) {
+					queryType = "select";
+					break;
+				}
 			}
 		}
 
