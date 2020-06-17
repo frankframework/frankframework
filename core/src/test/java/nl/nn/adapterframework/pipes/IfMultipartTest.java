@@ -16,19 +16,18 @@ import static org.junit.Assert.fail;
 
 
 /**
-* IfMultipart Tester. 
-* 
-* @author <Sina Sen>
-*/ 
-public class IfMultipartTest extends PipeTestBase<IfMultipart>{
 
+ * IfMultipart Tester.
+ *
+ * @author <Sina Sen>
+ */
+public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 
     private MockHttpServletRequest request;
 
     @Before
     public void before() throws Exception {
-        request  = new MockHttpServletRequest();
-
+        request = new MockHttpServletRequest();
         MockitoAnnotations.initMocks(this);
     }
 
@@ -42,7 +41,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
-         pipe.doPipe(null, session);
+        pipe.doPipe(null, session);
         fail("this is expected to fail");
     }
 
@@ -61,7 +60,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         pipe.setElseForwardName("custom_else");
         PipeRunResult res = doPipe(pipe, request, session);
         PipeForward forward = res.getPipeForward();
-        assertEquals(forward.getName(), "custom_else");
+        assertEquals("custom_else", forward.getName());
     }
 
     @Test
@@ -70,7 +69,8 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         pipe.setThenForwardName("success");
         PipeRunResult res = doPipe(pipe, request, session);
         PipeForward forward = res.getPipeForward();
-        assertEquals(forward.getName(), "success");    }
+        assertEquals("success", forward.getName());
+    }
 
     @Test
     public void testRequestContentTypeWrong() throws Exception {
@@ -89,7 +89,4 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         doPipe(pipe, request, session);
         fail("this is expected to fail");
     }
-
-
-
-} 
+}

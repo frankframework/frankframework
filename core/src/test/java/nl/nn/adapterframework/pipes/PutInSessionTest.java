@@ -31,8 +31,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
         pipe.configure();
         doPipe(pipe, "val", session);
         Message m = new Message("String: val");
-        assertEquals(m.asString(), session.get("hola").toString());
-
+        assertEquals(session.get("hola").toString(), m.asString());
     }
 
     /**

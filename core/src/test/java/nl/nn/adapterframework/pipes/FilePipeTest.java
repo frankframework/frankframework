@@ -67,7 +67,9 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setActions("create");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, var, session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+
+        assertEquals("success", res.getPipeForward().getName());
+
     }
 
     @Test
