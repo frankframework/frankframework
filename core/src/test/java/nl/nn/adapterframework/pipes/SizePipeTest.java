@@ -22,14 +22,14 @@ public class SizePipeTest extends PipeTestBase<SizePipe>{
 @Test
 public void testDoPipeSuccess() throws Exception {
     PipeRunResult res = doPipe(pipe, "abcsd", session);
-    assertEquals(res.getResult().asString(), "5");
+    assertEquals( "5", res.getResult().asString());
 }
 
     @Test
     public void testDoPipeFail() throws Exception {
     ArrayList<String> arr = new ArrayList<>();
         PipeRunResult res = doPipe(pipe, arr, session);
-        assertEquals(res.getResult().asString(), "-1");
+        assertEquals("-1", res.getResult().asString());
     }
 
 

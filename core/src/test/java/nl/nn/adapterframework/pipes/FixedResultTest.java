@@ -67,7 +67,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getResult().asString(), "inside the file");
+        assertEquals("inside the file", res.getResult().asString());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+        assertEquals("success", res.getPipeForward().getName());
     }
     @Test
     public void xsltFailForTransformation() throws Exception{
@@ -133,7 +133,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReplaceTo("kar"); pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+        assertEquals("success", res.getPipeForward().getName());
     }
 
 
