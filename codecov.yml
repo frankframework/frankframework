@@ -3,4 +3,4 @@ comment: false
 coverage:
   precision: 2
   round: nearest
-  range: "50...75"
+  range: 50..75
