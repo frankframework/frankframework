@@ -14,6 +14,9 @@ install: echo 'Skipping separate install phase'
 script:
   - mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource,codecoverage
 
+env:
+  - CODECOV_TOKEN="aec6878a-b9e8-428b-8ec8-eff87a55287c"
+
 cache:
   directories:
   - $HOME/.m2
