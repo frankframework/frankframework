@@ -449,7 +449,14 @@ public class Misc {
 
 	/**
 	 * String replacer.
-	 *
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String a = "WeAreFrank";
+	 *         String res = Misc.replace(a, "WeAre", "IAm");
+	 *         System.out.println(res); // prints "IAmFrank"
+	 *     </pre>
+	 * </p>
 	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
@@ -476,6 +483,23 @@ public class Misc {
 		return buffer.toString();
 	 }
 
+	/**
+	 * Concatenates two strings, if specified, uses the separator in between two strings.
+	 *<p>
+	 *     Example:
+	 *     <pre>
+	 *         String a = "We";
+	 *         String b = "Frank";
+	 *         String seperator = "Are";
+	 *         String res = Misc.concatStrings(a, seperator, b);
+	 *         System.out.println(res); // prints "WeAreFrank"
+	 *     </pre>
+	 * </p>
+	 * @param part1 First string
+	 * @param separator Specified separator
+	 * @param part2 Second string
+	 * @return the concatenated string
+	 */
 	public static String concatStrings(String part1, String separator, String part2) {
 		if (StringUtils.isEmpty(part1)) {
 			return part2;
@@ -779,7 +803,7 @@ public class Misc {
 		}
 	}
 
-	
+
 	public static long toFileSize(String value, long defaultValue) {
 		if(value == null)
 		  return defaultValue;
@@ -1082,7 +1106,7 @@ public class Misc {
 		}
 		return defaultValue;
 	}
-	
+
 	public static String cleanseMessage(String inputString, String hideRegex, String hideMethod) {
 		if (StringUtils.isEmpty(hideRegex)) {
 			return inputString;
@@ -1093,7 +1117,7 @@ public class Misc {
 			return hideAll(inputString, hideRegex);
 		}
 	}
-	
+
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}
@@ -1124,7 +1148,7 @@ public class Misc {
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
 	}
-	
+
 	public static String hideAll(String inputString, String regex, int mode) {
 		StringBuilder result = new StringBuilder();
 		Pattern pattern = Pattern.compile(regex);
