@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.align;
+/*package nl.nn.adapterframework.align;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -138,4 +138,4 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		return sw.toString().trim();
 	}
 
-}
+}*/

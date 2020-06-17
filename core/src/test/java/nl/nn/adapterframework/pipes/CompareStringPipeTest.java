@@ -1,11 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
+
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
+
+import org.junit.Test;
+
+
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 
@@ -26,21 +30,21 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		pipe.configure();
 	}
 
-//	@Test
-//	public void setSessionKey1() {
-//		String dummyKey = "kappa123";
-//		pipe.setSessionKey1(dummyKey);
-//		String retrievedKey = pipe.getSessionKey1();
-//		assertEquals(dummyKey, retrievedKey);
-//	}
-//
-//	@Test
-//	public void setSessionKey2() {
-//		String dummyKey = "Kappa123";
-//		pipe.setSessionKey2(dummyKey);
-//		String retrievedKey = pipe.getSessionKey2();
-//		assertEquals(dummyKey, retrievedKey);
-//	}
+	@Test
+	public void setSessionKey1() {
+		String dummyKey = "kappa123";
+		pipe.setSessionKey1(dummyKey);
+		String retrievedKey = pipe.getSessionKey1();
+		assertEquals(dummyKey, retrievedKey);
+	}
+
+	@Test
+	public void setSessionKey2() {
+		String dummyKey = "Kappa123";
+		pipe.setSessionKey2(dummyKey);
+		String retrievedKey = pipe.getSessionKey2();
+		assertEquals(dummyKey, retrievedKey);
+	}
 	
 	@Test
 	public void testLessThan() throws Exception {
@@ -98,4 +102,10 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	}
 	
 	
+
+
+
+
+
+
 }
