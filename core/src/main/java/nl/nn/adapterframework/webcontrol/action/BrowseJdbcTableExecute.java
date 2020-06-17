@@ -240,6 +240,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					"WEB_JDBCBROWSECOOKIE_NAME"),
 				cookieValue);
 		sendJdbcBrowseCookie.setMaxAge(Integer.MAX_VALUE);
+		sendJdbcBrowseCookie.setHttpOnly(true);
+		sendJdbcBrowseCookie.setSecure(true);
 		log.debug(
 			"Store cookie for "
 				+ request.getServletPath()

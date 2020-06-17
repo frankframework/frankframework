@@ -72,6 +72,7 @@
 		<Logger name="org.springframework" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
+		<Logger name="org.aspectj" level="WARN" />
 
 		<Logger name="GALM" additivity="false" level="INFO">
 			<AppenderRef ref="galm"/>
@@ -86,20 +87,10 @@
 			<AppenderRef ref="heartbeat"/>
 		</Logger>
 
-		<!-- Debug JMS polling on local development machine -->
-		<!-- appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">
-			<layout class="org.apache.log4j.EnhancedPatternLayout">
-				<param name="ConversionPattern" value="%m%n"/>
-			</layout>
-		</appender>
-		<logger name="nl.nn.adapterframework.unmanaged">
-			<level value="TRACE"/>
-			<appender-ref ref="stdout-local-development"/>
-		</logger>
-		<logger name="nl.nn.adapterframework.jms.IbisMessageListenerContainer">
-			<level value="TRACE"/>
-			<appender-ref ref="stdout-local-development"/>
-		</logger -->
+		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
+		<!-- Logger name="nl.nn.adapterframework.configuration.IbisContext" level="ERROR" additivity="true">
+			<appender-ref ref="stdout"/>
+		</Logger -->
 
 		<Root level="${ctx:log.level}">
 			<AppenderRef ref="file"/>

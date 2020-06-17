@@ -15,26 +15,21 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletConfig;
+import javax.ws.rs.core.Context;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 
-import javax.servlet.ServletConfig;
-import javax.ws.rs.core.Context;
-import javax.xml.transform.Transformer;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -49,9 +44,6 @@ public abstract class Base {
 	protected Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext = null;
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
-
-	private static final String ADAPTER2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
 
 	/**
 	 * Retrieves the IbisContext from <code>servletConfig</code>.
@@ -91,41 +83,6 @@ public abstract class Base {
 
 	public ClassLoader getClassLoader() {
 		return this.getClass().getClassLoader();
-	}
-
-	protected String getFlow(IAdapter adapter) {
-		try {
-			return generateFlow(adapter.getAdapterConfigurationAsString(), ADAPTER2DOT_XSLT);
-		} catch (ConfigurationException e) {
-			throw new ApiException(e);
-		}
-	}
-
-	protected String getFlow(Configuration config) {
-		return generateFlow(config.getLoadedConfiguration(), CONFIGURATION2DOT_XSLT);
-	}
-
-	protected String getFlow(List<Configuration> configurations) {
-		String dotInput = "<configs>";
-		for (Configuration configuration : configurations) {
-			dotInput = dotInput + XmlUtils.skipXmlDeclaration(configuration.getLoadedConfiguration());
-		}
-		dotInput = dotInput + "</configs>";
-
-		return generateFlow(dotInput, CONFIGURATION2DOT_XSLT);
-	}
-
-	private String generateFlow(String dotInput, String xslt) {
-		try {
-			URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), xslt);
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			String dotOutput = XmlUtils.transformXml(transformer, dotInput, true);
-
-			return dotOutput;
-		}
-		catch (Exception e) {
-			throw new ApiException(e);
-		}
 	}
 
 	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {

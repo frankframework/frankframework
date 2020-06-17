@@ -142,7 +142,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         PipeRunResult res = pipe.doPipe(null, session);
 
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
     }
 
     @Test

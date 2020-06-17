@@ -35,7 +35,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @see: https://swagger.io/specification
  * @see: https://json-schema.org/understanding-json-schema/reference/
  */
-
 public class TestXmlSchema2JsonSchema extends AlignTestBase {
 
 
