@@ -165,13 +165,9 @@ public class CompressPipe extends FixedForwardPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {
-				try {
-					log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-					String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message.asString(),session.getMessageId(),0);
-					return new PipeRunResult(exceptionForward,resultmsg);
-				} catch (IOException e1) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-				}
+				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0);
+				return new PipeRunResult(exceptionForward,resultmsg);
 			}
 			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
 		}

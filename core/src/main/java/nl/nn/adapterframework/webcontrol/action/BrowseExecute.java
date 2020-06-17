@@ -217,7 +217,7 @@ public class BrowseExecute extends Browse {
 							
 				if (listener!=null && listener instanceof IBulkDataListener) {
 					IBulkDataListener bdl=(IBulkDataListener)listener;
-					String bulkfilename=bdl.retrieveBulkData(rawmsg,msg,context);
+					String bulkfilename=bdl.retrieveBulkData(rawmsg,new Message(msg),context);
 
 					zipOutputStream.closeEntry();
 		

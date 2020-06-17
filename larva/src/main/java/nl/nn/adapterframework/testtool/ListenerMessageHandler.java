@@ -8,6 +8,7 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
@@ -109,37 +110,45 @@ public class ListenerMessageHandler implements IMessageHandler {
 		this.responseTimeOut = responseTimeOut;
 	}
 
+	@Override
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
+	@Override
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime) throws ListenerException {
 		processRawMessage(origin, rawMessage, threadContext);
 	}
 
+	@Override
 	public void processRawMessage(IListener origin, Object rawMessage) throws ListenerException {
 		processRawMessage(origin, rawMessage, null);
 	}
 
-	public String processRequest(IListener origin, Object rawMessage, String message) throws ListenerException {
-		return processRequest(origin, null, message, (HashMap)null);
+	@Override
+	public Message processRequest(IListener origin, Object rawMessage, Message message) throws ListenerException {
+		return processRequest(origin, null, rawMessage, message, null);
 	}
 
-	public String processRequest(IListener origin, String correlationId, Object rawMessage, String message) throws ListenerException {
-		return processRequest(origin, correlationId, message, (HashMap)null);
+	@Override
+	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message) throws ListenerException {
+		return processRequest(origin, correlationId, rawMessage, message, null);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
-		return processRequest(origin, correlationId, null, message, (Map)context);
+	@Override
+	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message, Map context) throws ListenerException {
+		return processRequest(origin, correlationId, null, message, context);
 	}
 
-	public String processRequest(IListener origin, String correlationId, Object rawMessage, String message, Map context, long waitingTime) throws ListenerException {
+	@Override
+	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message, Map context, long waitingTime) throws ListenerException {
 		return processRequest(origin, correlationId, rawMessage, message, context);
 	}
 
-	public String formatException(String origin, String arg1, String arg2, Throwable arg3) {
+	@Override
+	public String formatException(String origin, String arg1, Message arg2, Throwable arg3) {
 		log.error("formatException(String arg0, String arg1, String arg2, Throwable arg3) not implemented");
 		return null;
 	}

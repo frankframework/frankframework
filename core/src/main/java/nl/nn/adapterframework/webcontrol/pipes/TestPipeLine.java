@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -39,9 +42,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Test a PipeLine.
@@ -230,7 +230,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				"WCTestPipeLine");
 		try {
 			Thread.currentThread().setName(ntName);
-			return adapter.processMessage(messageId, message, pls);
+			return adapter.processMessage(messageId, new Message(message), pls);
 		} finally {
 			Thread.currentThread().setName(ctName);
 		}

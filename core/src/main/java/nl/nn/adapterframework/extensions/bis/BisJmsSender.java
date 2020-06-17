@@ -118,7 +118,7 @@ public class BisJmsSender extends JmsSender {
 		}
 		String replyMessage;
 		try {
-			String payload = bisUtils.prepareReply(input.asString(), isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
+			String payload = bisUtils.prepareReply(input, isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
 			if (StringUtils.isNotEmpty(getRequestNamespace())) {
 				payload = XmlUtils.addRootNamespace(payload, getRequestNamespace());
 			}

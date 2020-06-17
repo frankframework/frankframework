@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 /**
@@ -31,41 +32,42 @@ import nl.nn.adapterframework.util.MessageKeeper;
  **/
 public interface IAdapter extends IManagable {
 
-    /**
-  	 * Instruct the adapter to configure itself. The adapter will call the
-  	 * pipeline to configure itself, the pipeline will call the individual
-  	 * pipes to configure themselves.
-  	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
-  	 * @see PipeLine#configure()
-  	 */
-    void configure() throws ConfigurationException;
+	/**
+	 * Instruct the adapter to configure itself. The adapter will call the pipeline
+	 * to configure itself, the pipeline will call the individual pipes to configure
+	 * themselves.
+	 * 
+	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
+	 * @see PipeLine#configure()
+	 */
+	void configure() throws ConfigurationException;
 
- 	/**
- 	 * The messagekeeper is used to keep the last x messages, relevant to
- 	 * display in the web-functions.
- 	 */
-	MessageKeeper getMessageKeeper();
-	IReceiver getReceiverByName(String receiverName);
-	Iterator<IReceiver> getReceiverIterator();
-	PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
-	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
+	/**
+	 * The messagekeeper is used to keep the last x messages, relevant to display in
+	 * the web-functions.
+	 */
+	public MessageKeeper getMessageKeeper();
+	public IReceiver getReceiverByName(String receiverName);
+	public Iterator<IReceiver> getReceiverIterator();
+	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
 
-	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
 	public PipeLine getPipeLine();
-	void setConfiguration(Configuration configuration);
-	Configuration getConfiguration();
-	boolean isAutoStart();
+	public void setConfiguration(Configuration configuration);
+	public Configuration getConfiguration();
+	public boolean isAutoStart();
 
-	String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);
+	public String formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 
-	void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 
-    /**
-     * state to put in PipeLineResult when a PipeRunException occurs.
-     */
-	String getErrorState();
+	/**
+	 * state to put in PipeLineResult when a PipeRunException occurs.
+	 */
+	public String getErrorState();
 
-    String getDescription();
-    
-    String getAdapterConfigurationAsString();
+	public String getDescription();
+
+	public String getAdapterConfigurationAsString();
 }

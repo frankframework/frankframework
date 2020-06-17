@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.cache;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Interface to be implemented by cache-providers. 
@@ -40,7 +41,7 @@ public interface ICacheAdapter<K,V> {
 	 * Transform the the current response message to a value in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	V transformValue(String input, IPipeLineSession session);
+	V transformValue(Message input, IPipeLineSession session);
 	
 
 	/**

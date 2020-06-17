@@ -17,19 +17,21 @@ package nl.nn.adapterframework.core;
 
 import java.util.Map;
 
+import nl.nn.adapterframework.stream.Message;
+
 /**
  * Listener extension that allows to transfer of a lot of data, and do it within the transaction handling.
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public interface IBulkDataListener extends IListener {
+public interface IBulkDataListener<M> extends IListener<M> {
 
 	/**
 	 * Retrieves the bulk data associated with the message, stores it in a file or something similar.
 	 * It returns the handle to the file as a result, and uses that as the message for the pipeline.
 	 * @return input message for adapter.
 	 */
-	String retrieveBulkData(Object rawMessageOrWrapper, String message, Map<String,Object> context) throws ListenerException;
+	String retrieveBulkData(Object rawMessageOrWrapper, Message message, Map<String,Object> context) throws ListenerException;
 
 }
