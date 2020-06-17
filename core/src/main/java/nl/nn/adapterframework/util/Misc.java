@@ -152,12 +152,12 @@ public class Misc {
 	}
 
 	/**
-	 *
+	 * Converts an unsigned byte to its integer representation.
 	 * Examples:
-	 * <blockquote><pre>
+	 * <pre>
 	 * Misc.unsignedByteToInt(new Btye(12)) returns 12
 	 * Misc.unsignedByteToInt(new Byte(-12)) returns 244
-	 * </pre></blockquote>
+	 * </pre>
 	 * @param b byte to be converted.
 	 * @return integer that is converted from unsigned byte.
 	 */
@@ -173,14 +173,51 @@ public class Misc {
 		return System.currentTimeMillis();
 	}
 
+	/**
+	 * Copies the content of the specified file to a writer.
+	 *
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         Writer writer = new StringWriter();
+	 *         Misc.fileToWriter(someFileName, writer);
+	 *         System.out.println(writer.toString) // prints the content of the writer
+	 *         				       // that's copied from the file.
+	 *     </pre>
+	 * </p>
+	 * @param filename
+	 * @param writer
+	 * @throws IOException exception to be thrown exception to be thrown if an I/O eexception occurs
+	 */
 	public static void fileToWriter(String filename, Writer writer) throws IOException {
 		readerToWriter(new FileReader(filename), writer);
 	}
 
+	/**
+	 * Copies the content of the specified file to an output stream.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         OutputStream os = new ByteArrayOutputStream
+	 *         Misc.fileToStream(someFileName, os);
+	 *         System.out.println(os.toString) // prints the content of the output stream
+	 *         				   // that's copied from the file.
+	 *     </pre>
+	 * </p>
+	 * @param filename
+	 * @param output
+	 * @throws IOException exception to be thrown if an I/O eexception occurs
+	 */
 	public static void fileToStream(String filename, OutputStream output) throws IOException {
 		streamToStream(new FileInputStream(filename), output);
 	}
 
+	/**
+	 * Overloaded version of streamToStream that calls the main version with closeInput set to true.
+	 * @param input
+	 * @param output
+	 * @throws IOException
+	 */
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input,output,true);
 	}
@@ -188,10 +225,20 @@ public class Misc {
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * Closes the input stream if specified.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         OutputStream baos = new ByteArrayOutputStream();
+	 *         Misc.streamToStream(bais, baos);
+	 *         System.out.println(baos.toString()); // prints "test"
+	 *     </pre>
+	 * </p>
 	 * @param input
 	 * @param output
 	 * @param closeInput if set to 'true', the input stream gets closed.
-	 * @throws IOException  if an I/O error occurs.
+	 * @throws IOException  exception to be thrown if an I/O eexception occurs
 	 */
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
@@ -206,12 +253,41 @@ public class Misc {
 		}
 	}
 
+	/**
+	 * Writes the content of an input stream to a specified file.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         Misc.streamToFile(bais, file); // "test" copied inside the file.
+	 *     </pre>
+	 * </p>
+	 * @param inputStream
+	 * @param file
+	 * @throws IOException exception to be thrown if an I/O eexception occurs
+	 */
 	public static void streamToFile(InputStream inputStream, File file) throws IOException {
 		try (OutputStream fileOut = new FileOutputStream(file)) {
 			Misc.streamToStream(inputStream, fileOut);
 		}
 	}
 
+	/**
+	 * Writes the content of an input stream to a byte array.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         byte[] arr = Misc.streamToBytes(bais);
+	 *         System.out.println(new String(arr, StandardCharsets.UTF_8)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @param inputStream
+	 * @return
+	 * @throws IOException
+	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
@@ -225,11 +301,34 @@ public class Misc {
 
 		return out.toByteArray();
 	}
-	
-	
+
+	/**
+	 * @see #readerToWriter(Reader, Writer, boolean)
+	 * {@inheritDoc}
+	 * @param reader
+	 * @param writer
+	 * @throws IOException
+	 */
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		readerToWriter(reader,writer,true);
 	}
+
+	/**
+	 * Copies the content of a reader to the buffer of a writer.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         Reader reader = new StringReader("test");
+	 *         Writer writer = new StringWriter();
+	 *         Misc.readerToWriter(reader, writer, true);
+	 *         System.out.println(writer.toString)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @param reader
+	 * @param writer
+	 * @param closeInput
+	 * @throws IOException
+	 */
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
 			try {
@@ -267,7 +366,23 @@ public class Misc {
 		}
 	}
 
-
+	/**
+	 * 	Copies the content of a reader into a string, adds specified string to the end of the line, if specified.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         Reader r = new StringReader("<root> WeAreFrank'</root> \n";
+	 *         String s = Misc.readerToString(r, "!!", true);
+	 *         System.out.println(s);
+	 *         // prints "&lt;root&gt; WeAreFrank!!&lt;/root&gt;"
+	 *     </pre>
+	 * </p>
+	 * @param reader
+	 * @param endOfLineString
+	 * @param xmlEncode if set to true, applies XML encodings to the content of the reader
+	 * @return
+	 * @throws IOException
+	 */
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		int curChar = -1;
