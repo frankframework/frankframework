@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.cache;
 
+import java.io.IOException;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -143,7 +145,12 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 
 	@Override
 	protected V toValue(Message value) {
-		return (V)value;
+		try {
+			return (V)value.asString();
+		} catch (IOException e) {
+			log.warn("Could not perform toValue() by asString()", e);
+			return null;
+		}
 	}
 
 	@IbisDoc({"1", "The maximum number of elements in memory, before they are evicted", "100"})

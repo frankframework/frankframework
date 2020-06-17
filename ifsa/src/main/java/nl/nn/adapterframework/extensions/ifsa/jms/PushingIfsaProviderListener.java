@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -227,10 +228,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				try {
 					String result="<exception>no result</exception>";
 					if (plr!=null && plr.getResult()!=null) {
-						result=plr.getResult();
+						result=plr.getResult().asString();
 					}
 					sendReply(session, originalRawMessage, result);
-				} catch (IfsaException e) {
+				} catch (IfsaException | IOException e) {
 					try {
 						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {

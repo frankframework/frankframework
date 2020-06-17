@@ -83,11 +83,11 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link CorePipeLineProcessor#processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe)}
 	 */
-	public Object debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String correlationId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String correlationId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
-		message = (Message)ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
+		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
 		TreeSet<String> keys = new TreeSet<String>(pipeLineSession.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
@@ -163,16 +163,16 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link ISender#sendMessage(Message message, IPipeLineSession session)}
 	 */
-	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
+	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (Message)proceedingJoinPoint.proceed();
 		}
 		String correlationId = session==null ? null : session.getMessageId();
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
 			// Ignore JmsSenders within JmsListeners (calling JmsSender without
 			// ParameterResolutionContext) within Receivers.
-			return proceedingJoinPoint.proceed();
+			return (Message)proceedingJoinPoint.proceed();
 		} 
 		boolean preserveInput = sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput();
 		Message preservedInput=null;
@@ -216,7 +216,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 
-	public Object debugSimpleSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
+	private Object debugSimpleSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}

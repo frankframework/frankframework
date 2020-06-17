@@ -1234,12 +1234,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				if (pipeLineResult==null) {
 					pipeLineResult=new PipeLineResult();
 				}
-				if (pipeLineResult.getResult().isEmpty()) {
+				if (pipeLineResult.getResult()==null || pipeLineResult.getResult().isEmpty()) {
 					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
 					pipeLineResult.setResult(new Message(formattedErrorMessage));
 				}
-				ListenerException l = wrapExceptionAsListenerException(t);
-				throw l;
+				throw wrapExceptionAsListenerException(t);
 			} finally {
 				putSessionKeysIntoThreadContext(threadContext, pipelineSession);
 			}
