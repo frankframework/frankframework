@@ -210,18 +210,11 @@
 			<artifactId>mail</artifactId>
 		</dependency>
 
-		<!-- Logging -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-1.2-api</artifactId>
-			<version>2.13.0</version>
-		</dependency>
 
-		<!-- Bridge required for ehcache -->
+		<!-- LOG4J to SLF4J Bridge required for ehcache -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>2.13.0</version>
 		</dependency>
 
 		<!-- ASPOSE LIBRARIES -->
