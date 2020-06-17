@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package nl.nn.adapterframework.processors;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author Jaco de Groot
@@ -32,14 +33,9 @@ import org.apache.logging.log4j.Logger;
 public class CoreListenerProcessor implements ListenerProcessor {
 	private Logger log = LogUtil.getLogger(this);
 
-	public String getMessage(ICorrelatedPullingListener listener,
-			String correlationID, IPipeLineSession pipeLineSession
-			) throws ListenerException, TimeOutException {
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix(listener, pipeLineSession)
-					+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
-		}
-		String result;
+	public Message getMessage(ICorrelatedPullingListener listener, String correlationID, IPipeLineSession pipeLineSession) throws ListenerException, TimeOutException {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix(listener, pipeLineSession) + "starts listening for return message with correlationID ["+ correlationID	+ "]");
+		Message result;
 		Map threadContext=new HashMap();
 		try {
 			threadContext = listener.openThread();
@@ -49,7 +45,7 @@ public class CoreListenerProcessor implements ListenerProcessor {
 			} else {
 				log.info(getLogPrefix(listener, pipeLineSession)+"received reply message");
 			}
-			result = listener.getStringFromRawMessage(msg, threadContext);
+			result = listener.extractMessage(msg, threadContext);
 		} finally {
 			try {
 				log.debug(getLogPrefix(listener, pipeLineSession)+"is closing");

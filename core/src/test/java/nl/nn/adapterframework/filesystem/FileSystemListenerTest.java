@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -206,8 +207,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		
-		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
-		assertThat(message,CoreMatchers.containsString(filename));
+		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertThat(message.asString(),CoreMatchers.containsString(filename));
 	}
 
 	@Test
@@ -225,8 +226,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		
-		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
-		assertEquals(contents,message);
+		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertEquals(contents,message.asString());
 	}
 
 //	@Test

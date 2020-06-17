@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
@@ -31,11 +33,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * JdbcListener base class.
@@ -209,20 +210,20 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 						String key=rs.getString(getKeyField());
 						
 						if (StringUtils.isNotEmpty(getMessageField())) {
-							String message;
+							Message message;
 							if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-								message=JdbcUtil.getClobAsString(rs,getMessageField(),false);
+								message=new Message(JdbcUtil.getClobAsString(rs,getMessageField(),false));
 							} else {
 								if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-									message=JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false);
+									message=new Message(JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
 								} else {
-									message=rs.getString(getMessageField());
+									message=new Message(rs.getString(getMessageField()));
 								}
 							}
 							// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 							MessageWrapper mw = new MessageWrapper();
 							mw.setId(key);
-							mw.setText(message);
+							mw.setMessage(message);
 							result=mw;
 						} else {
 							result = key;
@@ -262,12 +263,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		return id;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		String message;
+	@Override
+	public Message extractMessage(Object rawMessage, Map context) throws ListenerException {
+		Message message;
 		if (rawMessage instanceof IMessageWrapper) {
-			message = ((IMessageWrapper)rawMessage).getText();
+			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else {
-			message = (String)rawMessage;
+			message = Message.asMessage(rawMessage);
 		}
 		return message;
 	}
@@ -280,6 +282,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		}
 	}
 
+	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {

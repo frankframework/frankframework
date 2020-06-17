@@ -394,7 +394,7 @@ public class JdbcUtil {
 			String rawMessage;
 			if (objectOK) {
 				if (result instanceof IMessageWrapper) {
-					rawMessage = ((IMessageWrapper)result).getText();
+					rawMessage = ((IMessageWrapper)result).getMessage().asString();
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {

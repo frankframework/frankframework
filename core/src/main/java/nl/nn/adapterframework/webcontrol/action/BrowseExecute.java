@@ -157,7 +157,7 @@ public class BrowseExecute extends Browse {
 				String msgCid=msgcontext.getCorrelationId();
 				HashMap context = new HashMap();
 				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg,context);
+					msg = listener.extractMessage(rawmsg,context).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}

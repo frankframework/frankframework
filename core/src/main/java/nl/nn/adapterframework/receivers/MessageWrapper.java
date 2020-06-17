@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.receivers;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -34,17 +35,17 @@ public class MessageWrapper implements Serializable, IMessageWrapper {
 	static final long serialVersionUID = -8251009650246241025L;
 
 	private Map context = new HashMap();
-	private String text;
+	private Message message;
 	private String id;
 
 	public MessageWrapper()  {
 		super();
 	}
-	public MessageWrapper(Object message, IListener listener) throws ListenerException  {
+	public MessageWrapper(Object rawMessage, IListener listener) throws ListenerException  {
 		this();
-		text = listener.getStringFromRawMessage(message, context);
+		message = listener.extractMessage(rawMessage, context);
 		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		id = listener.getIdFromRawMessage(message, context);
+		id = listener.getIdFromRawMessage(rawMessage, context);
 	}
 
 	public Map getContext() {
@@ -58,10 +59,10 @@ public class MessageWrapper implements Serializable, IMessageWrapper {
 		return id;
 	}
 
-	public void setText(String string) {
-		text = string;
+	public void setMessage(Message message) {
+		this.message = message;
 	}
-	public String getText() {
-		return text;
+	public Message getMessage() {
+		return message;
 	}
 }

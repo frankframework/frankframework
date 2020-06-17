@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -251,9 +251,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			return getStringFromRawMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(),soapWrapper);
+			return extractMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
@@ -249,12 +250,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return null;
 	}
 	
-	/**
-	 * Returns a string of the rawMessage
-	 */
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return rawMessage.toString();
+	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
+		return Message.asMessage(rawMessage);
 	}
 
 	@Override

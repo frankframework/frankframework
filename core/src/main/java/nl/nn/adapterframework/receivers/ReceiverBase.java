@@ -955,16 +955,16 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			threadContext = new HashMap<>();
 		}
 
-		String message = null;
+		Message message = null;
 		String technicalCorrelationId = null;
 		try {
-			message = getListener().getStringFromRawMessage((M)rawMessageOrWrapper, threadContext);
+			message = getListener().extractMessage((M)rawMessageOrWrapper, threadContext);
 		} catch (Exception e) {
 			if(rawMessageOrWrapper instanceof MessageWrapper) { 
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
-				message = ((MessageWrapper)rawMessageOrWrapper).getText();
+				message = ((MessageWrapper)rawMessageOrWrapper).getMessage();
 			} else {
 				throw new ListenerException(e);
 			}
@@ -981,7 +981,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		String messageId = (String)threadContext.get("id");
 		long endExtractingMessage = System.currentTimeMillis();
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-		processMessageInAdapter(rawMessageOrWrapper, new Message(message), messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
 	

@@ -20,18 +20,18 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
+import com.tibco.tibjms.TibjmsMapMessage;
+
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
-
-import com.tibco.tibjms.TibjmsMapMessage;
 
 public class TibcoLogJmsListener extends JmsListener {
 
@@ -39,15 +39,12 @@ public class TibcoLogJmsListener extends JmsListener {
 	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on ["
-					+ getDestinationName()
-					+ "] was not of type TibjmsMapMessage, but ["
-					+ rawMessage.getClass().getName() + "]", e);
+			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass().getName() + "]", e);
 			return null;
 		}
 		Enumeration enumeration = tjmMessage.getMapNames();
@@ -106,14 +103,11 @@ public class TibcoLogJmsListener extends JmsListener {
 				}
 			}
 		}
-		return DateUtils.format(creationTimes) + " " + severityStr + " ["
-				+ (engineName != null ? engineName : (environment + "-" + node)) + "] ["
-				+ (jobId != null ? jobId : "") + "] " + msg + " "
-				+ sb.toString();
+		return new Message(DateUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
 	}
 
 	@Override
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -212,8 +212,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public String getStringFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return rawMessage;
+	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+		return new Message(rawMessage);
 	}
 
 	@Override

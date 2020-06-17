@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -164,9 +166,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public String getStringFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+		if (StreamUtil.DEFAULT_INPUT_STREAM_ENCODING.equalsIgnoreCase(getCharset())) {
+			return new Message(rawMessage.getPayload());
+		}
 		try {
-			return new String(rawMessage.getPayload(), getCharset());
+			return new Message(new String(rawMessage.getPayload(), getCharset()));
 		} catch (UnsupportedEncodingException e) {
 			throw new ListenerException("Could not encode message", e);
 		}

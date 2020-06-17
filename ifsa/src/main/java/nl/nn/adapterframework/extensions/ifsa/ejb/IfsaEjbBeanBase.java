@@ -55,9 +55,9 @@ abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB impl
         Map threadContext = new HashMap();
         try {
 //            listener.populateThreadContext(request, threadContext, null);
-            String message = listener.getStringFromRawMessage(request, threadContext);
+            Message message = listener.extractMessage(request, threadContext);
             String cid = listener.getIdFromRawMessage(request, threadContext);
-            String replyText = listener.getHandler().processRequest(listener, cid, request, new Message(message), threadContext).asString();
+            String replyText = listener.getHandler().processRequest(listener, cid, request, message, threadContext).asString();
             if (log.isDebugEnabled()) {
                 log.debug("processRequest(): ReplyText=[" + replyText + "]");
             }

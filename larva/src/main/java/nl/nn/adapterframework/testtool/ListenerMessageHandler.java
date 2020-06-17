@@ -119,8 +119,8 @@ public class ListenerMessageHandler implements IMessageHandler {
 	@Override
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
-		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		processRequest(origin, correlationId, rawMessage, new Message(message), threadContext);
+		Message message = origin.extractMessage(rawMessage, threadContext);
+		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
 	@Override

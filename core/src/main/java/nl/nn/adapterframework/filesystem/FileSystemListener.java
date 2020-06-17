@@ -34,10 +34,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
@@ -239,22 +239,22 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * Returns returns the filename, or the contents
 	 */
 	@Override
-	public String getStringFromRawMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
-				return getFileSystem().getName(rawMessage);
+				return new Message(getFileSystem().getName(rawMessage));
 			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
-				return getFileSystem().getCanonicalName(rawMessage);
+				return new Message(getFileSystem().getCanonicalName(rawMessage));
 			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
-				return StreamUtil.streamToString(getFileSystem().readFile(rawMessage), null, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				return new Message(getFileSystem().readFile(rawMessage));
 			}
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {
 				Object result=attributes.get(getMessageType());
 				if (result!=null) {
-					return result.toString();
+					return Message.asMessage(result);
 				}
 			}
 			log.warn("no attribute ["+getMessageType()+"] found for file ["+getFileSystem().getName(rawMessage)+"]");
