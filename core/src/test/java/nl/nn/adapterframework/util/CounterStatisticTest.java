@@ -22,7 +22,7 @@ public class CounterStatisticTest {
     public void testPerformActionSummaryOrFull() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(HasStatistics.STATISTICS_ACTION_SUMMARY);
-        assertEquals(cs.getValue(), 10);
+        assertEquals(10, cs.getValue());
     }
 
     /**
@@ -34,7 +34,7 @@ public class CounterStatisticTest {
     public void testPerformActionReset() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(HasStatistics.STATISTICS_ACTION_RESET);
-        assertEquals(cs.getValue(), 0);
+        assertEquals(0, cs.getValue());
     }
     
 
@@ -47,14 +47,14 @@ public class CounterStatisticTest {
     public void testPerformActionMarkMain() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
-        assertEquals(cs.getValue(), 10);
+        assertEquals( 10, cs.getValue());
     }
 
     @Test
     public void testPerformActionMarkFull() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
         cs.performAction(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-        assertEquals(cs.getValue(), 10);
+        assertEquals( 10, cs.getValue());
     }
 
 
@@ -66,7 +66,7 @@ public class CounterStatisticTest {
     @Test
     public void testGetIntervalValue() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        assertEquals(cs.getIntervalValue(), 0);
+        assertEquals( 0, cs.getIntervalValue());
     }
 
 

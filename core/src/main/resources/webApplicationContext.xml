@@ -17,8 +17,13 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+		<property name="id" value="ff-soap-bus"/>
+	</bean>
+
+	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
+	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
+	<bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
 
 	<!-- Beans that should be loaded before the IbisContext starts -->
 	<bean
