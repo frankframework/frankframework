@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.LogUtil;
 @IbisInitializer
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private Logger secLog = LogUtil.getLogger("SEC");
 	private Logger log = LogUtil.getLogger(this);
@@ -155,6 +155,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public void setBus(Bus bus) {
 		if(bus != null) {
+			log.debug("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
 			getServletContext().log("Successfully created IAF-API with SpringBus ["+bus.getId()+"]");
 		}
 
@@ -163,9 +164,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		if(getBus() != null) {
-			super.onApplicationEvent(event);
-		}
+		// This event listens to all Spring refresh events.
+		// When adding new Spring contexts (with this as a parent) refresh events originating from other contexts will also trigger this method.
+		// Since we never want to reinitialize this servlet, we can ignore the 'refresh' event completely!
 	}
 
 	@Override
