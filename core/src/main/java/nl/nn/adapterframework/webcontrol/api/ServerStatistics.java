@@ -51,8 +51,8 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -123,8 +123,15 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("name", getIbisContext().getApplicationName());
+		Map<String, Object> framework = new HashMap<String, Object>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<String, Object>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
 
 		String dtapStage = appConstants.getProperty("dtap.stage");
 		returnMap.put("dtap.stage", dtapStage);
@@ -175,7 +182,7 @@ public class ServerStatistics extends Base {
 				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
 					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
-						ITransactionalStorage errorStorage = receiver.getErrorStorage();
+						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {
 								esr += errorStorage.getMessageCount();

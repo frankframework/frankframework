@@ -44,8 +44,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -448,7 +447,7 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSchedule(MultipartFormDataInput input) throws ApiException {
+	public Response createSchedule(MultipartBody input) throws ApiException {
 		return createSchedule(null, input);
 	}
 
@@ -457,7 +456,7 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job/{jobName}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartFormDataInput input) throws ApiException {
+	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, jobName, input, true);
 	}
 
@@ -466,18 +465,17 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartFormDataInput input) throws ApiException {
+	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, input);
 	}
 
 
-	private Response createSchedule(String groupName, MultipartFormDataInput input) {
+	private Response createSchedule(String groupName, MultipartBody input) {
 		return createSchedule(groupName, null, input, false);
 	}
 
-	private Response createSchedule(String groupName, String jobName, MultipartFormDataInput input, boolean overwrite) {
+	private Response createSchedule(String groupName, String jobName, MultipartBody inputDataMap, boolean overwrite) {
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}

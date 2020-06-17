@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * IncreaseIntegerPipe Tester.
@@ -46,7 +47,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         pipe.setIncrement(2);
         pipe.configure();
         doPipe(pipe, "doesnt matter", session);
-        assertEquals(session.get("a"), "6");
+        fail("this is expected to fail");
     }
 
 }

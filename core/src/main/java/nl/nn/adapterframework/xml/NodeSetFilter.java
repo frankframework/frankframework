@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,12 +43,12 @@ public class NodeSetFilter extends FullXmlFilter {
 
 	private List<PrefixMapping> pendingNamespaceDefinitions=new ArrayList<>();
 
-	public NodeSetFilter(String targetElement) {
-		this(null, targetElement,true,false);
+	public NodeSetFilter(String targetElement, ContentHandler handler) {
+		this(null, targetElement, true, false, handler);
 	}
 
-	public NodeSetFilter(Map<String,String> namespaceMap, String targetElement, boolean includeTarget, boolean includeRoot) {
-		super();
+	public NodeSetFilter(Map<String,String> namespaceMap, String targetElement, boolean includeTarget, boolean includeRoot, ContentHandler handler) {
+		super(handler);
 		this.includeTarget=includeTarget;
 		this.includeRoot=includeRoot;
 		if (namespaceMap==null) {

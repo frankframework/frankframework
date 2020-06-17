@@ -33,7 +33,7 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
         pipe.setSessionKey(null);
         session.put("a", "123");
         PipeRunResult res = doPipe(pipe, "a", session);
-        assertEquals(res.getResult().toString(), "123");
+        assertEquals(res.getResult().asString(), "123");
 
 }
 
@@ -42,20 +42,20 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
         pipe.setSessionKey("a");
         session.put("a", "123");
         PipeRunResult res = doPipe(pipe, "a", session);
-        assertEquals(res.getResult().toString(), "123");    }
+        assertEquals(res.getResult().asString(), "123");    }
 
     @Test
     public void testNonEmptySessionKeyEmptyInput() throws Exception {
             pipe.setSessionKey("a");
             session.put("a", "123");
             PipeRunResult res = pipe.doPipe(null, session);
-            assertEquals(res.getResult().toString(), "123");
+            assertEquals(res.getResult().asString(), "123");
 
     }
     @Test
     public void testEmptySessionKeyEmptyInput() throws Exception {
         exception.expect(NullPointerException.class);
-        pipe.setSessionKey(null);
+        pipe.setSessionKey("");
         session.put("a", "123");
         PipeRunResult res = doPipe(pipe, null, session);
         assertEquals(res.getResult().toString(), "[null]");    }
@@ -65,7 +65,7 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
         pipe.setSessionKey("ab");
         session.put("a", "123");
         PipeRunResult res = doPipe(pipe, "ab", session);
-        assertEquals(res.getResult().toString(), "[null]");
+        assertEquals(res.getResult().asString(), "[null]");
 
     }
 

@@ -2,10 +2,10 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 
 /**
  * PasswordGeneratorPipe Tester.
@@ -20,15 +20,6 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
         return new PasswordGeneratorPipe();
     }
 
-    /**
-     * Method: configure()
-     */
-    @Test
-    public void testConfigure() throws Exception {
-        pipe.setUseSecureRandom(true);
-        pipe.configure();
-
-    }
     /**
      * Method: generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers)
      */
@@ -56,7 +47,7 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
         pipe.setUseSecureRandom(false);
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "pipey", session);
-        assertEquals(res.getResult().toString().length(), 11);
+        assertEquals(res.getResult().asString().length(), 11);
     }
 
 

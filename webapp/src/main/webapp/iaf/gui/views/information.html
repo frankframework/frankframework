@@ -3,15 +3,15 @@
         <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
     </div>
     <div class="modal-body">
-        <p ng-if="name">
-	        <strong>IAF {{::version}}</strong>: {{::name}}<br/>
+        <p ng-if="instanceName">
+	        <strong>{{::framework.name}} {{::framework.version}}</strong>: {{::instance.name}} {{::instance.version}}<br/>
 	        Running on <strong>{{::machineName}}</strong> using <strong>{{::applicationServer}}</strong><br/>
 	        Java Version: <strong>{{::javaVersion}}</strong><br/>
 	        Heap size: <strong>{{::processMetrics.heapSize}}</strong>, total JVM memory: <strong>{{::processMetrics.totalMemory}}</strong><br/>
 	        Free disk space: <strong>{{::fileSystem.freeSpace}}</strong>, total disk space: <strong>{{::fileSystem.totalSpace}}</strong><br/>
 	        Up since: <strong><span to-date time="{{::uptime}}"></span></strong> (<span time-since time="{{::uptime}}"></span>)
         </p>
-        <h3 ng-if="!name" class="text-center">Unable to fetch server information due to startup error.</h3>
+        <h3 ng-if="!instanceName" class="text-center">Unable to fetch server information due to startup error.</h3>
     </div>
     <div class="modal-footer">
         <span class="pull-left p-xxs">

@@ -94,6 +94,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -1225,7 +1226,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) throws ConfigurationException {
 		try {
 			this.function = JobDefFunctions.fromValue(function);

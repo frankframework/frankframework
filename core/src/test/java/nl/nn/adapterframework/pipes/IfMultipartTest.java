@@ -4,17 +4,18 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
-import org.junit.Before; 
+import org.junit.Before;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 
-/** 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+
+/**
 * IfMultipart Tester. 
 * 
 * @author <Sina Sen>
@@ -41,18 +42,16 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] cannot find forward or pipe named [null]");
         pipe.setElseForwardName(null);
-        PipeRunResult res = pipe.doPipe(null, session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
-
+         pipe.doPipe(null, session);
+        fail("this is expected to fail");
     }
 
     @Test
     public void testInputNotHTTPRequest() throws Exception {
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [IfMultipart under test] expected HttpServletRequest as input, got [Message]");
-        PipeRunResult res = doPipe(pipe, "i am a string not a http req", session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
-
+        doPipe(pipe, "i am a string not a http req", session);
+        fail("this is expected to fail");
     }
 
     @Test
@@ -78,17 +77,17 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart>{
         exception.expect(PipeRunException.class);
         request.setContentType("aamultipartofx");
         pipe.setThenForwardName("success");
-        PipeRunResult res = doPipe(pipe, request, session);
-        PipeForward forward = res.getPipeForward();
-        assertEquals(forward.getName(), "success");    }
+        doPipe(pipe, request, session);
+        fail("this is expected to fail");
+    }
 
 
     @Test
     public void testCannotFindForward() throws Exception {
         exception.expect(PipeRunException.class);
         pipe.setElseForwardName("elsee");
-        PipeRunResult res = doPipe(pipe, request, session);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
+        doPipe(pipe, request, session);
+        fail("this is expected to fail");
     }
 
 

@@ -15,10 +15,15 @@
  */
 package nl.nn.adapterframework.xml;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class PrefixMappingObservingFilter extends PrettyPrintFilter {
+
+	public PrefixMappingObservingFilter(ContentHandler handler) {
+		super(handler);
+	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {

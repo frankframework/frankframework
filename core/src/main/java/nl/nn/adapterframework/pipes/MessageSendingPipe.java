@@ -55,6 +55,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -294,7 +295,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						log.debug("No Adapter to set Configuration from");
 					}
 				}
-				getSender().configure();
+				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
+				if(sender instanceof DirectQuerySender) {
+					String dynamicallyGeneratedKey = "warnings.suppress.sqlInjections."+getAdapter().getName();
+					boolean suppressSqlWarning = AppConstants.getInstance().getBoolean(dynamicallyGeneratedKey, false);
+					((DirectQuerySender) getSender()).configure(suppressSqlWarning);
+				} else {
+					getSender().configure();
+				}
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
 			}
@@ -467,10 +475,21 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && 
+				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFileName()) && getMessageLog()==null && getListener()==null;
+	}
 
-		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
-			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
+	@Override
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
 			return null;
 		}
 		MessageOutputStream result=null;

@@ -24,7 +24,7 @@ public class ListenerMessageHandler implements IMessageHandler {
 	private long requestTimeOut = TestTool.DEFAULT_TIMEOUT;
 	private long responseTimeOut = TestTool.DEFAULT_TIMEOUT;
 
-	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
+	public String processRequest(IListener origin, String correlationId, Object rawMessage, String message, Map context) throws ListenerException {
 		ListenerMessage listenerMessage = new ListenerMessage(correlationId, message, context);
 		putRequestMessage(listenerMessage);
 		String response = null;
@@ -112,7 +112,7 @@ public class ListenerMessageHandler implements IMessageHandler {
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		processRequest(origin, correlationId, message, threadContext);
+		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime) throws ListenerException {
@@ -123,20 +123,20 @@ public class ListenerMessageHandler implements IMessageHandler {
 		processRawMessage(origin, rawMessage, null);
 	}
 
-	public String processRequest(IListener origin, String message) throws ListenerException {
-		return processRequest(origin, null, message, null);
+	public String processRequest(IListener origin, Object rawMessage, String message) throws ListenerException {
+		return processRequest(origin, null, message, (HashMap)null);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message) throws ListenerException {
-		return processRequest(origin, correlationId, message, null);
+	public String processRequest(IListener origin, String correlationId, Object rawMessage, String message) throws ListenerException {
+		return processRequest(origin, correlationId, message, (HashMap)null);
 	}
 
 	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
-		return processRequest(origin, correlationId, message, (Map)context);
+		return processRequest(origin, correlationId, null, message, (Map)context);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
-		return processRequest(origin, correlationId, message, context);
+	public String processRequest(IListener origin, String correlationId, Object rawMessage, String message, Map context, long waitingTime) throws ListenerException {
+		return processRequest(origin, correlationId, rawMessage, message, context);
 	}
 
 	public String formatException(String origin, String arg1, String arg2, Throwable arg3) {

@@ -36,7 +36,7 @@ public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
         InputStream is = new ByteArrayInputStream(myString.getBytes());
         Message m = new Message(is);
         PipeRunResult res = pipe.doPipe( m, session);
-        assertEquals(res.getResult().toString(), "testString");
+        assertEquals(res.getResult().asString(), "testString");
     }
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
@@ -46,7 +46,7 @@ public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
         String myString = "testString";
         Message m = new Message(myString);
         PipeRunResult res = pipe.doPipe(m, session);
-        assertEquals(res.getResult().toString(), "testString");
+        assertEquals(res.getResult().asString(), "testString");
     }
 
 

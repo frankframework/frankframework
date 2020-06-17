@@ -6,16 +6,11 @@ import static org.junit.Assert.assertEquals;
 /**
  * Counter Tester.
  *
- * @author <Sina>
+ * @author <Sina Sen>
  */
 public class CounterTest {
 
-    private String fileName = "Configuration.xml";
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    private String fileContent = "<test />";
 
-    protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-    private ClassLoader nullClassLoader = null;
 
 
     /**
@@ -24,7 +19,7 @@ public class CounterTest {
     @Test
     public void testDecrease() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.decrease(), 14);
+        assertEquals(14, c.decrease());
     }
 
     /**
@@ -33,7 +28,8 @@ public class CounterTest {
     @Test
     public void testDecreaseAmount() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.decrease(10), 5);    }
+        assertEquals(5, c.decrease(10));
+    }
 
     /**
      * Method: increase()
@@ -41,7 +37,8 @@ public class CounterTest {
     @Test
     public void testIncrease() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.increase(), 16);    }
+        assertEquals(16, c.increase());
+    }
 
     /**
      * Method: increase(long amount)
@@ -49,7 +46,7 @@ public class CounterTest {
     @Test
     public void testIncreaseAmount() throws Exception {
         Counter c = new Counter(15);
-        assertEquals(c.increase(10), 25);
+        assertEquals(25, c.increase(10));
     }
 
     /**
@@ -59,7 +56,8 @@ public class CounterTest {
     public void testClear() throws Exception {
         Counter c = new Counter(15);
         c.clear();
-        assertEquals(c.getValue(), 0);    }
+        assertEquals(0, c.getValue());
+    }
 
     /**
      * Method: getValue()
@@ -67,8 +65,8 @@ public class CounterTest {
     @Test
     public void testGetValue() throws Exception {
         Counter c = new Counter(15);
-
-        assertEquals(c.getValue(), 15);    }
+        assertEquals(15, c.getValue());
+    }
 
     /**
      * Method: setValue(long newValue)
@@ -77,7 +75,8 @@ public class CounterTest {
     public void testSetValue() throws Exception {
         Counter c = new Counter(15);
         c.setValue(30);
-        assertEquals(c.getValue(), 30);    }
+        assertEquals(30, c.getValue());
+    }
 
 
-} 
+}

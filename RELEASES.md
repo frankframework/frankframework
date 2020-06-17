@@ -18,6 +18,7 @@ Upcoming
 - introduced attribute combineBlocks on ForEachChildElementPipe, that can be set to false to leverage BlockEnhancedCapabilites of the configured sender
 - Add possibility to put error details in ESB SOAP body response
 - Improve MessageStoreListener by adding peekUntransacted attribute
+- Add support for single pipeline SOAP 1.1 & 1.2 and REST JSON & XML, backed by XML-Schema validation, with OpenAPI 3.0 JSON Schema generation
 
 
 
