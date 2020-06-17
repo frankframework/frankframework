@@ -190,4 +190,51 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 
+	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
+		pipe.setName("testStoreRootElement");
+		pipe.setSchema("/Align/Abc/abc.xsd");
+		pipe.setRootElementSessionKey("rootElement");
+		pipe.setOutputFormat(outputFormat);
+		if (setRootElement) {
+			pipe.setRoot("a");
+		}
+
+		pipe.registerForward(new PipeForward("failure",null));
+		pipe.registerForward(new PipeForward("exception",null));
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = TestFileUtils.getTestFile("/Align/Abc/"+inputFile);
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String expectedForward = "success";
+		String actualForward = prr.getPipeForward().getName();
+		assertEquals(expectedForward, actualForward);
+		
+		assertEquals("a", (String)session.get("rootElement"));
+	}
+
+	
+	@Test
+	public void testStoreRootElementXml2Json() throws Exception {
+		testStoreRootElement("json","abc.xml",false);
+	}
+	@Test
+	public void testStoreRootElementJson2Xml() throws Exception {
+		testStoreRootElement("xml","abc-full.json",false);
+		testStoreRootElement("xml","abc-compact.json",true);
+	}
+	@Test
+	public void testStoreRootElementJson2Json() throws Exception {
+		testStoreRootElement("json","abc-full.json",false);
+		testStoreRootElement("json","abc-compact.json",true);
+	}
+	@Test
+	public void testStoreRootElementXml2Xml() throws Exception {
+		testStoreRootElement("xml","abc.xml",false);
+	}
 }

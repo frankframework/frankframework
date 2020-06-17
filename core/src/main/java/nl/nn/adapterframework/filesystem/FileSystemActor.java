@@ -162,7 +162,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
-			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);;
+			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
 		
 		//Check if necessarily parameters are available
@@ -469,7 +469,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(owner, out, null, next);
+			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
 			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
 			return stream;
 		} catch (FileSystemException | IOException e) {

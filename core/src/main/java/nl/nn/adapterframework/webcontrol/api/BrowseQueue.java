@@ -32,11 +32,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 
 /**
@@ -97,24 +96,31 @@ public final class BrowseQueue extends Base {
 		IMessageBrowsingIterator it = null;
 
 		try {
-			JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
+			JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
 			jmsBrowser.setName("BrowseQueueAction");
 			jmsBrowser.setJmsRealm(jmsRealm);
 			jmsBrowser.setDestinationName(destination);
 			jmsBrowser.setDestinationType(type);
-			IMessageBrowser browser = jmsBrowser;
 
-			it = browser.getIterator();
+			it = jmsBrowser.getIterator();
 			List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
 			while (it.hasNext()) {
 				IMessageBrowsingIteratorItem item = it.next();
 				Map<String, Object> message = new HashMap<String, Object>();
 				message.put("comment", item.getCommentString());
 				message.put("correlationId", item.getCorrelationId());
-				message.put("expiryDate", item.getExpiryDate());
+				try {
+					message.put("expiryDate", item.getExpiryDate());
+				} catch (Exception e) {
+					log.warn("Could not get expiryDate",e);
+				}
 				message.put("host", item.getHost());
 				message.put("id", item.getId());
-				message.put("insertDate", item.getInsertDate());
+				try {
+					message.put("insertDate", item.getInsertDate());
+				} catch (Exception e) {
+					log.warn("Could not get insertDate",e);
+				}
 				message.put("type", item.getType());
 				message.put("label", item.getLabel());
 

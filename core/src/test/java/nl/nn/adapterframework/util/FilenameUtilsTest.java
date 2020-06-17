@@ -2,6 +2,8 @@ package nl.nn.adapterframework.util;
 
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -13,13 +15,12 @@ import static org.junit.Assert.assertNotEquals;
 public class FilenameUtilsTest {
 
 
-
     /**
      * Method: normalize(String filename)
      */
     @Test
     public void testNormalizeFilename() throws Exception {
-        assertEquals(FilenameUtils.normalize("/foo/../bar/../baz"), "/baz");
+        assertEquals(File.separator + "baz", FilenameUtils.normalize("/foo/../bar/../baz"));
     }
 
     /**
@@ -27,7 +28,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testNormalizeForFilenameUnixSeparator() throws Exception {
-        assertEquals(FilenameUtils.normalize("C:\\foo\\..\\bar", true), "C:/bar");
+        assertEquals("C:/bar", FilenameUtils.normalize("C:\\foo\\..\\bar", true));
     }
 
     /**
@@ -35,12 +36,12 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testNormalizeNoEndSeparatorFilename() throws Exception {
-        assertEquals(FilenameUtils.normalizeNoEndSeparator("/foo//"), "/foo");
+        assertEquals(File.separator + "foo", FilenameUtils.normalizeNoEndSeparator("/foo//"));
     }
 
     @Test
     public void testNormalizeNullInout() {
-        assertEquals(FilenameUtils.normalize(null), null);
+        assertEquals(null, FilenameUtils.normalize(null));
     }
 
     /**
@@ -48,7 +49,8 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testConcat() throws Exception {
-        assertEquals(FilenameUtils.concat("src\\test\\java\\nl\\nn\\adapterframework\\util", "test\\test.java"), "src/test/java/nl/nn/adapterframework/util/test/test.java");
+        assertEquals("src" + File.separator + "test" + File.separator + "java" + File.separator + "nl" + File.separator + "nn"
+                + File.separator + "adapterframework" + File.separator + "util" + File.separator + "test" + File.separator + "test.java", FilenameUtils.concat("src\\test\\java\\nl\\nn\\adapterframework\\util", "test\\test.java"));
     }
 
     /**
@@ -56,7 +58,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testSeparatorsToUnix() throws Exception {
-        assertEquals(FilenameUtils.separatorsToUnix("src\\test\\java\\nl\\nn\\adapterframework\\util"), "src/test/java/nl/nn/adapterframework/util");
+        assertEquals("src/test/java/nl/nn/adapterframework/util", FilenameUtils.separatorsToUnix("src\\test\\java\\nl\\nn\\adapterframework\\util"));
     }
 
     /**
@@ -64,7 +66,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testSeparatorsToWindows() throws Exception {
-        assertEquals(FilenameUtils.separatorsToWindows("src/test/java/nl/nn/adapterframework/util"), "src\\test\\java\\nl\\nn\\adapterframework\\util");
+        assertEquals("src\\test\\java\\nl\\nn\\adapterframework\\util", FilenameUtils.separatorsToWindows("src/test/java/nl/nn/adapterframework/util"));
     }
 
     /**
@@ -73,7 +75,7 @@ public class FilenameUtilsTest {
     @Test
     public void testSeparatorsToSystem() throws Exception {
         if (FilenameUtils.isSystemWindows()) {
-            assertEquals(FilenameUtils.separatorsToWindows("src/test/java/nl/nn/adapterframework/util"), "src\\test\\java\\nl\\nn\\adapterframework\\util");
+            testSeparatorsToWindows();
         } else {
             testSeparatorsToUnix();
         }
@@ -84,8 +86,8 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetPrefixLength() throws Exception {
-        assertEquals(FilenameUtils.getPrefixLength("src/test/java/nl/nn/adapterframework/util/t.txt"), 0);
-        assertEquals(FilenameUtils.getPrefixLength("~userz/a/b/c.txt"), 7);
+        assertEquals(0, FilenameUtils.getPrefixLength("src/test/java/nl/nn/adapterframework/util/t.txt"));
+        assertEquals(7, FilenameUtils.getPrefixLength("~userz/a/b/c.txt"));
 
     }
 
@@ -94,7 +96,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testIndexOfLastSeparator() throws Exception {
-        assertEquals(FilenameUtils.indexOfLastSeparator("src\\test\\java\\nl\\nn\\adapterframework\\util\\t.txt"), 41);
+        assertEquals(41, FilenameUtils.indexOfLastSeparator("src\\test\\java\\nl\\nn\\adapterframework\\util\\t.txt"));
     }
 
     /**
@@ -102,7 +104,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testIndexOfExtension() throws Exception {
-        assertEquals(FilenameUtils.indexOfExtension("src/blabla/text.txt"), 15);
+        assertEquals(15, FilenameUtils.indexOfExtension("src/blabla/text.txt"));
     }
 
     /**
@@ -110,7 +112,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetPrefix() throws Exception {
-        assertEquals(FilenameUtils.getPrefix("~userz/a/b/c.txt"), "~userz/");
+        assertEquals("~userz/", FilenameUtils.getPrefix("~userz/a/b/c.txt"));
     }
 
     /**
@@ -118,7 +120,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(FilenameUtils.getPath("~userz/a/b/c.txt"), "a/b/");
+        assertEquals("a/b/", FilenameUtils.getPath("~userz/a/b/c.txt"));
     }
 
 
@@ -127,7 +129,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetPathNoEndSeparator() throws Exception {
-        assertEquals(FilenameUtils.getPathNoEndSeparator("C:\\a\\b\\c.txt"), "a\\b");
+        assertEquals("a\\b", FilenameUtils.getPathNoEndSeparator("C:\\a\\b\\c.txt"));
     }
 
     /**
@@ -135,7 +137,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetFullPath() throws Exception {
-        assertEquals(FilenameUtils.getFullPath("C:\\a\\b\\c.txt"), "C:\\a\\b\\");
+        assertEquals("C:\\a\\b\\", FilenameUtils.getFullPath("C:\\a\\b\\c.txt"));
 
     }
 
@@ -144,7 +146,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetFullPathNoEndSeparator() throws Exception {
-        assertEquals(FilenameUtils.getFullPathNoEndSeparator("C:\\a\\b\\c.txt"), "C:\\a\\b");
+        assertEquals("C:\\a\\b", FilenameUtils.getFullPathNoEndSeparator("C:\\a\\b\\c.txt"));
 
     }
 
@@ -153,7 +155,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetName() throws Exception {
-        assertEquals(FilenameUtils.getName("C:\\a\\b\\c.txt"), "c.txt");
+        assertEquals("c.txt", FilenameUtils.getName("C:\\a\\b\\c.txt"));
     }
 
     /**
@@ -161,7 +163,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetBaseName() throws Exception {
-        assertEquals(FilenameUtils.getBaseName("C:\\a\\b\\c.txt"), "c");
+        assertEquals("c", FilenameUtils.getBaseName("C:\\a\\b\\c.txt"));
     }
 
     /**
@@ -169,7 +171,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testGetExtension() throws Exception {
-        assertEquals(FilenameUtils.getExtension("C:\\a\\b\\c.txt"), "txt");
+        assertEquals("txt", FilenameUtils.getExtension("C:\\a\\b\\c.txt"));
     }
 
     /**
@@ -177,7 +179,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testRemoveExtension() throws Exception {
-        assertEquals(FilenameUtils.removeExtension("C:\\a\\b\\c.txt"), "C:\\a\\b\\c");
+        assertEquals("C:\\a\\b\\c", FilenameUtils.removeExtension("C:\\a\\b\\c.txt"));
 
     }
 
@@ -186,7 +188,7 @@ public class FilenameUtilsTest {
      */
     @Test
     public void testEqualsForFilename1Filename2() throws Exception {
-assertEquals(FilenameUtils.equals("C:\\a\\b\\c.txt", "C:\\a\\b\\c.txt"), true);
+        assertEquals(true, FilenameUtils.equals("C:\\a\\b\\c.txt", "C:\\a\\b\\c.txt"));
     }
 
     /**
@@ -194,11 +196,11 @@ assertEquals(FilenameUtils.equals("C:\\a\\b\\c.txt", "C:\\a\\b\\c.txt"), true);
      */
     @Test
     public void testEqualsOnSystem() throws Exception {
-if(FilenameUtils.isSystemWindows()){
-    assertEquals(FilenameUtils.equalsOnSystem("C:\\a\\b\\c.txt", "C:\\A\\B\\c.txt"), true);
-}else{
-    assertNotEquals(FilenameUtils.equalsOnSystem("C:\\a\\b\\c.txt", "C:\\A\\B\\c.txt"), true);
-}
+        if (FilenameUtils.isSystemWindows()) {
+            assertEquals(true, FilenameUtils.equalsOnSystem("C:\\a\\b\\c.txt", "C:\\A\\B\\c.txt"));
+        } else {
+            assertNotEquals(true, FilenameUtils.equalsOnSystem("C:\\a\\b\\c.txt", "C:\\A\\B\\c.txt"));
+        }
     }
 
     /**
@@ -206,16 +208,17 @@ if(FilenameUtils.isSystemWindows()){
      */
     @Test
     public void testEqualsNormalized() throws Exception {
-assertEquals(FilenameUtils.equalsNormalized("/foo//", "/foo/./"), true);    }
+        assertEquals( true, FilenameUtils.equalsNormalized("/foo//", "/foo/./"));
+    }
 
     /**
      * Method: equalsNormalizedOnSystem(String filename1, String filename2)
      */
     @Test
     public void testEqualsNormalizedOnSystem() throws Exception {
-        if(FilenameUtils.isSystemWindows()) {
-            assertEquals(FilenameUtils.equalsNormalizedOnSystem("/fOO//", "/foo/./"), true);
-        }else{
+        if (FilenameUtils.isSystemWindows()) {
+            assertEquals( true, FilenameUtils.equalsNormalizedOnSystem("/fOO//", "/foo/./"));
+        } else {
             testEqualsNormalized();
         }
     }
@@ -225,7 +228,7 @@ assertEquals(FilenameUtils.equalsNormalized("/foo//", "/foo/./"), true);    }
      */
     @Test
     public void testIsExtensionForFilenameExtension() throws Exception {
-assertEquals(FilenameUtils.isExtension("C:\\a\\b\\c.txt", "txt"), true);
+        assertEquals( true, FilenameUtils.isExtension("C:\\a\\b\\c.txt", "txt"));
     }
 
     /**
@@ -233,8 +236,8 @@ assertEquals(FilenameUtils.isExtension("C:\\a\\b\\c.txt", "txt"), true);
      */
     @Test
     public void testIsExtensionForFilenameExtensions() throws Exception {
-String[] extensions = {"txt", "js"};
-        assertEquals(FilenameUtils.isExtension("C:\\a\\b\\c.txt", extensions), true);
+        String[] extensions = {"txt", "js"};
+        assertEquals( true, FilenameUtils.isExtension("C:\\a\\b\\c.txt", extensions));
 
     }
 
@@ -243,22 +246,20 @@ String[] extensions = {"txt", "js"};
      */
     @Test
     public void testWildcardMatchForFilenameWildcardMatcher() throws Exception {
-assertEquals(FilenameUtils.wildcardMatch("C:\\a\\b\\c.txt", "*.txt"), true);    }
+        assertEquals( true, FilenameUtils.wildcardMatch("C:\\a\\b\\c.txt", "*.txt"));
+    }
 
     /**
      * Method: wildcardMatchOnSystem(String filename, String wildcardMatcher)
      */
     @Test
     public void testWildcardMatchOnSystem() throws Exception {
-if(FilenameUtils.isSystemWindows()){
-    assertEquals(FilenameUtils.wildcardMatch("C:\\a\\b\\C.txt", "*.txt"), true);    }
-else{
-    testWildcardMatchForFilenameWildcardMatcher();
+        if (FilenameUtils.isSystemWindows()) {
+            assertEquals( true, FilenameUtils.wildcardMatch("C:\\a\\b\\C.txt", "*.txt"));
+        } else {
+            testWildcardMatchForFilenameWildcardMatcher();
+        }
     }
-    }
 
 
-
-
-
-} 
+}

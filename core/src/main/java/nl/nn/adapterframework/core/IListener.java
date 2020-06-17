@@ -76,6 +76,6 @@ public interface IListener<M> extends INamedObject {
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
 	 * Pipeline. 
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String,Object> context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException;
 
 }

@@ -62,6 +62,7 @@ public class HttpResponseHandler {
 	public InputStream getResponse() throws IOException {
 		statusCode = getStatusLine().getStatusCode();
 
+		//TODO content may be optional
 		return new ReleaseConnectionAfterReadInputStream(this, content);
 	}
 
@@ -108,8 +109,9 @@ public class HttpResponseHandler {
 	 * Consumes the {@link HttpEntity} and will release the connection.
 	 */
 	public void close() throws IOException {
-		EntityUtils.consume(httpEntity);
-		content.close();
+		if(httpEntity != null) {
+			EntityUtils.consume(httpEntity);
+		}
 	}
 
 	public Header getFirstHeader(String string) {

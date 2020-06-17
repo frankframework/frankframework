@@ -15,19 +15,27 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.net.URL;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.xml.XMLConstants;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
@@ -376,6 +384,21 @@ public class XmlAligner extends XMLFilterImpl {
 
 	public AlignmentContext getContext() {
 		return context;
+	}
+
+
+	protected static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		return schema.newValidatorHandler();
+	}
+
+	protected static List<XSModel> getSchemaInformation(URL schemaURL) {
+		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
+		List<XSModel> schemaInformation= new LinkedList<XSModel>();
+		schemaInformation.add(xsModel);
+		return schemaInformation;
 	}
 
 }

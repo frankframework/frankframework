@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,32 +16,26 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.Stack;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.content.DocumentContainer;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * XML Schema guided XML converter;
@@ -144,21 +138,14 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 
-		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
-    	// create the parser, setup the chain
-    	XMLReader parser = new SAXParser();
-    	XmlAligner aligner = new XmlAligner(validatorHandler);
-    	XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);   	
-    	parser.setContentHandler(validatorHandler);
-    	aligner.setContentHandler(xml2object);
-	
-    	// start translating
-    	InputSource is = new InputSource(new StringReader(xml));
-		parser.parse(is);
+		ValidatorHandler validatorHandler = XmlAligner.getValidatorHandler(schemaURL);
+
+		// create the parser, setup the chain
+		XmlAligner aligner = new XmlAligner(validatorHandler);
+		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
+		aligner.setContentHandler(xml2object);
+
+		XmlUtils.parseXml(xml, validatorHandler);
 	}
 
 	@Override
@@ -176,6 +163,5 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public void setWriteAttributes(boolean writeAttributes) {
 		this.writeAttributes = writeAttributes;
 	}
-
 
 }

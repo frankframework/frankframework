@@ -102,7 +102,7 @@ public class MiscTest {
     public void testCreateSimpleUUID() throws Exception {
         String uuid = Misc.createSimpleUUID();
         assertFalse(sourceFolderPath.isEmpty()); // for avoiding code quality warnings
-        assertEquals(uuid.substring(8, 9), "-");
+        assertEquals("-", uuid.substring(8, 9));
         assertFalse(uuid.isEmpty());
     }
 
@@ -114,7 +114,7 @@ public class MiscTest {
     public void testCreateRandomUUIDRemoveDashes() throws Exception {
         String uuid = Misc.createRandomUUID(true);
         assertNotEquals(uuid.substring(8, 9), "-"); // assert that dashes are removed
-        assertEquals(uuid.length(), 32);
+        assertEquals(32, uuid.length());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class MiscTest {
     public void testAsHex() throws Exception {
         String test = "test";
         String hex = Misc.asHex(test.getBytes());
-        assertEquals(hex, "74657374");
+        assertEquals("74657374", hex);
     }
 
     /**
@@ -140,7 +140,7 @@ public class MiscTest {
     @Test
     public void testCreateNumericUUID() throws Exception {
         String uuid = Misc.createNumericUUID();
-        assertEquals(uuid.length(), 31);    //Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
+        assertEquals(31, uuid.length());    //Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
     }
 
     /**
@@ -148,8 +148,8 @@ public class MiscTest {
      */
     @Test
     public void testUnsignedByteToInt() throws Exception {
-        assertEquals(Misc.unsignedByteToInt(new Byte("-12")), 244);
-        assertEquals(Misc.unsignedByteToInt(new Byte("12")), 12);
+        assertEquals(244, Misc.unsignedByteToInt(new Byte("-12")));
+        assertEquals(12, Misc.unsignedByteToInt(new Byte("12")));
 
     }
 
@@ -161,7 +161,7 @@ public class MiscTest {
     public void testFileToWriter() throws Exception {
         Writer writer = new StringWriter();
         Misc.fileToWriter(file.getName(), writer);
-        assertEquals(writer.toString(), "inside the lebron file");
+        assertEquals( "inside the lebron file", writer.toString());
     }
 
     /**
@@ -171,7 +171,7 @@ public class MiscTest {
     public void testFileToStream() throws Exception {
         OutputStream os = new ByteArrayOutputStream();
         Misc.fileToStream(file.getName(), os);
-        assertEquals(os.toString(), "inside the lebron file");
+        assertEquals( "inside the lebron file", os.toString());
     }
 
     /**
@@ -183,7 +183,7 @@ public class MiscTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
         OutputStream baos = new ByteArrayOutputStream();
         Misc.streamToStream(bais, baos);
-        assertEquals(baos.toString(), "test");
+        assertEquals("test", baos.toString());
     }
 
     /**
@@ -195,7 +195,7 @@ public class MiscTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
         OutputStream baos = new ByteArrayOutputStream();
         Misc.streamToStream(bais, baos, true);
-        assertEquals(baos.toString(), "test");
+        assertEquals("test", baos.toString());
     }
 
     /**
@@ -220,7 +220,7 @@ public class MiscTest {
         }
 
         String fileAsString = sb.toString();
-        assertEquals(fileAsString, "test\n");
+        assertEquals("test\n", fileAsString);
     }
 
     /**
@@ -231,7 +231,7 @@ public class MiscTest {
         String test = "test";
         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
         byte[] arr = Misc.streamToBytes(bais);
-        assertEquals(new String(arr, StandardCharsets.UTF_8), "test");
+        assertEquals("test", new String(arr, StandardCharsets.UTF_8));
     }
 
     /**
@@ -242,7 +242,7 @@ public class MiscTest {
         Reader reader = new StringReader("test");
         Writer writer = new StringWriter();
         Misc.readerToWriter(reader, writer);
-        assertEquals(writer.toString(), "test");
+        assertEquals("test", writer.toString());
     }
 
 
@@ -252,13 +252,13 @@ public class MiscTest {
     @Test
     public void testFileToStringFileName() throws Exception {
         //Misc.resourceToString()
-        assertEquals(Misc.fileToString(file.getName()), "inside the lebron file");
+        assertEquals("inside the lebron file", Misc.fileToString(file.getName()));
     }
 
     @Test
     public void testFileToStringFileNameEndLine() throws Exception {
         //Misc.resourceToString()
-        assertEquals(Misc.fileToString(file.getName(), " the end"), "inside the lebron file");
+        assertEquals("inside the lebron file", Misc.fileToString(file.getName(), " the end"));
     }
 
 
@@ -275,7 +275,7 @@ public class MiscTest {
                 "    </address> \n" +
                 "</root> r");
         String s = Misc.readerToString(r, "23", false);
-        assertEquals(s, "<root> 23    <name>GeeksforGeeks</name> 23    <address> 23        <sector>142</sector> 23        <location>Noida</location> 23    </address> 23</root> r");
+        assertEquals("<root> 23    <name>GeeksforGeeks</name> 23    <address> 23        <sector>142</sector> 23        <location>Noida</location> 23    </address> 23</root> r", s);
     }
 
     /**
@@ -291,7 +291,7 @@ public class MiscTest {
                 "    </address> \n" +
                 "</root> r");
         String s = Misc.readerToString(r, "23", true);
-        assertEquals(s, "&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r");
+        assertEquals("&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r", s);
     }
 
 
@@ -302,7 +302,7 @@ public class MiscTest {
     public void testReplace() throws Exception {
         String a = "Kobe";
         String res = Misc.replace(a, "Ko", "Phoe");
-        assertEquals(res, "Phoebe");
+        assertEquals("Phoebe",  res);
     }
 
     /**
@@ -314,7 +314,7 @@ public class MiscTest {
         String b = "James";
         String seperator = "//";
         String res = Misc.concatStrings(a, seperator, b);
-        assertEquals(res, "LeBron//James");
+        assertEquals("LeBron//James", res);
     }
 
     /**
@@ -324,7 +324,7 @@ public class MiscTest {
     public void testHideString() throws Exception {
         String a = "test";
         String res = Misc.hide(a);
-        assertEquals(res, "****");
+        assertEquals("****", res);
     }
 
     /**
@@ -334,7 +334,7 @@ public class MiscTest {
     public void testHideForStringMode() throws Exception {
         String a = "test";
         String res = Misc.hide(a, 1);
-        assertEquals(res, "t**t");
+        assertEquals("t**t", res);
     }
 
     /**
@@ -345,7 +345,7 @@ public class MiscTest {
         String s = "test";
         byte[] arr = s.getBytes();
         String res = Misc.byteArrayToString(arr, "", true);
-        assertEquals(res, s);
+        assertEquals(s, res);
     }
 
     /**
@@ -356,14 +356,14 @@ public class MiscTest {
         String s = "test";
         byte[] arr = s.getBytes();
         byte[] zipped = Misc.gzip(arr);
-        assertEquals(Misc.gunzipToString(zipped), "test");
+        assertEquals("test", Misc.gunzipToString(zipped));
     }
 
     @Test
     public void testGzipString() throws Exception {
         String s = "you deserved this";
         byte[] zipped = Misc.gzip(s);
-        assertEquals(Misc.gunzipToString(zipped), "you deserved this");
+        assertEquals( "you deserved this", Misc.gunzipToString(zipped));
 
     }
 
@@ -379,14 +379,14 @@ public class MiscTest {
         byte[] compressedText = Misc.compress(s1);
         byte[] compressedNumbers = Misc.compress(s3);
         assertTrue(compressedNumbers.length < s3.length());
-        assertEquals(compressedNumbers[0], 120);
-        assertEquals(compressedNumbers[1], -38);
+        assertEquals( 120, compressedNumbers[0]);
+        assertEquals(-38, compressedNumbers[1]);
         assertTrue(compressedText.length < s1.length());
-        assertEquals(compressedText[0], 120);
-        assertEquals(compressedText[1], -38);
+        assertEquals(120, compressedText[0]);
+        assertEquals(-38, compressedText[1]);
         assertTrue(compressedSymbols.length < s.length());
-        assertEquals(compressedSymbols[0], 120);
-        assertEquals(compressedSymbols[1], -38);
+        assertEquals(120, compressedSymbols[0]);
+        assertEquals( -38, compressedSymbols[1]);
     }
 
     @Test
@@ -394,7 +394,7 @@ public class MiscTest {
         String s = "test";
         byte[] compressed = Misc.compress(s);
         String decompressed = Misc.decompressToString(compressed);
-        assertEquals(decompressed, "test");
+        assertEquals("test", decompressed);
     }
 
 
@@ -418,7 +418,7 @@ public class MiscTest {
     @Test
     public void testToFileSizeForValueDefaultValue() throws Exception {
         long res = Misc.toFileSize("14GB", 20);
-        assertEquals(Long.toString(res), "15032385536");
+        assertEquals("15032385536", Long.toString(res));
     }
 
     /**
@@ -429,9 +429,9 @@ public class MiscTest {
         String kb = Misc.toFileSize(150000, false, true);
         String mb = Misc.toFileSize(15000000, true);
         String gb = Misc.toFileSize(Long.parseLong("3221225472"));
-        assertEquals(gb, "3GB");
-        assertEquals(mb, "14 MB");
-        assertEquals(kb, "146KB");
+        assertEquals("3GB", gb);
+        assertEquals("14 MB", mb);
+        assertEquals("146KB", kb);
     }
 
 
@@ -441,7 +441,7 @@ public class MiscTest {
         list.add("bailar");
         list.add("besos");
         String res = Misc.listToString(list);
-        assertEquals(res, "bailarbesos");
+        assertEquals("bailarbesos", res);
     }
 
     /**
@@ -458,7 +458,7 @@ public class MiscTest {
         arrayList.add("b");
         arrayList.add("c");
         assertTrue(stringCollection.size() == 3);
-        assertEquals(stringCollection.get(stringCollection.size() - 1), "c");
+        assertEquals("c", stringCollection.get(stringCollection.size() - 1));
     }
 
     /**
@@ -499,7 +499,7 @@ public class MiscTest {
     @Test
     public void testParseAge() throws Exception {
         long res = Misc.parseAge("2D", 100);
-        assertEquals(res, 172800000);
+        assertEquals(172800000, res);
     }
 
     /**
@@ -510,7 +510,7 @@ public class MiscTest {
         String s = "Donald Duck 23  Hey hey  14  Wooo";
         String regex = "\\d";
         String res = Misc.cleanseMessage(s, regex, " does not matter");
-        assertEquals(res, "Donald Duck **  Hey hey  **  Wooo");
+        assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
     }
 
     /**
@@ -521,34 +521,16 @@ public class MiscTest {
         String s = "Donald Duck     Hey hey     Wooo";
         String hideRegex = "[^\\s*].*[^\\s*]";
         String res = Misc.hideFirstHalf(s, hideRegex);
-        assertEquals(res, "****************Hey hey     Wooo");
+        assertEquals("****************Hey hey     Wooo", res);
     }
 
-
-    /**
-     * Method: getBuildOutputDirectory()
-     */
-    @Test
-    public void testGetBuildOutputDirectory() throws Exception {
-        String outputDirectory = Misc.getBuildOutputDirectory();
-        assertEquals(outputDirectory.substring(outputDirectory.length() - 29, outputDirectory.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
-    }
-
-    /**
-     * Method: getProjectBaseDir()
-     */
-    @Test
-    public void testGetProjectBaseDir() throws Exception {
-        String baseDir = Misc.getBuildOutputDirectory();
-        assertEquals(baseDir.substring(baseDir.length() - 29, baseDir.length()), pathSeperator + "iaf" + pathSeperator + "core" + pathSeperator + "target" + pathSeperator + "test-classes");
-    }
 
     /**
      * Method: toSortName(String name)
      */
     @Test
     public void testToSortName() throws Exception {
-        assertEquals(Misc.toSortName("new_name"), "NEW*NAME");
+        assertEquals( "NEW*NAME", Misc.toSortName("new_name"));
     }
 
     /**
@@ -559,7 +541,7 @@ public class MiscTest {
         String s = "12ab34";
         String regex = "\\d";
         int regexCount = Misc.countRegex(s, regex);
-        assertEquals(regexCount, 4);
+        assertEquals(4, regexCount);
     }
 
     /**
@@ -569,7 +551,7 @@ public class MiscTest {
     public void testResourceToStringResource() throws Exception {
         URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource);
-        TestAssertions.assertEqualsIgnoreWhitespaces(s1, "<!doctype txt>this is a text file.\nnew line in the text file.");
+        TestAssertions.assertEqualsIgnoreWhitespaces("<!doctype txt>this is a text file.\nnew line in the text file.", s1);
         assertFalse(s1.isEmpty());
     }
 
@@ -580,14 +562,14 @@ public class MiscTest {
     public void testResourceToStringForResourceEndOfLineStringXmlEncode() throws Exception {
         URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource, " newly added string ", true);
-        assertEquals(s1, "&lt;!doctype txt&gt;this is a text file. newly added string new line in the text file.");
+        assertEquals("&lt;!doctype txt&gt;this is a text file. newly added string new line in the text file.", s1);
     }
 
     @Test
     public void testResourceToStringForResourceEndOfLineString() throws Exception {
         URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
         String s1 = Misc.resourceToString(resource, " newly added string ");
-        assertEquals(s1, "<!doctype txt>this is a text file. newly added string new line in the text file.");
+        assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
     }
 
 }

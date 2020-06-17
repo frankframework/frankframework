@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -88,8 +89,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private String root;
 	private String responseRoot;
 	private boolean forwardFailureToSuccess = false;
-	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+	private String soapNamespace = SoapVersion.SOAP11.namespace;
 	private String rootElementSessionKey;
+	private String rootNamespaceSessionKey;
 
 
 	private Set<List<String>> requestRootValidations;
@@ -240,8 +242,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
-		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), null) : null;
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context, false);
+		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null) : null;
+		if (storeRootFilter!=null) {
+			validatorHandler.setContentHandler(storeRootFilter);
+		}
+		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -581,7 +586,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
-		if (schemaSessionKey != null) {
+		if (getSchemaSessionKey() != null) {
 			final URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
@@ -674,7 +679,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * 
 	 * @see ClassUtils#getResourceURL
 	 */
-	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", "" })
+	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);
 	}
@@ -696,7 +701,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 *
 	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
 	 */
-	@IbisDoc({"pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
+	@IbisDoc({"2", "Pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
@@ -705,7 +710,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemaLocation;
 	}
 
-	@IbisDoc({"a uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
@@ -713,6 +718,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return noNamespaceSchemaLocation;
 	}
 
+	@IbisDoc({"4", "session key for retrieving a schema", ""})
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
 	}
@@ -720,7 +726,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemaSessionKey;
 	}
 
-	@IbisDoc({"name of the root element. or a comma separated list of names to choose from (only one is allowed)", ""})
+	@IbisDoc({"5", "Name of the root element, or a comma separated list of names to choose from (only one is allowed)", ""})
 	public void setRoot(String root) {
 		this.root = root;
 		addRequestRootValidation(Arrays.asList(root));
@@ -728,6 +734,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public String getRoot() {
 		return root;
 	}
+	@IbisDoc({"6", "Name of the response root element, or a comma separated list of names to choose from (only one is allowed)", ""})
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 		addResponseRootValidation(Arrays.asList(responseRoot));
@@ -741,7 +748,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return getRoot();
 	}
 
-	@IbisDoc({"when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
+	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
@@ -872,11 +879,20 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return soapNamespace;
 	}
 
+	@IbisDoc({"40", "key of session variable to store the name of the root element",""})
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
 	public String getRootElementSessionKey() {
 		return rootElementSessionKey;
+	}
+
+	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
+	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
+		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
+	}
+	public String getRootNamespaceSessionKey() {
+		return rootNamespaceSessionKey;
 	}
 
 

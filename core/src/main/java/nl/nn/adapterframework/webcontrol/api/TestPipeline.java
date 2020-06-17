@@ -17,11 +17,9 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -34,13 +32,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -73,7 +70,7 @@ public final class TestPipeline extends Base {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException {
+	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		IbisManager ibisManager = getIbisManager();
@@ -84,8 +81,6 @@ public final class TestPipeline extends Base {
 		String message = null, fileName = null;
 		InputStream file = null;
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
 		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
@@ -95,42 +90,26 @@ public final class TestPipeline extends Base {
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
 
-		try {
-			if(inputDataMap.get("file") != null) {
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
+		Attachment filePart = inputDataMap.getAttachment("file");
+		if(filePart != null) {
+			fileName = filePart.getContentDisposition().getParameter( "filename" );
 
-				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
-					try {
-						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
-					} catch (Exception e) {
-						throw new ApiException("An exception occurred while processing zip file", e);
-					}
-				} else {
-					message = Misc.streamToString(file, "\n", fileEncoding, false);
+			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+				try {
+					file = filePart.getObject(InputStream.class);
+					processZipFile(result, file, fileEncoding, adapter, secLogMessage);
+				} catch (Exception e) {
+					throw new ApiException("An exception occurred while processing zip file", e);
 				}
 			} else {
-				if(inputDataMap.get("message") != null) {
-					InputPart part = inputDataMap.get("message").get(0);
-					part.setMediaType(part.getMediaType().withCharset(fileEncoding));
-					message = part.getBodyAsString();
-				}
+				message = resolveStringWithEncoding(inputDataMap, "file", fileEncoding);
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
-		} catch (IOException e) {
-			throw new ApiException(e);
+		} else {
+			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(message == null && file == null) {
-			throw new ApiException("must provide either a message or file");
+			throw new ApiException("must provide either a message or file", 400);
 		}
 
 		if (StringUtils.isNotEmpty(message)) {
