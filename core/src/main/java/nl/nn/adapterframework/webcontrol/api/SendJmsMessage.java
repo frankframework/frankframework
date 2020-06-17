@@ -18,8 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,12 +28,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
@@ -56,11 +54,10 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
 
 		String message = null, fileName = null;
 		InputStream file = null;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -72,44 +69,30 @@ public final class SendJmsMessage extends Base {
 		String replyTo = resolveStringFromMap(inputDataMap, "replyTo");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 
-		try {
-			if(inputDataMap.get("message") != null) {
-				InputPart part = inputDataMap.get("message").get(0);
-				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
-				message = part.getBodyAsString();
-			}
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-		}
-		catch (IOException e) {
-			throw new ApiException("Failed to parse one or more parameters", e);
-		}
+		Attachment filePart = inputDataMap.getAttachment("file");
+		if(filePart != null) {
+			fileName = filePart.getContentDisposition().getParameter( "filename" );
 
-		try {
-			if (file != null) {
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
-
-				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+				try {
 					processZipFile(file, jmsBuilder(jmsRealm, destinationName, persistent, destinationType), replyTo);
-					message = null;
-				}
-				else {
-					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
+
+					return Response.status(Response.Status.OK).build();
+				} catch (IOException e) {
+					throw new ApiException("error processing zip file", e);
 				}
 			}
 			else {
-				message = new String(message.getBytes(), fileEncoding);
+				try {
+					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
+				} catch (UnsupportedEncodingException e) {
+					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				} catch (IOException e) {
+					throw new ApiException("error reading file", e);
+				}
 			}
-		}
-		catch (Exception e) {
-			throw new ApiException("Failed to read message", e);
+		} else {
+			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(message != null && message.length() > 0) {
@@ -123,7 +106,7 @@ public final class SendJmsMessage extends Base {
 			return Response.status(Response.Status.OK).build();
 		}
 		else {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			throw new ApiException("must provide either a message or file", 400);
 		}
 	}
 

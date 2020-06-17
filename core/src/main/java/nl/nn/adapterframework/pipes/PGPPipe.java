@@ -154,7 +154,7 @@ public class PGPPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, getNextPipe())) {
+		try (MessageOutputStream target=getTargetStream(session)) {
 			try (OutputStream out = target.asStream()) {
 				pgpAction.run(message.asInputStream(), out);
 			}

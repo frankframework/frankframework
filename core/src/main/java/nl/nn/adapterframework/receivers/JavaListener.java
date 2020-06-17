@@ -46,7 +46,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author  Gerrit van Brakel
  */
-public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
+public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -58,7 +58,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	private boolean httpWsdl = false;
 
 	private static Map<String, JavaListener> registeredListeners;
-	private IMessageHandler handler;
+	private IMessageHandler<String> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -143,10 +143,10 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 			}
 		}
 		if (throwException) {
-			return handler.processRequest(this, correlationId, message, context);
+			return handler.processRequest(this, correlationId, message, message, context);
 		} else {
 			try {
-				return handler.processRequest(this, correlationId, message, context);
+				return handler.processRequest(this, correlationId, message, message, context);
 			}
 			catch (ListenerException e) {
 				return handler.formatException(null,correlationId, message,e);
@@ -178,7 +178,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap());
+			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
 		}
 		return registeredListeners;
 	}
@@ -193,20 +193,20 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 	}
 
 
 	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
+	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		return (String)rawMessage;
+	public String getStringFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+		return rawMessage;
 	}
 
 	@Override
@@ -233,10 +233,10 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 	@Override
-	public void setHandler(IMessageHandler handler) {
+	public void setHandler(IMessageHandler<String> handler) {
 		this.handler = handler;
 	}
-	public IMessageHandler getHandler() {
+	public IMessageHandler<String> getHandler() {
 		return handler;
 	}
 

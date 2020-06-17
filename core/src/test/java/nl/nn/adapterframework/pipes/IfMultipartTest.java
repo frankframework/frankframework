@@ -16,19 +16,18 @@ import static org.junit.Assert.fail;
 
 
 /**
+
  * IfMultipart Tester.
  *
  * @author <Sina Sen>
  */
 public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 
-
     private MockHttpServletRequest request;
 
     @Before
     public void before() throws Exception {
         request = new MockHttpServletRequest();
-
         MockitoAnnotations.initMocks(this);
     }
 
@@ -90,6 +89,4 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
         doPipe(pipe, request, session);
         fail("this is expected to fail");
     }
-
-
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -58,7 +58,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -75,7 +75,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 		
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -92,13 +92,12 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 			
 		}
 		String actual = new String (target.toString());
@@ -112,7 +111,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 			
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
@@ -130,7 +129,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -147,13 +146,12 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableWriter target = new CloseObservableWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(inputSource);
+			XmlUtils.parseXml(inputSource, handler);
 
 		}
 		String actual = new String (target.toString());
@@ -174,7 +172,7 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			try {
 				OutputStream outputstream=null;
@@ -199,8 +197,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, null)) {
-		
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
@@ -216,7 +213,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null, this, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -242,7 +239,7 @@ public class MessageOutputStreamTest {
 			
 		};
 		
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -274,7 +271,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -306,7 +303,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, null, null, this, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -338,14 +335,13 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -393,14 +389,13 @@ public class MessageOutputStreamTest {
 			
 		};
 
-		try (MessageOutputStream stream = new MessageOutputStream(null, target, null, null)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 	
 			try {
 				InputSource inputSource = new InputSource(new StringReader(testString)); 
-				XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
-				reader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));

@@ -52,7 +52,6 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
         byte[] myvar = "Any String you want".getBytes(); pipe.setSkip(2);
         PipeRunResult res = doPipe(pipe, myvar, session);
         assertNotEquals( "", res.getResult().asString());
-
     }
     @Test
     public void testWrongInput() throws Exception {

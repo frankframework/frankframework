@@ -70,7 +70,7 @@ public class MessageTest {
 	protected void testAsInputSource(Message adapter) throws IOException, SAXException {
 		InputSource result = adapter.asInputSource();
 		XmlWriter sink =  new XmlWriter();
-		XmlUtils.parseXml(sink, result);
+		XmlUtils.parseXml(result, sink);
 		
 		String actual = sink.toString();
 		assertEquals(testString, actual);

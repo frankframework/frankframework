@@ -97,7 +97,6 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.configure();
         PipeRunResult res = doPipe(pipe, 4 + "s", session);
         assertEquals("NaN", res.getResult().asString());
-
     }
 
 }

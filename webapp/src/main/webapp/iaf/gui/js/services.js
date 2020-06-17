@@ -92,11 +92,24 @@ angular.module('iaf.beheerconsole')
 		this.Delete = function () { // uri, callback, error || uri, object, callback, error
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
-			var request = {url:buildURI(uri), method: "delete" };
-			if(args.length == 4) { //if 3 args are left, we have an object!
-				request.data = args.shift();
+			var request = {url:buildURI(uri), method: "delete", headers:{} };
+			var callback;
+
+			var object = args.shift(); // this can be a function or an object.
+			if(object instanceof Function) { //we have a callback function, that means no object is present!
+				callback = object; // set the callback method accordingly
+			} else {
+				if(object instanceof FormData) {
+					request.data = object;
+					request.headers["Content-Type"] = undefined;
+				} else {
+					request.data = JSON.stringify(object);
+					request.headers["Content-Type"] = "application/json";
+				}
+
+				callback = args.shift(); // the previous argument was an object, that means the next object is the callback!
 			}
-			var callback = args.shift();
+
 			var error = args.shift();
 			request.intercept = args.shift();
 
@@ -808,8 +821,7 @@ angular.module('iaf.beheerconsole')
 				var location = sessionStorage.getItem('location') || "status";
 				var absUrl = window.location.href.split("login")[0];
 				window.location.href = (absUrl + location);
-				//window.location.reload();
-				//$location.path(location);
+				window.location.reload();
 			},
 			loggedin: function() {
 				var token = sessionStorage.getItem('authToken');
@@ -1063,7 +1075,7 @@ angular.module('iaf.beheerconsole')
 			toaster.pop({type: 'success', title: title, body: text});
 		};
 	}]).config(['$httpProvider', function($httpProvider) {
-		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', function(appConstants, $q, Misc, Toastr) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function(appConstants, $q, Misc, Toastr, $location) {
 			return {
 				request: function(config) {
 					if (config.url.indexOf('views') !== -1 && ff_version != null) {
@@ -1087,7 +1099,8 @@ angular.module('iaf.beheerconsole')
 								}
 								break;
 							case 401:
-								Toastr.error("Unauthorized", "Please authenticate");
+								sessionStorage.clear();
+								$location.path("login");
 								break;
 							case 403:
 								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");

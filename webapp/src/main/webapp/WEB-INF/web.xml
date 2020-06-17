@@ -19,7 +19,7 @@
 		<filter-name>LoginFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
 		<init-param>
-			<param-name>allowedExtentions</param-name>
+			<param-name>allowedExtensions</param-name>
 			<param-value>css js gif jpg png svg</param-value>
 		</init-param>
 		<init-param>
@@ -135,50 +135,7 @@
 		<servlet-name>RestListener</servlet-name>
 		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
 	</servlet>
-	<servlet>
-		<display-name>IAF API</display-name>
-		<servlet-name>IAFAPI</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.api.ServletDispatcher</servlet-class>
-		<init-param>
-			<param-name>resteasy.servlet.mapping.prefix</param-name>
-			<param-value>/iaf/api</param-value>
-		</init-param>
-		<!-- REPLACE-MARKER init-param>
-			<param-name>resteasy.role.based.security</param-name>
-			<param-value>true</param-value>
-		</init-param> REPLACE-MARKER --> 
-		<init-param>
-			<param-name>resteasy.providers</param-name>
-			<param-value>
-				nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler,
-				nl.nn.adapterframework.webcontrol.api.AuthorizationFilter
-			</param-value>
-		</init-param>
-		<init-param>
-			<param-name>resteasy.resources</param-name>
-			<param-value>
-				nl.nn.adapterframework.webcontrol.api.Init,
-				nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
-				nl.nn.adapterframework.webcontrol.api.ServerStatistics,
-				nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
-				nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
-				nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-				nl.nn.adapterframework.webcontrol.api.TestPipeline,
-				nl.nn.adapterframework.webcontrol.api.TestServiceListener,
-				nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
-				nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
-				nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
-				nl.nn.adapterframework.webcontrol.api.ShowMonitors,
-				nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
-				nl.nn.adapterframework.webcontrol.api.ShowScheduler,
-				nl.nn.adapterframework.webcontrol.api.ShowLogging,
-				nl.nn.adapterframework.webcontrol.api.Webservices,
-				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
-				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
-				nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
-			</param-value>
-		</init-param>
-	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>FileViewerServlet</servlet-name>
 		<url-pattern>/FileViewerServlet</url-pattern>
@@ -202,10 +159,6 @@
 	<servlet-mapping>
 		<servlet-name>RestListener</servlet-name>
 		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>IAFAPI</servlet-name>
-		<url-pattern>/iaf/api/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

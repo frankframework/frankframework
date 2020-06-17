@@ -38,6 +38,7 @@ public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
         PipeRunResult res = pipe.doPipe( m, session);
         assertEquals("testString", res.getResult().asString());
     }
+  
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
      */

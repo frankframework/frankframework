@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,13 +35,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
-import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
@@ -81,6 +75,7 @@ import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityAcl;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityChanges;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityContentStreamUpdates;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityOrderBy;
@@ -91,7 +86,6 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.enums.SupportedPermissions;
 import org.apache.chemistry.opencmis.commons.enums.Updatability;
-import org.apache.chemistry.opencmis.commons.enums.CapabilityChanges;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AbstractPropertyDefinition;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AclCapabilitiesDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AllowableActionsImpl;
@@ -132,26 +126,37 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
+import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
+
 public class CmisUtils {
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss";
 	public final static String ORIGINAL_OBJECT_KEY = "originalObject";
 	public final static String CMIS_VERSION_KEY = "cmisVersion";
 	public final static String CMIS_BINDING_KEY = "cmisBinding";
+	public final static String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
 	private static Logger log = LogUtil.getLogger(CmisUtils.class);
+	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
-	public static IPipeLineSession createPipeLineSession() {
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		populateCmisAttributes(session);
-		return session;
-	}
 	public static void populateCmisAttributes(IPipeLineSession session) {
-		CallContext callContext = HttpSessionCmisService.callContext.get();
+		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
 		if(callContext != null) {
 			session.put(CMIS_VERSION_KEY, callContext.getCmisVersion());
 			session.put(CMIS_BINDING_KEY, callContext.getBinding());
-			session.setSecurityHandler(new CmisSecurityHandler(callContext));
+
+			if("basic".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
+				HttpServletRequest request = (HttpServletRequest) callContext.get(CallContext.HTTP_SERVLET_REQUEST);
+				session.setSecurityHandler(new HttpSecurityHandler(request));
+			} else if("wsse".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
+				session.setSecurityHandler(new CmisSecurityHandler(callContext));
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -28,7 +27,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public interface IListenerConnector<M extends Message> {
+public interface IListenerConnector<M> {
 
 	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
 

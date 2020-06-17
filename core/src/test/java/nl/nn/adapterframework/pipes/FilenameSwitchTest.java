@@ -76,7 +76,6 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
     public void testValidForwardName() throws Exception {
         PipeRunResult res = doPipe(pipe, "CreateHelloWorld/success", session);
         assertEquals("success", res.getPipeForward().getName());
-
     }
 
     @Test

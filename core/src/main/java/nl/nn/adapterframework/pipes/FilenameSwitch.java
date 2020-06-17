@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -39,10 +40,12 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.8
  */
+@Deprecated
+@ConfigurationWarning("Please replace with XmlSwitch with an xpathExpression or serviceSelectionStylesheetFilename")
 public class FilenameSwitch extends AbstractPipe {
-	
-    private String notFoundForwardName=null;
-    private boolean toLowercase=true;
+
+	private String notFoundForwardName=null;
+	private boolean toLowercase=true;
 
 	@Override
 	public void configure() throws ConfigurationException {

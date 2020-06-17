@@ -106,6 +106,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
         assertEquals("success", res.getPipeForward().getName());
     }
+  
     @Test
     public void xsltFailForTransformation() throws Exception{
         exception.expect(PipeRunException.class);

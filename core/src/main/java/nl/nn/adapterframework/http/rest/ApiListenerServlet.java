@@ -62,7 +62,6 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String CHARSET="UTF-8";
 	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
 	protected Logger log = LogUtil.getLogger(this);
@@ -92,6 +91,16 @@ public class ApiListenerServlet extends HttpServletBase {
 		super.destroy();
 	}
 
+	public void returnJson(HttpServletResponse response, int status, JsonObject json) throws IOException {
+		response.setStatus(status);
+		Map<String, Boolean> config = new HashMap<>();
+		config.put(JsonGenerator.PRETTY_PRINTING, true);
+		JsonWriterFactory factory = Json.createWriterFactory(config);
+		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"))) {
+			jsonWriter.write(json);
+		}
+	}
+	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -114,14 +123,18 @@ public class ApiListenerServlet extends HttpServletBase {
 		 */
 		if(uri.equalsIgnoreCase("openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
-			response.setStatus(200);
+			returnJson(response, 200, jsonSchema);
+			return;
+		}
 
-			Map<String, Boolean> config = new HashMap<>();
-			config.put(JsonGenerator.PRETTY_PRINTING, true);
-			JsonWriterFactory factory = Json.createWriterFactory(config);
-			JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"));
-			jsonWriter.write(jsonSchema);
-			jsonWriter.close();
+		/**
+		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+		 */
+		if(uri.endsWith("/openapi.json")) {
+			uri = uri.substring(0, uri.length()-"/openapi.json".length());
+			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
+			returnJson(response, 200, jsonSchema);
 			return;
 		}
 
@@ -241,7 +254,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.addCookie(authorizationCookie);
 				}
 
-				if(userPrincipal != null && authorizationToken != null) {
+				if(authorizationToken != null) {
 					userPrincipal.updateExpiry();
 					userPrincipal.setToken(authorizationToken);
 					cache.put(authorizationToken, userPrincipal, authTTL);
@@ -257,12 +270,12 @@ public class ApiListenerServlet extends HttpServletBase {
 			/**
 			 * Evaluate preconditions
 			 */
-			String accept = request.getHeader("Accept");
-			if(accept != null && !accept.isEmpty() && !accept.equals("*/*")) {
-				if(!listener.getProduces().equals("ANY") && !accept.contains(listener.getContentType())) {
+			String acceptHeader = request.getHeader("Accept");
+			if(StringUtils.isNotEmpty(acceptHeader)) { //If an Accept header is present, make sure we comply to it!
+				if(!listener.accepts(acceptHeader)) {
 					response.setStatus(406);
-					response.getWriter().print("It appears you expected the MediaType ["+accept+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+accept+"] got ["+listener.getContentType()+"] instead");
+					response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
+					if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
 					return;
 				}
 			}
@@ -369,7 +382,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			if (ServletFileUpload.isMultipartContent(request)) {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-				servletFileUpload.setHeaderEncoding(CHARSET);
 				List<FileItem> items = servletFileUpload.parseRequest(request);
 				XmlBuilder attachments = new XmlBuilder("parts");
 				int i = 0;
@@ -486,7 +498,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-			String contentType = listener.getContentType() + ";charset="+CHARSET;
+			String contentType = listener.getContentType();
 			if(listener.getProduces().equals("ANY")) {
 				contentType = messageContext.get("contentType", contentType);
 			}

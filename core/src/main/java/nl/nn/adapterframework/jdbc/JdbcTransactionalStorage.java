@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -146,7 +147,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
+public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade implements ITransactionalStorage<S> {
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -229,7 +230,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private boolean assumePrimaryKeyUnique;
 	private boolean checkTable;
 	private boolean checkIndices;	
-	
+
+	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
+
 	public JdbcTransactionalStorage() {
 		super();
 		setTransacted(true);
@@ -670,7 +673,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
 			IDbmsSupport dbmsSupport=getDbmsSupport();
@@ -839,7 +842,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	private boolean isMessageDifferent(Connection conn, String messageId, Serializable message) throws SQLException{
+	private boolean isMessageDifferent(Connection conn, String messageId, S message) throws SQLException{
 		PreparedStatement stmt = null;
 		int paramPosition=0;
 		
@@ -884,7 +887,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
 			txStatus = txManager.getTransaction(TXREQUIRED);
@@ -940,7 +943,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		
 	}
 
-	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		String result;
 		try {
 			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
@@ -1115,7 +1118,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	private Object retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		InputStream blobStream=null;
 		try {
 			Blob blob = rs.getBlob(columnIndex);
@@ -1128,7 +1131,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
 			ObjectInputStream ois = new ObjectInputStream(blobStream);
-			Object result = ois.readObject();
+			S result = (S)ois.readObject();
 			ois.close();
 			return result;
 		} finally {
@@ -1139,7 +1142,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	
-	protected Object retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	protected S retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -1275,7 +1278,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	@Override
-	public Object browseMessage(String messageId) throws ListenerException {
+	public S browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1306,8 +1309,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	@Override
-	public Object getMessage(String messageId) throws ListenerException {
-		Object result = browseMessage(messageId);
+	public S getMessage(String messageId) throws ListenerException {
+		S result = browseMessage(messageId);
 		deleteMessage(messageId);
 		return result;
 	}
@@ -1558,7 +1561,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	@Override
-	@IbisDoc({"optional identifier for this storage, to be able to share the physical table between a number of receivers", ""})
+	@IbisDocRef({"1", ITRANSACTIONALSTORAGE})
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -1567,17 +1570,17 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return slotId;
 	}
 
-	public String getSlotIdField() {
-		return slotIdField;
-	}
 	@IbisDoc({"the name of the column slotids are stored in", "slotid"})
 	public void setSlotIdField(String string) {
 		slotIdField = string;
 	}
+	public String getSlotIdField() {
+		return slotIdField;
+	}
 
 
 	@Override
-	@IbisDoc({"possible values are e (error store), m (message store), l (message log for pipe) or a (message log for receiver). receiverbase will always set type to e for errorstorage and always set type to a for messagelog. genericmessagesendingpipe will set type to l for messagelog (when type isn't specified). see {@link messagestoresender} for type m", "e for errorstorage on receiver, a for messagelog on receiver and l for messagelog on pipe"})
+	@IbisDocRef({"2", ITRANSACTIONALSTORAGE})
 	public void setType(String string) {
 		type = string;
 	}
@@ -1699,7 +1702,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	
 	@Override
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -1709,7 +1711,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	@Override
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}
