@@ -206,7 +206,14 @@ angular.module('iaf.beheerconsole')
 
 		var raw_adapter_data = {};
 		var pollerCallback = function(allAdapters) {
-			for(adapterName in allAdapters) {
+			for(adapterName in raw_adapter_data) { //Check if any old adapters should be removed
+				if(!allAdapters[adapterName]) {
+					delete raw_adapter_data[adapterName];
+					delete $rootScope.adapters[adapterName];
+					Debug.log("removed adapter ["+adapterName+"]");
+				}
+			}
+			for(adapterName in allAdapters) { //Add new adapter information
 				var adapter = allAdapters[adapterName];
 
 				if(raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
