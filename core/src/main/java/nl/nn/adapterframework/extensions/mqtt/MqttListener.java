@@ -167,14 +167,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public Message extractMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		if (StreamUtil.DEFAULT_INPUT_STREAM_ENCODING.equalsIgnoreCase(getCharset())) {
-			return new Message(rawMessage.getPayload());
-		}
-		try {
-			return new Message(new String(rawMessage.getPayload(), getCharset()));
-		} catch (UnsupportedEncodingException e) {
-			throw new ListenerException("Could not encode message", e);
-		}
+		return new Message(rawMessage.getPayload(),getCharset());
 	}
 
 	@Override

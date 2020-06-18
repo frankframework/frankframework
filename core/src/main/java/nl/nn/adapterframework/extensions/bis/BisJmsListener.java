@@ -208,8 +208,6 @@ public class BisJmsListener extends JmsListener {
 	public Message prepareReply(Message rawReply, Map<String,Object> threadContext) throws ListenerException {
 		String originalMessageText = (String) threadContext.get(MESSAGETEXT_KEY);
 		String messageBodyNamespace = (String) threadContext.get(MESSAGEBODYNAMESPACE_KEY);
-		String messageHeader;
-		String payload;
 		try {
 			if (isLayByNamespace() && messageBodyNamespace != null) {
 				rawReply = new Message(XmlUtils.addRootNamespace(rawReply.asString(), messageBodyNamespace));
@@ -219,18 +217,17 @@ public class BisJmsListener extends JmsListener {
 				errorCode = (String) threadContext.get(getErrorCodeSessionKey());
 			}
 			String result;
-			messageHeader = bisUtils.prepareMessageHeader(originalMessageText, isMessageHeaderInSoapBody());
+			String messageHeader = bisUtils.prepareMessageHeader(originalMessageText, isMessageHeaderInSoapBody());
 			if (isOmitResult()) {
 				result = null;
 			} else {
 				result = prepareResult(errorCode, threadContext);
 			}
-			payload = bisUtils.prepareReply(rawReply, isMessageHeaderInSoapBody() ? messageHeader : null, result, isResultInPayload());
-
+			Message payload = bisUtils.prepareReply(rawReply, isMessageHeaderInSoapBody() ? messageHeader : null, result, isResultInPayload());
+			return super.prepareReply(payload, threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
-		return super.prepareReply(new Message(payload), threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 	}
 
 	public String prepareResult(String errorCode, Map<String,Object> threadContext) throws DomBuilderException, IOException, TransformerException {

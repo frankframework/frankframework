@@ -24,7 +24,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -517,7 +516,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 
-
+	// TODO: send functions could benefit from have Message messages instead of String
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
 	}

@@ -97,7 +97,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 		try {
 			originalMessageXml.setValue(originalMessage.asString(), true);
 		} catch (IOException e) {
-			log.warn("Could not transform originalMessage",e);
+			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);
