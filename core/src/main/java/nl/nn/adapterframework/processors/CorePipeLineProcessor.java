@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,17 +63,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					String input;
-					try {
-						input = message.asString();
-					} catch (IOException e) {
-						throw new PipeRunException(null, "cannot open stream", e);
-					}
-					PipeLineResult plr = adapter.processMessage(messageId, input, pipeLineSession);
+					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
 					if (plr == null || !plr.getState().equals("success")) {
 						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
-					message = new Message(plr.getResult());
+					message = plr.getResult();
 					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 				}
 			}
@@ -257,11 +251,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
 						if (message.asObject()!=null && !plExit.getEmptyResult()) {
-							try {
-								pipeLineResult.setResult(message.asString());
-							} catch (IOException e) {
-								throw new PipeRunException(null, "cannot open result stream", e);
-							}
+							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(null);
 						}

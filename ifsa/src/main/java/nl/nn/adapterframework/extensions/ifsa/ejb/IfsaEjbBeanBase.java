@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,11 +26,12 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.ejb.AbstractListenerConnectingEJB;
-
 import com.ing.ifsa.api.ServiceRequest;
 import com.ing.ifsa.exceptions.ServiceException;
+
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.ejb.AbstractListenerConnectingEJB;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  *
@@ -53,14 +55,14 @@ abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB impl
         Map threadContext = new HashMap();
         try {
 //            listener.populateThreadContext(request, threadContext, null);
-            String message = listener.getStringFromRawMessage(request, threadContext);
+            Message message = listener.extractMessage(request, threadContext);
             String cid = listener.getIdFromRawMessage(request, threadContext);
-            String replyText = listener.getHandler().processRequest(listener, cid, request, message, threadContext);
+            String replyText = listener.getHandler().processRequest(listener, cid, request, message, threadContext).asString();
             if (log.isDebugEnabled()) {
                 log.debug("processRequest(): ReplyText=[" + replyText + "]");
             }
             return replyText;
-        } catch (ListenerException ex) {
+        } catch (IOException | ListenerException ex) {
             log.error(ex, ex);
             listener.getExceptionListener().exceptionThrown(listener, ex);
             // Do not invoke rollback, but let IFSA take care of that

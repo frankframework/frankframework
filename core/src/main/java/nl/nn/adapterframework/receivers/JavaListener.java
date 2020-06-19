@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -35,10 +39,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 
 /** *
@@ -124,7 +126,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
+	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
@@ -142,14 +144,19 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 				}
 			}
 		}
+		Message message =  new Message(rawMessage);
 		if (throwException) {
-			return handler.processRequest(this, correlationId, message, message, context);
+			try {
+				return handler.processRequest(this, correlationId, rawMessage, message, (Map<String,Object>)context).asString();
+			} catch (IOException e) {
+				throw new ListenerException("cannot convert stream", e);
+			}
 		} else {
 			try {
-				return handler.processRequest(this, correlationId, message, message, context);
+				return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
 			}
-			catch (ListenerException e) {
-				return handler.formatException(null,correlationId, message,e);
+			catch (ListenerException | IOException e) {
+				return handler.formatException(null,correlationId, message, e);
 			}
 		}
 	}
@@ -205,8 +212,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public String getStringFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return rawMessage;
+	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+		return new Message(rawMessage);
 	}
 
 	@Override

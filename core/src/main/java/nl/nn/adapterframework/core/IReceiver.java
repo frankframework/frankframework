@@ -17,6 +17,7 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * The receiver is the trigger and central communicator for the framework.
@@ -39,7 +40,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
  * 
  *  @author Johan Verrips
  *  @see IAdapter
- *  @see IAdapter#processMessage(String, String, IPipeLineSession)
+ *  @see IAdapter#processMessage(String, Message, IPipeLineSession)
  *  @see ISender
  *  @see PipeLineResult
  *

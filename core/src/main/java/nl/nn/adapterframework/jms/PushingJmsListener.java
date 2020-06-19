@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -182,7 +181,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -192,7 +191,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(new Message(plr.getResult()), null);
+					getSender().sendMessage(plr.getResult(), null);
 				}
 			}
 

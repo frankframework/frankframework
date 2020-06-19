@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -186,6 +187,6 @@ public final class TestPipeline extends Base {
 		if (writeSecLogMessage) {
 			secLog.info("message [" + message + "]");
 		}
-		return adapter.processMessage(messageId, message, pls);
+		return adapter.processMessage(messageId, new Message(message), pls);
 	}
 }

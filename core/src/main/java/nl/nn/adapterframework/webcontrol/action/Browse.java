@@ -202,9 +202,9 @@ public class Browse extends ActionBase {
 				String msg=null;
 				if(rawmsg instanceof MessageWrapper) {
 					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-					msg = msgsgs.getText();
+					msg = msgsgs.getMessage().asString();
 				} else if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg, null);
+					msg = listener.extractMessage(rawmsg, null).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}
@@ -278,7 +278,7 @@ public class Browse extends ActionBase {
 								Object rawmsg = mb.browseMessage(cId);
 								String msg=null;
 								if (listener!=null) {
-									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
+									msg = listener.extractMessage(rawmsg,new HashMap()).asString();
 								} else {
 									msg = Message.asString(rawmsg);
 								}

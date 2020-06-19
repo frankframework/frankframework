@@ -46,8 +46,9 @@ public class Message implements Serializable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
+	private String charset; // representing a charset of byte typed requests
 
-	private Message(Object request) {
+	private Message(Object request, String charset) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -55,30 +56,47 @@ public class Message implements Serializable {
 		} else {
 			this.request = request;
 		}
+		this.charset = charset;
 	}
 
 	public Message(String request) {
-		this((Object)request);
+		this((Object)request, null);
 	}
 
+	public Message(byte[] request, String charset) {
+		this((Object)request, charset);
+	}
 	public Message(byte[] request) {
-		this((Object)request);
+		this((Object)request, null);
 	}
 
 	public Message(Reader request) {
-		this((Object)request);
+		this((Object)request, null);
 	}
 
+	public Message(InputStream request, String charset) {
+		this((Object)request, charset);
+	}
 	public Message(InputStream request) {
-		this((Object)request);
+		this((Object)request, null);
 	}
 
+	public Message(File request, String charset) {
+		this((Object)request, charset);
+	}
 	public Message(File request) {
-		this((Object)request);
+		this((Object)request, null);
 	}
 
+	public Message(URL request, String charset) {
+		this((Object)request, charset);
+	}
 	public Message(URL request) {
-		this((Object)request);
+		this((Object)request, null);
+	}
+	
+	public static Message nullMessage() {
+		return new Message((Object)null, null);
 	}
 	/**
 	 * Notify the message object that the request object will be used multiple times.
@@ -137,28 +155,28 @@ public class Message implements Serializable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (StringUtils.isEmpty(defaultCharset)) {
-			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		if (StringUtils.isEmpty(charset)) {
+			charset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, defaultCharset);
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, charset);
 		}
 		if (request instanceof URL) {
 			log.debug("returning URL as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), defaultCharset);
+			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), charset);
 		}
 		if (request instanceof File) {
 			log.debug("returning File as Reader");
 			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), defaultCharset);
+				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), charset);
 			} catch (IOException e) {
 				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
 			}
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), defaultCharset);
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), charset);
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -281,9 +299,6 @@ public class Message implements Serializable {
 		if (request instanceof String) {
 			return (String)request;
 		}
-		if (StringUtils.isEmpty(defaultCharset)) {
-			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
 		// save the generated String as the request before returning it
 		request = StreamUtil.readerToString(asReader(defaultCharset), null);
 		return (String) request;
@@ -308,7 +323,7 @@ public class Message implements Serializable {
 		if (object!=null && object instanceof Message) {
 			return (Message)object;
 		}
-		return new Message(object);
+		return new Message(object, null);
 	}
 
 	public static Reader asReader(Object object) throws IOException {

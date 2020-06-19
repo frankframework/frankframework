@@ -731,11 +731,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
 						resultmsg =getResultOnTimeOut();
 					} else {
-						try {
-							resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input.asString(),session.getMessageId(),0);
-						} catch (IOException e) {
-							throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-						}
+						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input,session.getMessageId(),0);
 					}
 					return new PipeRunResult(timeoutForward,resultmsg);
 				}
@@ -747,11 +743,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
 					String resultmsg;
-					try {
-						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input.asString(),session.getMessageId(),0);
-					} catch (IOException e) {
-						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-					}
+					resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0);
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -124,7 +126,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	}
 
 	@Override
-	public String getStringFromRawMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message(rawMessage);
 	}
@@ -134,9 +136,9 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 		try {
 			log.debug("SapListener.afterMessageProcessed");
 			if (rawMessageOrWrapper instanceof JCO.Function) {
-				message2FunctionResult((JCO.Function)rawMessageOrWrapper, processResult.getResult());
+				message2FunctionResult((JCO.Function)rawMessageOrWrapper, processResult.getResult().asString());
 			}
-		} catch (SapException e) {
+		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
 		}
 	}
@@ -163,7 +165,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(this, null, idoc.toXML());
+			handler.processRequest(this, null, new Message(idoc.toXML()));
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
