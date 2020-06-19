@@ -34,7 +34,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 	@Override
 	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
- 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
+		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
 			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
