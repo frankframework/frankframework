@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -33,7 +32,6 @@ import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.

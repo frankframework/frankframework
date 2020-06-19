@@ -108,6 +108,7 @@ public class MqttFacade implements HasPhysicalDestination {
 		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
 	}
 
+	@Override
 	public String toString() {
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("topic", getTopic());
