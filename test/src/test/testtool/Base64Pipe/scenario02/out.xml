@@ -1,6 +1,6 @@
 <file>
-	<fullName>c:\temp\testdata\b64\file_out.pdf</fullName>
-	<directory>c:\temp\testdata\b64</directory>
+	<fullName>LOG_DIR\testdata\b64\file_out.pdf</fullName>
+	<directory>LOG_DIR\testdata\b64</directory>
 	<name>file_out.pdf</name>
 	<baseName>file_out</baseName>
 	<extension>pdf</extension>

@@ -1,1 +1,1 @@
-c:/temp/testdata/b64/file.pdf
+${log.dir}/testdata/b64/file.pdf
