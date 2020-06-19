@@ -35,7 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * Pipe that hashes the imput
+ * Pipe that hashes the input
  * 
  * 
  * @author	Niels Meijer
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 public class HashPipe extends FixedForwardPipe {
 
 	private String algorithm = "HmacSHA256";
-	private String encoding = "ISO8859_1";
+	private String encoding = "ISO8859_1"; // waarom is dit geen UTF-8?
 	private String secret = null;
 	private String authAlias = null;
 
@@ -54,7 +54,7 @@ public class HashPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (!algorithms.contains(getAlgorithm())) {
-			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be " + algorithms.toString());
+			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be one of" + algorithms.toString());
 		}
 	}
 
@@ -64,7 +64,7 @@ public class HashPipe extends FixedForwardPipe {
 		String secret = getSecret();
 		try {
 			ParameterList parameterList = getParameterList();
-			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session, isNamespaceAware());
+			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session);
 			if(pvl != null) {
 				String authAliasParamValue = (String)pvl.getValue("authAlias");
 				if (StringUtils.isNotEmpty(authAliasParamValue)) {
@@ -104,35 +104,35 @@ public class HashPipe extends FixedForwardPipe {
 		return algorithm;
 	}
 
-	@IbisDoc({"name of the pipe", "hmacsha256"})
+	@IbisDoc({"1", "Hashing algoritm to use, one of HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384 or HmacSHA512", "hmacsha256"})
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
 
+	@IbisDoc({"2", "Character set to use for converting the secret from String to bytes", "ISO8859_1"})
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
 	public String getEncoding() {
 		return encoding;
 	}
 
-	@IbisDoc({"name of the pipe", "iso8859_1"})
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
-	}
 
+	@IbisDoc({"3", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
 	public String getSecret() {
 		return secret;
 	}
 
-	@IbisDoc({"the secret to hash with", ""})
-	public void setSecret(String secret) {
-		this.secret = secret;
-	}
 
+	@IbisDoc({"4","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
 	public String getAuthAlias() {
 		return authAlias;
 	}
 
-	@IbisDoc({"authalias to retrieve the secret from (password field).", ""})
-	public void setAuthAlias(String authAlias) {
-		this.authAlias = authAlias;
-	}
 }
