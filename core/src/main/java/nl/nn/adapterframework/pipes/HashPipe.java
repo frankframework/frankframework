@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -33,9 +34,10 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Pipe that hashes the input
+ * Pipe that hashes the input.
  * 
  * 
  * @author	Niels Meijer
@@ -43,7 +45,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 public class HashPipe extends FixedForwardPipe {
 
 	private String algorithm = "HmacSHA256";
-	private String encoding = "ISO8859_1"; // waarom is dit geen UTF-8?
+	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String secret = null;
 	private String authAlias = null;
 
@@ -89,7 +91,7 @@ public class HashPipe extends FixedForwardPipe {
 		try {
 			Mac mac = Mac.getInstance(getAlgorithm());
 
-			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getEncoding()), "algorithm");
+			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
 			mac.init(secretkey);
 
 			String hash = Base64.encodeBase64String(mac.doFinal(message.asByteArray()));
@@ -100,21 +102,25 @@ public class HashPipe extends FixedForwardPipe {
 		}
 	}
 
-	public String getAlgorithm() {
-		return algorithm;
-	}
-
 	@IbisDoc({"1", "Hashing algoritm to use, one of HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384 or HmacSHA512", "hmacsha256"})
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
-
-	@IbisDoc({"2", "Character set to use for converting the secret from String to bytes", "ISO8859_1"})
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
+	public String getAlgorithm() {
+		return algorithm;
 	}
-	public String getEncoding() {
-		return encoding;
+
+	@Deprecated
+	@ConfigurationWarning("attribute encoding has been replaced with attribute charset, default has changed from ISO8859_1 to UTF-8")
+	public void setEncoding(String encoding) {
+		setCharset(encoding);
+	}
+	@IbisDoc({"2", "Character set to use for converting the secret from String to bytes", "UTF-8"})
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+	public String getCharset() {
+		return charset;
 	}
 
 
