@@ -96,16 +96,16 @@ public class StringResolver {
 				}
 			} else {
 				sbuf.append(val.substring(i, j));
-                k = indexOfDelimStop(val, j);
+				k = indexOfDelimStop(val, j);
 				if (k == -1) {
 					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
 				} else {
 					String expression = val.substring(j, k + DELIM_STOP_LEN);
 					j += DELIM_START_LEN;
 					String key = val.substring(j, k);
-                    if (key.contains(DELIM_START)) {
-                    	key = substVars(key, props1, props2);
-                    }
+					if (key.contains(DELIM_START)) {
+						key = substVars(key, props1, props2);
+					}
 					// first try in System properties
 					String replacement = getSystemProperty(key, null);
 					// then try props parameter
@@ -174,23 +174,20 @@ public class StringResolver {
 		}
 	}
 
-	private static int indexOfDelimStop(String val, int j) {
+	private static int indexOfDelimStop(String val, int startPos) {
 		// if variable in variable then find the correct stop delimiter
-		int k = val.indexOf(DELIM_STOP, j);
-		if (k > 0) {
-			j += DELIM_START_LEN;
-			String key = val.substring(j, k);
-			int x1 = StringUtils.countMatches(key, DELIM_START);
-			int x2 = StringUtils.countMatches(key, "" + DELIM_STOP);
-			while (k > 0 && x1 != x2) {
-				k = val.indexOf(DELIM_STOP, k + DELIM_STOP_LEN);
-				if (k > 0) {
-					key = val.substring(j, k);
-					x1 = StringUtils.countMatches(key, DELIM_START);
-					x2 = StringUtils.countMatches(key, "" + DELIM_STOP);
-				}
+		int stopPos = startPos - DELIM_STOP_LEN;
+		int numEmbeddedStart = 0;
+		int numEmbeddedStop = 0;
+		do {
+			startPos += DELIM_START_LEN;
+			stopPos = val.indexOf(DELIM_STOP, stopPos + DELIM_STOP_LEN);
+			if (stopPos > 0) {
+				String key = val.substring(startPos, stopPos);
+				numEmbeddedStart = StringUtils.countMatches(key, DELIM_START);
+				numEmbeddedStop = StringUtils.countMatches(key, "" + DELIM_STOP);
 			}
-		}
-		return k;
+		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
+		return stopPos;
 	}
 }
