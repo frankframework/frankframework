@@ -45,4 +45,10 @@ public class StringResolverTest {
 		String result = StringResolver.substVars("blalblalab ${key5}", properties);
 		assertEquals("blalblalab ${key5}", result);
 	}
+
+	@Test
+	public void resolveComplexRecursively() {
+		String result = StringResolver.substVars("blalblalab ${key1_${key2}}", properties);
+		assertEquals("blalblalab value101", result);
+	}
 }
