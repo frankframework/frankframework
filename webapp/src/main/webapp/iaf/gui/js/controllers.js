@@ -1185,25 +1185,51 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies', function($scope, Api, $compile, Cookies) {
 	$scope.closeNotes();
+	$scope.selectedMessages = [];
 
-	var a =  '<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+	var a =  '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
+		a += '<div ng-show="!selectedMessages[message.id]">';
+		a += '<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 		a += '<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
 		a += '<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
 		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+		a += '</div';
 
 	var columns = [
-		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "id", bSortable: false },
-		{ "data": "insertDate", className: "date" },
-		{ "data": "host", bSortable: false },
-		{ "data": "originalId", bSortable: false },
-		{ "data": "correlationId", bSortable: false },
-		{ "data": "comment", bSortable: false },
-		{ "data": "expiryDate", className: "date", bSortable: false },
-		{ "data": "label", bSortable: false },
+		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
+		{ "name": "id", "data": "id", bSortable: false },
+		{ "name": "insertDate", "data": "insertDate", className: "date" },
+		{ "name": "host", "data": "host", bSortable: false },
+		{ "name": "originalId", "data": "originalId", bSortable: false },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false },
+		{ "name": "comment", "data": "comment", bSortable: false },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
+		{ "name": "label", "data": "label", bSortable: false },
 	];
+
+	var filterCookie = Cookies.get("errorstorageFilter");
+	if(filterCookie) {
+		for(i in columns) {
+			var column = columns[i];
+			if(column.name && filterCookie[column.name] === false) {
+				column.visible = false;
+			}
+		}
+		$scope.displayColumn = filterCookie;
+	} else {
+		$scope.displayColumn = {
+			id: true,
+			insertDate: true,
+			host: true,
+			originalId: true,
+			correlationId: true,
+			comment: true,
+			expiryDate: true,
+			label: true,
+		}
+	}
 
 	$scope.dtOptions = {
 		rowCallback: function(row, data) {
@@ -1215,6 +1241,7 @@ angular.module('iaf.beheerconsole')
 			});
 			var scope = $scope.$new();
 			scope.message = data;
+			$scope.selectedMessages[data.id] = false;
 			$compile(row)(scope);
 		},
 		searching: false,
@@ -1259,8 +1286,71 @@ angular.module('iaf.beheerconsole')
 		label: "",
 	};
 
+	$scope.updateFilter = function(column) {
+		Cookies.set("errorstorageFilter", $scope.displayColumn);
+
+		var table = $('#datatable').DataTable();
+		if(table) {
+			var tableColumn = table.column(column+":name");
+			if(tableColumn && tableColumn.length == 1)
+				tableColumn.visible( $scope.displayColumn[column] );
+			table.draw();
+		}
+	}
+
 	$scope.resendMessage = $scope.doResendMessage;
 	$scope.deleteMessage = $scope.doDeleteMessage;
+
+	$scope.selectAll = function() {
+		for(i in $scope.selectedMessages) {
+			$scope.selectedMessages[i] = true;
+		}
+	}
+	$scope.unselectAll = function() {
+		for(i in $scope.selectedMessages) {
+			$scope.selectedMessages[i] = false;
+		}
+	}
+
+	$scope.messagesResending = false;
+	$scope.messagesDeleting = false;
+	function getFormData() {
+		var messageIds = [];
+		for(i in $scope.selectedMessages) {
+			if($scope.selectedMessages[i]) {
+				messageIds.push(i);
+				$scope.selectedMessages[i] = false;//unset the messageId
+			}
+		}
+
+		var fd = new FormData();
+		fd.append("messageIds", messageIds);
+		return fd;
+	}
+	$scope.resendMessages = function() {
+		$scope.messagesResending = true;
+		Api.Post($scope.base_url, getFormData(), function() {
+			$scope.messagesResending = false;
+			$scope.addNote("success", "Successfully resent messages");
+			$scope.updateTable();
+		}, function(data) {
+			$scope.messagesResending = false;
+			$scope.addNote("danger", "Something went wrong, unable to resend all messages!");
+			$scope.updateTable();
+		});
+	}
+	$scope.deleteMessages = function() {
+		$scope.messagesDeleting = true;
+		Api.Delete($scope.base_url, getFormData(), function() {
+			$scope.messagesDeleting = false;
+			$scope.addNote("success", "Successfully deleted messages");
+			$scope.updateTable();
+		}, function(data) {
+			$scope.messagesDeleting = false;
+			$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
+			$scope.updateTable();
+		});
+	}
 }])
 
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
