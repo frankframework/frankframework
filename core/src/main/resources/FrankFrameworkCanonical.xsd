@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="IOS-Adaptering" type="ConfigurationType"/>
 	<xsd:element name="configuration" type="ConfigurationType"/>
+	<xsd:element name="Configuration" type="ConfigurationType"/>
 	<xsd:element name="module" type="ConfigurationType"/>
+	<xsd:element name="Module" type="ConfigurationType"/>
 	<xsd:complexType name="ConfigurationType">
 		<xsd:sequence minOccurs="0" maxOccurs="unbounded">
 			<xsd:choice>
 				<xsd:element name="jmsRealms" type="JmsRealmsType"/>
 				<xsd:element name="sapSystems" type="SapSystemsType"/>
 				<xsd:element name="adapter" type="AdapterType"/>
+				<xsd:element name="Module" type="ConfigurationType"/>
 				<xsd:element name="module" type="ConfigurationType"/>
 				<xsd:element name="configuration" type="ConfigurationType"/>
 				<xsd:element name="ibis" type="ConfigurationType"/>
@@ -134,6 +138,15 @@
 		</xsd:sequence>
 		<xsd:attribute name="firstPipe"/>
 		<xsd:attribute name="transactionAttribute"/>
+		<xsd:attribute name="messageSizeWarn"/>
+		<xsd:attribute name="forceFixedForwarding"/>
+		<xsd:attribute name="transformNullMessage"/>
+		<xsd:attribute name="adapterToRunBeforeOnEmptyInput"/>
+		<xsd:attribute name="commitOnState"/>
+		<xsd:attribute name="storeOriginalMessageWithoutNamespaces"/>
+		<xsd:attribute name="transacted"/>
+		<xsd:attribute name="transactionAttributeNum"/>
+		<xsd:attribute name="transactionTimeout"/>
 	</xsd:complexType>
 	<xsd:complexType name="PipeType">
 		<xsd:all/>

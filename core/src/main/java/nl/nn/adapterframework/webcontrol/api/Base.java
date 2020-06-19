@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,21 +15,33 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
 import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Baseclass to fetch ibisContext + ibisManager
@@ -38,12 +50,24 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author	Niels Meijer
  */
 
-public abstract class Base {
+public abstract class Base implements ApplicationContextAware {
 	@Context ServletConfig servletConfig;
 
-	protected Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext = null;
+	private JAXRSServiceFactoryBean serviceFactory = null;
+
+	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
+		serviceFactory = server.getServiceFactory();
+	}
+
+	protected JAXRSServiceFactoryBean getJAXRSService() {
+		return serviceFactory;
+	}
 
 	/**
 	 * Retrieves the IbisContext from <code>servletConfig</code>.
@@ -85,11 +109,19 @@ public abstract class Base {
 		return this.getClass().getClassLoader();
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {
+	protected FlowDiagramManager getFlowDiagramManager() {
+		try {
+			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			throw new ApiException("failed to initalize FlowDiagramManager", e);
+		}
+	}
+
+	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
 		return resolveStringFromMap(inputDataMap, key, null);
 	}
 
-	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key, String defaultValue) throws ApiException {
+	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
 		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
 		if(StringUtils.isEmpty(result)) {
 			if(defaultValue != null) {
@@ -100,10 +132,33 @@ public abstract class Base {
 		return result;
 	}
 
-	protected <T> T resolveTypeFromMap(Map<String, List<InputPart>> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
+		Attachment msg = inputDataMap.getAttachment(key);
+		if(msg != null) {
+			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
+				String charset = msg.getContentType().getParameters().get("charset");
+				if(StringUtils.isNotEmpty(charset)) {
+					encoding = charset;
+				}
+			}
+			InputStream is = msg.getObject(InputStream.class);
+
+			try {
+				return Misc.streamToString(is, "\n", encoding, false);
+			} catch (UnsupportedEncodingException e) {
+				throw new ApiException("unsupported file encoding ["+encoding+"]");
+			} catch (IOException e) {
+				throw new ApiException("error parsing value of key ["+key+"]", e);
+			}
+		}
+		return null;
+	}
+
+	protected <T> T resolveTypeFromMap(MultipartBody inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
 		try {
-			if(inputDataMap.get(key) != null) {
-				return inputDataMap.get(key).get(0).getBody(clazz, null);
+			if(inputDataMap.getAttachment(key) != null) {
+				return inputDataMap.getAttachment(key).getObject(clazz);
 			}
 		} catch (Exception e) {
 			log.debug("Failed to parse parameter ["+key+"]", e);

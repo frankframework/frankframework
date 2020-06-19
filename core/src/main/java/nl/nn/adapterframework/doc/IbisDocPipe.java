@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Integration Partners
+   Copyright 2018-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -484,7 +484,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
-			XmlUtils.parseXml(digesterXmlHandler, Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")));
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
 		} catch (SAXException e) {
@@ -647,8 +647,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 					if (ibisDocRef != null) {
 						AMethod aMethod = new AMethod(property);
-						if (ibisDoc ==  null) {
-							ibisDoc = aMethod.getIbisDocRef(ibisDocRef.value()[1], method);
+						if (ibisDoc == null) {
+							String[] orderAndPackageName = ibisDocRef.value();
+							String packageName = null;
+							if(orderAndPackageName.length == 1) {
+								packageName = ibisDocRef.value()[0];
+							} else if(orderAndPackageName.length == 2) {
+								packageName = ibisDocRef.value()[1];
+							}
+							ibisDoc = aMethod.getIbisDocRef(packageName, method);
 						}
 					}
 					if (ibisDoc != null) {

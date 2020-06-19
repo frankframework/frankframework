@@ -172,7 +172,7 @@ public class Browse extends ActionBase {
 				mb=pipe.getMessageLog();
 			} else {
 				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
-				mb = receiver.getMessageLog();
+				mb = receiver.getMessageLogBrowser();
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
@@ -184,7 +184,7 @@ public class Browse extends ActionBase {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;
 			}
-			mb = receiver.getErrorStorage();
+			mb = receiver.getErrorStorageBrowser();
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();

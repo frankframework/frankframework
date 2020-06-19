@@ -176,7 +176,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
@@ -193,7 +193,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageSent=rawMessage;
+					javax.jms.Message messageSent=(javax.jms.Message)rawMessageOrWrapper; // cast can be safely done because javax.jms.Message is serializable, so no MessageWrapper in this case
 					long expiration=messageSent.getJMSExpiration();
 					if (expiration!=0) {
 						timeToLive=expiration-new Date().getTime();
@@ -259,7 +259,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
 					if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
 						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
-						((TextMessage)rawMessage).acknowledge();
+						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}
 				}
 			}

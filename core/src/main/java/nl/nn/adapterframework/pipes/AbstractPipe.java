@@ -284,7 +284,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 			pipeForwards.put(forward.getName(), forward);
 		} else {
 			if (!isRecoverAdapter()) {
-				if (forward.getPath().equals(current.getPath())) {
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
 					ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
 				} else {
 					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");

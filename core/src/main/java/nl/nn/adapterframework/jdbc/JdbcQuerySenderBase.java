@@ -614,7 +614,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		MessageOutputStream target=null;
 		final Connection connection;
 		QueryExecutionContext queryExecutionContext;
 		try {
@@ -629,7 +628,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), target, next) {
+				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
@@ -638,7 +637,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				};
 			}
 			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), target, next) {
+				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();

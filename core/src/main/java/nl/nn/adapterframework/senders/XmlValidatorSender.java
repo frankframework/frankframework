@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String fullReasons="tja";
 		try {
-			String resultEvent = validate(message, session, getLogPrefix(),null,null,false);
+			String resultEvent = validate(message, session, getLogPrefix(),null,null);
 			
 			if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 				return message;
