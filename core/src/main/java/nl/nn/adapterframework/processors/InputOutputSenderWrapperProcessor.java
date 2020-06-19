@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.processors;
+
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -32,7 +34,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 	@Override
 	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
-		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
+ 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
 			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
@@ -41,7 +43,14 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+		if (senderWrapperBase.isPreserveInput() && message==senderInput) {
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SenderException("Could not preserve input",e);
+			}
+		}
+		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
 			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
