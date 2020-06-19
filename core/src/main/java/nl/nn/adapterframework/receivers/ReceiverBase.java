@@ -1566,11 +1566,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public int getMaxThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
-			
+
 			return tcc.getMaxThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
-			listenerContainer.getMaxThreadCount();
+			return listenerContainer.getMaxThreadCount();
 		}
 		return -1;
 	}
