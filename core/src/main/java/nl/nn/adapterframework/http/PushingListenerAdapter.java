@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceClient {
+public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler<M> handler;
@@ -82,12 +82,12 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String rawMessage, Map<String, Object> requestContext) throws ListenerException {
+		Message message = extractMessage((M)rawMessage, requestContext);
 		try {
-			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
-			// serviceclient has no rawMessage, but it has no afterMessageProcessed either, therefor rawMessage can safely be null in handler.processRequest()
+			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
 			try {
-				return handler.processRequest(this, correlationId, null, new Message(message), requestContext).asString();
+				return handler.processRequest(this, correlationId, (M)rawMessage, message, requestContext).asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			} 
@@ -97,7 +97,7 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 				throw e;
 			} 
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			return handler.formatException(null,correlationId, new Message(message),e);
+			return handler.formatException(null,correlationId, message, e);
 		}
 	}
 

@@ -126,7 +126,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	}
 
 	@Override
-	public String getStringFromRawMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message(rawMessage);
 	}

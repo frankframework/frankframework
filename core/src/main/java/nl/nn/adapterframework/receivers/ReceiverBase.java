@@ -842,14 +842,22 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				errorSender.sendMessage(message, null);
 			}
 			Serializable sobj;
-			if (rawMessage instanceof Serializable) {
-				sobj=(Serializable)rawMessage;
+			if (rawMessage == null) {
+				if (message.isBinary()) {
+					sobj = message.asByteArray();
+				} else {
+					sobj = message.asString();
+				}
 			} else {
-				try {
-					sobj = new MessageWrapper(rawMessage, getListener());
-				} catch (ListenerException e) {
-					log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
-					sobj=message;
+				if (rawMessage instanceof Serializable) {
+					sobj=(Serializable)rawMessage;
+				} else {
+					try {
+						sobj = new MessageWrapper(rawMessage, getListener());
+					} catch (ListenerException e) {
+						log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
+						sobj=message;
+					}
 				}
 			}
 			if (errorStorage!=null) {
@@ -1131,11 +1139,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
 				numRejected.increase();
-				return new Message("");
+				return Message.nullMessage();
 			}
 			if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
 				numRejected.increase();
-				return new Message("");
+				return Message.nullMessage();
 			}
 			if (getCachedProcessResult(messageId)!=null) {
 				numRetried.increase();

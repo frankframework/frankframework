@@ -94,6 +94,10 @@ public class Message implements Serializable {
 	public Message(URL request) {
 		this((Object)request, null);
 	}
+	
+	public static Message nullMessage() {
+		return new Message((Object)null, null);
+	}
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
