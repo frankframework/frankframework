@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
  * 
- * <table align="top">
+ * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
@@ -530,7 +530,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return action;
 	}
 
-	@IbisDoc({"2", "Folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "Folder that is scanned for files when action="+ACTION_LIST+". When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -554,7 +554,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //		return force;
 //	}
 
-	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
 	public void setBase64(String base64) {
 		this.base64 = base64;
 	}
@@ -562,7 +562,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return base64;
 	}
 
-	@IbisDoc({"5", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	@IbisDoc({"5", "filename to operate on. When not set, the parameter "+PARAMETER_FILENAME+" is used. When that is not set either, the input is used", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -570,7 +570,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return filename;
 	}
 
-	@IbisDoc({"5", "destination for move, copy or rename. If not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	@IbisDoc({"5", "destination for "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+". If not set, the parameter "+PARAMETER_DESTINATION+" is used. When that is not set either, the input is used", ""})
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
@@ -579,7 +579,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-	@IbisDoc({"6", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDoc({"6", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
@@ -587,7 +587,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"7", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
@@ -595,7 +595,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateSize;
 	}
 
-	@IbisDoc({"8", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}
