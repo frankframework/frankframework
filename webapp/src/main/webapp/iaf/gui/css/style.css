@@ -1661,6 +1661,20 @@ table.dataTable thead .sorting_desc_disabled {
 .dataTables_filter label {
   margin-right: 5px;
 }
+td.storageActions {
+  min-width: 120px !important;
+  height: 100px;
+}
+td.storageActions > div.icheckbox_square-green {
+  margin: 38px 6px 0 0;
+}
+td.storageActions > div {
+  float: left;
+}
+td.storageActions a, .storageActions button {
+  float: left;
+  clear: both;
+}
 .html5buttons {
   float: right;
 }
