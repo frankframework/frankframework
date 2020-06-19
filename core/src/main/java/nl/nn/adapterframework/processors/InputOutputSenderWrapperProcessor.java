@@ -52,6 +52,13 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 		}
 		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
+			if (!senderWrapperBase.isPreserveInput()) {
+				try {
+					message.preserve();
+				} catch (IOException e) {
+					throw new SenderException("Could not preserve result",e);
+				}
+			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
 			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
 		}
