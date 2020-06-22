@@ -148,14 +148,14 @@ public class ClassUtils {
 						try {
 							url = new URL(Misc.replace(resource, " ", "%20"));
 						} catch(MalformedURLException e) {
-							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] and not as URL [" + resource + "]: "+e.getMessage());
+							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader.getClass().getName()+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
-					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
+					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader.getClass().getName()+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
 				} else {
-					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
+					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader.getClass().getName()+"], with protocol ["+protocol+"], no allowedProtocols");
 				}
 			} else {
-				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
+				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader.getClass().getName()+"] and no protocol to try as URL");
 			}
 		}
 
