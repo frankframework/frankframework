@@ -165,7 +165,7 @@ public class TransformerPool {
 		this.xsltVersion=xsltVersion;
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
 		classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
-		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"]classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
 		tFactory.setURIResolver(classLoaderURIResolver);
 		initTransformerPool(source, sysId);
 

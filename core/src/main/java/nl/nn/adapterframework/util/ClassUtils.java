@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 
 /**
  * A collection of class management utility methods.
@@ -163,15 +162,22 @@ public class ClassUtils {
 		return url;
 	}
 
+	/**
+	 * If the classLoader is derivable of IConfigurationClassLoader return the name, 
+	 * else return the className of the object, without the package name.
+	 */
 	public static String getClassLoaderName(ClassLoader classLoader) {
-		if(classLoader instanceof IConfigurationClassLoader) {
-			return getClassLoaderName((IConfigurationClassLoader) classLoader);
+		if(classLoader instanceof ClassLoaderBase) {
+			return getClassLoaderName((ClassLoaderBase) classLoader);
 		} else {
 			return nameOf(classLoader);
 		}
 	}
 
-	public static String getClassLoaderName(IConfigurationClassLoader classLoader) {
+	/**
+	 * Return the className and configurationName of the ClassLoader
+	 */
+	public static String getClassLoaderName(ClassLoaderBase classLoader) {
 		return classLoader.toString();
 	}
 

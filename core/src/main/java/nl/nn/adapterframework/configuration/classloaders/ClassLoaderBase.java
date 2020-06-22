@@ -257,7 +257,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public String toString() {
-		if(StringUtils.isEmpty(getConfigurationName())) {
+		if(StringUtils.isEmpty(getConfigurationName())) { //Avoid NPE's when not yet initialised
 			return super.toString();
 		}
 
