@@ -505,15 +505,21 @@ public class TransactionalStorage extends Base {
 		}
 
 		String msg = null;
-		if(rawmsg instanceof MessageWrapper) {
-			MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-			msg = msgsgs.getText();
-		} else {
-			try {
-				msg = listener.getStringFromRawMessage(rawmsg, null);
-			} catch (Exception e) {
-				log.warn("Exception reading value raw message", e);
-				msg = (String) rawmsg;
+		if (rawmsg != null) {
+			if(rawmsg instanceof MessageWrapper) {
+				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+				msg = msgsgs.getText();
+			} else {
+				try {
+					if (listener!=null) {
+						msg = listener.getStringFromRawMessage(rawmsg, null);
+					} 
+				} catch (Exception e) {
+					log.warn("Exception reading value raw message", e);
+				}
+				if (StringUtils.isEmpty(msg)) {
+					msg = (String) rawmsg;
+				}
 			}
 		}
 		if (StringUtils.isEmpty(msg)) {
