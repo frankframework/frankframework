@@ -435,7 +435,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return this.name;
 	}
 
-	@IbisDoc({"controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
+	@IbisDoc({"2", "controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
 	}
@@ -561,25 +561,25 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return namespaceAware;
 	}
 
-	@IbisDoc({"Defines transaction and isolation behaviour."
+	@IbisDoc({"3", "Defines transaction and isolation behaviour."
 			+ "For developers: it is equal"
-	        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
-	        + "Possible values are:"
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
+			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
+			+ "Possible values are:"
+			+ "  <table border=\"1\">"
+			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
+			+ "  </table>", "Supports"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -591,16 +591,16 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td></tr>"
-    	    + "</table>", "1"})
+	@IbisDoc({"4", "Like <code>transactionAttribute</code>, but the chosen "
+			+ "option is represented with a number. The numbers mean:"
+			+ "<table>"
+			+ "<tr><td>0</td><td>Required</td></tr>"
+			+ "<tr><td>1</td><td>Supports</td></tr>"
+			+ "<tr><td>2</td><td>Mandatory</td></tr>"
+			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
+			+ "<tr><td>4</td><td>NotSupported</td></tr>"
+			+ "<tr><td>5</td><td>Never</td></tr>"
+			+ "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
@@ -609,7 +609,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
+	@IbisDoc({"5", "timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -676,7 +676,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
-
 	public String getHideRegex() {
 		return hideRegex;
 	}

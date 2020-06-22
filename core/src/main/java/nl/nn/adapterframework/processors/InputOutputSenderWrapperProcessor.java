@@ -43,7 +43,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		if (senderWrapperBase.isPreserveInput() && message==senderInput) {
+		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
 			try {
 				message.preserve();
 			} catch (IOException e) {
