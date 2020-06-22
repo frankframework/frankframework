@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.cache;
 
+import java.io.IOException;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -141,91 +144,85 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	}
 
 	@Override
-	protected V stringToValue(String value) {
-		return (V)value;
+	protected V toValue(Message value) {
+		try {
+			return (V)value.asString();
+		} catch (IOException e) {
+			log.warn("Could not perform toValue() by asString()", e);
+			return null;
+		}
 	}
 
-
+	@IbisDoc({"1", "The maximum number of elements in memory, before they are evicted", "100"})
+	public void setMaxElementsInMemory(int maxElementsInMemory) {
+		this.maxElementsInMemory = maxElementsInMemory;
+	}
 	public int getMaxElementsInMemory() {
 		return maxElementsInMemory;
 	}
 
-	@IbisDoc({"the maximum number of elements in memory, before they are evicted", "100"})
-	public void setMaxElementsInMemory(int maxElementsInMemory) {
-		this.maxElementsInMemory = maxElementsInMemory;
+	@IbisDoc({"2", "Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out", "LRU"})
+	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
+		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}
-
 	public String getMemoryStoreEvictionPolicy() {
 		return memoryStoreEvictionPolicy;
 	}
 
-	@IbisDoc({"either <code>lru</code>=leastrecentuse,<code>lfu</code>=leastfrequentuse or <code>fifo</code>=firstinfirstout", "lru"})
-	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
-		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
+	@IbisDoc({"3", "If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "<code>false</code>"})
+	public void setEternal(boolean eternal) {
+		this.eternal = eternal;
 	}
-
 	public boolean isEternal() {
 		return eternal;
 	}
 
-	@IbisDoc({"if <code>true</code>, the elements in the cache are eternal, i.e. never expire", "<code>false</code>"})
-	public void setEternal(boolean eternal) {
-		this.eternal = eternal;
+	@IbisDoc({"4", "The amount of time to live for an element from its creation date", "36000 (=10 hours)"})
+	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
+		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
-
 	public int getTimeToLiveSeconds() {
 		return timeToLiveSeconds;
 	}
 
-	@IbisDoc({"the amount of time to live for an element from its creation date", "36000 (=10 hours)"})
-	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
-		this.timeToLiveSeconds = timeToLiveSeconds;
+	@IbisDoc({"5", "The amount of time to live for an element from its last accessed or modified date", "36000 (=10 hours)"})
+	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
+		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
-
 	public int getTimeToIdleSeconds() {
 		return timeToIdleSeconds;
 	}
 
-	@IbisDoc({"the amount of time to live for an element from its last accessed or modified date", "36000 (=10 hours)"})
-	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
-		this.timeToIdleSeconds = timeToIdleSeconds;
+	@IbisDoc({"6", "If <code>true</code>, the elements that are evicted from memory are spooled to disk", "<code>false</code>"})
+	public void setOverflowToDisk(boolean overflowToDisk) {
+		this.overflowToDisk = overflowToDisk;
 	}
-
 	public boolean isOverflowToDisk() {
 		return overflowToDisk;
 	}
 
-	@IbisDoc({"if <code>true</code>, the elements that are evicted from memory are spooled to disk", "<code>false</code>"})
-	public void setOverflowToDisk(boolean overflowToDisk) {
-		this.overflowToDisk = overflowToDisk;
+	@IbisDoc({"7", "The maximum number of elements on disk, before they are removed", "10000"})
+	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
+		this.maxElementsOnDisk = maxElementsOnDisk;
 	}
-
 	public int getMaxElementsOnDisk() {
 		return maxElementsOnDisk;
 	}
 
-	@IbisDoc({"the maximum number of elements on disk, before they are removed", "10000"})
-	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
-		this.maxElementsOnDisk = maxElementsOnDisk;
+	@IbisDoc({"8", "If <code>true</code>, the the cache is reloaded after the JVM restarts", "<code>false</code>"})
+	public void setDiskPersistent(boolean diskPersistent) {
+		this.diskPersistent = diskPersistent;
 	}
-
 	public boolean isDiskPersistent() {
 		return diskPersistent;
 	}
 
-	@IbisDoc({"if <code>true</code>, the the cache is reloaded after the jvm restarts", "<code>false</code>"})
-	public void setDiskPersistent(boolean diskPersistent) {
-		this.diskPersistent = diskPersistent;
+	@IbisDoc({"9", "How often to run the disk store expiry thread", "600"})
+	public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
+		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}
-
 	public int getDiskExpiryThreadIntervalSeconds() {
 		return diskExpiryThreadIntervalSeconds;
-	}
-
-	@IbisDoc({"how often to run the disk store expiry thread", "600"})
-	public void setDiskExpiryThreadIntervalSeconds(
-			int diskExpiryThreadIntervalSeconds) {
-		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}
 
 }

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.errormessageformatters;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 /**
@@ -32,7 +33,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	    String message,
 	    Throwable t,
 	    INamedObject location,
-	    String originalMessage,
+	    Message originalMessage,
 	    String messageId,
 	    long receivedTime) {
 		String result= "<ServiceResponse>\n" +

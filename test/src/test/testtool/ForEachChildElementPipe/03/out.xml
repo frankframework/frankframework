@@ -1,0 +1,64 @@
+<throwable>
+	<class>nl.nn.adapterframework.core.SenderException</class>
+	<message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+	<cause>
+		<throwable>
+			<class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+			<message>RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception</message>
+			<cause>
+				<throwable>
+					<class>nl.nn.adapterframework.core.ListenerException</class>
+					<message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+					<cause>
+						<throwable>
+							<class>nl.nn.adapterframework.core.PipeRunException</class>
+							<message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+							<cause>
+								<throwable>
+									<class>nl.nn.adapterframework.core.SenderException</class>
+									<message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+									<cause>
+										<throwable>
+											<class>nl.nn.adapterframework.xml.SaxException</class>
+											<message>Could not process list of elements using xpath [requests/request]</message>
+											<cause>
+												<throwable>
+													<class>javax.xml.transform.TransformerException</class>
+													<message>nl.nn.adapterframework.xml.SaxException: IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+													<cause>
+														<throwable>
+															<class>nl.nn.adapterframework.xml.SaxException</class>
+															<message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+															<cause>
+																<throwable>
+																	<class>nl.nn.adapterframework.core.SenderException</class>
+																	<message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+																	<cause>
+																		<throwable>
+																			<class>nl.nn.adapterframework.core.ListenerException</class>
+																			<message>Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+																			<cause>
+																				<throwable>
+																					<class>nl.nn.adapterframework.core.PipeRunException</class>
+																					<message>Pipe [switch] msgId [Test Tool correlation id] cannot find forward or pipe named [notFound]</message>
+																				</throwable>
+																			</cause>
+																		</throwable>
+																	</cause>
+																</throwable>
+															</cause>
+														</throwable>
+													</cause>
+												</throwable>
+											</cause>
+										</throwable>
+									</cause>
+								</throwable>
+							</cause>
+						</throwable>
+					</cause>
+				</throwable>
+			</cause>
+		</throwable>
+	</cause>
+</throwable>

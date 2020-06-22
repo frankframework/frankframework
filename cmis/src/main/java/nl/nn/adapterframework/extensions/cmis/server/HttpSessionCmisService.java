@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger log = LogUtil.getLogger(this);
-	public static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>();
 
 	/** Key in the HTTP session. **/
 	public static final String CMIS_BINDING = "org.apache.chemistry.opencmis.bridge.binding";
@@ -55,7 +54,6 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	public HttpSessionCmisService(CallContext context) {
 		setCallContext(context);
-		callContext.set(context);
 	}
 
 	@Override
@@ -160,21 +158,21 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	@Override
 	public ObjectService getObjectService() {
-		return new IbisObjectService(super.getObjectService());
+		return new IbisObjectService(super.getObjectService(), getCallContext());
 	}
 
 	@Override
 	public RepositoryService getRepositoryService() {
-		return new IbisRepositoryService(super.getRepositoryService());
+		return new IbisRepositoryService(super.getRepositoryService(), getCallContext());
 	}
 
 	@Override
 	public DiscoveryService getDiscoveryService() {
-		return new IbisDiscoveryService(super.getDiscoveryService());
+		return new IbisDiscoveryService(super.getDiscoveryService(), getCallContext());
 	}
 
 	@Override
 	public NavigationService getNavigationService() {
-		return new IbisNavigationService(super.getNavigationService());
+		return new IbisNavigationService(super.getNavigationService(), getCallContext());
 	}
 }

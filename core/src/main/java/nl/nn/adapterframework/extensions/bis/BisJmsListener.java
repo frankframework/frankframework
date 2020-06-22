@@ -21,17 +21,18 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
@@ -204,32 +205,29 @@ public class BisJmsListener extends JmsListener {
 	}
 
 	@Override
-	public String prepareReply(String rawReply, Map<String,Object> threadContext) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String,Object> threadContext) throws ListenerException {
 		String originalMessageText = (String) threadContext.get(MESSAGETEXT_KEY);
 		String messageBodyNamespace = (String) threadContext.get(MESSAGEBODYNAMESPACE_KEY);
-		if (isLayByNamespace() && messageBodyNamespace != null) {
-			rawReply = XmlUtils.addRootNamespace(rawReply, messageBodyNamespace);
-		}
-		String errorCode = null;
-		if (StringUtils.isNotEmpty(getErrorCodeSessionKey())) {
-			errorCode = (String) threadContext.get(getErrorCodeSessionKey());
-		}
-		String messageHeader;
-		String payload;
-		String result;
 		try {
-			messageHeader = bisUtils.prepareMessageHeader(originalMessageText, isMessageHeaderInSoapBody());
+			if (isLayByNamespace() && messageBodyNamespace != null) {
+				rawReply = new Message(XmlUtils.addRootNamespace(rawReply.asString(), messageBodyNamespace));
+			}
+			String errorCode = null;
+			if (StringUtils.isNotEmpty(getErrorCodeSessionKey())) {
+				errorCode = (String) threadContext.get(getErrorCodeSessionKey());
+			}
+			String result;
+			String messageHeader = bisUtils.prepareMessageHeader(originalMessageText, isMessageHeaderInSoapBody());
 			if (isOmitResult()) {
 				result = null;
 			} else {
 				result = prepareResult(errorCode, threadContext);
 			}
-			payload = bisUtils.prepareReply(rawReply, isMessageHeaderInSoapBody() ? messageHeader : null, result, isResultInPayload());
-
+			Message payload = bisUtils.prepareReply(rawReply, isMessageHeaderInSoapBody() ? messageHeader : null, result, isResultInPayload());
+			return super.prepareReply(payload, threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
-		return super.prepareReply(payload, threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 	}
 
 	public String prepareResult(String errorCode, Map<String,Object> threadContext) throws DomBuilderException, IOException, TransformerException {

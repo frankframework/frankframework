@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
@@ -38,9 +39,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -114,8 +114,9 @@ public class ConfigurationDigester {
 		}
 	}
 
-	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException, ConfigurationException {
-		Digester digester = new Digester() {
+	public Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
+		XMLReader reader = XmlUtils.getXMLReader(configuration);
+		Digester digester = new Digester(reader) {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {

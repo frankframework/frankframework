@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -114,9 +115,9 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 
 	@Override
-	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
-			return super.getStringFromRawMessage(rawMessage, threadContext);
+			return super.extractMessage(rawMessage, threadContext);
 		}
 		Item item = (Item) rawMessage;
 		try {
@@ -142,7 +143,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
 			}
 
-			return emailXml.toXML();
+			return new Message(emailXml.toXML());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

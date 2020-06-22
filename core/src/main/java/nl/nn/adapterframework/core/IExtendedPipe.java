@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,66 +50,64 @@ public interface IExtendedPipe extends IPipe {
 	 */
 	public boolean isActive();
 
-	/**
-	 * Sets a threshold for the duration of message execution; 
-	 * If the threshold is exceeded, the message is logged to be analyzed.
-	 */
-	@IbisDoc({"if durationthreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory", "-1"})
-	public void setDurationThreshold(long maxDuration) ;
-	public long getDurationThreshold();
-
-
-
-	@IbisDoc({"when set, input is taken from this session key, instead of regular input", ""})
+	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
 	public void setGetInputFromSessionKey(String string);
 	public String getGetInputFromSessionKey();
 
-	@IbisDoc({"when set, the result is stored under this session key", ""})
-	public void setStoreResultInSessionKey(String string);
-	public String getStoreResultInSessionKey();
-
-	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", ""})
+	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
 	public void setGetInputFromFixedValue(String string);
 	public String getGetInputFromFixedValue();
 
-	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	@IbisDoc({"3", "If set and the input is empty, this fixed value is taken as input", ""})
+	public void setEmptyInputReplacement(String string);
+	public String getEmptyInputReplacement();
+
+	@IbisDoc({"4", "If set <code>true</code>, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of <code>getInputFromSessionKey</code>, <code>getInputFromFixedValue</code> or <code>emptyInputReplacement</code>)", "false"})
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
 
-	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
+	@IbisDoc({"5", "If set, the result (before replacing when <code>true</code>) is stored under this session key", ""})
+	public void setStoreResultInSessionKey(String string);
+	public String getStoreResultInSessionKey();
+
+	@IbisDoc({"6", "If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
 	public void setChompCharSize(String string);
 	public String getChompCharSize();
 
-	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
+	@IbisDoc({"7", "If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + }", ""})
 	public void setElementToMove(String string);
 	public String getElementToMove();
 
-	@IbisDoc({"(only used when <code>elementtomove</code> is set) name of the session key under which the character data is stored", "ref_ + the name of the elemen"})
+	@IbisDoc({"8", "(Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored", "ref_ + the name of the element"})
 	public void setElementToMoveSessionKey(String string);
 	public String getElementToMoveSessionKey();
 
-	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
+	@IbisDoc({"9", "Like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe')", ""})
 	public void setElementToMoveChain(String string);
 	public String getElementToMoveChain();
 
 	public void setRemoveCompactMsgNamespaces(boolean b);
 	public boolean isRemoveCompactMsgNamespaces();
 	
-	@IbisDoc({"when set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})", "false"})
+	@IbisDoc({"", "If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)})", "false"})
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
+
+	/**
+	 * Sets a threshold for the duration of message execution; 
+	 * If the threshold is exceeded, the message is logged to be analyzed.
+	 */
+	@IbisDoc({"", "If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory", "-1"})
+	public void setDurationThreshold(long maxDuration) ;
+	public long getDurationThreshold();
 
 	public void setLocker(Locker locker);
 	public Locker getLocker();
 
-	@IbisDoc({"when set and the input is empty, this fixed value is taken as input", ""})
-	public void setEmptyInputReplacement(String string);
-	public String getEmptyInputReplacement();
-
 	public void setWriteToSecLog(boolean b);
 	public boolean isWriteToSecLog();
 
-	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", ""})
+	@IbisDoc({"", "(Only used when <code>writetoseclog=true</code>) Comma separated list of keys of session variables that is appended to the security log record", ""})
 	public void setSecLogSessionKeys(String string);
 	public String getSecLogSessionKeys();
 

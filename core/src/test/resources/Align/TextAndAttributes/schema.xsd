@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:test" targetNamespace="urn:test" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!--# fix for local errors added schemalocation for messageheader #	-->
+	<xsd:element name="Root">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="MetaData" minOccurs="0"/>
+				<xsd:element ref="intLabel" minOccurs="0"/>
+				<xsd:element ref="location" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="MetaData">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="label" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:simpleContent>
+							<xsd:extension base="xsd:string">
+								<xsd:attribute name="name" type="xsd:string" use="required"/>
+							</xsd:extension>
+						</xsd:simpleContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="intLabel" >
+		<xsd:complexType>
+			<xsd:simpleContent>
+				<xsd:extension base="xsd:integer">
+					<xsd:attribute name="id" type="xsd:string" use="required"/>
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="location" >
+		<xsd:complexType mixed="true">
+			<xsd:attribute name="x" type="xsd:integer" use="required"/>
+			<xsd:attribute name="y" type="xsd:integer" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

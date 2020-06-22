@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019, 2020 Nationale-Nederlanden
+   Copyright 2013-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
@@ -325,7 +326,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public synchronized String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
+	public synchronized String formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
@@ -340,7 +341,7 @@ public class Adapter implements IAdapter, NamedBean {
 				receivedTime);
 
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage;
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(new Message(formattedErrorMessage)) : formattedErrorMessage;
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Adapter [%s] messageId [%s] formatted errormessage, result [%s]", getName(), messageID, resultOrSize));
 			}
 
@@ -576,7 +577,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession) {
+	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
@@ -596,12 +597,12 @@ public class Adapter implements IAdapter, NamedBean {
 					objectInError = this;
 				}
 			}
-			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			result.setResult(new Message(formatErrorMessage(msg, t, message, messageId, objectInError, startTime)));
 			//if (isRequestReplyLogging()) {
 
 			String format = "Adapter [%s] messageId [%s] got exit-state [%s] and result [%s] from PipeLine";
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult();
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.getResult().toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageId, result.getState(), resultOrSize));
 			}
 			if (log.isDebugEnabled()) {
@@ -612,7 +613,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 
@@ -657,7 +658,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 			String format = "Adapter [%s] received message [%s] with messageId [%s]";
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message;
+				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
 			}
 			if (log.isDebugEnabled()) { 
@@ -666,9 +667,9 @@ public class Adapter implements IAdapter, NamedBean {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
 			}
 
-			if (message == null && isReplaceNullMessage()) {
+			if ((message == null || message.isEmpty()) && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
-				message = "";
+				message = new Message("");
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 
@@ -681,7 +682,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 			String format2 = "Adapter [%s] messageId [%s] duration [%s] got exit-state [%s] and result [%s] from PipeLine";
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.toString()) : result.toString();
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(result.getResult()) : result.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format2, getName(), messageId, duration, result.getState(), resultOrSize));
 			}
 			if (log.isDebugEnabled()) {
@@ -986,8 +987,17 @@ public class Adapter implements IAdapter, NamedBean {
 		return sb.toString();
 	}
 
-	private String getFileSizeAsBytes(String string) {
-		return string==null?"null": Misc.toFileSize(string.getBytes().length, false, true);
+	private String getFileSizeAsBytes(Message message) {
+		if (message==null || message.isEmpty()) {
+			return null;
+		}
+		if (message.asObject() instanceof String) {
+			return Misc.toFileSize(((String)message.asObject()).length());
+		}
+		if (message.asObject() instanceof byte[]) {
+			return Misc.toFileSize(((byte[])message.asObject()).length);
+		}
+		return "unknown";
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,25 +16,14 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
@@ -100,43 +89,16 @@ public class Properties2Xml extends Map2Xml<String,String,Map<String,String>> {
 	}
 
 	public static String translate(Map<String,String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException, IOException {
-
-		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
-		// create the XSModel
-		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
-		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
-		schemaInformation.add(xsModel);
+		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
+		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
 		// create the validator, setup the chain
 		Properties2Xml p2x = new Properties2Xml(validatorHandler,schemaInformation,rootElement);
 		if (targetNamespace!=null) {
 			p2x.setTargetNamespace(targetNamespace);
 		}
-    	Source source=p2x.asSource(data);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        String xml=null;
-		try {
-	        TransformerFactory tf = TransformerFactory.newInstance();
-	        Transformer transformer = tf.newTransformer();
-	        transformer.transform(source, result);
-	        writer.flush();
-	        xml = writer.toString();
-		} catch (TransformerConfigurationException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		} catch (TransformerException e) {
-			SAXException se = new SAXException(e);
-			se.initCause(e);
-			throw se;
-		}
-    	return xml;
+		
+		return p2x.translate(data);
  	}
 
 

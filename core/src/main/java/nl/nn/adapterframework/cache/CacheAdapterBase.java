@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -77,7 +78,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	protected abstract V getElement(String key);
 	protected abstract void putElement(String key, V value);
 	protected abstract boolean removeElement(Object key);
-	protected abstract V stringToValue(String value);
+	protected abstract V toValue(Message value);
 
 	@Override
 	public String transformKey(String input, IPipeLineSession session) {
@@ -102,26 +103,26 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	}
 
 	@Override
-	public V transformValue(String value, IPipeLineSession session) {
+	public V transformValue(Message value, IPipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
-			value=(String)session.get(getValueInputSessionKey());
+			value=Message.asMessage(session.get(getValueInputSessionKey()));
 		}
 		if (valueTp!=null) {
 			try{
-				value=valueTp.transform(value, null);
+				value=new Message(valueTp.transform(value, null));
 			} catch (Exception e) {
 				log.error(getLogPrefix() + "transformValue() cannot transform cache value [" + value + "], will not cache", e);
 				return null;
 			}
 		}
-		if (StringUtils.isEmpty(value)) {
+		if (value.isEmpty()) {
 			log.debug("determined empty cache value");
 			if (isCacheEmptyValues()) {
-				return stringToValue("");
+				return toValue(new Message(""));
 			}
 			return null;
 		}
-		return stringToValue(value);
+		return toValue(value);
 	}
 
 	@Override

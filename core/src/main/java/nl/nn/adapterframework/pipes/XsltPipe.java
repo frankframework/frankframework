@@ -95,7 +95,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		}
 		super.stop();
 	}
+
 	
+	@Override
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
@@ -103,24 +109,25 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		}
 		try {
 			IForwardTarget nextPipe;
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				nextPipe=null;
-				input.preserve();
-			} else {
+			if (canStreamToNextPipe()) {
 				nextPipe = getNextPipe();
+			} else {
+				nextPipe=null;
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					input.preserve();
+				}
 			}
 			PipeRunResult prr = sender.sendMessage(input, session, nextPipe);
 			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
-			if (forward==null) {
+			if (nextPipe==null || forward.getPath()==null) {
 				forward=getForward();
 			}
-			
-			if (StringUtils.isEmpty(getSessionKey())) {
-				return new PipeRunResult(forward, result);
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				session.put(getSessionKey(), result.asString());
+				return new PipeRunResult(forward, input);
 			}
-			session.put(getSessionKey(), result.asString());
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(forward, result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
 		}
