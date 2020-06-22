@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -241,8 +240,8 @@ public class ClassLoaderManager {
 		if (classLoader == null)
 			throw new ConfigurationException("classloader cannot be null");
 
-		if (classLoader instanceof ReloadAware) {
-			((ReloadAware)classLoader).reload();
+		if (classLoader instanceof IConfigurationClassLoader) {
+			((IConfigurationClassLoader)classLoader).reload();
 		} else {
 			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
 		}

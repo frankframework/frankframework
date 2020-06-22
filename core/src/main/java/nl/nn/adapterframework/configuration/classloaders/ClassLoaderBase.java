@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author Niels Meijer
  *
  */
-public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader, ReloadAware {
+public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
 
 	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
@@ -235,7 +235,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		String path = name.replace(".", "/")+".class";
 		URL url = null;
 		if(allowCustomClasses) {
+			if(log.isTraceEnabled()) log.trace(String.format("attempting to load custom class [%s] path [%s]", name, path));
+
 			url = getResource(path);
+			if(url != null && log.isDebugEnabled()) log.debug(String.format("loading custom class url [%s] from classloader [%s]", url, this.toString()));
 		} else {
 			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
 		}
@@ -269,9 +272,12 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public void reload() throws ConfigurationException {
 		log.debug("reloading configuration ["+getConfigurationName()+"]");
 
-		if (getParent() instanceof ReloadAware) {
-			((ReloadAware)getParent()).reload();
-		}
+		AppConstants.removeInstance(this);
+	}
+
+	@Override
+	public void destroy() throws ConfigurationException {
+		log.debug("removing configuration ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);
 	}
