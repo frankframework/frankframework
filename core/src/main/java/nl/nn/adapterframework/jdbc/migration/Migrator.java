@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
@@ -38,6 +39,7 @@ public class Migrator extends JdbcFacade {
 	public Migrator() {
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		configure(null, null, null);
 	}
@@ -61,7 +63,7 @@ public class Migrator extends JdbcFacade {
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
 			if(configurationName != null)
-				msg += " classLoader ["+classLoader.getClass().getName()+"]";
+				msg += " classLoader ["+ClassUtils.getClassLoaderName(classLoader)+"]";
 
 			log.debug(msg);
 		}

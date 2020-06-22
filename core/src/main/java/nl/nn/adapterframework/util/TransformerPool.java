@@ -165,7 +165,7 @@ public class TransformerPool {
 		this.xsltVersion=xsltVersion;
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
 		classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
-		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"]classloader ["+classLoader.getClass().getName()+"]");
+		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"]classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
 		tFactory.setURIResolver(classLoaderURIResolver);
 		initTransformerPool(source, sysId);
 
@@ -288,7 +288,7 @@ public class TransformerPool {
 		} 
 		return null;
 	}
-	
+
 	public static TransformerPool configureTransformer(String logPrefix, ClassLoader classLoader, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return configureTransformer0(logPrefix,classLoader,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
@@ -311,7 +311,7 @@ public class TransformerPool {
 		}
 		throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
 	}
-	
+
 	public static TransformerPool configureStyleSheetTransformer(String logPrefix, ClassLoader classLoader, String styleSheetName, int xsltVersion) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
@@ -324,9 +324,9 @@ public class TransformerPool {
 				if (styleSheet==null) {
 					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] via classLoader ["+classLoader+"]"); 
 				}
-				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"]classloader ["+classLoader.getClass().getName()+"]");
+				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
-				
+
 				if (xsltVersion!=0) {
 					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
@@ -348,7 +348,6 @@ public class TransformerPool {
 		return result;
 	}
 
-	
 	public void open() throws Exception {
 	}
 	

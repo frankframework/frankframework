@@ -73,7 +73,7 @@ public final class AppConstants extends Properties implements Serializable {
 		putAll(additionalProperties);
 
 		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
-			log.info("created new AppConstants instance for classloader ["+classLoader.getClass().getName()+"]");
+			log.info("created new AppConstants instance for classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
 		}
 		else {
 			log.info("created new AppConstants instance for root classloader");
