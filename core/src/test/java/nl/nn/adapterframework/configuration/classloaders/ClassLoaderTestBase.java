@@ -254,4 +254,12 @@ public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Moc
 		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.getPath().endsWith(file));
 	}
+
+	@Test
+	public void toStringTest() throws Exception {
+		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
+
+		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
+		assertEquals(logPrefix+"["+getConfigurationName()+"]", classLoader.toString());
+	}
 }

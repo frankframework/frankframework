@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -256,19 +257,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public String toString() {
-		if(StringUtils.isEmpty(getConfigurationName())) { //Avoid NPE's when not yet initialised
-			return super.toString();
-		}
-
-		if(logPrefix==null) {
-			String superString = super.toString();
-			logPrefix = superString.substring(superString.lastIndexOf(".")+1)+"["+getConfigurationName()+"]";
-		}
-		return logPrefix;
-	}
-
-	@Override
 	public void reload() throws ConfigurationException {
 		log.debug("reloading configuration ["+getConfigurationName()+"]");
 
@@ -280,5 +268,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		log.debug("removing configuration ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);
+	}
+
+	@Override
+	public String toString() {
+		return ClassUtils.getClassLoaderName(this);
 	}
 }

@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 
 /**
  * A collection of class management utility methods.
@@ -163,22 +164,18 @@ public class ClassUtils {
 	}
 
 	/**
-	 * If the classLoader is derivable of IConfigurationClassLoader return the name, 
-	 * else return the className of the object, without the package name.
+	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName, 
+	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
 	 */
 	public static String getClassLoaderName(ClassLoader classLoader) {
-		if(classLoader instanceof ClassLoaderBase) {
-			return getClassLoaderName((ClassLoaderBase) classLoader);
-		} else {
-			return nameOf(classLoader);
+		String logPrefix = nameOf(classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
+		if(classLoader instanceof IConfigurationClassLoader) {
+			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
+			if(StringUtils.isNotEmpty(configurationName)) {
+				logPrefix += "["+configurationName+"]";
+			}
 		}
-	}
-
-	/**
-	 * Return the className and configurationName of the ClassLoader
-	 */
-	public static String getClassLoaderName(ClassLoaderBase classLoader) {
-		return classLoader.toString();
+		return logPrefix;
 	}
 
 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
