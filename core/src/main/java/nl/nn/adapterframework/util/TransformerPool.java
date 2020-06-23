@@ -374,8 +374,6 @@ public class TransformerPool {
 			pool.clear();
 			clearTransformerPools();
 			pool.close();
-			classLoaderURIResolver = null;
-			tFactory = null;
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
