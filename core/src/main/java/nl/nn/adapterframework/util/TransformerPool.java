@@ -164,27 +164,33 @@ public class TransformerPool {
 		}
 		this.xsltVersion=xsltVersion;
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
-		classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
-		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
-		tFactory.setURIResolver(classLoaderURIResolver);
+		if(classLoader != null) {
+			classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
+			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+			tFactory.setURIResolver(classLoaderURIResolver);
+		}
 		initTransformerPool(source, sysId);
 
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
 		
 		releaseTransformer(t);
-	}	
+	}
 
 
 	private TransformerPool(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
 		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource.getClassLoader());
 	}
-	
+
+	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)),Thread.currentThread().getContextClassLoader());
+		this(xsltString, sysId, xsltVersion, Thread.currentThread().getContextClassLoader());
 	}
-	
-	
+
+	private TransformerPool(String xsltString, String sysId, int xsltVersion, ClassLoader classLoader) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), classLoader);
+	}
+
 	public static TransformerPool getInstance(String xsltString) throws TransformerConfigurationException {
 		return getInstance(xsltString, 0);
 	}
@@ -203,6 +209,14 @@ public class TransformerPool {
 		} else {
 			return new TransformerPool(xsltString, sysId, xsltVersion);
 		}
+	}
+
+	/**
+	 * Special utility method to create a new TransformerPool without a ClassLoader.
+	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
+	 */
+	public static TransformerPool getUtilityInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
+		return new TransformerPool(xsltString, null, xsltVersion, null);
 	}
 
 	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
@@ -350,15 +364,23 @@ public class TransformerPool {
 
 	public void open() throws Exception {
 	}
-	
+
+	/**
+	 * Closing the Pool doesn't automatically mean all references remaining in the pool will be terminated.
+	 * After closing, manually releases any associated resources in the pool
+	 */
 	public void close() {
 		try {
-			pool.clear();			
+			pool.clear();
+			clearTransformerPools();
+			pool.close();
+			classLoaderURIResolver = null;
+			tFactory = null;
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
 	}
-	
+
 	protected Transformer getTransformer() throws TransformerConfigurationException {
 		try {
 			reloadTransformerPool();
@@ -367,7 +389,7 @@ public class TransformerPool {
 			throw new TransformerConfigurationException(e);
 		}
 	}
-	
+
 	protected void releaseTransformer(Transformer t) throws TransformerConfigurationException {
 		try {
 			pool.returnObject(t);

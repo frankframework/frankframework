@@ -189,7 +189,7 @@ public class XmlUtils {
 		TransformerPool result = utilityTPs.get(fullKey);
 		if (result==null) {
 			try {
-				TransformerPool newtp=TransformerPool.getInstance(xslt, xsltVersion);
+				TransformerPool newtp=TransformerPool.getUtilityInstance(xslt, xsltVersion);
 				result=utilityTPs.put(fullKey, newtp);
 				if (result==null) {
 					result=newtp;
