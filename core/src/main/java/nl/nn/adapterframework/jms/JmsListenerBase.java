@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,9 +24,10 @@ import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
@@ -38,10 +40,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -151,7 +152,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TextMessage message = null;
 		try {
 			message = (TextMessage) rawMessage;
@@ -163,7 +164,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 	
 	
-	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
+	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
 		String mode = "unknown";
 		String id = "unset";
@@ -250,29 +251,33 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			return getStringFromRawMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(),soapWrapper);
+			return extractMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
-	public String prepareReply(String rawReply, Map<String,Object> threadContext) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String,Object> threadContext) throws ListenerException {
 		return prepareReply(rawReply, threadContext, null);
 	}
 
-	public String prepareReply(String rawReply, Map<String,Object> threadContext, String soapHeader) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String,Object> threadContext, String soapHeader) throws ListenerException {
 		if (!isSoap()) {
 			return rawReply;
 		}
-		String replyMessage;
+		Message replyMessage;
 		if (soapHeader==null) {
 			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 				soapHeader=(String)threadContext.get(getSoapHeaderSessionKey());
 			}
 		}
-		replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
+		try {
+			replyMessage = new Message(soapWrapper.putInEnvelope(rawReply.asString(), getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader));
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert message",e);
+		}
 		if (log.isDebugEnabled()) log.debug("wrapped message [" + replyMessage + "]");
 		return replyMessage;
 	}

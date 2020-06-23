@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database Listener that operates on a table.
@@ -166,8 +167,8 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		return (String) rawMessage;
+	public Message extractMessage(Object rawMessage, Map context) throws ListenerException {
+		return Message.asMessage(rawMessage);
 	}
 
 	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {

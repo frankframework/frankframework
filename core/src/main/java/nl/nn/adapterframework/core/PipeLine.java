@@ -144,7 +144,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	private boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
-	private String transformNullMessage = null;
+	private Message transformNullMessage = null;
 	private String adapterToRunBeforeOnEmptyInput = null;
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
@@ -529,11 +529,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
-		if (transformNullMessage != null && message == null) {
+	public PipeLineResult process(String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
-		return pipeLineProcessor.processPipeLine(this, messageId, new Message(message), pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
 
 	/**
@@ -858,10 +858,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	@IbisDoc({"when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
 	public void setTransformNullMessage(String s) {
-		transformNullMessage = s;
-	}
-	public String getTransformNullMessage() {
-		return transformNullMessage;
+		transformNullMessage = new Message(s);
 	}
 
 	public StatisticsKeeper getRequestSizeStats() {

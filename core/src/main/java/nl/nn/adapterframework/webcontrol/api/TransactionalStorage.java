@@ -499,12 +499,16 @@ public class TransactionalStorage extends Base {
 		String msg = null;
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
-				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-				msg = msgsgs.getText();
+				try {
+					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					msg = msgsgs.getMessage().asString();
+				} catch (IOException e) {
+					throw new ApiException(e, 500);
+				}
 			} else {
 				try {
 					if (listener!=null) {
-						msg = listener.getStringFromRawMessage(rawmsg, null);
+						msg = listener.extractMessage(rawmsg, null).asString();
 					} 
 				} catch (Exception e) {
 					log.warn("Exception reading value raw message", e);
@@ -741,7 +745,7 @@ public class TransactionalStorage extends Base {
 				Object rawmsg = storage.browseMessage(iterItem.getId());
 				String msg = null;
 				if (listener != null) {
-					msg = listener.getStringFromRawMessage(rawmsg, new HashMap<String, Object>());
+					msg = listener.extractMessage(rawmsg, new HashMap<String, Object>()).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}

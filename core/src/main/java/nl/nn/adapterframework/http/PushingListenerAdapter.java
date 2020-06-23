@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -25,10 +29,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -37,7 +39,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceClient {
+public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler<M> handler;
@@ -71,8 +73,8 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 		return null;
 	}
 	@Override
-	public String getStringFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
-		return (String) rawMessage;
+	public Message extractMessage(M rawMessage, Map<String, Object> threadContext) {
+		return Message.asMessage(rawMessage);
 	}
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
@@ -80,18 +82,22 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String rawMessage, Map<String, Object> requestContext) throws ListenerException {
+		Message message = extractMessage((M)rawMessage, requestContext);
 		try {
-			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
-			// serviceclient has no rawMessage, but it has no afterMessageProcessed either, therefor rawMessage can safely be null in handler.processRequest()
-			return handler.processRequest(this, correlationId, null, message, requestContext); 
+			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
+			try {
+				return handler.processRequest(this, correlationId, (M)rawMessage, message, requestContext).asString();
+			} catch (IOException e) {
+				throw new ListenerException(e);
+			} 
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
 			} 
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			return handler.formatException(null,correlationId, message,e);
+			return handler.formatException(null,correlationId, message, e);
 		}
 	}
 

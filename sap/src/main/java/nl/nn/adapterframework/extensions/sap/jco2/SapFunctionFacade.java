@@ -245,7 +245,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 
-	public String functionCall2message(JCO.Function function) {
+	public Message functionCall2message(JCO.Function function) {
 		JCO.ParameterList input = function.getImportParameterList();
 		
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
@@ -268,7 +268,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 			result+="</request>";
 		}
 
-		return result;
+		return new Message(result);
 	}
 
 	public Message functionResult2message(JCO.Function function) {

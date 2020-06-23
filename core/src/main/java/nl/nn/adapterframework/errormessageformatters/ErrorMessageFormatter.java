@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.errormessageformatters;
 
+import java.io.IOException;
 import java.util.Date;
 
 import nl.nn.adapterframework.core.IErrorMessageFormatter;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -57,7 +59,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 	
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
@@ -92,7 +94,12 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
-		originalMessageXml.setValue(originalMessage, true);
+		try {
+			originalMessageXml.setValue(originalMessage.asString(), true);
+		} catch (IOException e) {
+			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
+			originalMessageXml.setValue(originalMessage.toString(), true);
+		}
 		errorXml.addSubElement(originalMessageXml);
 
 		return errorXml.toXML();

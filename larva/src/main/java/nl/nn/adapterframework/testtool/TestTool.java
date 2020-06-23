@@ -35,7 +35,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipInputStream;
 
-import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,6 +78,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -2387,22 +2387,22 @@ public class TestTool {
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
 		while (!empty) {
-			Message rawMessage = null;
-			String message = null;
+			javax.jms.Message rawMessage = null;
+			Message message = null;
 			Map<String, Object> threadContext = null;
 			try {
 				threadContext = pullingJmsListener.openThread();
 				rawMessage = pullingJmsListener.getRawMessage(threadContext);
 				if (rawMessage != null) {
-					message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
+					message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 					remainingMessagesFound = true;
 					if (message == null) {
 						errorMessage("Could not translate raw message from jms queue '" + queueName + "'", writers);
 					} else {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message.asString(), writers);
 					}
 				}
-			} catch(ListenerException e) {
+			} catch(ListenerException | IOException e) {
 				errorMessage("ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e, writers);
 			} finally {
 				if (threadContext != null) {
@@ -2585,12 +2585,12 @@ public class TestTool {
 		Map jmsListenerInfo = (Map)queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
 		Map threadContext = null;
-		String message = null;
+		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			javax.jms.Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
-				message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
+				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
 				jmsListenerInfo.put("correlationId", correlationId);
 			}
@@ -2608,14 +2608,18 @@ public class TestTool {
 			}
 		}
 		
-		if (message == null) {
+		if (message == null || message.isEmpty()) {
 			if ("".equals(fileName)) {
 				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read jms message (null returned)", writers);
 			}
 		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+			try {
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message.asString(), properties, writers, queueName);
+			} catch (IOException e) {
+				errorMessage("Could not convert jms message from '" + queueName + "' to string: " + e.getMessage(), e, writers);
+			}
 		}
 
 		return result;	

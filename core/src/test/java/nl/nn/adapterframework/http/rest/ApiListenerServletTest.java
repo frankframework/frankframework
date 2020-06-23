@@ -50,6 +50,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiListenerServletTest extends Mockito {
@@ -655,38 +656,38 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String rawMessage, String message) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String rawMessage, Message message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message, Map<String, Object> context) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}
 			session = context;
 			if(session.containsKey("response-content")) {
-				return (String) session.get("response-content");
+				return Message.asMessage(session.get("response-content"));
 			} else {
 				return message;
 			}
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String rawMessage, String message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String formatException(String extrainfo, String correlationId, String message, Throwable t) {
+		public String formatException(String extrainfo, String correlationId, Message message, Throwable t) {
 			t.printStackTrace();
 
 			return t.getMessage();
