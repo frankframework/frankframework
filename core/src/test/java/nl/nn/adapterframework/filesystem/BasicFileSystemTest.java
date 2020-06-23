@@ -17,7 +17,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.util.StreamUtil;
+import nl.nn.adapterframework.stream.Message;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -113,7 +113,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
-		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
+		String actual = Message.asString(in);
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
 	}

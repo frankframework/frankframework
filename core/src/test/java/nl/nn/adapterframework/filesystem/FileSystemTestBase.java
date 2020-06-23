@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import liquibase.util.StreamUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class FileSystemTestBase {
@@ -91,7 +91,7 @@ public abstract class FileSystemTestBase {
 
 	public String readFile(String folder, String filename) throws Exception {
 		try (InputStream in = _readFile(folder, filename)) {
-			return StreamUtil.getReaderContents(new InputStreamReader(in));
+			return Message.asString(in);
 		}
 	}
 
