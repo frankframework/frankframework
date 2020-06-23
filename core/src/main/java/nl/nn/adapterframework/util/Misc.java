@@ -304,7 +304,7 @@ public class Misc {
 
 	/**
 	 * @see #readerToWriter(Reader, Writer, boolean)
-	 * {@inheritDoc}
+	 * @inheritDoc
 	 * @param reader
 	 * @param writer
 	 * @throws IOException
@@ -367,7 +367,7 @@ public class Misc {
 	}
 
 	/**
-	 * 	Copies the content of a reader into a string, adds specified string to the end of the line, if specified.
+	 * Copies the content of a reader into a string, adds specified string to the end of the line, if specified.
 	 * <p>
 	 *     Example:
 	 *     <pre>
@@ -412,35 +412,99 @@ public class Misc {
 		}
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @inheritDoc
+	 * @param stream
+	 * @return String that's included in the stream
+	 * @throws IOException
+	 */
 	public static String streamToString(InputStream stream) throws IOException {
 		return streamToString(stream, null, false);
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, String, boolean)
+	 * @inheritDoc
+	 * @param stream
+	 * @param streamEncoding
+	 * @return
+	 * @throws IOException
+	 */
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
 		return streamToString(stream, null, streamEncoding, false);
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, String, boolean)
+	 * @inheritDoc
+	 * @param stream
+	 * @param endOfLineString
+	 * @param xmlEncode
+	 * @return
+	 * @throws IOException
+	 */
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
 	}
 
+	/**
+	 * @see #readerToString(Reader, String, boolean)
+	 * @inheritDoc
+	 * @param stream
+	 * @param endOfLineString
+	 * @param streamEncoding
+	 * @param xmlEncode
+	 * @return
+	 * @throws IOException
+	 */
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @inheritDoc
+	 * @param resource
+	 * @param endOfLineString
+	 * @param xmlEncode
+	 * @return
+	 * @throws IOException
+	 */
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
 		return streamToString(stream, endOfLineString, xmlEncode);
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @inheritDoc
+	 * @param resource
+	 * @return
+	 * @throws IOException
+	 */
 	public static String resourceToString(URL resource) throws IOException {
 		return resourceToString(resource, null, false);
 	}
 
+	/**
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @inheritDoc
+	 * @param resource
+	 * @param endOfLineString
+	 * @return
+	 * @throws IOException
+	 */
 	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
 		return resourceToString(resource, endOfLineString, false);
 	}
 
+	/**
+	 * Writes the string to a file.
+	 * @param string
+	 * @param fileName
+	 * @throws IOException
+	 */
 	public static void stringToFile(String string, String fileName) throws IOException {
 		try (FileWriter fw = new FileWriter(fileName)) {
 			fw.write(string);
@@ -460,7 +524,6 @@ public class Misc {
 	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
-
 	 */
 	public static String replace (String source, String from, String to) {
 		int start = source.indexOf(from);
@@ -510,10 +573,32 @@ public class Misc {
 		return part1+separator+part2;
 	}
 
+	/**
+	 * @see #hide(String)
+	 * @inheritDoc
+	 * @param string
+	 * @return hidden string with all characters replaced with '*'
+	 */
 	public static String hide(String string) {
 		return hide(string, 0);
 	}
 
+	/**
+	 * Hides the string based on the mode given.
+	 * Mode 1 hides starting from the second character of the string
+	 * until, excluding, the last character.
+	 *<p>
+	 *     Example:
+	 *     <pre>
+	 *         String a = "test";
+	 *         String res = Misc.hide(a, 1);
+	 *         System.out.println(res) // prints "t**t"
+	 *     </pre>
+	 * </p>
+	 * @param string
+	 * @param mode
+	 * @return
+	 */
 	public static String hide(String string, int mode) {
 		if (StringUtils.isEmpty(string)) {
 			return string;
@@ -531,16 +616,48 @@ public class Misc {
 		}
 	}
 
+	/**
+	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @inheritDoc
+	 * @param input
+	 * @param endOfLineString
+	 * @param xmlEncode
+	 * @return
+	 * @throws IOException
+	 */
 	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);
 		return streamToString(bis, endOfLineString, xmlEncode);
 	}
 
-
+	/**
+	 * Zips the input string with the default input stream encoding.
+	 * @see #gzip(byte[])
+	 * @inheritDoc
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
 	public static byte[] gzip(String input) throws IOException {
 		return gzip(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
 	}
 
+	/**
+	 * Creates an expandable byte array to hold the compressed data.
+	 *<p>
+	 *     Example:
+	 *     <pre>
+	 *         String s = "test";
+	 *         byte[] arr = s.getBytes();
+	 *         byte[] zipped = Misc.gzip(arr);
+	 *         System.out.println(Misc.gunzipToString(zipped)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
 	public static byte[] gzip(byte[] input) throws IOException {
 
 		// Create an expandable byte array to hold the compressed data.
@@ -557,11 +674,36 @@ public class Misc {
 		return bos.toByteArray();
 	}
 
-
+	/**
+	 * Unzips a zipped byte array to a string
+	 * @see #gunzip(byte[])
+	 * @inheritDoc
+	 * @param input
+	 * @return
+	 * @throws DataFormatException
+	 * @throws IOException
+	 */
 	public static String gunzipToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(gunzip(input),"\n",false);
 	}
 
+	/**
+	 * Unzips a zipped byte array to a string by create an expandable byte array to hold the decompressed data.
+	 * Creates an expandable byte array to hold the compressed data.
+	 *<p>
+	 *     Example:
+	 *     <pre>
+	 *         String s = "test";
+	 *         byte[] arr = s.getBytes();
+	 *         byte[] zipped = Misc.gzip(arr);
+	 *         System.out.println(Misc.gunzipToString(zipped)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @param input
+	 * @return
+	 * @throws DataFormatException
+	 * @throws IOException
+	 */
 	public static byte[] gunzip(byte[] input) throws DataFormatException, IOException {
 
 		// Create an expandable byte array to hold the decompressed data
@@ -583,10 +725,32 @@ public class Misc {
 		return bos.toByteArray();
 	}
 
-
+	/**
+	 * Compresses the input string using the default stream encoding.
+	 * @see #compress(byte[])
+	 * @inheritDoc
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
 	public static byte[] compress(String input) throws IOException {
 		return compress(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
 	}
+
+	/**
+	 *  Compresses the input string using the Deflater class of Java.
+	 *<p>
+	 *     Example:
+	 *     <pre>
+	 *         String s = "#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$";
+	 *         byte[] compressedSymbols = Misc.compress(s);
+	 *         assertTrue(compressedSymbols.length < s1.length()); // will assertTrue as compressed one's length should be less than the normal string. However, this may not be the case for shorter strings.
+	 *     </pre>
+	 * </p>
+	 * @param input
+	 * @return
+	 * @throws IOException
+	 */
 	public static byte[] compress(byte[] input) throws IOException {
 
 		// Create the compressor with highest level of compression
@@ -615,10 +779,34 @@ public class Misc {
 		return bos.toByteArray();
 	}
 
+	/**
+	 * @see #decompress(byte[])
+	 * @inheritDoc
+	 * @param input
+	 * @return
+	 * @throws DataFormatException
+	 * @throws IOException
+	 */
 	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(decompress(input),"\n",false);
 	}
 
+	/**
+	 * Decompresses the compressed byte array.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *          String s = "test";
+	 *         byte[] compressed = Misc.compress(s);
+	 *         String decompressed = Misc.decompressToString(compressed);
+	 *         System.out.print(decompressed); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @param input
+	 * @return
+	 * @throws DataFormatException
+	 * @throws IOException
+	 */
 	public static byte[] decompress(byte[] input) throws DataFormatException, IOException {
 		// Create the decompressor and give it the data to compress
 		Inflater decompressor = new Inflater();
@@ -804,6 +992,13 @@ public class Misc {
 	}
 
 
+	/**
+	 * Converts the file size to bytes.
+	 * <pre>Misc.toFileSize("14GB", 20); // gives out 15032385536</pre>
+	 * @param value
+	 * @param defaultValue
+	 * @return
+	 */
 	public static long toFileSize(String value, long defaultValue) {
 		if(value == null)
 		  return defaultValue;
@@ -835,14 +1030,38 @@ public class Misc {
 		return defaultValue;
 	  }
 
+	/**
+	 * @see #toFileSize(long, boolean)
+	 * @inheritDoc
+	 * @param value
+	 * @return
+	 */
 	public static String toFileSize(long value) {
 		return toFileSize(value, false);
 	}
 
+	/**
+	 * @see #toFileSize(long, boolean, boolean)
+	 * @inheritDoc
+	 * @param value
+	 * @param format
+	 * @return
+	 */
 	public static String toFileSize(long value, boolean format) {
 		return toFileSize(value, format, false);
 	}
 
+	/**
+	 * Converts the input value in bytes to the highest degree of file size, and formats and floors the value, if set to true.
+	 * <pre>
+	 *      String mb = Misc.toFileSize(15000000, true); // gives out "14 MB"
+	 *      String kb = Misc.toFileSize(150000, false, true); // gives out "146KB"
+	 * </pre>
+	 * @param value
+	 * @param format
+	 * @param floor
+	 * @return
+	 */
 	public static String toFileSize(long value, boolean format, boolean floor) {
 		long divider = 1024L * 1024 * 1024;
 		String suffix = null;
@@ -906,6 +1125,17 @@ public class Misc {
 		return forceFixedForwardingByDefault.booleanValue();
 	}
 
+	/**
+	 * Converts the list to a string.
+	 * <pre>
+	 *      List list = new ArrayList<Integer>();
+	 *      list.add("We Are");
+	 *      list.add(" Frank");
+	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
+	 * </pre>
+	 * @param list
+	 * @return
+	 */
 	public static String listToString(List list) {
 		StringBuilder sb = new StringBuilder();
 		for (Iterator it=list.iterator(); it.hasNext();) {
@@ -914,6 +1144,13 @@ public class Misc {
 		return sb.toString();
 	}
 
+	/**
+	 * Adds items on a string, added by comma seperator (ex: "1,2,3"), into a list. 
+	 * @param collection
+	 * @param list
+	 * @param collectionDescription description of the list
+	 * @param lowercase
+	 */
 	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
 		if (list==null) {
 			return;
@@ -1107,24 +1344,44 @@ public class Misc {
 		return defaultValue;
 	}
 
-	public static String cleanseMessage(String inputString, String hideRegex, String hideMethod) {
-		if (StringUtils.isEmpty(hideRegex)) {
+	/**
+	 * Edits the input string according to the regex and the hide method specified.
+	 * @see #hideFirstHalf(String, String) 
+	 * @see #hideAll(String, String)
+	 * @inheritDoc
+	 * @param inputString
+	 * @param regexForHiding
+	 * @param hideMethod
+	 * @return
+	 */
+	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
+		if (StringUtils.isEmpty(regexForHiding)) {
 			return inputString;
 		}
 		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
-			return hideFirstHalf(inputString, hideRegex);
+			return hideFirstHalf(inputString, regexForHiding);
 		} else {
-			return hideAll(inputString, hideRegex);
+			return hideAll(inputString, regexForHiding);
 		}
 	}
 
+	/**
+	 * Hides the first half of the string.
+	 * @see #hideAll(String, String, int) 
+	 * @inheritDoc
+	 * @param inputString
+	 * @param regex
+	 * @return
+	 */
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}
 
 	/**
 	 * Hide all characters matching the given Regular Expression.
-	 * If the set of expressions is null or empty it will return the raw message
+	 * If the set of expressions is null or empty it will return the raw message.
+	 * @see #hideAll(String, Collection, int)
+	 * @inheritDoc
 	 */
 	public static String hideAll(String message, Collection<String> collection) {
 		return hideAll(message, collection, 0);
@@ -1133,6 +1390,8 @@ public class Misc {
 	/**
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message
+	 * @see #hideAll(String, String, int)
+	 * @inheritDoc
 	 */
 	public static String hideAll(String message, Collection<String> collection, int mode) {
 		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
@@ -1145,10 +1404,26 @@ public class Misc {
 		return message;
 	}
 
+	/**
+	 * @see #hideAll(String, String, int)
+	 * @inheritDoc
+	 * @param inputString
+	 * @param regex
+	 * @return
+	 */
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
 	}
 
+	/**
+	 * Hides the input string according to the given regex and mode.
+	 * If mode is set to 1, then the first half of the string gets hidden.
+	 * Else, all of it.
+	 * @param inputString
+	 * @param regex
+	 * @param mode
+	 * @return
+	 */
 	public static String hideAll(String inputString, String regex, int mode) {
 		StringBuilder result = new StringBuilder();
 		Pattern pattern = Pattern.compile(regex);
@@ -1202,11 +1477,30 @@ public class Misc {
 		return null;
 	}
 
+	/**
+	 * Replaces low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
+	 * <pre>
+	 *      Misc.toSortName("new_name"); // gives out "NEW*NAME"
+	 * </pre>
+	 * @param name
+	 * @return
+	 */
 	public static String toSortName(String name) {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
 	}
 
+	/**
+	 * Counts the number of characters that the specified reges will affect in the specified string.
+	 * <pre>
+	 *     String s = "12ab34";
+	 *     String regex = "\\d";
+	 *     int regexCount = Misc.countRegex(s, regex); // regexCount gives out 4
+	 * </pre>
+	 * @param string
+	 * @param regex
+	 * @return
+	 */
 	public static int countRegex(String string, String regex) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(string);

@@ -337,6 +337,7 @@ public class MiscTest {
         assertEquals("t**t", res);
     }
 
+
     /**
      * Method: byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode)
      */
