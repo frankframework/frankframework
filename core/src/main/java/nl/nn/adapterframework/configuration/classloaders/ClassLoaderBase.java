@@ -264,7 +264,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public void destroy() throws ConfigurationException {
+	public void destroy() {
 		log.debug("removing classloader ["+this.toString()+"]");
 
 		AppConstants.removeInstance(this);

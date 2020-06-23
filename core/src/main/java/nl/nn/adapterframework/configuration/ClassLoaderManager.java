@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -241,13 +242,35 @@ public class ClassLoaderManager {
 			throw new ConfigurationException("classloader cannot be null");
 
 		if (classLoader instanceof IConfigurationClassLoader) {
-			((IConfigurationClassLoader)classLoader).reload();
+			((IConfigurationClassLoader) classLoader).reload();
 		} else {
-			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
+			LOG.warn("classloader ["+classLoader.toString()+"] is not derivable from IConfigurationClassLoader, ignoring reload");
 		}
 	}
 
 	public boolean contains(String currentConfigurationName) {
 		return (classLoaders.containsKey(currentConfigurationName));
+	}
+
+	/**
+	 * Removes all created ClassLoaders
+	 */
+	public void shutdown() {
+		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
+			String configurationClassLoader = iterator.next();
+			ClassLoader classLoader = classLoaders.get(configurationClassLoader);
+			if(classLoader instanceof IConfigurationClassLoader) {
+				((IConfigurationClassLoader) classLoader).destroy();
+			} else {
+				LOG.warn("classloader ["+ClassUtils.getClassLoaderName(classLoader)+"] is not derivable from IConfigurationClassLoader, ignoring destroy");
+			}
+			iterator.remove();
+			LOG.info("removed classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+		}
+		if(classLoaders.size() > 0) {
+			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders "+classLoaders);
+
+			classLoaders.clear();
+		}
 	}
 }

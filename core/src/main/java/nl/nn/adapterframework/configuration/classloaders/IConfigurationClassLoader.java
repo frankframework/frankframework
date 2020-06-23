@@ -65,5 +65,5 @@ public interface IConfigurationClassLoader {
 	/**
 	 * Called upon destroying (and thus removing) the IConfigurationClassLoader
 	 */
-	public void destroy() throws ConfigurationException;
+	public void destroy();
 }
