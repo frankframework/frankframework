@@ -172,6 +172,7 @@ public class IbisContext extends IbisApplicationContext {
 			ibisManager.shutdown();
 		if(ibisContextReconnectThread != null)
 			ibisContextReconnectThread.interrupt();
+		classLoaderManager.shutdown();
 		destroyApplicationContext();
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
