@@ -96,7 +96,6 @@ public class Misc {
 
 	/**
 	 *
-	 * @param buf
 	 * @return the hexadecimal string representation of the byte array.
 	 */
 	public static String asHex(byte[] buf)
@@ -166,7 +165,6 @@ public class Misc {
 	}
 
 	/**
-	 *
 	 * @return the current time in milliseconds.
 	 */
 	public static synchronized long getCurrentTimeMillis(){
@@ -185,9 +183,7 @@ public class Misc {
 	 *         				       // that's copied from the file.
 	 *     </pre>
 	 * </p>
-	 * @param filename
-	 * @param writer
-	 * @throws IOException exception to be thrown exception to be thrown if an I/O eexception occurs
+	 * @throws IOException exception to be thrown exception to be thrown if an I/O exception occurs
 	 */
 	public static void fileToWriter(String filename, Writer writer) throws IOException {
 		readerToWriter(new FileReader(filename), writer);
@@ -204,9 +200,7 @@ public class Misc {
 	 *         				   // that's copied from the file.
 	 *     </pre>
 	 * </p>
-	 * @param filename
-	 * @param output
-	 * @throws IOException exception to be thrown if an I/O eexception occurs
+	 * @throws IOException exception to be thrown if an I/O exception occurs
 	 */
 	public static void fileToStream(String filename, OutputStream output) throws IOException {
 		streamToStream(new FileInputStream(filename), output);
@@ -214,9 +208,8 @@ public class Misc {
 
 	/**
 	 * Overloaded version of streamToStream that calls the main version with closeInput set to true.
-	 * @param input
-	 * @param output
-	 * @throws IOException
+	 * @see #streamToStream(InputStream, OutputStream, boolean)
+	 * @inheritDoc
 	 */
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input,output,true);
@@ -235,8 +228,6 @@ public class Misc {
 	 *         System.out.println(baos.toString()); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param input
-	 * @param output
 	 * @param closeInput if set to 'true', the input stream gets closed.
 	 * @throws IOException  exception to be thrown if an I/O eexception occurs
 	 */
@@ -263,9 +254,7 @@ public class Misc {
 	 *         Misc.streamToFile(bais, file); // "test" copied inside the file.
 	 *     </pre>
 	 * </p>
-	 * @param inputStream
-	 * @param file
-	 * @throws IOException exception to be thrown if an I/O eexception occurs
+	 * @throws IOException exception to be thrown if an I/O exception occurs
 	 */
 	public static void streamToFile(InputStream inputStream, File file) throws IOException {
 		try (OutputStream fileOut = new FileOutputStream(file)) {
@@ -284,9 +273,6 @@ public class Misc {
 	 *         System.out.println(new String(arr, StandardCharsets.UTF_8)); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param inputStream
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -305,9 +291,6 @@ public class Misc {
 	/**
 	 * @see #readerToWriter(Reader, Writer, boolean)
 	 * @inheritDoc
-	 * @param reader
-	 * @param writer
-	 * @throws IOException
 	 */
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		readerToWriter(reader,writer,true);
@@ -324,10 +307,6 @@ public class Misc {
 	 *         System.out.println(writer.toString)); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param reader
-	 * @param writer
-	 * @param closeInput
-	 * @throws IOException
 	 */
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
@@ -377,11 +356,7 @@ public class Misc {
 	 *         // prints "&lt;root&gt; WeAreFrank!!&lt;/root&gt;"
 	 *     </pre>
 	 * </p>
-	 * @param reader
-	 * @param endOfLineString
 	 * @param xmlEncode if set to true, applies XML encodings to the content of the reader
-	 * @return
-	 * @throws IOException
 	 */
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
 		StringBuilder sb = new StringBuilder();
@@ -415,9 +390,7 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
 	 * @inheritDoc
-	 * @param stream
 	 * @return String that's included in the stream
-	 * @throws IOException
 	 */
 	public static String streamToString(InputStream stream) throws IOException {
 		return streamToString(stream, null, false);
@@ -426,10 +399,6 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 * @inheritDoc
-	 * @param stream
-	 * @param streamEncoding
-	 * @return
-	 * @throws IOException
 	 */
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
 		return streamToString(stream, null, streamEncoding, false);
@@ -438,11 +407,6 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 * @inheritDoc
-	 * @param stream
-	 * @param endOfLineString
-	 * @param xmlEncode
-	 * @return
-	 * @throws IOException
 	 */
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
@@ -451,12 +415,6 @@ public class Misc {
 	/**
 	 * @see #readerToString(Reader, String, boolean)
 	 * @inheritDoc
-	 * @param stream
-	 * @param endOfLineString
-	 * @param streamEncoding
-	 * @param xmlEncode
-	 * @return
-	 * @throws IOException
 	 */
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
@@ -465,11 +423,6 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
 	 * @inheritDoc
-	 * @param resource
-	 * @param endOfLineString
-	 * @param xmlEncode
-	 * @return
-	 * @throws IOException
 	 */
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
@@ -479,9 +432,6 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
 	 * @inheritDoc
-	 * @param resource
-	 * @return
-	 * @throws IOException
 	 */
 	public static String resourceToString(URL resource) throws IOException {
 		return resourceToString(resource, null, false);
@@ -490,10 +440,6 @@ public class Misc {
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
 	 * @inheritDoc
-	 * @param resource
-	 * @param endOfLineString
-	 * @return
-	 * @throws IOException
 	 */
 	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
 		return resourceToString(resource, endOfLineString, false);
@@ -501,9 +447,6 @@ public class Misc {
 
 	/**
 	 * Writes the string to a file.
-	 * @param string
-	 * @param fileName
-	 * @throws IOException
 	 */
 	public static void stringToFile(String string, String fileName) throws IOException {
 		try (FileWriter fw = new FileWriter(fileName)) {
@@ -576,7 +519,6 @@ public class Misc {
 	/**
 	 * @see #hide(String)
 	 * @inheritDoc
-	 * @param string
 	 * @return hidden string with all characters replaced with '*'
 	 */
 	public static String hide(String string) {
@@ -595,9 +537,6 @@ public class Misc {
 	 *         System.out.println(res) // prints "t**t"
 	 *     </pre>
 	 * </p>
-	 * @param string
-	 * @param mode
-	 * @return
 	 */
 	public static String hide(String string, int mode) {
 		if (StringUtils.isEmpty(string)) {
@@ -620,11 +559,6 @@ public class Misc {
 	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
 	 * @see #streamToString(InputStream, String, boolean)
 	 * @inheritDoc
-	 * @param input
-	 * @param endOfLineString
-	 * @param xmlEncode
-	 * @return
-	 * @throws IOException
 	 */
 	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);
@@ -635,9 +569,6 @@ public class Misc {
 	 * Zips the input string with the default input stream encoding.
 	 * @see #gzip(byte[])
 	 * @inheritDoc
-	 * @param input
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] gzip(String input) throws IOException {
 		return gzip(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
@@ -654,9 +585,6 @@ public class Misc {
 	 *         System.out.println(Misc.gunzipToString(zipped)); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param input
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] gzip(byte[] input) throws IOException {
 
@@ -679,9 +607,6 @@ public class Misc {
 	 * @see #gunzip(byte[])
 	 * @inheritDoc
 	 * @param input
-	 * @return
-	 * @throws DataFormatException
-	 * @throws IOException
 	 */
 	public static String gunzipToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(gunzip(input),"\n",false);
@@ -699,10 +624,6 @@ public class Misc {
 	 *         System.out.println(Misc.gunzipToString(zipped)); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param input
-	 * @return
-	 * @throws DataFormatException
-	 * @throws IOException
 	 */
 	public static byte[] gunzip(byte[] input) throws DataFormatException, IOException {
 
@@ -729,9 +650,6 @@ public class Misc {
 	 * Compresses the input string using the default stream encoding.
 	 * @see #compress(byte[])
 	 * @inheritDoc
-	 * @param input
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] compress(String input) throws IOException {
 		return compress(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
@@ -747,9 +665,6 @@ public class Misc {
 	 *         assertTrue(compressedSymbols.length < s1.length()); // will assertTrue as compressed one's length should be less than the normal string. However, this may not be the case for shorter strings.
 	 *     </pre>
 	 * </p>
-	 * @param input
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] compress(byte[] input) throws IOException {
 
@@ -782,10 +697,6 @@ public class Misc {
 	/**
 	 * @see #decompress(byte[])
 	 * @inheritDoc
-	 * @param input
-	 * @return
-	 * @throws DataFormatException
-	 * @throws IOException
 	 */
 	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(decompress(input),"\n",false);
@@ -802,10 +713,6 @@ public class Misc {
 	 *         System.out.print(decompressed); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param input
-	 * @return
-	 * @throws DataFormatException
-	 * @throws IOException
 	 */
 	public static byte[] decompress(byte[] input) throws DataFormatException, IOException {
 		// Create the decompressor and give it the data to compress
@@ -995,9 +902,6 @@ public class Misc {
 	/**
 	 * Converts the file size to bytes.
 	 * <pre>Misc.toFileSize("14GB", 20); // gives out 15032385536</pre>
-	 * @param value
-	 * @param defaultValue
-	 * @return
 	 */
 	public static long toFileSize(String value, long defaultValue) {
 		if(value == null)
@@ -1033,8 +937,6 @@ public class Misc {
 	/**
 	 * @see #toFileSize(long, boolean)
 	 * @inheritDoc
-	 * @param value
-	 * @return
 	 */
 	public static String toFileSize(long value) {
 		return toFileSize(value, false);
@@ -1043,9 +945,6 @@ public class Misc {
 	/**
 	 * @see #toFileSize(long, boolean, boolean)
 	 * @inheritDoc
-	 * @param value
-	 * @param format
-	 * @return
 	 */
 	public static String toFileSize(long value, boolean format) {
 		return toFileSize(value, format, false);
@@ -1057,10 +956,6 @@ public class Misc {
 	 *      String mb = Misc.toFileSize(15000000, true); // gives out "14 MB"
 	 *      String kb = Misc.toFileSize(150000, false, true); // gives out "146KB"
 	 * </pre>
-	 * @param value
-	 * @param format
-	 * @param floor
-	 * @return
 	 */
 	public static String toFileSize(long value, boolean format, boolean floor) {
 		long divider = 1024L * 1024 * 1024;
@@ -1133,8 +1028,6 @@ public class Misc {
 	 *      list.add(" Frank");
 	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
 	 * </pre>
-	 * @param list
-	 * @return
 	 */
 	public static String listToString(List list) {
 		StringBuilder sb = new StringBuilder();
@@ -1146,10 +1039,7 @@ public class Misc {
 
 	/**
 	 * Adds items on a string, added by comma seperator (ex: "1,2,3"), into a list.
-	 * @param collection
-	 * @param list
 	 * @param collectionDescription description of the list
-	 * @param lowercase
 	 */
 	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
 		if (list==null) {
@@ -1349,10 +1239,6 @@ public class Misc {
 	 * @see #hideFirstHalf(String, String)
 	 * @see #hideAll(String, String)
 	 * @inheritDoc
-	 * @param inputString
-	 * @param regexForHiding
-	 * @param hideMethod
-	 * @return
 	 */
 	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
 		if (StringUtils.isEmpty(regexForHiding)) {
@@ -1369,9 +1255,6 @@ public class Misc {
 	 * Hides the first half of the string.
 	 * @see #hideAll(String, String, int)
 	 * @inheritDoc
-	 * @param inputString
-	 * @param regex
-	 * @return
 	 */
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
@@ -1407,9 +1290,6 @@ public class Misc {
 	/**
 	 * @see #hideAll(String, String, int)
 	 * @inheritDoc
-	 * @param inputString
-	 * @param regex
-	 * @return
 	 */
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
@@ -1419,10 +1299,6 @@ public class Misc {
 	 * Hides the input string according to the given regex and mode.
 	 * If mode is set to 1, then the first half of the string gets hidden.
 	 * Else, all of it.
-	 * @param inputString
-	 * @param regex
-	 * @param mode
-	 * @return
 	 */
 	public static String hideAll(String inputString, String regex, int mode) {
 		StringBuilder result = new StringBuilder();
@@ -1482,8 +1358,6 @@ public class Misc {
 	 * <pre>
 	 *      Misc.toSortName("new_name"); // gives out "NEW*NAME"
 	 * </pre>
-	 * @param name
-	 * @return
 	 */
 	public static String toSortName(String name) {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
@@ -1497,9 +1371,6 @@ public class Misc {
 	 *     String regex = "\\d";
 	 *     int regexCount = Misc.countRegex(s, regex); // regexCount gives out 4
 	 * </pre>
-	 * @param string
-	 * @param regex
-	 * @return
 	 */
 	public static int countRegex(String string, String regex) {
 		Pattern pattern = Pattern.compile(regex);
