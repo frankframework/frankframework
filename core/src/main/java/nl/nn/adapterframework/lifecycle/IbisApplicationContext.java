@@ -260,7 +260,7 @@ public class IbisApplicationContext {
 
 	/**
 	 * Register IBIS modules that can be found on the classpath
-	 * @param iafModules list with modules to register
+	 * @param modules list with modules to register
 	 */
 	private void registerApplicationModules(List<String> modules) {
 		for(String module: modules) {

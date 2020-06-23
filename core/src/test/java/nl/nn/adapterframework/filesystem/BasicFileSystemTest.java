@@ -18,15 +18,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import liquibase.util.StreamUtil;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
 	protected FS fileSystem;
 	/**
 	 * Returns the file system 
-	 * @return fileSystem
-	 * @throws ConfigurationException
 	 */
 	protected abstract FS createFileSystem();
 
@@ -82,11 +79,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 
+	@Override
 	protected void equalsCheck(String content, String actual) {
 		assertEquals(content, actual);
 	}
 
 
+	@Override
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 	}

@@ -179,10 +179,6 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
 	 */
 	private File getUniqueFile() {
 
@@ -190,8 +186,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		int count = atomicCount.addAndGet(1);
 
 		// Save to disc
-		String fileNamePdf = String.format("%s_%s_%05d%s", this.getClass().getSimpleName(), format.format(new Date()),
-				count, ".bin");
+		String fileNamePdf = String.format("%s_%s_%05d%s", this.getClass().getSimpleName(), format.format(new Date()), count, ".bin");
 		return new File(pdfOutputlocation, fileNamePdf);
 
 	}
