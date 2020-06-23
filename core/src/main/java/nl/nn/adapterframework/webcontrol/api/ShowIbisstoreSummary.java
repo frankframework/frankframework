@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToMap;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.stream.Message;
@@ -102,7 +102,7 @@ public final class ShowIbisstoreSummary extends Base {
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
 			try {
-				resultMap = new QueryOutputToMap().parseString(result);
+				resultMap = new QueryOutputToListOfMaps().parseString(result);
 			} catch (IOException | SAXException e) {
 				throw new ApiException("Query result could not be parsed.", e);
 			}
