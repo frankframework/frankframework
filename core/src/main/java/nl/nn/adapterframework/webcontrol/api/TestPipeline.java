@@ -117,7 +117,7 @@ public final class TestPipeline extends Base {
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
-				result.put("result", plr.getResult());
+				result.put("result", plr.getResult().asString());
 			} catch (Exception e) {
 				throw new ApiException("exception on sending message", e);
 			}
