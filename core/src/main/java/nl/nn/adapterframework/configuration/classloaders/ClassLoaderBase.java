@@ -258,14 +258,14 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public void reload() throws ConfigurationException {
-		log.debug("reloading configuration ["+getConfigurationName()+"]");
+		log.debug("reloading classloader ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);
 	}
 
 	@Override
 	public void destroy() throws ConfigurationException {
-		log.debug("removing configuration ["+getConfigurationName()+"]");
+		log.debug("removing classloader ["+this.toString()+"]");
 
 		AppConstants.removeInstance(this);
 	}
