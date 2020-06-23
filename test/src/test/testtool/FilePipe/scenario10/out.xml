@@ -1,6 +1,6 @@
 <file>
-	<fullName>LOG_DIR\testdata\ibis2843587291397283502.txt</fullName>
-	<directory>LOG_DIR\testdata</directory>
+	<fullName>TESTDATA_DIR\ibis2843587291397283502.txt</fullName>
+	<directory>TESTDATA_DIR</directory>
 	<name>ibis2843587291397283502.txt</name>
 	<baseName>ibis2843587291397283502</baseName>
 	<extension>txt</extension>

@@ -1,1 +1,1 @@
-${log.dir}/testdata/bftp/in/EDIFACT.TXT
+${testdata.dir}/bftp/in/EDIFACT.TXT
