@@ -1252,7 +1252,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					afterMessageProcessedMap=pipelineSession;
 				}
 				try {
-					origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
+					origin.afterMessageProcessed(pipeLineResult, rawMessage, afterMessageProcessedMap);
 				} catch (Exception e) {
 					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
 					// this might cause class cast exceptions.

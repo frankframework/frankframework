@@ -18,8 +18,6 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
-import javax.jms.Message;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
@@ -74,7 +72,7 @@ public class FxfListener extends EsbJmsListener {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.
@@ -84,8 +82,7 @@ public class FxfListener extends EsbJmsListener {
 			File srcFile = null;
 			File dstFile = null;
 			try {
-				String srcFileName = (String) threadContext
-						.get(getFxfFileSessionKey());
+				String srcFileName = (String) threadContext.get(getFxfFileSessionKey());
 				if (StringUtils.isEmpty(srcFileName)) {
 					warn("No file to move");
 				} else {
@@ -94,40 +91,29 @@ public class FxfListener extends EsbJmsListener {
 						warn("File [" + srcFileName + "] does not exist");
 					} else {
 						File srcDir = srcFile.getParentFile();
-						String dstDirName = srcDir.getParent() + File.separator
-								+ getProcessedSiblingDirectory();
+						String dstDirName = srcDir.getParent() + File.separator + getProcessedSiblingDirectory();
 						dstFile = new File(dstDirName, srcFile.getName());
 						dstFile = FileUtils.getFreeFile(dstFile);
 						if (!dstFile.getParentFile().exists()) {
 							if (isCreateProcessedDirectory()) {
 								if (dstFile.getParentFile().mkdirs()) {
-									log.debug("Created directory ["
-											+ dstFile.getParent() + "]");
+									log.debug("Created directory [" + dstFile.getParent() + "]");
 								} else {
-									log.warn("Directory ["
-											+ dstFile.getParent()
-											+ "] could not be created");
+									log.warn("Directory [" + dstFile.getParent() + "] could not be created");
 								}
 							} else {
-								log.warn("Directory [" + dstFile.getParent()
-										+ "] does not exist");
+								log.warn("Directory [" + dstFile.getParent() + "] does not exist");
 							}
 						}
 						if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
-							warn("Could not move file ["
-									+ srcFile.getAbsolutePath() + "] to file ["
-									+ dstFile.getAbsolutePath() + "]");
+							warn("Could not move file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 						} else {
-							log.info("Moved file [" + srcFile.getAbsolutePath()
-									+ "] to file [" + dstFile.getAbsolutePath()
-									+ "]");
+							log.info("Moved file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 						}
 					}
 				}
 			} catch (Exception e) {
-				warn("Error while moving file [" + srcFile.getAbsolutePath()
-						+ "] to file [" + dstFile.getAbsolutePath() + "]: "
-						+ e.getMessage());
+				warn("Error while moving file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]: " + e.getMessage());
 			}
 		}
 	}

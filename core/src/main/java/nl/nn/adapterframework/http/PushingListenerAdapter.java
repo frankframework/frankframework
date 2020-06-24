@@ -69,7 +69,7 @@ public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceCl
 	public String getStringFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
 		return (String) rawMessage;
 	}
-	public void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 	}
 
 	@Override
