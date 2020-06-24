@@ -212,7 +212,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	/**
 	 * Finds the first directory in the given hierarchy.
-	 * @param hierarchy is an array of Strings.
+	 * logDirectoryHierarchy is an array of Strings.
 	 *                  Strings will be split by "/" and before split will be assumed to be property,
 	 *                  and after split will be the subdirectory.
 	 * @return File object that is a directory. Or null, if no directories were found.

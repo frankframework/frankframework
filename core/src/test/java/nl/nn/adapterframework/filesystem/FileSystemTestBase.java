@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import liquibase.util.StreamUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class FileSystemTestBase {
@@ -42,50 +42,31 @@ public abstract class FileSystemTestBase {
 	
 	/**
 	 * Checks if a folder with the specified name exists.
-	 * @param folderName
-	 * @return
-	 * @throws Exception
 	 */
 	protected abstract boolean _folderExists(String folderName) throws Exception;
 	
 	/**
 	 * Deletes the file with the specified name
-	 * @param folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	protected abstract void _deleteFile(String folder, String filename) throws Exception;
 	
 	/**
 	 * Creates a file with the specified name and returns output stream 
-	 * to be able to write that file.
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	protected abstract OutputStream _createFile(String folder, String filename) throws Exception;
 
 	/**
 	 * Returns an input stream of the file 
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	protected abstract InputStream _readFile(String folder, String filename) throws Exception;
 	
 	/**
 	 * Creates a folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	protected abstract void _createFolder(String foldername) throws Exception;
 	
 	/**
 	 * Deletes the folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	protected abstract void _deleteFolder(String folderName) throws Exception;
 
@@ -101,17 +82,17 @@ public abstract class FileSystemTestBase {
 	}
 
 	public void createFile(String folder, String filename, String contents) throws Exception {
-		OutputStream out = _createFile(folder, filename);
-		if (contents != null)
-			out.write(contents.getBytes());
-		out.close();
+		try (OutputStream out = _createFile(folder, filename)) {
+			if (contents != null) {
+				out.write(contents.getBytes());
+			}
+		}
 	}
 
 	public String readFile(String folder, String filename) throws Exception {
-		InputStream in = _readFile(folder, filename);
-		String content = StreamUtil.getReaderContents(new InputStreamReader(in));
-		in.close();
-		return content;
+		try (InputStream in = _readFile(folder, filename)) {
+			return Message.asString(in);
+		}
 	}
 
 	/** 
