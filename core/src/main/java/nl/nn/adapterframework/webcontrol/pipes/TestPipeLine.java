@@ -144,7 +144,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				PipeLineResult plr = processMessage(adapter, form_message,
 						writeSecLogMessage);
 				session.put("state", plr.getState());
-				session.put("result", plr.getResult());
+				session.put("result", plr.getResult().asString());
 			} catch (Exception e) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "exception on sending message", e);
