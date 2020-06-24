@@ -291,7 +291,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return name;
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used", ""})
+	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
