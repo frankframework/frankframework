@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,14 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
+
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
@@ -36,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class FixedQuerySender extends JdbcQuerySenderBase {
+public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
 	private String query=null;
 
@@ -71,5 +76,50 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 				"updateBlob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getBlobSessionKey());
 	}
 
+
+	@Override
+	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			Connection connection = getConnectionForSendMessage(null);
+			return super.prepareStatementSet(null, connection, null, session);
+		} catch (JdbcException e) {
+			throw new SenderException("cannot get StatementSet",e);
+		}
+	}
+
+
+	@Override
+	public void closeBlock(QueryExecutionContext blockHandle, IPipeLineSession session) throws SenderException {
+		try {
+			super.closeStatementSet(blockHandle, session);
+		} finally {
+			try {
+				closeConnectionForSendMessage(blockHandle.getConnection(), session);
+			} catch (JdbcException | TimeOutException e) {
+				throw new SenderException("cannot close connection", e);
+			}
+		}
+	}
+
+
+	@Override
+	protected QueryExecutionContext prepareStatementSet(QueryExecutionContext blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+		return blockHandle;
+	}
+
+	@Override
+	protected void closeStatementSet(QueryExecutionContext statementSet, IPipeLineSession session) {
+		// postpone close to closeBlock()
+	}
+
+	@Override
+	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		return new Message(executeStatementSet(blockHandle, message, session));
+	}
+
+	@Override
+	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
+	}
 
 }

@@ -38,7 +38,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -74,6 +74,7 @@ public class RestServiceDispatcher  {
 
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
+	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
 
 	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
 
@@ -152,7 +153,7 @@ public class RestServiceDispatcher  {
 				noImageAvailable(httpServletResponse);
 				return "";
 			}
-			if (uri != null && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/"))) {
+			if (uri != null && STRUTS_CONSOLE_ENABLED && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/")) ) {
 				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
 				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
 					httpServletResponse.setHeader("REFRESH", "0");
@@ -360,7 +361,7 @@ public class RestServiceDispatcher  {
 			IPipeLineSession session = new PipeLineSessionBase();
 			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = Message.asString(pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult());
+			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
 			pipe.stop();
 			return result;
 		} catch (Exception e) {

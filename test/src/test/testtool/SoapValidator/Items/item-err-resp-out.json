@@ -1,0 +1,30 @@
+{
+  "Result": {
+    "Status": "ERROR",
+    "ErrorList": [
+      {
+        "Code": "ERR6993",
+        "Reason": "Invalid Response",
+        "Service": {
+          "Name": "",
+          "Context": "",
+          "Action": {
+            "Paradigm": "Response",
+            "Name": "Test/SoapValidator",
+            "Version": "1"
+          }
+        },
+        "DetailList": [
+          {
+            "Code": "ERROR",
+            "Text": "/Item_Response/Status: at (3,50): cvc-enumeration-valid: Value 'c' is not facet-valid with respect to enumeration '[a, b]'. It must be a value from the enumeration."
+          },
+          {
+            "Code": "ERROR",
+            "Text": "/Item_Response/Status: at (3,50): cvc-type.3.1.3: The value 'c' of element 'ns1:Status' is not valid."
+          }
+        ]
+      }
+    ]
+  }
+}

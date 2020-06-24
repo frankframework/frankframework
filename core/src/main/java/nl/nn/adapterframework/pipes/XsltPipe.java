@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.StringWriter;
-
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -31,7 +30,6 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -97,35 +95,39 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		}
 		super.stop();
 	}
+
 	
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
+	}
+
+	@Override
+	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		try {
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				nextProvider=null;
+			IForwardTarget nextPipe;
+			if (canStreamToNextPipe()) {
+				nextPipe = getNextPipe();
 			} else {
-				if (nextProvider==null) {
-					nextProvider = getStreamTarget();
+				nextPipe=null;
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					input.preserve();
 				}
 			}
-			PipeRunResult prr = sender.sendMessage(input, session, nextProvider);
-			Object result = prr.getResult();
-			if (result instanceof StringWriter) {
-				result = result.toString();
-			}
+			PipeRunResult prr = sender.sendMessage(input, session, nextPipe);
+			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
-			if (forward==null) {
+			if (nextPipe==null || forward.getPath()==null) {
 				forward=getForward();
 			}
-			
-			if (StringUtils.isEmpty(getSessionKey())) {
-				return new PipeRunResult(forward, result);
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				session.put(getSessionKey(), result.asString());
+				return new PipeRunResult(forward, input);
 			}
-			session.put(getSessionKey(), result);
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(forward, result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
 		}
@@ -138,8 +140,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		return sender.provideOutputStream(session, nextProvider);
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		return sender.provideOutputStream(session, getNextPipe());
 	}
 
 	@Override

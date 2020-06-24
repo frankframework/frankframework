@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,19 +23,20 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * JdbcListener base class.
@@ -43,11 +44,12 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener extends JdbcFacade implements IPullingListener {
+public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	private String startLocalTransactionQuery;
 	private String commitLocalTransactionQuery;
 	private String selectQuery;
+	private String peekQuery;
 	private String updateStatusToProcessedQuery;
 	private String updateStatusToErrorQuery;
 
@@ -63,7 +65,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	private String preparedSelectQuery;
 
-	private  boolean trace=false;
+	private boolean trace=false;
+	private boolean peekUntransacted=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -115,6 +118,42 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
+	@Override
+	public boolean hasRawMessageAvailable() throws ListenerException {
+		if (StringUtils.isEmpty(getPeekQuery())) {
+			return true;
+		} else {
+			if (isConnectionsArePooled()) {
+				Connection c = null;
+				try {
+					c = getConnection();
+					return hasRawMessageAvailable(c);
+				} catch (JdbcException e) {
+					throw new ListenerException(e);
+				} finally {
+					if (c != null) {
+						try {
+							c.close();
+						} catch (SQLException e) {
+							log.warn(new ListenerException(getLogPrefix() + "caught exception closing listener after retrieving message trigger", e));
+						}
+					}
+				}
+			}
+			synchronized (connection) {
+				return hasRawMessageAvailable(connection);
+			}
+		}
+	}
+
+	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
+		try {
+			return !JdbcUtil.isQueryResultEmpty(conn, getPeekQuery());
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + getPeekQuery() + "]", e);
+		}
+	}
+	
 	@Override
 	public Object getRawMessage(Map threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
@@ -171,20 +210,20 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 						String key=rs.getString(getKeyField());
 						
 						if (StringUtils.isNotEmpty(getMessageField())) {
-							String message;
+							Message message;
 							if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-								message=JdbcUtil.getClobAsString(rs,getMessageField(),false);
+								message=new Message(JdbcUtil.getClobAsString(rs,getMessageField(),false));
 							} else {
 								if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-									message=JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false);
+									message=new Message(JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
 								} else {
-									message=rs.getString(getMessageField());
+									message=new Message(rs.getString(getMessageField()));
 								}
 							}
 							// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 							MessageWrapper mw = new MessageWrapper();
 							mw.setId(key);
-							mw.setText(message);
+							mw.setMessage(message);
 							result=mw;
 						} else {
 							result = key;
@@ -224,12 +263,13 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return id;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		String message;
+	@Override
+	public Message extractMessage(Object rawMessage, Map context) throws ListenerException {
+		Message message;
 		if (rawMessage instanceof IMessageWrapper) {
-			message = ((IMessageWrapper)rawMessage).getText();
+			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else {
-			message = (String)rawMessage;
+			message = Message.asMessage(rawMessage);
 		}
 		return message;
 	}
@@ -242,6 +282,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
+	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
@@ -325,11 +366,21 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
+		if (peekQuery==null) {
+			peekQuery = selectQuery;
+		}
 	}
 	public String getSelectQuery() {
 		return selectQuery;
 	}
 
+	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
+	protected void setPeekQuery(String string) {
+		peekQuery = string;
+	}
+	public String getPeekQuery() {
+		return peekQuery;
+	}
 
 	protected void setUpdateStatusToErrorQuery(String string) {
 		updateStatusToErrorQuery = string;
@@ -344,7 +395,6 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public String getUpdateStatusToProcessedQuery() {
 		return updateStatusToProcessedQuery;
 	}
-
 
 	@IbisDoc({"primary key field of the table, used to identify messages", ""})
 	protected void setKeyField(String fieldname) {
@@ -415,4 +465,13 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		this.trace = trace;
 	}
 
+	@Override
+	public boolean isPeekUntransacted() {
+		return peekUntransacted;
+	}
+
+	@Override
+	public void setPeekUntransacted(boolean b) {
+		peekUntransacted = b;
+	}
 }

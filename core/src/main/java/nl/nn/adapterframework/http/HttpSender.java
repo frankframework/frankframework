@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +46,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
@@ -52,7 +55,7 @@ import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -185,11 +188,36 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+		URI uri = null;
+		try {
+			uri = encodeQueryParameters(url);
+		} catch (UnsupportedEncodingException | URISyntaxException e) {
+			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
+		}
+
 		if(isParamsInUrl())
 			return getMethod(uri, message, parameters);
 		else
 			return getPostMethodWithParamsInBody(uri, message, parameters, session);
+	}
+
+	// Encode query parameter values.
+	private URI encodeQueryParameters(URI url) throws UnsupportedEncodingException, URISyntaxException {
+		URIBuilder uri = new URIBuilder(url);
+		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
+		for(NameValuePair pair : uri.getQueryParams()) {
+			String paramValue = pair.getValue(); //May be NULL
+			if(StringUtils.isNotEmpty(paramValue)) {
+				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
+			}
+			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
+		}
+		if(pairs.size() > 0) {
+			uri.clearParameters();
+			uri.addParameters(pairs);
+		}
+		return uri.build();
 	}
 
 	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {

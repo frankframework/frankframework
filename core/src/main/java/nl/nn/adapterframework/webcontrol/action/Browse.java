@@ -36,6 +36,7 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -171,7 +172,7 @@ public class Browse extends ActionBase {
 				mb=pipe.getMessageLog();
 			} else {
 				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
-				mb = receiver.getMessageLog();
+				mb = receiver.getMessageLogBrowser();
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
@@ -183,7 +184,7 @@ public class Browse extends ActionBase {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;
 			}
-			mb = receiver.getErrorStorage();
+			mb = receiver.getErrorStorageBrowser();
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();
@@ -201,11 +202,11 @@ public class Browse extends ActionBase {
 				String msg=null;
 				if(rawmsg instanceof MessageWrapper) {
 					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-					msg = msgsgs.getText();
+					msg = msgsgs.getMessage().asString();
 				} else if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg, null);
+					msg = listener.extractMessage(rawmsg, null).asString();
 				} else {
-					msg=(String)rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
@@ -277,9 +278,9 @@ public class Browse extends ActionBase {
 								Object rawmsg = mb.browseMessage(cId);
 								String msg=null;
 								if (listener!=null) {
-									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
+									msg = listener.extractMessage(rawmsg,new HashMap()).asString();
 								} else {
-									msg=(String)rawmsg;
+									msg = Message.asString(rawmsg);
 								}
 								if (msg==null || msg.indexOf(messageTextMask)<0) {
 									continue;

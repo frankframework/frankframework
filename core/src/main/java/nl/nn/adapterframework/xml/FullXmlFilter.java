@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.xml;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -35,11 +35,14 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		super();
 	}
 
-	public FullXmlFilter(XMLReader parent) {
-		super(parent);
-		setParentsLexicalHandler(parent);
+	public FullXmlFilter(ContentHandler handler) {
+		this();
+		if (handler!=null) {
+			setContentHandler(handler);
+		}
 	}
 
+	
 	
 	@Override
 	public void setContentHandler(ContentHandler handler) {

@@ -3,7 +3,7 @@ package nl.nn.adapterframework.configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This implemention of {@link AdapterService} also registers the adapters to Jmx, and configures the registered Adapters.

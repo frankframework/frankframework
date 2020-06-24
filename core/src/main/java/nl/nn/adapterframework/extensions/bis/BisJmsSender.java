@@ -118,11 +118,11 @@ public class BisJmsSender extends JmsSender {
 		}
 		String replyMessage;
 		try {
-			String payload = bisUtils.prepareReply(input.asString(), isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
+			Message payload = bisUtils.prepareReply(input, isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
 			if (StringUtils.isNotEmpty(getRequestNamespace())) {
-				payload = XmlUtils.addRootNamespace(payload, getRequestNamespace());
+				payload = new Message(XmlUtils.addRootNamespace(payload.asString(), getRequestNamespace()));
 			}
-			replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
+			replyMessage = super.sendMessage(payload, session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

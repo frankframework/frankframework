@@ -19,12 +19,13 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.Rule;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
@@ -38,6 +39,7 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
+	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.deprecated", false);
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -79,15 +81,19 @@ public class AttributeCheckingRule extends Rule {
 					if(warning != null) {
 						Locator loc = digester.getDocumentLocator();
 						String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" attribute ["+name+"]";
+						boolean isDeprecated = AnnotationUtils.findAnnotation(m, Deprecated.class) != null;
 
-						if(AnnotationUtils.findAnnotation(m, Deprecated.class) != null) {
+						if(isDeprecated) {
 							msg += " is deprecated";
 						}
 
 						if(StringUtils.isNotEmpty(warning.value())) {
 							msg += ": " + warning.value();
 						}
-						ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
+
+						if(!(suppressDeprecationWarnings && isDeprecated)) { //Don't log if deprecation warnings are suppressed and it is deprecated
+							ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
+						}
 					}
 				}
 			}

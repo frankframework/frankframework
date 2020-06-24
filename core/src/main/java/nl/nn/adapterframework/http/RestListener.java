@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -156,13 +157,21 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection("xml2json");
 		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
-		return (String) pipeResult.getResult();
+		try {
+			return pipeResult.getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(null,"cannot transform result",e);
+		}
 	}
 
 	public String transformToXml(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
-		return (String) pipeResult.getResult();
+		try {
+			return pipeResult.getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(null,"cannot transform result",e);
+		}
 	}
 
 	@Override

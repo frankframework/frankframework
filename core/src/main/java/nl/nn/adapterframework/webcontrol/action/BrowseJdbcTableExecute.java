@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -126,56 +127,66 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.configure(true);
 						qs.open();
 
-						ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName, null);
-						if (!rs.isBeforeFirst()) {
-							rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName.toUpperCase(), null);
-						}
+						try (Connection conn =qs.getConnection()) {
+							ResultSet rs = null;
+							try {
+								rs = conn.getMetaData().getColumns(null, null, form_tableName, null);
+								if (!rs.isBeforeFirst()) {
+									rs.close();
+									rs = conn.getMetaData().getColumns(null, null, form_tableName.toUpperCase(), null);
+								}
 						
-						String fielddefinition = "<fielddefinition>";
-						while(rs.next()) {
-							String field = "<field name=\""
-									+ rs.getString(4)
-									+ "\" type=\""
-									+ DB2XMLWriter.getFieldType(rs.getInt(5))
-									+ "\" size=\""
-									+ rs.getInt(7)
-									+ "\"/>";
-							fielddefinition = fielddefinition + field;
+								String fielddefinition = "<fielddefinition>";
+								while(rs.next()) {
+									String field = "<field name=\""
+											+ rs.getString(4)
+											+ "\" type=\""
+											+ DB2XMLWriter.getFieldType(rs.getInt(5))
+											+ "\" size=\""
+											+ rs.getInt(7)
+											+ "\"/>";
+									fielddefinition = fielddefinition + field;
+								}
+								fielddefinition = fielddefinition + "</fielddefinition>";
+								
+								String browseJdbcTableExecuteREQ =
+									"<browseJdbcTableExecuteREQ>"
+										+ "<dbmsName>"
+										+ qs.getDbmsSupport().getDbmsName()
+										+ "</dbmsName>"
+										+ "<tableName>"
+										+ form_tableName
+										+ "</tableName>"
+										+ "<where>"
+										+ XmlUtils.encodeChars(form_where)
+										+ "</where>"
+										+ "<numberOfRowsOnly>"
+										+ form_numberOfRowsOnly
+										+ "</numberOfRowsOnly>"
+										+ "<order>"
+										+ form_order
+										+ "</order>"
+										+ "<rownumMin>"
+										+ form_rownumMin
+										+ "</rownumMin>"
+										+ "<rownumMax>"
+										+ form_rownumMax
+										+ "</rownumMax>"
+										+ fielddefinition
+										+ "<maxColumnSize>1000</maxColumnSize>"
+										+ "</browseJdbcTableExecuteREQ>";
+								URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+								if (url != null) {
+									Transformer t = XmlUtils.createTransformer(url);
+									query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+								}
+								result = qs.sendMessage(new Message(query), null).asString();
+							} finally {
+								if (rs!=null) {
+									rs.close();
+								}
+							}
 						}
-						fielddefinition = fielddefinition + "</fielddefinition>";
-						
-						String browseJdbcTableExecuteREQ =
-							"<browseJdbcTableExecuteREQ>"
-								+ "<dbmsName>"
-								+ qs.getDbmsSupport().getDbmsName()
-								+ "</dbmsName>"
-								+ "<tableName>"
-								+ form_tableName
-								+ "</tableName>"
-								+ "<where>"
-								+ XmlUtils.encodeChars(form_where)
-								+ "</where>"
-								+ "<numberOfRowsOnly>"
-								+ form_numberOfRowsOnly
-								+ "</numberOfRowsOnly>"
-								+ "<order>"
-								+ form_order
-								+ "</order>"
-								+ "<rownumMin>"
-								+ form_rownumMin
-								+ "</rownumMin>"
-								+ "<rownumMax>"
-								+ form_rownumMax
-								+ "</rownumMax>"
-								+ fielddefinition
-								+ "<maxColumnSize>1000</maxColumnSize>"
-								+ "</browseJdbcTableExecuteREQ>";
-						URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
-						if (url != null) {
-							Transformer t = XmlUtils.createTransformer(url);
-							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-						}
-						result = qs.sendMessage(new Message(query), null).asString();
 					//} else {
 						//error("errors.generic","This function only supports oracle databases",null);
 					//}
@@ -229,6 +240,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					"WEB_JDBCBROWSECOOKIE_NAME"),
 				cookieValue);
 		sendJdbcBrowseCookie.setMaxAge(Integer.MAX_VALUE);
+		sendJdbcBrowseCookie.setHttpOnly(true);
+		sendJdbcBrowseCookie.setSecure(true);
 		log.debug(
 			"Store cookie for "
 				+ request.getServletPath()

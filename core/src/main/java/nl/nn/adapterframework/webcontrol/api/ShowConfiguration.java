@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -41,20 +44,24 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -71,14 +78,25 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") boolean flow) throws ApiException {
+	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 
-		String result = "";
+		if(StringUtils.isNotEmpty(flow)) {
+			FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
-		if(flow) {
-			result = getFlow(getIbisManager().getConfigurations());
+			try {
+				ResponseBuilder response = Response.status(Response.Status.OK);
+				if("dot".equalsIgnoreCase(flow)) {
+					response.entity(flowDiagramManager.generateDot(getIbisManager().getConfigurations())).type(MediaType.TEXT_PLAIN);
+				} else {
+					response.entity(flowDiagramManager.get(getIbisManager().getConfigurations())).type("image/svg+xml");
+				}
+				return response.build();
+			} catch (SAXException | TransformerException | IOException e) {
+				throw new ApiException(e);
+			}
 		}
 		else {
+			String result = "";
 			for (Configuration configuration : getIbisManager().getConfigurations()) {
 				if (loaded) {
 					result = result + configuration.getLoadedConfiguration();
@@ -86,9 +104,8 @@ public final class ShowConfiguration extends Base {
 					result = result + configuration.getOriginalConfiguration();
 				}
 			}
+			return Response.status(Response.Status.OK).entity(result).build();
 		}
-
-		return Response.status(Response.Status.OK).entity(result).build();
 	}
 
 	@PUT
@@ -138,10 +155,10 @@ public final class ShowConfiguration extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/flow")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
+	@PermitAll
+	@Path("/configurations/{configuration}/health")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
@@ -149,7 +166,75 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		return Response.status(Response.Status.OK).entity(getFlow(configuration)).build();
+		Map<String, Object> response = new HashMap<String, Object>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
+		List<String> errors = new ArrayList<String>();
+
+		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+			if(state.equals(RunStateEnum.STARTED)) {
+				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
+				while (receiverIterator.hasNext()) {
+					IReceiver receiver = receiverIterator.next();
+					RunStateEnum rState = receiver.getRunState();
+	
+					if(!rState.equals(RunStateEnum.STARTED)) {
+						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+						state = RunStateEnum.ERROR;
+					}
+				}
+			}
+			else {
+				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+				state = RunStateEnum.ERROR;
+			}
+
+			int count;
+			if(stateCount.containsKey(state))
+				count = stateCount.get(state);
+			else
+				count = 0;
+
+			stateCount.put(state, ++count);
+		}
+
+		Status status = Response.Status.OK;
+		if(stateCount.containsKey(RunStateEnum.ERROR))
+			status = Response.Status.SERVICE_UNAVAILABLE;
+
+		if(errors.size() > 0)
+			response.put("errors", errors);
+		response.put("status", status);
+
+		return Response.status(status).entity(response).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/flow")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAdapterFlow(@PathParam("configuration") String configurationName, @QueryParam("dot") boolean dot) throws ApiException {
+
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
+
+		if(configuration == null){
+			throw new ApiException("Configuration not found!");
+		}
+
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
+
+		try {
+			ResponseBuilder response = Response.status(Response.Status.OK);
+			if(dot) {
+				response.entity(flowDiagramManager.generateDot(configuration)).type(MediaType.TEXT_PLAIN);
+			} else {
+				response.entity(flowDiagramManager.get(configuration)).type("image/svg+xml");
+			}
+			return response.build();
+		} catch (SAXException | TransformerException | IOException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	@PUT
@@ -192,7 +277,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		if(configuration.getClassLoader() instanceof DatabaseClassLoader) {
+		if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
 			if(configs == null)
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -263,51 +348,28 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
+	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
 
-		String datasource = null, fileName = null;
-		InputStream file = null;
-		boolean multiple_configs = false, activate_config = true, automatic_reload = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		String fileName = null;
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
-		try {
-			if(inputDataMap.get("datasource") != null)
-				datasource = inputDataMap.get("datasource").get(0).getBodyAsString();
-			else
-				throw new ApiException("Datasource not defined", 400);
-			if(inputDataMap.get("multiple_configs") != null)
-				multiple_configs = inputDataMap.get("multiple_configs").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("activate_config") != null)
-				activate_config = inputDataMap.get("activate_config").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("automatic_reload") != null)
-				automatic_reload = inputDataMap.get("automatic_reload").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-			else
-				throw new ApiException("No file specified", 400);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource");
+		boolean multiple_configs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activate_config  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
-			MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-			String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-			for (String fName : contentDispositionHeader) {
-				if ((fName.trim().startsWith("filename"))) {
-					String[] tmp = fName.split("=");
-					fileName = tmp[1].trim().replaceAll("\"","");
-				}
-			}
-		}
-		catch (IOException e) {
-			throw new ApiException("Failed to parse one or more parameters", e);
-		}
+		String user = ""; //Should not be NULL as it's an optional field.
+		Principal principal = securityContext.getUserPrincipal();
+		if(principal != null)
+			user = principal.getName();
+		user = resolveTypeFromMap(inputDataMap, "user", String.class, user);
+
+		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 		try {
-			String user = null;
-			Principal principal = securityContext.getUserPrincipal();
-			if(principal != null)
-				user = principal.getName();
-
 			if(multiple_configs) {
 				try {
 					ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
@@ -374,34 +436,34 @@ public final class ShowConfiguration extends Base {
 			}
 		}
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, configurationName);
-			rs = stmt.executeQuery();
-			while (rs.next()) {
-				Map<String, Object> config = new HashMap<String, Object>();
-				config.put("name", rs.getString(1));
-				config.put("version", rs.getString(2));
-				config.put("filename", rs.getString(3));
-				config.put("user", rs.getString(4));
-				config.put("active", rs.getBoolean(5));
-				config.put("autoreload", rs.getBoolean(6));
-				config.put("created", rs.getString(7));
-				returnMap.add(config);
+			try (Connection conn = qs.getConnection()) {
+				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, configurationName);
+					try (ResultSet rs = stmt.executeQuery()) {
+						while (rs.next()) {
+							Map<String, Object> config = new HashMap<String, Object>();
+							config.put("name", rs.getString(1));
+							config.put("version", rs.getString(2));
+							config.put("filename", rs.getString(3));
+							config.put("user", rs.getString(4));
+							config.put("active", rs.getBoolean(5));
+							config.put("autoreload", rs.getBoolean(6));
+							config.put("created", rs.getString(7));
+							returnMap.add(config);
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			throw new ApiException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 		return returnMap;

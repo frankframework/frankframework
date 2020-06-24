@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,9 +35,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.core.ResourceInvoker;
-import org.jboss.resteasy.core.ResourceMethodRegistry;
+import org.apache.cxf.jaxrs.model.ClassResourceInfo;
+import org.apache.cxf.jaxrs.model.MethodDispatcher;
+import org.apache.cxf.jaxrs.model.OperationResourceInfo;
+import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -49,12 +50,10 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 
 @Path("/")
-public class Init extends Base {
+public class Init extends Base implements ApplicationContextAware {
+	@Context HttpServletRequest httpServletRequest;
 
 	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
-
-	@Context Dispatcher dispatcher;
-	@Context HttpServletRequest httpServletRequest;
 
 	@GET
 	@PermitAll
@@ -65,15 +64,14 @@ public class Init extends Base {
 		Map<String, Object> HALresources = new HashMap<String, Object>();
 		Map<String, Object> resources = new HashMap<String, Object>(1);
 
-		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
-
 		StringBuffer requestPath = httpServletRequest.getRequestURL();
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
 			requestPath.setLength(requestPath.length()-1);
 
-		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
-			for (ResourceInvoker invoker : entry.getValue()) {
-				Method method = invoker.getMethod();
+		for (ClassResourceInfo cri : getJAXRSService().getClassResourceInfo()) {
+			MethodDispatcher methods = cri.getMethodDispatcher();
+			for (OperationResourceInfo operation : methods.getOperationResourceInfos()) {
+				Method method = operation.getMethodToInvoke();
 				String relation = null;
 
 				if(method.getDeclaringClass() == getClass()) {
@@ -138,6 +136,7 @@ public class Init extends Base {
 				}
 			}
 		}
+
 		if((HATEOASImplementation.equalsIgnoreCase("hal")))
 			resources.put(ResourceKey, HALresources);
 		else

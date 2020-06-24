@@ -22,12 +22,13 @@ import java.io.Writer;
 
 import org.xml.sax.ContentHandler;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
-	public MessageOutputStreamCap(INamedObject owner, IOutputStreamingSupport nextProvider) {
-		super(owner, null, nextProvider);
+	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
+		super(owner, next);
 	}
 
 	@Override

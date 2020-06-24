@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
@@ -27,8 +28,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.SchedulingAwareRunnable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,79 +37,86 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+
 /**
  * Container that provides threads to exectue pulling listeners.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PullingListenerContainer implements IThreadCountControllable {
+public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private TransactionDefinition txNew=null;
+	private TransactionDefinition txNew = null;
 
-    private ReceiverBase receiver;
+	private ReceiverBase<M> receiver;
 	private PlatformTransactionManager txManager;
-    private Counter threadsRunning = new Counter(0);
+	private Counter threadsRunning = new Counter(0);
 	private Counter tasksStarted = new Counter(0);
-	private Semaphore processToken = null;	// guard against to many messages being processed at the same time
-    private Semaphore pollToken = null;     // guard against to many threads polling at the same time 
-	private boolean idle=false;   			// true if the last messages received was null, will cause wait loop
-    private int retryInterval=1;
-    private int maxThreadCount=1;
+	private Semaphore processToken = null; // guard against to many messages being processed at the same time
+	private Semaphore pollToken = null; // guard against to many threads polling at the same time
+	private boolean idle = false; // true if the last messages received was null, will cause wait loop
+	private int retryInterval = 1;
+	private int maxThreadCount = 1;
  
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
 	private TaskExecutor taskExecutor;
-   
-    private PullingListenerContainer() {
-        super();
-    }
-    
-    public void configure() {
-        if (receiver.getNumThreadsPolling()>0 && receiver.getNumThreadsPolling()<receiver.getNumThreads()) {
-            pollToken = new Semaphore(receiver.getNumThreadsPolling());
-        }
+
+	private PullingListenerContainer() {
+		super();
+	}
+
+	public void configure() {
+		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
+			pollToken = new Semaphore(receiver.getNumThreadsPolling());
+		}
 		processToken = new Semaphore(receiver.getNumThreads());
-		maxThreadCount=receiver.getNumThreads();
-        if (receiver.isTransacted()) {
+		maxThreadCount = receiver.getNumThreads();
+		if (receiver.isTransacted()) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-         	if (receiver.getTransactionTimeout()>0) {
+			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
-         	}
-			txNew=txDef;
-        }
-    }
-    
-    public void start() {
-    	taskExecutor.execute(new ControllerTask());
-    }
-    
-    public void stop() {
-    }
-    
+			}
+			txNew = txDef;
+		}
+	}
+
+	public void start() {
+		taskExecutor.execute(new ControllerTask());
+	}
+
+	public void stop() {
+	}
+
+	@Override
 	public boolean isThreadCountReadable() {
 		return true;
 	}
 
+	@Override
 	public boolean isThreadCountControllable() {
 		return true;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		return (int)threadsRunning.getValue();
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		return maxThreadCount;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		maxThreadCount++;
 		processToken.release();
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (maxThreadCount>1) {
 			maxThreadCount--;
@@ -146,37 +154,49 @@ public class PullingListenerContainer implements IThreadCountControllable {
 			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
 			receiver.stopRunning();
 			receiver.closeAllResources();
-			NDC.remove();
+			ThreadContext.removeStack();
 		}
 	}
-    
-    private class ListenTask implements SchedulingAwareRunnable {
 
+	private class ListenTask implements SchedulingAwareRunnable {
+
+		@Override
 		public boolean isLongLived() {
 			return false;
 		}
 
+		@Override
 		public void run() {
-			IPullingListener listener = null;
-			Map threadContext = null;
+			IPullingListener<M> listener = null;
+			Map<String,Object> threadContext = null;
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
-					listener = (IPullingListener) receiver.getListener();
+					listener = (IPullingListener<M>) receiver.getListener();
 					threadContext = listener.openThread();
 					if (threadContext == null) {
-						threadContext = new HashMap();
+						threadContext = new HashMap<>();
 					}
-					long startProcessingTimestamp;
-					Object rawMessage = null;
+					M rawMessage = null;
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							if (receiver.isTransacted()) {
-								txStatus = txManager.getTransaction(txNew);
+							boolean retrieveMessage = true;
+							if (isIdle() && listener instanceof IPeekableListener) {
+								IPeekableListener peekableListener = (IPeekableListener) listener;
+								if (peekableListener.isPeekUntransacted()) {
+									retrieveMessage = peekableListener.hasRawMessageAvailable();
+								}
 							}
-							rawMessage = listener.getRawMessage(threadContext);
+							if (!retrieveMessage) {
+								rawMessage = null;
+							} else {
+								if (receiver.isTransacted()) {
+									txStatus = txManager.getTransaction(txNew);
+								}
+								rawMessage = listener.getRawMessage(threadContext);
+							}
 							resetRetryInterval();
 							setIdle(rawMessage==null);
 						} catch (Exception e) {
@@ -201,26 +221,30 @@ public class PullingListenerContainer implements IThreadCountControllable {
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
-							startProcessingTimestamp = System.currentTimeMillis();
 							try {
 								receiver.processRawMessage(listener, rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
-										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
+										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 										txManager.rollback(txStatus);
 									} else {
 										txManager.commit(txStatus);
 									}
 								}
 							} catch (Exception e) {
-								if (txStatus != null && !txStatus.isCompleted()) {
-									txManager.rollback(txStatus);
-								}
-								if (receiver.isOnErrorContinue()) {
-									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
-								} else {
-									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
-									receiver.stopRunning();
+								try {
+									if (txStatus != null && !txStatus.isCompleted()) {
+										txManager.rollback(txStatus);
+									}
+								} catch (Exception e2) {
+									receiver.error("caught Exception rolling back transaction after catching Exception", e2);
+								} finally {
+									if (receiver.isOnErrorContinue()) {
+										receiver.error("caught Exception processing message, will continue processing next message", e);
+									} else {
+										receiver.error("stopping receiver after Exception in processing message", e);
+										receiver.stopRunning();
+									}
 								}
 							}
 						}
@@ -231,7 +255,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					}
 				}
 			} catch (Throwable e) {
-				receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
+				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
 				if (!pollTokenReleased && pollToken != null) {
@@ -242,10 +266,10 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
+						receiver.error("Exception closing listener", e);
 					}
 				}
-				NDC.remove();
+				ThreadContext.removeStack();
 			}
 		}
     }
@@ -417,13 +441,13 @@ public class PullingListenerContainer implements IThreadCountControllable {
 	}
 	
 	
-    public void setReceiver(ReceiverBase receiver) {
-        this.receiver = receiver;
-    }
-	public ReceiverBase getReceiver() {
+	public void setReceiver(ReceiverBase<M> receiver) {
+		this.receiver = receiver;
+	}
+	public ReceiverBase<M> getReceiver() {
 		return receiver;
 	}
-    
+
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;
 	}

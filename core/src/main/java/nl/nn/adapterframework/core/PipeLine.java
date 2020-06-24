@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -144,7 +144,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	private boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
-	private String transformNullMessage = null;
+	private Message transformNullMessage = null;
 	private String adapterToRunBeforeOnEmptyInput = null;
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
@@ -529,11 +529,11 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
-		if (transformNullMessage != null && message == null) {
+	public PipeLineResult process(String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
-		return pipeLineProcessor.processPipeLine(this, messageId, new Message(message), pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
 
 	/**
@@ -555,6 +555,28 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
 
+	/**
+	 * Find the destination of the forward, i.e. the {@link IForwardTarget object} (Pipe or PipeLineExit) where the forward points to.
+	 */
+	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
+		if (forward==null){
+			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a null forward from pipe ["+pipe.getName()+"].");
+		}
+		String path = forward.getPath();
+		if (StringUtils.isEmpty(path)){
+			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a path that equals null or has a zero-length value from pipe ["+pipe.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+		}
+		PipeLineExit plExit= getPipeLineExits().get(path);
+		if (plExit != null ) {
+			return plExit;
+		}
+		IPipe nextPipe=getPipe(path);
+		if (nextPipe==null) {
+			throw new PipeRunException(pipe, "Pipeline of adapter ["+ getOwner().getName()+"] got an erroneous definition from pipe ["+pipe.getName()+"]. Pipe to execute ["+path+ "] is not defined.");
+		}
+		return nextPipe;
+	}
+	
 	/**
 	 * Register the adapterName of this Pipelineprocessor.
 	 * @param adapter
@@ -836,10 +858,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	@IbisDoc({"when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
 	public void setTransformNullMessage(String s) {
-		transformNullMessage = s;
-	}
-	public String getTransformNullMessage() {
-		return transformNullMessage;
+		transformNullMessage = new Message(s);
 	}
 
 	public StatisticsKeeper getRequestSizeStats() {

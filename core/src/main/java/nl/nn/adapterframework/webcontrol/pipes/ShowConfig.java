@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,10 +49,10 @@ public class ShowConfig extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
+			return new PipeRunResult(getForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Illegal value for method [" + method

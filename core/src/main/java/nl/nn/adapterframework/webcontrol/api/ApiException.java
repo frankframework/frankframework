@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Custom errors for the API.

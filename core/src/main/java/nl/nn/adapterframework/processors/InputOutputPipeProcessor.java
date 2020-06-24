@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
@@ -33,9 +35,6 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Jaco de Groot
@@ -87,10 +86,10 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe !=null) {
 			if (pe.isRestoreMovedElements()) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
-				Object result = pipeRunResult.getResult();
-				if (result!=null) {
+				Message result = pipeRunResult.getResult();
+				if (!result.isEmpty()) {
 					try {
-						String resultString = Message.asString(result);
+						String resultString = result.asString();
 						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
 					} catch (IOException e) {
 						throw new PipeRunException(pipe, "cannot open stream of result", e);
@@ -100,7 +99,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
 				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
-				Message result = Message.asMessage(pipeRunResult.getResult());
+				Message result = pipeRunResult.getResult();
 				if (result!=null && !result.isEmpty()) {
 					try {
 						String resultString = result.asString();
@@ -131,8 +130,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-				Object result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				Message result = pipeRunResult.getResult();
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.setResult(preservedObject);

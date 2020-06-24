@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -108,6 +108,7 @@ public class MqttFacade implements HasPhysicalDestination {
 		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
 	}
 
+	@Override
 	public String toString() {
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("topic", getTopic());

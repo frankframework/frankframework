@@ -16,22 +16,22 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -63,7 +63,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-
+	private boolean suppressDefaultValueWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.defaultvalue", false);
+	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.deprecated", false);
 
     public AbstractSpringPoweredDigesterFactory() {
         super();
@@ -167,18 +168,20 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
 	 */
 	private void checkDeprecation(Object currObj) {
-		Class<?> clazz = ClassUtils.getUserClass(currObj);
-		ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-		if(warning != null) {
-			String msg = getObjectName(currObj, null);
-			if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
-				msg += " is deprecated";
+		if(!suppressDeprecationWarnings) {
+			Class<?> clazz = ClassUtils.getUserClass(currObj);
+			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+			if(warning != null) {
+				String msg = getObjectName(currObj, null);
+				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
+					msg += " is deprecated";
+				}
+				if(StringUtils.isNotEmpty(warning.value())) {
+					msg += ": " + warning.value();
+				}
+				//Only print it once per deprecated class
+				ConfigurationWarnings.add(log, msg);
 			}
-			if(StringUtils.isNotEmpty(warning.value())) {
-				msg += ": " + warning.value();
-			}
-			//Only print it once per deprecated class
-			ConfigurationWarnings.add(log, msg);
 		}
 	}
 
@@ -265,9 +268,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
-		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
-		if (!configWarnings.containsDefaultValueException(mergedKey)) {
-			addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
+		if(!suppressDefaultValueWarnings) {
+			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
+			if (!configWarnings.containsDefaultValueException(mergedKey)) {
+				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
+			}
 		}
 	}
 

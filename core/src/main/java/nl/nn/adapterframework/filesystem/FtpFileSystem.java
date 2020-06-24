@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
@@ -192,21 +193,30 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return toFile(newName);
 	}
 
-	@Override
-	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	protected String getDestinationFilename(FTPFile f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
 		if(!folderExists(destinationFolder)) {
 			if(createFolder) {
 				createFolder(destinationFolder);
 			}
-			throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exist.");
+			throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
 		}
-		String destinationFilename=destinationFolder+"/"+f.getName();
+		return destinationFolder+"/"+f.getName();
+	}
+
+	@Override
+	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		String destinationFilename = getDestinationFilename(f, destinationFolder, createFolder, "move");
 		try {
 			ftpClient.rename(f.getName(), destinationFilename);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 		return toFile(destinationFilename);
+	}
+	
+	@Override
+	public FTPFile copyFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		throw new NotImplementedException("CopyFile not implemented for FtpFileSystem");
 	}
 	
 	@Override

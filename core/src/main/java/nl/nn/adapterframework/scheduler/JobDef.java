@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -77,7 +77,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
@@ -94,6 +94,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -519,10 +520,10 @@ public class JobDef {
 								}
 								String msg = "error while setting lock: " + e.getMessage();
 								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 									log.info(getLogPrefix()+msg);
 								} else {
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 									log.error(getLogPrefix()+msg);
 								}
 							}
@@ -543,7 +544,7 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 									log.warn(getLogPrefix()+msg);
 								}
 							}
@@ -562,7 +563,7 @@ public class JobDef {
 			}
 		} else {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		}
 	}
@@ -745,7 +746,7 @@ public class JobDef {
 	private void checkReload(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 			log.info(getLogPrefix() + msg);
 			return;
 		}
@@ -775,8 +776,8 @@ public class JobDef {
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if(StringUtils.isEmpty(configVersion)) {
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
 								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
 							}
 							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
@@ -789,8 +790,8 @@ public class JobDef {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				qs.close();
 				JdbcUtil.fullClose(conn, rs);
+				qs.close();
 			}
 
 			if (!configsToReload.isEmpty()) {
@@ -837,7 +838,7 @@ public class JobDef {
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperLevel.ERROR);
 			return;
 		}
 
@@ -938,8 +939,8 @@ public class JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
 			JdbcUtil.fullClose(conn, rs);
+			qs.close();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
@@ -967,7 +968,7 @@ public class JobDef {
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		} finally {
 			qs.close();
@@ -1006,7 +1007,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg, e);
 		}
 	}
@@ -1225,7 +1226,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) throws ConfigurationException {
 		try {
 			this.function = JobDefFunctions.fromValue(function);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -87,7 +88,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
+ * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)</td><td>false</td></tr>
  * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
  * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
@@ -114,9 +115,9 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 
 	@Override
-	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
-			return super.getStringFromRawMessage(rawMessage, threadContext);
+			return super.extractMessage(rawMessage, threadContext);
 		}
 		Item item = (Item) rawMessage;
 		try {
@@ -142,7 +143,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
 			}
 
-			return emailXml.toXML();
+			return new Message(emailXml.toXML());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -328,7 +329,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	}
 
 	
-	@IbisDoc({"14", "when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)", ""})
+	@IbisDoc({"14", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
 	public void setSimple(boolean b) {
 		simple = b;
 	}

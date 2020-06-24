@@ -1661,6 +1661,20 @@ table.dataTable thead .sorting_desc_disabled {
 .dataTables_filter label {
   margin-right: 5px;
 }
+td.storageActions {
+  min-width: 120px !important;
+  height: 100px;
+}
+td.storageActions > div.icheckbox_square-green {
+  margin: 38px 6px 0 0;
+}
+td.storageActions > div {
+  float: left;
+}
+td.storageActions a, .storageActions button {
+  float: left;
+  clear: both;
+}
 .html5buttons {
   float: right;
 }
@@ -2469,31 +2483,6 @@ label.error {
   border-right: none;
 }
 /* Toastr custom style */
-#toast-container > .toast {
-  background-image: none !important;
-}
-#toast-container > .toast:before {
-  position: fixed;
-  font-family: FontAwesome;
-  font-size: 24px;
-  line-height: 24px;
-  float: left;
-  color: #FFF;
-  padding-right: 0.5em;
-  margin: auto 0.5em auto -1.5em;
-}
-#toast-container > .toast-warning:before {
-  content: "\f0e7";
-}
-#toast-container > .toast-error:before {
-  content: "\f071";
-}
-#toast-container > .toast-info:before {
-  content: "\f005";
-}
-#toast-container > .toast-success:before {
-  content: "\f00C";
-}
 #toast-container > div {
   -moz-box-shadow: 0 0 3px #999;
   -webkit-box-shadow: 0 0 3px #999;
@@ -2510,6 +2499,12 @@ label.error {
   -ms-filter: alpha(opacity=100);
   filter: alpha(opacity=100);
   cursor: pointer;
+}
+.toast-close-button {
+  right: -0.3em;
+  top: -0.7em;
+  -webkit-text-shadow: none;
+  text-shadow: none;
 }
 .toast {
   background-color: #1ab394;

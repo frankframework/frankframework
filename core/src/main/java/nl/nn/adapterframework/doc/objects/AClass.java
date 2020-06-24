@@ -93,8 +93,15 @@ public class AClass {
 
             // If there is an IbisDocRef for the method, get the IbisDoc of the referred method
             if (reference != null) {
-                order = reference.value()[0];
-                ibisDoc = aMethod.getIbisDocRef(reference.value()[1], method);
+				String[] orderAndPackageName = reference.value();
+				String packageName = null;
+				if(orderAndPackageName.length == 1) {
+					packageName = reference.value()[0];
+				} else if(orderAndPackageName.length == 2) {
+					order = reference.value()[0];
+					packageName = reference.value()[1];
+				}
+                ibisDoc = aMethod.getIbisDocRef(packageName, method);
                 setReferredClassName(aMethod.getReferredClassName());
                 originalClassName = aMethod.getReferredClassName();
             }

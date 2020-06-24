@@ -30,7 +30,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -270,7 +270,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				txStatus = txManager.getTransaction(TX);
 			}
 
-			Map<String,Session> threadContext = new HashMap<>();
+			Map<String,Object> threadContext = new HashMap<>();
 			try {
 				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
@@ -460,7 +460,7 @@ class PollGuard extends TimerTask {
 
 	private void error(String message) {
 		log.error(springJmsConnector.getLogPrefix() + message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperMessage.ERROR_LEVEL);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.ERROR);
 	}
 
 }

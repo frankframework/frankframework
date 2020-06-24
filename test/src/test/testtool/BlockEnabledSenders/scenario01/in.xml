@@ -1,0 +1,17 @@
+<records>
+	<record>
+		<char>a</char>
+		<number>4</number>
+		<text>eerste record</text>
+	</record>
+	<record>
+		<char>b</char>
+		<number>5</number>
+		<text>tweede record</text>
+	</record>
+	<record>
+		<char>c</char>
+		<number>6</number>
+		<text>derde record</text>
+	</record>
+</records>

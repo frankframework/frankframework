@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.stream.Message;
+
 /**
  * An <code>errorMessageFormatter</code> is responsible for returning a string
  * describing the error at hand in a format that the receiver expects. 
@@ -24,5 +26,5 @@ package nl.nn.adapterframework.core;
  */
 public interface IErrorMessageFormatter {
 
-	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime);
+	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);
 }

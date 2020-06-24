@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.soap.Wsdl;
@@ -112,7 +113,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		OutputStream fullWsdlOut = null;
 		try {
 			Adapter adapter = new Adapter();
-			adapter.setConfiguration(new Configuration(null));
+			Configuration configuration = new Configuration(null);
+			configuration.setClassLoader(getConfigurationClassLoader());
+			adapter.setConfiguration(configuration);
 			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(
 					" ", "_");
 			adapter.setName(fileBaseName);
@@ -125,9 +128,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			adapter.registerReceiver(genericReceiver);
 			pipeLine.setAdapter(adapter);
 			Wsdl wsdl = null;
-			wsdl = new Wsdl(pipeLine);
+			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
+			wsdl = new Wsdl(pipeLine, generationInfo);
 			wsdl.setIndent(true);
-			wsdl.setDocumentation(getWsdlDocumentation(wsdl.getFilename()));
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);
 			// zip (with includes)

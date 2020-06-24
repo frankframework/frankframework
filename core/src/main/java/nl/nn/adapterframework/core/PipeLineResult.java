@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * The PipeLineResult is a type to store both the
@@ -28,45 +29,38 @@ package nl.nn.adapterframework.core;
  */
 public class PipeLineResult {
 
-	private String result;
+	private Message result;
 	private String state;
 	private int exitCode;
 
+	@Override
 	public String toString(){
 		return "result=["+result+"] state=["+state+"]";
 	}
 
 	/**
-	 * Get the result of the pipeline processing
-	 * @return java.lang.String
+	 * The result of the pipeline processing
 	 */
-	public String getResult() {
-		return result;
-	}
-	/**
-	 * set the result of the PipeLine processing to the specified value.
-	 */
-	public void setResult(String newResult) {
+	public void setResult(Message newResult) {
 		result = newResult;
+	}
+	public Message getResult() {
+		return result;
 	}
 
 	/**
-	 * Get the exit-state of the pipeline
-	 */
-	public String getState() {
-		return state;
-	}
-	/**
-	 * set the state of the pipeline. 
+	 * The exit-state of the pipeline
 	 */
 	public void setState(String newState) {
 		state = newState;
+	}
+	public String getState() {
+		return state;
 	}
 
 	public void setExitCode(int code) {
 		this.exitCode = code;
 	}
-
 	public int getExitCode() {
 		return this.exitCode;
 	}

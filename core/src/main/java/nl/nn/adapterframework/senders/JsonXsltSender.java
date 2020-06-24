@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -59,7 +59,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		return null; // JsonParser requires inputSource
 	}
 
@@ -69,7 +69,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,session);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session);
 		return super.createHandler(input, session, prev);
 	}
 

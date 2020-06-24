@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -156,9 +157,9 @@ public class BrowseExecute extends Browse {
 				String msgCid=msgcontext.getCorrelationId();
 				HashMap context = new HashMap();
 				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg,context);
+					msg = listener.extractMessage(rawmsg,context).asString();
 				} else {
-					msg=(String)rawmsg;
+					msg = Message.asString(rawmsg);
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
@@ -216,7 +217,7 @@ public class BrowseExecute extends Browse {
 							
 				if (listener!=null && listener instanceof IBulkDataListener) {
 					IBulkDataListener bdl=(IBulkDataListener)listener;
-					String bulkfilename=bdl.retrieveBulkData(rawmsg,msg,context);
+					String bulkfilename=bdl.retrieveBulkData(rawmsg,new Message(msg),context);
 
 					zipOutputStream.closeEntry();
 		

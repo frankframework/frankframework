@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
-	function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
+angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
+	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -8,11 +8,12 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	$urlRouterProvider.otherwise("/");
 
+	$cookiesProvider.defaults.secure = (location.protocol == "https:");
+	$cookiesProvider.defaults.samesite = 'strict';
+
 	$ocLazyLoadProvider.config({
-		modules: [{
-			name: 'toaster',
-			files: ['js/plugins/toastr/toastr.min.js', 'css/plugins/toastr/toastr.min.css']
-		}, {
+		modules: [
+		{
 			name: 'datatables',
 			serie: true,
 			files: [

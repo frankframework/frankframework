@@ -15,26 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
-import org.junit.Before;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -42,14 +22,40 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+
 public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
+	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<ApiListener>());
 
 	enum Methods {
 		GET,POST,PUT,DELETE,OPTIONS
@@ -69,17 +75,28 @@ public class ApiListenerServletTest extends Mockito {
 		when(servlet.getServletConfig()).thenReturn(servletConfig);
 		servlet.init();
 
-		//Cleanup Dispather
-		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
-		for(String pattern : dispatcher.getPatternClients().keySet()) {
-			ApiDispatchConfig dispatchConfig = dispatcher.getPatternClients().get(pattern);
-			Set<String> methods = dispatchConfig.getMethods();
-			for(String method : methods) {
-				log.info("remove ["+pattern+"] method " + method);
-				dispatchConfig.destroy(method);
-			}
-		}
 		session = null;
+	}
+
+	@After
+	public void tearDown() {
+		for(ApiListener listener : listeners) {
+			listener.close();
+		}
+		listeners.clear();
+
+		servlet.destroy();
+		servlet = null;
+	}
+
+	@BeforeClass
+	public static void beforeClass() {
+		ApiServiceDispatcher.getInstance().clear();
+	}
+
+	@AfterClass
+	public static void afterClass() {
+		ApiServiceDispatcher.getInstance().clear();
 	}
 
 	private void addListener(String uri, Methods method) throws ListenerException, ConfigurationException {
@@ -114,6 +131,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		listener.configure();
 		listener.open();
+
+		listeners.add(listener);
 		log.info("created ApiListener "+listener.toString());
 	}
 
@@ -637,38 +656,38 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String message) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String rawMessage, Message message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String message) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String message, Map<String, Object> context) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}
 			session = context;
 			if(session.containsKey("response-content")) {
-				return (String) session.get("response-content");
+				return Message.asMessage(session.get("response-content"));
 			} else {
 				return message;
 			}
 		}
 
 		@Override
-		public String processRequest(IListener<String> origin, String correlationId, String message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public Message processRequest(IListener<String> origin, String correlationId, String rawMessage, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
 			fail("wrong processRequest method called");
 			return message;
 		}
 
 		@Override
-		public String formatException(String extrainfo, String correlationId, String message, Throwable t) {
+		public String formatException(String extrainfo, String correlationId, Message message, Throwable t) {
 			t.printStackTrace();
 
 			return t.getMessage();

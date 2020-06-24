@@ -21,6 +21,9 @@ import java.util.Map;
 
 import javax.jms.Session;
 
+import com.ing.ifsa.api.ServiceRequest;
+import com.ing.ifsa.api.ServiceURI;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -30,9 +33,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-
-import com.ing.ifsa.api.ServiceRequest;
-import com.ing.ifsa.api.ServiceURI;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  *
@@ -46,64 +47,78 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
     private IReceiver receiver;
     private IListenerConnector listenerPortConnector;
     
-    public void setHandler(IMessageHandler handler) {
+    @Override
+   public void setHandler(IMessageHandler handler) {
         this.handler = handler;
     }
 
+    @Override
     public void setExceptionListener(IbisExceptionListener listener) {
         this.exceptionListener = listener;
     }
 
+    @Override
     public void configure() throws ConfigurationException {
         super.configure();
         listenerPortConnector.configureEndpointConnection(this, null, null, null, getExceptionListener(),
                 null, Session.AUTO_ACKNOWLEDGE, false, null, timeOut, -1);
     }
 
+    @Override
     public void open() throws ListenerException {
         listenerPortConnector.start();
     }
 
+    @Override
     public void close() throws ListenerException {
         listenerPortConnector.stop();
     }
 
+    @Override
     public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
         ServiceRequest request = (ServiceRequest) rawMessage;
         return request.getUniqueId();
     }
 
-    public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+    @Override
+    public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
         ServiceRequest request = (ServiceRequest) rawMessage;
-        return request.getBusinessMessage().getText();
+        return new Message(request.getBusinessMessage().getText());
     }
 
-    public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+    @Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
         // Nothing to do here
         return;
     }
 
+    @Override
     public IbisExceptionListener getExceptionListener() {
         return exceptionListener;
     }
 
+    @Override
     public IMessageHandler getHandler() {
         return handler;
     }
 
+    @Override
     public IReceiver getReceiver() {
         return receiver;
     }
 
+    @Override
     public void setReceiver(IReceiver receiver) {
         this.receiver = receiver;
     }
 
+    @Override
     public String getListenerPort() {
         String appIdName = getApplicationId().replaceFirst("IFSA://", "");
         return "IFSA_" + appIdName + "_" + getMessageProtocol() + "_Listener";
     }
 
+    @Override
     public IListenerConnector getListenerPortConnector() {
         return listenerPortConnector;
     }
@@ -125,7 +140,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
             log.debug("Setting correlation ID to MessageId");
         }
         Date dTimeStamp = new Date();
-        String messageText = getStringFromRawMessage(rawMessage, threadContext);
+        Message messageText = extractMessage(rawMessage, threadContext);
         
         String fullIfsaServiceName = null;
         ServiceURI requestedService = request.getServiceURI();
@@ -148,7 +163,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
                                 + "] \n  Timestamp=[" + dTimeStamp.toString()
                                 + "] \n  ReplyTo=[none"
                                 + "] \n  MessageHeaders=[<unknown>"
-                                + "] \n  Message=[" + messageText+"\n]");
+                                + "] \n  Message=[" + messageText.toString()+"\n]");
 
         }
         threadContext.put("id", id);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -305,28 +306,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						ITransactionalStorage errorStorage = rb.getErrorStorage();
 						if (errorStorage == null) {
-							log.error("action ["
-									+ action
-									+ "] is only allowed for receivers with an ErrorStorage");
+							log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
 						} else {
 							if (errorStorage instanceof JdbcTransactionalStorage) {
 								JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb.getErrorStorage();
 								IListener listener = rb.getListener();
 								if (listener instanceof EsbJmsListener) {
 									EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
-									EsbUtils.receiveMessageAndMoveToErrorStorage(
-											esbJmsListener, jdbcErrorStorage);
+									EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
 								} else {
-									log.error("action ["
-											+ action
-											+ "] is currently only allowed for EsbJmsListener, not for type ["
-											+ listener.getClass().getName() + "]");
+									log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
 								}
 							} else {
-								log.error("action ["
-										+ action
-										+ "] is currently only allowed for JdbcTransactionalStorage, not for type ["
-										+ errorStorage.getClass().getName() + "]");
+								log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
 							}
 						}
 					}
@@ -471,7 +463,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 		if(requiresDatabase) {
 			//Try to create a new transaction to check if there is a connection to the database
-			this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+			if(status != null) { //If there is a transaction (read connection) close it!
+				this.transactionManager.commit(status);
+			}
 		}
 	}
 }
