@@ -179,10 +179,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		cookie.setMaxAge(Integer.MAX_VALUE);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
-		log.debug("Store cookie for "
-				+ request.getServletPath()
-				+ " cookieName[" + cookieName + "] "
-				+ " cookieValue[" + cookieValue + "]");
+		log.debug("Store cookie for " + request.getServletPath() + " cookieName[" + cookieName + "] " + " cookieValue[" + cookieValue + "]");
 		try {
 			response.addCookie(cookie);
 		} catch (Throwable t) {
