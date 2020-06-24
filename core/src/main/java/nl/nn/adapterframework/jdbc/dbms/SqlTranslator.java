@@ -1,20 +1,21 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Sql syntax translator to translate queries
@@ -31,7 +32,6 @@ public class SqlTranslator {
 	private boolean translate = AppConstants.getInstance().getBoolean("jdbc.translate", true);
 
 	public SqlTranslator(String source, String target) throws IOException, CsvValidationException {
-		LogUtil.getRootLogger().setLevel(Level.ALL);
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
@@ -91,7 +91,8 @@ public class SqlTranslator {
 	 * Reads data from SOURCE_CSV file.
 	 * Puts the data in memory to be used later.
 	 * @param name Name of the target database
-	 * @throws Exception If database name can not be found or file can not be read.
+	 * @throws IOException If database name can not be found or file can not be read.
+	 * @throws CsvValidationException If database name can not be read.
 	 */
 	private void readSource(String name) throws IOException, CsvValidationException {
 		source = new HashMap<>();
@@ -111,7 +112,8 @@ public class SqlTranslator {
 	 * Reads data from TARGET_CSV file.
 	 * Puts the data in memory to be used later.
 	 * @param name Name of the target database
-	 * @throws Exception If database name can not be found or file can not be read.
+	 * @throws IOException If database name can not be found or file can not be read.
+	 * @throws CsvValidationException If database name can not be read.
 	 */
 	private void readTarget(String name) throws IOException, CsvValidationException {
 		target = new HashMap<>();
@@ -133,7 +135,6 @@ public class SqlTranslator {
 	 * @param reader Reader for the csv file.
 	 * @param name Name of the database
 	 * @return Index at which that database's regex values are stored.
-	 * @throws Exception If database name is not found in file.
 	 */
 	private int getIndex(CSVReader reader, String name) throws IOException, CsvValidationException, IllegalArgumentException {
 		String[] firstline = reader.readNext();
