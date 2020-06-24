@@ -48,6 +48,15 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
+	public void wrongBinaryToTextEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		exception.expect(ConfigurationException.class);
+
+		pipe.setSecret("Potato");
+		pipe.setBinaryToTextEncoding("dummy");
+		pipe.configure();
+	}
+	
+	@Test
 	public void noSecret() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		exception.expect(PipeRunException.class);
 
@@ -89,5 +98,43 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
 		assertEquals("56V9GhAPU9NPP76zJ5KVLrfMaCherC8JcY16PTPEO3W+yxNnoXwmLS+Ic61J3gqZyeUfc0VZzzgg23WqesXm2g==", hash);
+	}
+	
+	@Test
+	public void hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Potato");
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash=prr.getResult().asString();
+		assertEquals("29902f716879c124dea015adcbd307665f8be00a548db5a724d695abac5fb40a", hash);
+	}
+	
+	@Test
+	public void hex_md5() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Potato");
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setAlgorithm("HmacMD5");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash=prr.getResult().asString();
+		assertEquals("4f0183e54f01c0aa0b9fcbbf17ee11fe", hash);
+	}
+
+	@Test
+	public void hex_sha512() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Potato");
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setAlgorithm("HmacSHA512");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash=prr.getResult().asString();
+		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
 	}
 }

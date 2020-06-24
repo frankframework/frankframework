@@ -22,6 +22,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -48,8 +49,10 @@ public class HashPipe extends FixedForwardPipe {
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String secret = null;
 	private String authAlias = null;
+	private String binaryToTextEncoding = "Base64";
 
 	List<String> algorithms = Arrays.asList("HmacMD5", "HmacSHA1", "HmacSHA256", "HmacSHA384", "HmacSHA512");
+	List<String> binaryToTextEncodings = Arrays.asList("Base64", "Hex");
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -57,6 +60,10 @@ public class HashPipe extends FixedForwardPipe {
 
 		if (!algorithms.contains(getAlgorithm())) {
 			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be one of" + algorithms.toString());
+		}
+		
+		if (!binaryToTextEncodings.contains(getBinaryToTextEncoding())) {
+			throw new ConfigurationException("illegal value for binary to text method [" + getBinaryToTextEncoding() + "], must be one of" + binaryToTextEncodings.toString());
 		}
 	}
 
@@ -94,7 +101,16 @@ public class HashPipe extends FixedForwardPipe {
 			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
 			mac.init(secretkey);
 
-			String hash = Base64.encodeBase64String(mac.doFinal(message.asByteArray()));
+			String hash = "";
+			if ("base64".equalsIgnoreCase(getBinaryToTextEncoding())) {
+				hash = Base64.encodeBase64String(mac.doFinal(message.asByteArray()));
+			} else if ("hex".equalsIgnoreCase(getBinaryToTextEncoding())) {
+				hash = Hex.encodeHexString(mac.doFinal(message.asByteArray()));
+			}else {
+				// Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
+				throw new PipeRunException(this, getLogPrefix(session) + "error determining binaryToText method");
+			}
+			
 			return new PipeRunResult(getForward(), hash);
 		}
 		catch (Exception e) {
@@ -123,8 +139,15 @@ public class HashPipe extends FixedForwardPipe {
 		return charset;
 	}
 
+	@IbisDoc({"3","method to use for converting the hash from bytes to String, one of Base64 or Hex", "Base64"})
+	public void setBinaryToTextEncoding(String binaryToTextEncoding) {
+		this.binaryToTextEncoding = binaryToTextEncoding;
+	}
+	public String getBinaryToTextEncoding() {
+		return binaryToTextEncoding;
+	}
 
-	@IbisDoc({"3", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
+	@IbisDoc({"4", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
@@ -133,7 +156,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"4","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
+	@IbisDoc({"5","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
