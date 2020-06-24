@@ -51,8 +51,8 @@ public class HashPipe extends FixedForwardPipe {
 	private String authAlias = null;
 	private String binaryToTextEncoding = "Base64";
 
-	List<String> algorithms = Arrays.asList("HmacMD5", "HmacSHA1", "HmacSHA256", "HmacSHA384", "HmacSHA512");
-	List<String> binaryToTextEncodings = Arrays.asList("Base64", "Hex");
+	private List<String> algorithms = Arrays.asList("HmacMD5", "HmacSHA1", "HmacSHA256", "HmacSHA384", "HmacSHA512");
+	private List<String> binaryToTextEncodings = Arrays.asList("Base64", "Hex");
 
 	@Override
 	public void configure() throws ConfigurationException {

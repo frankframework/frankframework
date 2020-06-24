@@ -113,7 +113,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 	
 	@Test
-	public void hex_md5() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void md5hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setSecret("Potato");
 		pipe.setBinaryToTextEncoding("Hex");
 		pipe.setAlgorithm("HmacMD5");
@@ -126,7 +126,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void hex_sha512() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void sha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setSecret("Potato");
 		pipe.setBinaryToTextEncoding("Hex");
 		pipe.setAlgorithm("HmacSHA512");
