@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
 
@@ -138,5 +139,28 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
 		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
+	}
+	
+	@Test
+	public void largeMessage() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Potato");
+		pipe.configure();
+		pipe.start();
+		
+		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
+		String hash=prr.getResult().asString();
+		assertEquals("M7Z60BhL72SMyCEUVesQOuvBRUcokJPyy95lSQODDZU=", hash);
+	}
+	
+	@Test
+	public void largeMessageHex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Potato");
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.configure();
+		pipe.start();
+		
+		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
+		String hash=prr.getResult().asString();
+		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
 	}
 }
