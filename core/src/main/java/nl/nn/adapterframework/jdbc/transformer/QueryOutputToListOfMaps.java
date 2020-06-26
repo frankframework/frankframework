@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
-	List<Map<String, String>> rowset;
-	Map<String, String> currentRow;
+	
+	private List<Map<String, String>> rowset;
+	private Map<String, String> currentRow;
 
 	public QueryOutputToListOfMaps() throws SAXException {
 		super();
