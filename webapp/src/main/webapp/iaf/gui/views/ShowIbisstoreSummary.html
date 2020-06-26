@@ -44,24 +44,36 @@
 									<th>Type</th>
 									<th title="number of messages in this type" >#</th>
 									<th>SlotID</th>
+									<th>Adapter</th>
+									<th>Receiver</th>
 									<th title="number of messages in this slot">#</th>
 									<th>Date</th>
-									<th title="number of messages on this date">#</th>
+									<th title="number of messages in this slot on this date">#</th>
 								</tr>
 							</thead>
-							<tbody>
-								<div ng-repeat="t in result">
-									<div ng-repeat="s in t.slots">
-										<tr ng-repeat="d in s.dates">
-											<td ng-if="{{$parent.$parent.$index}}==0" rowspan="{{t.datecount}}">{{t.type}}</td>
-											<td ng-if="{{$parent.$parent.$index}}==0" rowspan="{{t.datecount}}">{{t.msgcount}}</td>
-											<td ng-if="{{$parent.$index}}==0" rowspan="{{s.datecount}}">{{s.id}}</td>
-											<td ng-if="{{$parent.$index}}==0" rowspan="{{s.datecount}}">{{s.msgcount}}</td>
-											<td>{{d.id}}</td>
-											<td>{{d.count}}</td>
-										</tr>
-									</div>
-								</div>
+							<tbody ng-repeat="t in result">
+								<tr ng-repeat="s in t.slots">
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}" title="{{t.name}}">{{t.type}}</td>
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}">{{t.msgcount}}</td>
+									<td>{{s.id}}</td>
+									<td>{{s.adapter}}</td>
+									<td>{{s.receiver}}</td><!-- TODO: should have a link here to show browser of this storage -->
+									<td>{{s.msgcount}}</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.id}}</td>
+											</tr>
+										</table>
+									</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.count}}</td><!-- TODO: should have a link here to show browser of this storage pointing to this date -->
+											</tr>
+										</table>
+									</td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
