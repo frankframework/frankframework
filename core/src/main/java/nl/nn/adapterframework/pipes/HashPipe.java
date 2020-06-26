@@ -59,11 +59,11 @@ public class HashPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (!algorithms.contains(getAlgorithm())) {
-			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be one of" + algorithms.toString());
+			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be one of " + algorithms.toString());
 		}
 		
 		if (!binaryToTextEncodings.contains(getBinaryToTextEncoding())) {
-			throw new ConfigurationException("illegal value for binary to text method [" + getBinaryToTextEncoding() + "], must be one of" + binaryToTextEncodings.toString());
+			throw new ConfigurationException("illegal value for binary to text method [" + getBinaryToTextEncoding() + "], must be one of " + binaryToTextEncodings.toString());
 		}
 	}
 

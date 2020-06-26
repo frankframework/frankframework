@@ -37,10 +37,11 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public HashPipe createPipe() {
 		return new HashPipe();
 	}
-
+	
 	@Test
 	public void wrongAlgorithm() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		exception.expect(ConfigurationException.class);
+		exception.expectMessage("illegal value for algorithm [dummy], must be one of " + pipe.algorithms.toString());
 
 		pipe.setSecret("Potato");
 		pipe.setAlgorithm("dummy");
@@ -50,6 +51,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void wrongBinaryToTextEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		exception.expect(ConfigurationException.class);
+		exception.expectMessage("illegal value for binary to text method [dummy], must be one of " + pipe.binaryToTextEncodings.toString());
 
 		pipe.setSecret("Potato");
 		pipe.setBinaryToTextEncoding("dummy");
