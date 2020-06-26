@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -101,11 +102,18 @@ public class HashPipe extends FixedForwardPipe {
 			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
 			mac.init(secretkey);
 
+			InputStream inputStream = message.asInputStream();
+			byte[] byteArray = new byte[1024];
+			int readLength;
+			while ((readLength = inputStream.read(byteArray)) != -1) {
+				mac.update(byteArray, 0, readLength);
+			}
+			
 			String hash = "";
 			if ("base64".equalsIgnoreCase(getBinaryToTextEncoding())) {
-				hash = Base64.encodeBase64String(mac.doFinal(message.asByteArray()));
+				hash = Base64.encodeBase64String(mac.doFinal());
 			} else if ("hex".equalsIgnoreCase(getBinaryToTextEncoding())) {
-				hash = Hex.encodeHexString(mac.doFinal(message.asByteArray()));
+				hash = Hex.encodeHexString(mac.doFinal());
 			}else {
 				// Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
 				throw new PipeRunException(this, getLogPrefix(session) + "error determining binaryToText method");
