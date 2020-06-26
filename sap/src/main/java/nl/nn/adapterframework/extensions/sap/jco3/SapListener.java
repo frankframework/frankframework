@@ -211,10 +211,10 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (rawMessage instanceof JCoFunction) {
-				message2FunctionResult(rawMessage, processResult.getResult());
+			if (rawMessageOrWrapper instanceof JCoFunction) {
+				message2FunctionResult((JCoFunction)rawMessageOrWrapper, processResult.getResult());
 			}
 		} catch (SapException e) {
 			throw new ListenerException(e);

@@ -88,15 +88,19 @@ public final class TestServiceListener extends Base {
 		InputStream file = null;
 
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+
 		try {
-			if(inputDataMap.get("message") != null)
-				message = inputDataMap.get("message").get(0).getBodyAsString();
+			if(inputDataMap.get("message") != null) {
+				InputPart part = inputDataMap.get("message").get(0);
+				part.setMediaType(part.getMediaType().withCharset(fileEncoding));
+				message = part.getBodyAsString();
+			}
 			if(inputDataMap.get("service") != null) {
 				serviceName = inputDataMap.get("service").get(0).getBodyAsString();
 			}
 			if(inputDataMap.get("file") != null) {
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-				String fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 				message = Misc.streamToString(file, "\n", fileEncoding, false);
 
 				message = XmlUtils.readXml(IOUtils.toByteArray(file), fileEncoding,false);

@@ -24,22 +24,22 @@ import java.util.StringTokenizer;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.Bus;
-import org.apache.cxf.BusFactory;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.extensions.cxf.Endpoint;
 import nl.nn.adapterframework.extensions.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.jaxws.EndpointImpl;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -63,7 +63,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	private String attachmentSessionKeys = "";
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
-	private Endpoint endpoint = null;
+	private EndpointImpl endpoint = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -108,7 +108,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 				throw new ListenerException("unable to find SpringBus");
 			}
 			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
-			endpoint = new Endpoint(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
+			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());

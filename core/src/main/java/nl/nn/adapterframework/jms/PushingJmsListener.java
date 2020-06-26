@@ -89,9 +89,11 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	private String listenerPort;
 	private String cacheMode;
+
 	private IListenerConnector<Message> jmsConnector;
 	private IMessageHandler<Message> handler;
 	private IReceiver receiver;
+
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
 
@@ -155,7 +157,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
@@ -166,21 +168,27 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
 
-				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					Message messageReceived=rawMessage;
-					long expiration=messageReceived.getJMSExpiration();
-					if (expiration!=0) {
-						timeToLive=expiration-new Date().getTime();
-						if (timeToLive<=0) {
-							log.warn("message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-							timeToLive=1000;
-							// In case of a temporary queue it might already
-							// have disappeared.
-							ignoreInvalidDestinationException = true;
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
 						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);

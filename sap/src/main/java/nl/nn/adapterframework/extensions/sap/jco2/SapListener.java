@@ -130,10 +130,12 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
-			message2FunctionResult(rawMessage, processResult.getResult());
+			if (rawMessageOrWrapper instanceof JCO.Function) {
+				message2FunctionResult((JCO.Function)rawMessageOrWrapper, processResult.getResult());
+			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
 		}

@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
- * Pipe that iterates of rows in in ResultSet.
+ * Pipe that iterates over rows in in ResultSet.
  *
  * Each row is send passed to the sender in the same format a row is usually returned from a query.
  *
