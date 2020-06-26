@@ -33,7 +33,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	private AttributesImpl attributes=null;
 
 	public SaxElementBuilder() throws SAXException {
-		this((Writer)null);
+		this(new XmlWriter());
 	}
 	
 	public SaxElementBuilder(Writer writer) throws SAXException {
@@ -45,7 +45,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	public SaxElementBuilder(String elementName) throws SAXException {
-		this(elementName, (Writer)null);
+		this(elementName, new XmlWriter());
 	}
 	
 	public SaxElementBuilder(String elementName, Writer writer) throws SAXException {
@@ -65,6 +65,10 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 	}
 
+	public SaxElementBuilder addAttribute(String name, int value) throws SAXException {
+		return addAttribute(name, Integer.toString(value));
+	}
+	
 	public SaxElementBuilder addAttribute(String name, String value) throws SAXException {
 		if (attributes==null) {
 			throw new SaxException("start of element ["+elementName+"] already written");
@@ -124,24 +128,29 @@ public class SaxElementBuilder implements AutoCloseable {
 		return new SaxElementBuilder(elementName, handler, this);
 	}
 
-	public SaxElementBuilder addElement(String elementName) throws SAXException {
-		return addElement(elementName, null, null);
+	public void addElement(String elementName) throws SAXException {
+		addElement(elementName, null, null);
 	}
 	
-	public SaxElementBuilder addElement(String elementName, Map<String,String> attributes) throws SAXException {
-		return addElement(elementName, attributes, null);
+	public void addElement(String elementName, Map<String,String> attributes) throws SAXException {
+		addElement(elementName, attributes, null);
 	}
 
-	public SaxElementBuilder addElement(String elementName, Map<String,String> attributes, String value) throws SAXException {
-		return startElement(elementName).addAttributes(attributes).addValue(value).endElement();
+	public void addElement(String elementName, Map<String,String> attributes, String value) throws SAXException {
+		startElement(elementName).addAttributes(attributes).addValue(value).endElement();
 	}
 
-	
+
 	@Override
 	public void close() throws SAXException {
 		if (elementName != null) {
 			endElement();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return getHandler().toString();
 	}
 
 	public ContentHandler getHandler() {

@@ -26,6 +26,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -121,7 +122,8 @@ public class DB2XMLWriter {
 	public String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
-			getXML(rs, maxlength, includeFieldDefinition, xmlWriter);
+			PrettyPrintFilter ppf = new PrettyPrintFilter(xmlWriter);
+			getXML(rs, maxlength, includeFieldDefinition, ppf);
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);

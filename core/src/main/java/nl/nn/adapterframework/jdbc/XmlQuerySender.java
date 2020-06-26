@@ -231,13 +231,13 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
 		String where = null;
 		String order = null;
-		String result = null;
+		Message result = null;
 		try {
 			queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
@@ -289,7 +289,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		return result;
 	}
 
-	private String selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
+	private Message selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
 		try {
 			String query = "SELECT ";
 			if (columns != null) {
@@ -324,7 +324,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String insertQuery(Connection connection, String tableName, Vector<Column> columns) throws SenderException {
+	private Message insertQuery(Connection connection, String tableName, Vector<Column> columns) throws SenderException {
 		try {
 			String query = "INSERT INTO " + tableName + " (";
 			Iterator<Column> iter = columns.iterator();
@@ -350,7 +350,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String deleteQuery(Connection connection, String tableName, String where) throws SenderException, JdbcException {
+	private Message deleteQuery(Connection connection, String tableName, String where) throws SenderException, JdbcException {
 		try {
 			String query = "DELETE FROM " + tableName;
 			if (where != null) {
@@ -365,7 +365,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String updateQuery(Connection connection, String tableName, Vector<Column> columns, String where) throws SenderException {
+	private Message updateQuery(Connection connection, String tableName, Vector<Column> columns, String where) throws SenderException {
 		try {
 			String query = "UPDATE " + tableName + " SET ";
 			Iterator<Column> iter = columns.iterator();
@@ -389,7 +389,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String sql(Connection connection, String query, String type) throws SenderException, JdbcException {
+	private Message sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
 			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
@@ -411,7 +411,7 @@ public class XmlQuerySender extends DirectQuerySender {
 						result.append(executeOtherQuery(connection, statement, q, null, null, null, null));
 					}
 				}
-				return result.toString();
+				return new Message(result.toString());
 			} else {
 				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
@@ -420,7 +420,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String executeUpdate(Connection connection, String tableName, String query, Vector<Column> columns) throws SenderException {
+	private Message executeUpdate(Connection connection, String tableName, String query, Vector<Column> columns) throws SenderException {
 		try {
 			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, query);
@@ -453,7 +453,7 @@ public class XmlQuerySender extends DirectQuerySender {
 						}
 					}
 				}
-				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
+				return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 			}
 			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
@@ -499,13 +499,13 @@ public class XmlQuerySender extends DirectQuerySender {
 		return parameterCount;
 	}
 
-	private String alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
+	private Message alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
 		try {
 			String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
 			log.debug(getLogPrefix() + "preparing procedure for query [" + callQuery + "]");
 			CallableStatement callableStatement = connection.prepareCall(callQuery);
 			int numRowsAffected = callableStatement.executeUpdate();
-			return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
+			return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 		} catch (SQLException e) {
 			throw new SenderException(e);
 		}

@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 public class SaxDocumentBuilder extends SaxElementBuilder {
 
 	public SaxDocumentBuilder(String elementName) throws SAXException {
-		this(elementName, (Writer)null);
+		this(elementName,  new XmlWriter());
 	}
 	
 	public SaxDocumentBuilder(String elementName, Writer writer) throws SAXException {
@@ -35,11 +35,6 @@ public class SaxDocumentBuilder extends SaxElementBuilder {
 		handler.startDocument();
 	}
 
-	@Override
-	public String toString() {
-		return getHandler().toString();
-	}
-	
 	@Override
 	public void close() throws SAXException {
 		try {

@@ -200,7 +200,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;
@@ -290,7 +290,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			slotdatecount=0;
 			slotmsgcount=0;
 		}
-		return result.toXML();
+		return new Message(result.toXML());
 	}
 }
 

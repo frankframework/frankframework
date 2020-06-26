@@ -15,23 +15,20 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonStructure;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -39,15 +36,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
@@ -99,22 +100,13 @@ public final class ShowIbisstoreSummary extends Base {
 			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
-		List<Map<String, String>> resultMap = null;
-		if(XmlUtils.isWellFormed(result)) {
-			try {
-				resultMap = new QueryOutputToListOfMaps().parseString(result);
-			} catch (IOException | SAXException e) {
-				throw new ApiException("Query result could not be parsed.", e);
-			}
-		}
-		if(resultMap == null)
-			throw new ApiException("Invalid query result.");
+		System.out.println("--->"+result);
 
-		Map<String, Object> resultObject = new HashMap<String, Object>();
-		resultObject.put("query", query);
-		resultObject.put("result", resultMap);
+//		Map<String, Object> resultObject = new HashMap<String, Object>();
+//		resultObject.put("query", query);
+//		resultObject.put("result", result);
 
-		return Response.status(Response.Status.CREATED).entity(resultObject).build();
+		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {
@@ -175,12 +167,14 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
-		XmlBuilder result = new XmlBuilder("result");
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
-		XmlBuilder typeXml=null;
+		JsonObjectBuilder typeXml=null;
+		JsonArrayBuilder slots=null;
 		String previousSlot=null;
-		XmlBuilder slotXml=null;
+		JsonObjectBuilder slotXml=null;
+		JsonArrayBuilder dates=null;
 		int typeslotcount=0;
 		int typedatecount=0;
 		int typemsgcount=0;
@@ -201,46 +195,57 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 		
 			if (!type.equals(previousType)) {
 				if (typeXml!=null) {
-					typeXml.addAttribute("slotcount",typeslotcount);
-					typeXml.addAttribute("datecount",typedatecount);
-					typeXml.addAttribute("msgcount",typemsgcount);
+					slotXml.add("datecount",slotdatecount);
+					slotXml.add("msgcount",slotmsgcount);
+					slotXml.add("dates", dates.build());
+					slotdatecount=0;
+					slotmsgcount=0;
+					slots.add(slotXml.build());
+					typeXml.add("slotcount",typeslotcount);
+					typeXml.add("datecount",typedatecount);
+					typeXml.add("msgcount",typemsgcount);
+					typeXml.add("slots", slots.build());
+					types.add(typeXml.build());
 					typeslotcount=0;
 					typedatecount=0;
 					typemsgcount=0;
 					previousSlot=null;
+					slotXml=null;
 				}
-				typeXml=new XmlBuilder("type");
-				typeXml.addAttribute("id",type);
+				typeXml = Json.createObjectBuilder();
+				typeXml.add("type", type);
 				if (type.equalsIgnoreCase("E")) {
-					typeXml.addAttribute("name","errorlog");
+					typeXml.add("name","errorlog");
 				} else {
-					typeXml.addAttribute("name","messagelog");
+					typeXml.add("name","messagelog");
 				}
-				result.addSubElement(typeXml);
+				slots = Json.createArrayBuilder();
 				previousType=type;
 			}
 			if (!slotid.equals(previousSlot)) {
 				if (slotXml!=null) {
-					slotXml.addAttribute("datecount",slotdatecount);
-					slotXml.addAttribute("msgcount",slotmsgcount);
+					slotXml.add("datecount",slotdatecount);
+					slotXml.add("msgcount",slotmsgcount);
+					slotXml.add("dates", dates.build());
 					slotdatecount=0;
 					slotmsgcount=0;
-				}
-				slotXml=new XmlBuilder("slot");
-				slotXml.addAttribute("id",slotid);
+					slots.add(slotXml.build());
+				} 
+				slotXml=Json.createObjectBuilder();
+				dates = Json.createArrayBuilder();
+				slotXml.add("id",slotid);
 				if (StringUtils.isNotEmpty(slotid)) {
 					SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
-						slotXml.addAttribute("adapter",sir.adapterName);
+						slotXml.add("adapter",sir.adapterName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
-							slotXml.addAttribute("receiver",sir.receiverName);
+							slotXml.add("receiver",sir.receiverName);
 						}
 						if (StringUtils.isNotEmpty(sir.pipeName) ) {
-							slotXml.addAttribute("pipe",sir.pipeName);
+							slotXml.add("pipe",sir.pipeName);
 						}
 					}
 				}
-				typeXml.addSubElement(slotXml);
 				previousSlot=slotid;
 				typeslotcount++;
 			}
@@ -249,23 +254,22 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			slotmsgcount+=count;
 			slotdatecount++;
 			
-			XmlBuilder dateXml=new XmlBuilder("date");
-			dateXml.addAttribute("id",date);
-			dateXml.addAttribute("count",count);
-			slotXml.addSubElement(dateXml);
+			dates.add(Json.createObjectBuilder().add("id",date).add("count",count).build());
 		}
-		if (typeXml!=null) {
-			typeXml.addAttribute("slotcount",typeslotcount);
-			typeXml.addAttribute("datecount",typedatecount);
-			typeXml.addAttribute("msgcount",typemsgcount);
-		}
-		if (slotXml!=null) {
-			slotXml.addAttribute("datecount",slotdatecount);
-			slotXml.addAttribute("msgcount",slotmsgcount);
-			slotdatecount=0;
-			slotmsgcount=0;
-		}
-		return result.toXML();
+
+		slotXml.add("datecount",slotdatecount);
+		slotXml.add("msgcount",slotmsgcount);
+		slotXml.add("dates", dates.build());
+		slots.add(slotXml.build());
+		
+		typeXml.add("slotcount",typeslotcount);
+		typeXml.add("datecount",typedatecount);
+		typeXml.add("msgcount",typemsgcount);
+		typeXml.add("slots", slots.build());
+		types.add(typeXml.build());
+
+		JsonStructure result = types.build();
+		return new Message(result.toString());
 	}
 }
 
