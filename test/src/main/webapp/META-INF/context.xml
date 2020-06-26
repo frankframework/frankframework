@@ -80,6 +80,17 @@
 		maxIdle="10"
 		validationQuery="select 1"
 	/>
+	<Resource
+		name="jdbc/ibis4test-mysql"
+		type="javax.sql.DataSource"
+		username="wearefrank_user"
+		password="wearefrankPass01"
+		driverClassName="com.mysql.cj.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/wearefrank_db"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
+	/>
 
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
