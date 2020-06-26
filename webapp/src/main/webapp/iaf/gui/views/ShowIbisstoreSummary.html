@@ -42,18 +42,26 @@
 							<thead>
 								<tr>
 									<th>Type</th>
+									<th title="number of messages in this type" >#</th>
 									<th>SlotID</th>
+									<th title="number of messages in this slot">#</th>
 									<th>Date</th>
-									<th>#</th>
+									<th title="number of messages on this date">#</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="t in result">
-									<td>{{t.TYPE}}</td>
-									<td>{{t.SLOTID}}</td>
-									<td>{{t.MSGDATE}}</td>
-									<td>{{t.MSGCOUNT}}</td>
-								</tr>
+								<div ng-repeat="t in result">
+									<div ng-repeat="s in t.slots">
+										<tr ng-repeat="d in s.dates">
+											<td ng-if="{{$parent.$parent.$index}}==0" rowspan="{{t.datecount}}">{{t.type}}</td>
+											<td ng-if="{{$parent.$parent.$index}}==0" rowspan="{{t.datecount}}">{{t.msgcount}}</td>
+											<td ng-if="{{$parent.$index}}==0" rowspan="{{s.datecount}}">{{s.id}}</td>
+											<td ng-if="{{$parent.$index}}==0" rowspan="{{s.datecount}}">{{s.msgcount}}</td>
+											<td>{{d.id}}</td>
+											<td>{{d.count}}</td>
+										</tr>
+									</div>
+								</div>
 							</tbody>
 						</table>
 					</div>
