@@ -1,8 +1,25 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,10 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -22,31 +36,36 @@ import nl.nn.adapterframework.util.LogUtil;
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
 public class SqlTranslator {
-	private static final String SOURCE_CSV = "dbms/source.csv";
-	private static final String TARGET_CSV = "dbms/target.csv";
-	private static final Pattern spaceReplacer = Pattern.compile("\\s+(?=((\\\\[\\\\\"]|[^\\\\\"])*\"(\\\\[\\\\\"]|[^\\\\\"])*\")*(\\\\[\\\\\"]|[^\\\\\"])*$)");
+	private final Logger log = LogUtil.getLogger(this);
 
-	private final Logger logger = LogUtil.getLogger(this);
-	private Map<String, String> target;
-	private Map<String, Pattern> source;
-	private boolean translate = AppConstants.getInstance().getBoolean("jdbc.translate", true);
+	private static final String PATTERN_FILE = "sql-translate.properties";
 
-	public SqlTranslator(String source, String target) throws IOException, CsvValidationException {
+	private Map<String,Pattern> sources;
+	private Map<String,String>  targets;
+	
+	private boolean configured=false;
+
+	public SqlTranslator(String source, String target) throws JdbcException {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
-			logger.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
+			log.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
 			return;
 		}
-		translate = AppConstants.getInstance().getBoolean("jdbc.translate." + source + "." + target, translate);
-		if (!translate) {
-			logger.warn("Query translation from [" + source + "] to [" + target + "] is disabled. Skipping pattern generation.");
-			return;
+		try {
+			if (!readPatterns(source,target)) {
+				return;
+			}
+		} catch (Exception e) {
+			throw new JdbcException("cannot create SqlTranslator",e);
 		}
-		readSource(source);
-		readTarget(target);
+		configured = true;
 	}
 
+	public boolean canConvert(String from, String to) {
+		return configured;
+	}
+	
 	/**
 	 * Translates the given query to the target language.
 	 * Uses the translation rules set by this and the target translators.
@@ -55,24 +74,25 @@ public class SqlTranslator {
 	 * @return Translated query.
 	 */
 	public String translate(String original) throws NullPointerException {
-		if (!translate || source == null || target == null || StringUtils.isEmpty(original)) {
-			logger.info("Skipping SQL translation from [" + source + "] to [" + target + "]");
-			return original;
-		}
 		String query = original;
-		for (String key : source.keySet()) {
-			Matcher matcher = source.get(key).matcher(query);
-			if (matcher.find()) {
-				logger.trace(String.format("Found a match for pattern [%s]", source.get(key).pattern()));
-				String regex = target.get(key);
-				if (StringUtils.isNotEmpty(regex)) {
-					query = matcher.replaceAll(regex);
-				} else {
-					query = matcher.replaceAll("");
+		if (sources!=null) {
+			for (String label:sources.keySet()) {
+				Matcher matcher = sources.get(label).matcher(query);
+				if (matcher.find()) {
+					if (log.isTraceEnabled()) log.trace(String.format("Found a match for label [%s] pattern [%s]",label, sources.get(label)));
+					String replacement = targets.get(label);
+					if (StringUtils.isNotEmpty(replacement)) {
+						query = matcher.replaceAll(replacement);
+					} else {
+						query = matcher.replaceAll("");
+					}
 				}
 			}
 		}
-		return cleanSpaces(query);
+		if (StringUtils.isEmpty(query)) {
+			return null;
+		}
+		return query;
 	}
 
 	/**
@@ -83,76 +103,58 @@ public class SqlTranslator {
 	protected Pattern toPattern(String str) {
 		// Make sure there are no greedy matchers.
 		String pattern = str.replaceAll("\\.\\*", ".*?");
-		logger.trace("Compiling pattern [" + pattern + "]");
+		log.trace("Compiling pattern [" + pattern + "]");
 		return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 
 	/**
 	 * Reads data from SOURCE_CSV file.
 	 * Puts the data in memory to be used later.
-	 * @param name Name of the target database
 	 * @throws IOException If database name can not be found or file can not be read.
-	 * @throws CsvValidationException If database name can not be read.
 	 */
-	private void readSource(String name) throws IOException, CsvValidationException {
-		source = new HashMap<>();
-		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), SOURCE_CSV);
-		CSVReader reader = new CSVReader(ClassUtils.urlToReader(resourceUrl, 1000));
-		int index = getIndex(reader, name);
-		logger.debug(String.format("Reading SqlTranslator source values for database [%s] from index [%d]", name, index));
-		String[] values;
-		while (((values = reader.readNext()) != null)) {
-			if (StringUtils.isEmpty(values[index]))
-				continue;
-			source.put(values[0].trim(), toPattern(values[index].trim()));
+	private boolean readPatterns(String sourceDialect, String targetDialect) throws IOException {
+		sources = new LinkedHashMap<>();
+		targets = new LinkedHashMap<>();
+
+		String sourceMatch=".source."+sourceDialect.replaceAll(" ", "_");
+		String targetMatch=".target."+targetDialect.replaceAll(" ", "_");
+
+		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), PATTERN_FILE);
+
+		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl, 10000))) {
+			String line= reader.readLine();
+			while (line!=null) {
+				int equalsPos = line.indexOf("=");
+				if (!line.startsWith("#") && equalsPos>=0) {
+					String key = line.substring(0,equalsPos).trim();
+					String value = line.substring(equalsPos+1).trim();
+					if (log.isTraceEnabled()) log.trace("read key ["+key+"] value ["+value+"]");
+					int sourceMatchPos = key.indexOf(sourceMatch);
+					if (sourceMatchPos>0) {
+						String label = key.substring(0,sourceMatchPos);
+						sources.put(label, toPattern(value));
+					} else {
+						int targetMatchPos = key.indexOf(targetMatch);
+						if (targetMatchPos>0) {
+							String label = key.substring(0,targetMatchPos);
+							targets.put(label, value);
+						}
+					}
+				}
+				line= reader.readLine();
+			}
 		}
+		for (Iterator<String> it=sources.keySet().iterator();it.hasNext();) {
+			String label = it.next();
+			String source = sources.get(label).toString();
+			String target = targets.get(label);
+			if (target==null || target.equals(source) || target.equals("$0")) {
+				it.remove();
+			} else {
+				log.debug(String.format("install translation pattern label [%s] source [%s] target [%s]", label,  source,  target));
+			}
+		}
+		return true;
 	}
 
-	/**
-	 * Reads data from TARGET_CSV file.
-	 * Puts the data in memory to be used later.
-	 * @param name Name of the target database
-	 * @throws IOException If database name can not be found or file can not be read.
-	 * @throws CsvValidationException If database name can not be read.
-	 */
-	private void readTarget(String name) throws IOException, CsvValidationException {
-		target = new HashMap<>();
-		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), TARGET_CSV);
-		CSVReader reader = new CSVReader(ClassUtils.urlToReader(resourceUrl, 1000));
-		int index = getIndex(reader, name);
-		logger.debug(String.format("Reading SqlTranslator target values for database [%s] from index [%d]", name, index));
-		String[] values;
-		while (((values = reader.readNext()) != null)) {
-			if (StringUtils.isEmpty(values[index]))
-				continue;
-				target.put(values[0].trim(), values[index].trim());
-		}
-	}
-
-	/**
-	 * Returns the index of the database in the csv file
-	 * from the first line.
-	 * @param reader Reader for the csv file.
-	 * @param name Name of the database
-	 * @return Index at which that database's regex values are stored.
-	 */
-	private int getIndex(CSVReader reader, String name) throws IOException, CsvValidationException, IllegalArgumentException {
-		String[] firstline = reader.readNext();
-		for (int i = 0; i < firstline.length; i++) {
-			if (firstline[i].trim().equalsIgnoreCase(name))
-				return i;
-		}
-		throw new IllegalArgumentException("Database name not found");
-	}
-
-	/**
-	 * Replaces all multiple space characters with single space,
-	 * as long as they are not enclosed within quotes.
-	 * Then trims the ends from white spaces.
-	 * @param str String to be cleaned.
-	 * @return Cleaned string that does not contain multiple spaces, or spaces in either end.
-	 */
-	private String cleanSpaces(String str) {
-		return spaceReplacer.matcher(str).replaceAll(" ").trim();
-	}
 }

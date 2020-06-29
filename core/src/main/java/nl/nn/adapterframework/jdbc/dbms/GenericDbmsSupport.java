@@ -23,7 +23,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -45,6 +47,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
+	
+	protected static Map<String,SqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
 	public String getDbmsName() {
@@ -417,17 +421,43 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
-			warnConvertQuery(sqlDialectFrom);
+			SqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
+			if (translator==null) {
+				if (sqlTranslators.containsKey(sqlDialectFrom)) {
+					warnConvertQuery(sqlDialectFrom);
+					return;
+				}
+				try {
+					translator = new SqlTranslator(sqlDialectFrom, getDbmsName());
+				} catch (IllegalArgumentException e) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(sqlDialectFrom, null);
+					return;
+				} catch (Exception e) {
+					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
+				}
+				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(sqlDialectFrom, null);
+					return;
+				}
+				sqlTranslators.put(sqlDialectFrom, translator);
+			}
+			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
+			StringBuilder convertedQueries = null;
+			for (String singleQuery : multipleQueries) {
+				String convertedQuery = translator.translate(singleQuery);
+				if (convertedQuery != null) {
+					if (convertedQueries==null) {
+						convertedQueries = new StringBuilder();
+					} else {
+						convertedQueries.append("\n");
+					}
+					convertedQueries.append(convertedQuery);
+				}
+			}
+			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
-//		try {
-//			SqlTranslator translator = new SqlTranslator(sqlDialectFrom, getDbmsName());
-//			String converted = translator.translate(queryContext.getQuery());
-//			queryContext.setQuery(converted);
-//		} catch (IllegalArgumentException e) {
-//			warnConvertQuery(sqlDialectFrom);
-//		} catch (Exception e) {
-//			throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
-//		}
 	}
 	
 	protected void warnConvertQuery(String sqlDialectFrom) {
