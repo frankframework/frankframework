@@ -602,11 +602,6 @@
 			<version>1.0.31</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>5.1</version>
-		</dependency>
 	</dependencies>
 
 	<build>
