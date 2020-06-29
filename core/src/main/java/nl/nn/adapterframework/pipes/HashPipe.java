@@ -102,11 +102,12 @@ public class HashPipe extends FixedForwardPipe {
 			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
 			mac.init(secretkey);
 
-			InputStream inputStream = message.asInputStream();
-			byte[] byteArray = new byte[1024];
-			int readLength;
-			while ((readLength = inputStream.read(byteArray)) != -1) {
-				mac.update(byteArray, 0, readLength);
+			try (InputStream inputStream = message.asInputStream()) {
+				byte[] byteArray = new byte[1024];
+				int readLength;
+				while ((readLength = inputStream.read(byteArray)) != -1) {
+					mac.update(byteArray, 0, readLength);
+				}
 			}
 			
 			String hash = "";
