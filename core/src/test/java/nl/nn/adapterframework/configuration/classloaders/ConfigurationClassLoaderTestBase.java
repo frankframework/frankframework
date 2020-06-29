@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
+public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
