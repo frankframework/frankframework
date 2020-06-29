@@ -56,7 +56,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
-	private String logPrefix = null;
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
 	public ClassLoaderBase() {
