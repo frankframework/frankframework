@@ -272,6 +272,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public String toString() {
-		return ClassUtils.getClassLoaderName(this);
+		return ClassUtils.getName(this);
 	}
 }

@@ -244,7 +244,7 @@ public class ClassLoaderManager {
 		if (classLoader instanceof IConfigurationClassLoader) {
 			((IConfigurationClassLoader) classLoader).reload();
 		} else {
-			LOG.warn("classloader ["+classLoader.toString()+"] is not derivable from IConfigurationClassLoader, ignoring reload");
+			LOG.warn("classloader ["+ClassUtils.getName(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring reload");
 		}
 	}
 
@@ -262,10 +262,10 @@ public class ClassLoaderManager {
 			if(classLoader instanceof IConfigurationClassLoader) {
 				((IConfigurationClassLoader) classLoader).destroy();
 			} else {
-				LOG.warn("classloader ["+ClassUtils.getClassLoaderName(classLoader)+"] is not derivable from IConfigurationClassLoader, ignoring destroy");
+				LOG.warn("classloader ["+ClassUtils.getName(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring destroy");
 			}
 			iterator.remove();
-			LOG.info("removed classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+			LOG.info("removed classloader ["+ClassUtils.getName(classLoader)+"]");
 		}
 		if(classLoaders.size() > 0) {
 			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders "+classLoaders);

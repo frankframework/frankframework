@@ -149,33 +149,18 @@ public class ClassUtils {
 						try {
 							url = new URL(Misc.replace(resource, " ", "%20"));
 						} catch(MalformedURLException e) {
-							log.debug("Could not find resource ["+resource+"] in classloader ["+getClassLoaderName(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
+							log.debug("Could not find resource ["+resource+"] in classloader ["+getName(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
-					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+getClassLoaderName(classLoader)+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
+					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+getName(classLoader)+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
 				} else {
-					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+getClassLoaderName(classLoader)+"], with protocol ["+protocol+"], no allowedProtocols");
+					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+getName(classLoader)+"], with protocol ["+protocol+"], no allowedProtocols");
 				}
 			} else {
-				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+getClassLoaderName(classLoader)+"] and no protocol to try as URL");
+				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+getName(classLoader)+"] and no protocol to try as URL");
 			}
 		}
 
 		return url;
-	}
-
-	/**
-	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName, 
-	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
-	 */
-	public static String getClassLoaderName(ClassLoader classLoader) {
-		String logPrefix = nameOf(classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
-		if(classLoader instanceof IConfigurationClassLoader) {
-			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
-			if(StringUtils.isNotEmpty(configurationName)) {
-				logPrefix += "["+configurationName+"]";
-			}
-		}
-		return logPrefix;
 	}
 
 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
@@ -321,6 +306,21 @@ public class ClassUtils {
         }
         return path;
     }
+
+	/**
+	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName, 
+	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
+	 */
+	public static String getName(ClassLoader classLoader) {
+		String logPrefix = nameOf(classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
+		if(classLoader instanceof IConfigurationClassLoader) {
+			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
+			if(StringUtils.isNotEmpty(configurationName)) {
+				logPrefix += "["+configurationName+"]";
+			}
+		}
+		return logPrefix;
+	}
 
 	/**
 	 * returns the className of the object, without the package name.

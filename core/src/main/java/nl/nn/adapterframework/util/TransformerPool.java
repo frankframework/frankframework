@@ -166,7 +166,7 @@ public class TransformerPool {
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
 		if(classLoader != null) {
 			classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
-			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.getName(classLoader)+"]");
 			tFactory.setURIResolver(classLoaderURIResolver);
 		}
 		initTransformerPool(source, sysId);
@@ -338,7 +338,7 @@ public class TransformerPool {
 				if (styleSheet==null) {
 					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] via classLoader ["+classLoader+"]"); 
 				}
-				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] classloader ["+ClassUtils.getClassLoaderName(classLoader)+"]");
+				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] classloader ["+ClassUtils.getName(classLoader)+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {
