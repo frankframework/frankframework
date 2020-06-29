@@ -13,7 +13,11 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class SqlTranslatorTest {
-	private String source, target, query, expected;
+	
+	private String source;
+	private String target;
+	private String query;
+	private String expected;
 
 	public SqlTranslatorTest(String source, String target, String query, String expected) {
 		this.source = source;

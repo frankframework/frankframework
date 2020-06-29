@@ -17,8 +17,10 @@ public class SqlTranslatorTestOracleToH2 extends OracleToH2TranslatorTest {
 
 	@Ignore("too hard for SqlTranslator to create identity column")
 	public void testIgnoreAlterTableIbisStore() throws JdbcException, SQLException {
+		super.testIgnoreAlterTableIbisStore();
 	}
 	@Ignore("too hard for SqlTranslator to create identity column")
 	public void testConvertQueryCreateTableIbisStore() throws JdbcException, SQLException {
+		super.testConvertQueryCreateTableIbisStore();
 	}
 }
