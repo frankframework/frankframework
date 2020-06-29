@@ -179,10 +179,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		cookie.setMaxAge(Integer.MAX_VALUE);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
-		log.debug("Store cookie for "
-				+ request.getServletPath()
-				+ " cookieName[" + cookieName + "] "
-				+ " cookieValue[" + cookieValue + "]");
+		log.debug("Store cookie for " + request.getServletPath() + " cookieName[" + cookieName + "] " + " cookieValue[" + cookieValue + "]");
 		try {
 			response.addCookie(cookie);
 		} catch (Throwable t) {
@@ -203,7 +200,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;
@@ -293,7 +290,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			slotdatecount=0;
 			slotmsgcount=0;
 		}
-		return result.toXML();
+		return new Message(result.toXML());
 	}
 }
 

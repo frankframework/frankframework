@@ -103,11 +103,11 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return new Message(executeStatementSet(blockHandle, message, session));
+		return executeStatementSet(blockHandle, message, session);
 	}
 
 	@Override
-	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected final Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
 	}
 
