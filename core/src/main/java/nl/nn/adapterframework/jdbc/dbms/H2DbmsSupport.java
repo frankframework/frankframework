@@ -52,29 +52,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";
 	}
 
-//	@Override
-//	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-//		if (isQueryConversionRequired(sqlDialectFrom)) {
-//			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-//				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-//				StringBuilder sb = new StringBuilder();
-//				for (String singleQuery : multipleQueries) {
-//					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-//					String convertedQuery = OracleToH2Translator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
-//					if (convertedQuery != null) {
-//						sb.append(convertedQuery);
-//						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-//							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
-//						}
-//					}
-//				}
-//				queryExecutionContext.setQuery(sb.toString());
-//			} else {
-//				warnConvertQuery(sqlDialectFrom);
-//			}
-//		}
-//	}
-	
 	@Override
 	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		Clob clob=rs.getStatement().getConnection().createClob();

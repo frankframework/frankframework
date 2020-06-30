@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * Sql syntax translator to translate queries
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
-public class SqlTranslator {
+public class SqlTranslator implements ISqlTranslator {
 	private final Logger log = LogUtil.getLogger(this);
 
 	private static final String PATTERN_FILE = "sql-translate.properties";
@@ -62,6 +62,7 @@ public class SqlTranslator {
 		configured = true;
 	}
 
+	@Override
 	public boolean canConvert(String from, String to) {
 		return configured;
 	}
@@ -73,7 +74,8 @@ public class SqlTranslator {
 	 * @param original Original query to be translated.
 	 * @return Translated query.
 	 */
-	public String translate(String original) throws NullPointerException {
+	@Override
+	public String translate(String original) {
 		String query = original;
 		if (sources!=null) {
 			for (String label:sources.keySet()) {

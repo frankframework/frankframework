@@ -48,7 +48,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
 	
-	protected static Map<String,SqlTranslator> sqlTranslators = new HashMap<>();
+	protected static Map<String,ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
 	public String getDbmsName() {
@@ -417,18 +417,21 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return (""+value).toUpperCase();
 	}
 
+	protected ISqlTranslator createTranslator(String source, String target) throws JdbcException {
+		return new SqlTranslator(source, target);
+	}
 
 	@Override
 	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
-			SqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
+			ISqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
 			if (translator==null) {
 				if (sqlTranslators.containsKey(sqlDialectFrom)) {
 					warnConvertQuery(sqlDialectFrom);
 					return;
 				}
 				try {
-					translator = new SqlTranslator(sqlDialectFrom, getDbmsName());
+					translator = createTranslator(sqlDialectFrom, getDbmsName());
 				} catch (IllegalArgumentException e) {
 					warnConvertQuery(sqlDialectFrom);
 					sqlTranslators.put(sqlDialectFrom, null);
