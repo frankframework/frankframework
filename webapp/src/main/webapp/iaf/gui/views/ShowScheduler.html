@@ -85,6 +85,15 @@
 							</tbody>
 						</table>
 					</div>
+					<div class="col-md-12 m-b-lg">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Search ..." ng-model="searchFilter.name" ng-model-options="{debounce: 500}" name="search" />
+							<i ng-show="searchFilter.length" ng-click="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+							<span class="input-group-addon">
+								<i class="fa fa-search" aria-hidden="true"></i>
+							</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -96,7 +105,7 @@
 					</div>
 					<h4>Jobgroup: {{::jobGroupName}}</h4>
 				</div>
-				<div class="ibox-content" ng-repeat="job in jobs" ng-if="showContent">
+				<div class="ibox-content" ng-repeat="job in jobs | orderBy:'name' | filter:searchFilter:name" ng-if="showContent">
 					<div class="col-md-12">
 						<div class="pull-right">
 							<button ng-if="::job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
