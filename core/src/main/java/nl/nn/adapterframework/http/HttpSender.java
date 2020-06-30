@@ -551,21 +551,7 @@ public class HttpSender extends HttpSenderBase {
 			response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 
 		if (response==null) {
-			if (StringUtils.isEmpty(getStreamResultToFileNameSessionKey())) {
-				if (isBase64()) {
-					return getResponseBodyAsBase64(responseHandler.getResponse());
-				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-					session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
-					return Message.nullMessage();
-				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-					session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
-					return Message.nullMessage();
-				} else if (isMultipartResponse()) {
-					return handleMultipartResponse(responseHandler, session);
-				} else {
-					return Message.asMessage(getResponseBodyAsString(responseHandler));
-				}
-			} else {
+			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
 					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
 					File file = new File(fileName);
@@ -574,6 +560,19 @@ public class HttpSender extends HttpSenderBase {
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
+			} else if (isBase64()) {
+				return getResponseBodyAsBase64(responseHandler.getResponse());
+			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
+				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
+				return Message.nullMessage();
+			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
+				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
+				return Message.nullMessage();
+			} else if (isMultipartResponse()) {
+				return handleMultipartResponse(responseHandler, session);
+			} else {
+				//TODO remove getResponseBodyAsString method and return a Message object
+				return Message.asMessage(getResponseBodyAsString(responseHandler));
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
