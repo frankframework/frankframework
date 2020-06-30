@@ -216,7 +216,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private int staleTimeout = 5000;
-	private boolean encodeMessages=false;
 	private boolean xhtml=false;
 	private String styleSheetName=null;
 	private String protocol=null;
@@ -565,7 +564,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
@@ -578,17 +577,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
-		String message;
-		try {
-			message = input.asString();
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
-		}
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
-				pvl=paramList.getValues(input, session);
+				pvl=paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
@@ -610,6 +603,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<String, String>();
 			if (headersParams != null) {
+				log.debug("appending header parameters "+headersParams);
 				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
 					String paramName = st.nextToken();
@@ -617,10 +611,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					if(paramValue != null)
 						headersParamsMap.put(paramName, paramValue.asStringValue(null));
 				}
-			}
-
-			if (isEncodeMessages()) {
-				message = URLEncoder.encode(message, getCharSet());
 			}
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
@@ -1077,14 +1067,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 	public int getStaleTimeout() {
 		return staleTimeout;
-	}
-
-	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
-	public void setEncodeMessages(boolean b) {
-		encodeMessages = b;
-	}
-	public boolean isEncodeMessages() {
-		return encodeMessages;
 	}
 
 	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})

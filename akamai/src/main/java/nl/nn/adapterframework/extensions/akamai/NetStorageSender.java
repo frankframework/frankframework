@@ -176,7 +176,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);

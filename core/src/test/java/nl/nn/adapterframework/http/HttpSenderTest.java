@@ -20,9 +20,12 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.net.URL;
 
 import static org.junit.Assert.*;
 
@@ -142,6 +145,31 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpGetEncodeMessage() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("this is my dynamic url");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("GET");
+			sender.setEncodeMessages(true);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpGetEncodeMessage.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpGetWithContentType() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -196,7 +224,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void simpleMockedHttpPost() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
-		Message input = new Message("hallo");
+		Message input = new Message("hallo this is my message");
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
@@ -208,6 +236,31 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPost.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpPostEncodeMessage() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo dit is mijn bericht");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("Post"); //should handle both upper and lowercase methodtypes :)
+			sender.setEncodeMessages(true);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPostEncodeMessage.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -482,6 +535,42 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void postTypeUrlEncoded() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			Parameter param1 = new Parameter();
+			param1.setName("key");
+			param1.setValue("value");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("otherKey");
+			param2.setValue("otherValue");
+			sender.addParameter(param2);
+
+			sender.setMethodType("POST");
+			sender.setPostType("urlencoded");
+			sender.setInputMessageParam("nameOfTheFirstContentId");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpPostJSON() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
@@ -507,6 +596,61 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void binaryHttpPostJSON() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
+		assertTrue("input message has to be of type binary", input.isBinary());
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("POST");
+			sender.setContentType("application/json");
+			sender.setPostType("binary");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("binaryHttpPostJSON.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void binaryHttpPostPDF() throws Throwable {
+		HttpSender sender = getSender();
+		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
+		Message input = new Message(url);
+		assertTrue("input message has to be a binary file", input.isBinary());
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("POST");
+			sender.setContentType("application/pdf");
+			sender.setPostType("binary");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("binaryHttpPostPDF.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpPutJSON() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
@@ -522,6 +666,33 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEquals(getFile("simpleMockedHttpPutJSON.txt"), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void binaryHttpPutJSON() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
+		assertTrue("input message has to be of type binary", input.isBinary());
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("PUT");
+			sender.setContentType("application/json");
+			sender.setPostType("binary");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("binaryHttpPutJSON.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -566,6 +737,40 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void postTypeMultipart() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("POST");
+			sender.setPostType("FORMDATA");
+			sender.setInputMessageParam("request");
+
+			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpMtom() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
@@ -575,6 +780,41 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 			sender.setMethodType("POST");
 			sender.setParamsInUrl(false);
+			sender.setInputMessageParam("request");
+
+			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMtomEnabled(true);
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void postTypeMtom() throws Throwable {
+		HttpSender sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+
+			sender.setMethodType("POST");
+			sender.setPostType("mtom");
 			sender.setInputMessageParam("request");
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "

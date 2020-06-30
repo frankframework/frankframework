@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -162,11 +164,30 @@ public class HttpSender extends HttpSenderBase {
 	private boolean ignoreRedirects=false;
 	private String inputMessageParam=null;
 
-	private boolean multipart=false;
 	private boolean multipartResponse=false;
 	private String multipartXmlSessionKey;
-	private boolean mtomEnabled = false;
 	private String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
+	private boolean encodeMessages = false;
+
+	private PostType postType = PostType.RAW;
+
+	private enum PostType {
+		RAW("raw text"), // text/html;charset=UTF8
+		BINARY("binary content"), //application/octet-stream
+//		SWA("Soap with Attachments"), // text/xml
+		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
+		FORMDATA("form-data"), // multipart/form-data
+		MTOM("mtom"); // multipart/related
+
+		private String description;
+		PostType(String description) {
+			this.description = description;
+		}
+		@Override
+		public String toString() {
+			return description;
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -188,7 +209,15 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI url, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+		if (isEncodeMessages()) {
+			try {
+				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix()+"unable to encode message",e);
+			}
+		}
+
 		URI uri = null;
 		try {
 			uri = encodeQueryParameters(url);
@@ -196,10 +225,15 @@ public class HttpSender extends HttpSenderBase {
 			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
 		}
 
-		if(isParamsInUrl())
+		if(!isParamsInUrl() || postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
+			try {
+				return getMultipartPostMethodWithParamsInBody(uri, message.asString(), parameters, session);
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix()+"unable to read message", e);
+			}
+		} else { // RAW + BINARY
 			return getMethod(uri, message, parameters);
-		else
-			return getPostMethodWithParamsInBody(uri, message, parameters, session);
+		}
 	}
 
 	// Encode query parameter values.
@@ -220,7 +254,10 @@ public class HttpSender extends HttpSenderBase {
 		return uri.build();
 	}
 
-	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	/**
+	 * Returns HttpRequestBase, with (optional) RAW or as BINAIRY content
+	 */
+	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuffer relativePath = new StringBuffer(uri.getRawPath());
@@ -234,7 +271,7 @@ public class HttpSender extends HttpSenderBase {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet method = new HttpGet(relativePath+(parameters==null? message:""));
+				HttpGet method = new HttpGet(relativePath+(parameters==null? message.asString():""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
@@ -243,33 +280,50 @@ public class HttpSender extends HttpSenderBase {
 				return method;
 			} else if (getMethodType().equals("POST")) {
 				HttpPost method = new HttpPost(relativePath.toString());
-				if (parameters!=null) {
-					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters);
-					if (StringUtils.isEmpty(message) && msg.length()>1) {
-						message=msg.substring(1);
-					} else {
-						message=msg.toString();
-					}
-				}
 
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getFullContentType());
+				HttpEntity entity;
+				if(postType.equals(PostType.RAW)) {
+					String messageString = message.asString();
+					if (parameters!=null) {
+						StringBuffer msg = new StringBuffer(messageString);
+						appendParameters(true,msg,parameters);
+						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
+							messageString=msg.substring(1);
+						} else {
+							messageString=msg.toString();
+						}
+					}
+					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
+				} else if(postType.equals(PostType.BINARY)) {
+					entity = new ByteArrayEntity(message.asByteArray(getCharSet()), getFullContentType());
+				} else {
+					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
+				}
 
 				method.setEntity(entity);
 				return method;
 			}
 			if (getMethodType().equals("PUT")) {
 				HttpPut method = new HttpPut(relativePath.toString());
-				if (parameters!=null) {
-					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters);
-					if (StringUtils.isEmpty(message) && msg.length()>1) {
-						message=msg.substring(1);
-					} else {
-						message=msg.toString();
+				HttpEntity entity;
+				if(postType.equals(PostType.RAW)) {
+					String messageString = message.asString();
+					if (parameters!=null) {
+						StringBuffer msg = new StringBuffer(messageString);
+						appendParameters(true,msg,parameters);
+						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
+							messageString=msg.substring(1);
+						} else {
+							messageString=msg.toString();
+						}
 					}
+					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
+				} else if(postType.equals(PostType.BINARY)) {
+					entity = new ByteArrayEntity(message.asByteArray(getCharSet()), getFullContentType());
+				} else {
+					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
 				}
-				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()), getFullContentType());
+
 				method.setEntity(entity);
 				return method;
 			}
@@ -286,7 +340,7 @@ public class HttpSender extends HttpSenderBase {
 			}
 
 			if (getMethodType().equals("REPORT")) {
-				Element element = XmlUtils.buildElement(message, true);
+				Element element = XmlUtils.buildElement(message.asString(), true);
 				HttpReport method = new HttpReport(relativePath.toString(), element);
 				if (null != getFullContentType()) { //Manually set Content-Type header
 					method.setHeader("Content-Type", getFullContentType().toString());
@@ -301,10 +355,13 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	protected HttpPost getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	/**
+	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
+	 */
+	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		HttpPost hmethod = new HttpPost(uri);
 
-		if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
+		if (!postType.equals(PostType.FORMDATA) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
 			List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
 
 			if (StringUtils.isNotEmpty(getInputMessageParam())) {
@@ -331,7 +388,7 @@ public class HttpSender extends HttpSenderBase {
 				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 			}
 		}
-		else {
+		else { //formdata and mtom
 			HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
 			hmethod.setEntity(requestEntity);
 		}
@@ -340,7 +397,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(isMtomEnabled())
+		if(postType.equals(PostType.MTOM))
 			return createMultipartBodypart(name, message, "application/xop+xml");
 		else
 			return createMultipartBodypart(name, message, null);
@@ -377,7 +434,7 @@ public class HttpSender extends HttpSenderBase {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
-		if(isMtomEnabled())
+		if(postType.equals(PostType.MTOM))
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getInputMessageParam())) {
@@ -628,6 +685,15 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	public void setPostType(String type) throws ConfigurationException {
+		try {
+			this.postType = PostType.valueOf(type.toUpperCase());
+		}
+		catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("unknown postType ["+type+"]. Must be one of "+ Arrays.asList(PostType.values()));
+		}
+	}
+
 	/**
 	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
 	 * @IbisDoc.default true
@@ -705,12 +771,11 @@ public class HttpSender extends HttpSenderBase {
 		return streamResultToServlet;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
 	@IbisDoc({"when true and <code>methodetype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
-		multipart = b;
-	}
-	public boolean isMultipart() {
-		return multipart;
+		postType = PostType.FORMDATA;
 	}
 
 	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
@@ -730,12 +795,10 @@ public class HttpSender extends HttpSenderBase {
 		return multipartXmlSessionKey;
 	}
 
-	public boolean isMtomEnabled() {
-		return mtomEnabled;
-	}
-
+	@Deprecated
+	@ConfigurationWarning("mtomEnabled has been replaced by postType='mtom'")
 	public void setMtomEnabled(boolean mtomEnabled) {
-		this.mtomEnabled = mtomEnabled;
+		postType = PostType.MTOM;
 	}
 
 	public String getMtomContentTransferEncoding() {
@@ -743,5 +806,13 @@ public class HttpSender extends HttpSenderBase {
 	}
 	public void setMtomContentTransferEncoding(String mtomContentTransferEncoding) {
 		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
+	}
+
+	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
+	public void setEncodeMessages(boolean b) {
+		encodeMessages = b;
+	}
+	public boolean isEncodeMessages() {
+		return encodeMessages;
 	}
 }

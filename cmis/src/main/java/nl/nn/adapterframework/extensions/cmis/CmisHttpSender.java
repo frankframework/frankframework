@@ -55,7 +55,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		String methodType = (String) session.get("method");
