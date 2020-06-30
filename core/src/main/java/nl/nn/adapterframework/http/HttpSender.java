@@ -62,6 +62,7 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -225,7 +226,7 @@ public class HttpSender extends HttpSenderBase {
 			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
 		}
 
-		if(!isParamsInUrl() || postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
+		if(postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
 			try {
 				return getMultipartPostMethodWithParamsInBody(uri, message.asString(), parameters, session);
 			} catch (IOException e) {
@@ -361,7 +362,7 @@ public class HttpSender extends HttpSenderBase {
 	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		HttpPost hmethod = new HttpPost(uri);
 
-		if (!postType.equals(PostType.FORMDATA) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
+		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
 			List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
 
 			if (StringUtils.isNotEmpty(getInputMessageParam())) {
@@ -707,6 +708,14 @@ public class HttpSender extends HttpSenderBase {
 	 */
 	@IbisDoc({"when false and <code>methodetype=post</code>, request parameters are put in the request body instead of in the url", "true"})
 	public void setParamsInUrl(boolean b) {
+		if(!b) {
+			if(!postType.equals(PostType.MTOM) && !postType.equals(PostType.FORMDATA)) { //Don't override if another type has explicitly been set
+				postType = PostType.URLENCODED;
+				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead");
+			} else {
+				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests");
+			}
+		}
 		paramsInUrl = b;
 	}
 	public boolean isParamsInUrl() {
