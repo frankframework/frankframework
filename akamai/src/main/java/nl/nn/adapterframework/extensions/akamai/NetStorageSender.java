@@ -244,7 +244,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -311,7 +311,7 @@ public class NetStorageSender extends HttpSenderBase {
 			}
 		}
 
-		return result.toXML();
+		return Message.asMessage(result.toXML());
 	}
 
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {

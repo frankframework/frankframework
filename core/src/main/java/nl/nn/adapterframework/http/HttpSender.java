@@ -434,6 +434,7 @@ public class HttpSender extends HttpSenderBase {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
+		System.out.println(postType);
 		if(postType.equals(PostType.MTOM))
 			entity.setMtomMultipart();
 
@@ -521,7 +522,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -555,28 +556,28 @@ public class HttpSender extends HttpSenderBase {
 					return getResponseBodyAsBase64(responseHandler.getResponse());
 				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
 					session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
-					return "";
+					return Message.nullMessage();
 				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
 					session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
-					return "";
+					return Message.nullMessage();
 				} else if (isMultipartResponse()) {
 					return handleMultipartResponse(responseHandler, session);
 				} else {
-					return getResponseBodyAsString(responseHandler);
+					return Message.asMessage(getResponseBodyAsString(responseHandler));
 				}
 			} else {
 				try {
 					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
 					File file = new File(fileName);
 					Misc.streamToFile(responseHandler.getResponse(), file);
-					return fileName;
+					return new Message(fileName);
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
-			return "";
+			return Message.nullMessage();
 		}
 	}
 
@@ -607,21 +608,28 @@ public class HttpSender extends HttpSenderBase {
 		return responseBody;
 	}
 
-	public String getResponseBodyAsBase64(InputStream is) throws IOException {
+	public Message getResponseBodyAsBase64(InputStream is) throws IOException {
 		byte[] bytes = Misc.streamToBytes(is);
 		if (bytes == null) {
 			return null;
 		}
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		return Base64.encodeBase64String(bytes);
+		return new Message( Base64.encodeBase64String(bytes) );
 	}
 
-	public static String handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException, SenderException {
+	/**
+	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
+	 */
+	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException, SenderException {
 		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session, httpHandler);
 	}
-	public static String handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session, HttpResponseHandler httpHandler) throws IOException, SenderException {
-		String result = null;
+
+	/**
+	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
+	 */
+	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session, HttpResponseHandler httpHandler) throws IOException, SenderException {
+		Message result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream);
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
@@ -635,7 +643,7 @@ public class HttpSender extends HttpSenderBase {
 						charset = contentType.getCharset().name();
 
 					InputStream bodyPartInputStream = bodyPart.getInputStream();
-					result = Misc.streamToString(bodyPartInputStream, charset);
+					result = new Message(bodyPartInputStream, charset);
 					if (lastPart) {
 						bodyPartInputStream.close();
 					}
@@ -775,7 +783,9 @@ public class HttpSender extends HttpSenderBase {
 	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
 	@IbisDoc({"when true and <code>methodetype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
-		postType = PostType.FORMDATA;
+		if(b && !postType.equals(PostType.MTOM)) {
+			postType = PostType.FORMDATA;
+		}
 	}
 
 	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
@@ -797,8 +807,8 @@ public class HttpSender extends HttpSenderBase {
 
 	@Deprecated
 	@ConfigurationWarning("mtomEnabled has been replaced by postType='mtom'")
-	public void setMtomEnabled(boolean mtomEnabled) {
-		postType = PostType.MTOM;
+	public void setMtomEnabled(boolean b) {
+		if(b) postType = PostType.MTOM;
 	}
 
 	public String getMtomContentTransferEncoding() {

@@ -574,7 +574,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @param session {@link IPipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
-	protected abstract String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
+	protected abstract Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
 
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
@@ -642,7 +642,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(e);
 		}
 
-		String result = null;
+		Message result = null;
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
 		String msg = null;
@@ -724,26 +724,34 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException("Failed to recover from exception");
 		}
 
-		if (isXhtml() && StringUtils.isNotEmpty(result)) {
-			result = XmlUtils.skipDocTypeDeclaration(result.trim());
-			if (result.startsWith("<html>") || result.startsWith("<html ")) {
+		if (isXhtml() && !result.isEmpty()) {
+			String resultString;
+			try {
+				resultString = result.asString();
+			} catch (IOException e) {
+				throw new SenderException("error reading http response as String", e);
+			}
+
+			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
+			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(result);
-				result = new SimpleXmlSerializer(props).getAsString(tagNode);
+				TagNode tagNode = cleaner.clean(xhtml);
+				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
 
 				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + result + "]");
+					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
 					try {
-						result = transformerPool.transform(Message.asSource(result));
+						xhtml = transformerPool.transform(Message.asSource(xhtml));
 					} catch (Exception e) {
 						throw new SenderException("Exception on transforming input", e);
 					}
 				}
 			}
+			result = Message.asMessage(xhtml);
 		}
 
-		return Message.asMessage(result);
+		return result;
 	}
 
 	@Override
