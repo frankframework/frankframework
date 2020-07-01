@@ -31,6 +31,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
+import nl.nn.adapterframework.xml.NonResolvingURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
@@ -81,7 +83,7 @@ public class TransformerPool {
 	private Source configSource;
 	private Map<String,String> configMap;
 
-	private ClassLoaderURIResolver classLoaderURIResolver;
+	private URIResolver classLoaderURIResolver;
 
 	private static class TransformerPoolKey {
 		private String xsltString;
@@ -167,6 +169,9 @@ public class TransformerPool {
 		if(classLoader != null) {
 			classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
 			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classloader ["+ClassUtils.nameOf(classLoader)+"]");
+			tFactory.setURIResolver(classLoaderURIResolver);
+		} else {
+			classLoaderURIResolver = new NonResolvingURIResolver();
 			tFactory.setURIResolver(classLoaderURIResolver);
 		}
 		initTransformerPool(source, sysId);
