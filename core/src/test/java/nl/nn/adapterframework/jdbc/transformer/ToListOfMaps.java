@@ -19,12 +19,12 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
-public class ToMap {
+public class ToListOfMaps {
 	private final static String FOLDER = "/Jdbc.transformer/";
 	private final static String SRC = "src/test/resources" + FOLDER;
 	private File xmlFile, expectedFile;
 
-	public ToMap(File xmlFile, File expectedFile) {
+	public ToListOfMaps(File xmlFile, File expectedFile) {
 		this.xmlFile = xmlFile;
 		this.expectedFile = expectedFile;
 	}
@@ -52,7 +52,7 @@ public class ToMap {
 		String expected = TestFileUtils.getTestFile(FOLDER + expectedFile.getName());
 		ObjectMapper mapper = new ObjectMapper();
 
-		QueryOutputToMap transformer = new QueryOutputToMap();
+		QueryOutputToListOfMaps transformer = new QueryOutputToListOfMaps();
 		List<Map<String, String>> output = transformer.parseMessage(new Message(xmlFile));
 		String out = mapper.writeValueAsString(output);
 

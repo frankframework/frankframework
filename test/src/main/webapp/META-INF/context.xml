@@ -92,6 +92,19 @@
 		maxWait="30000"
 	/>
 
+ 	<Resource 
+			name="jdbc/ibis4test-postgres" 
+			auth="Container"
+			type="javax.sql.DataSource" 
+			driverClassName="org.postgresql.Driver"
+			url="jdbc:postgresql://localhost:5432/wearefrank_db"
+			username="testiaf_user" 
+			password="testiaf_pass01" 
+			maxActive="20" 
+			maxIdle="10" 
+			maxWait="-1"
+		/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -118,4 +131,5 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+	
 </Context>

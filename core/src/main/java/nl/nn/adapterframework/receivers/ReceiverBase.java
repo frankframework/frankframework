@@ -733,9 +733,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			synchronized (runState) {
 				RunStateEnum currentRunState = getRunState();
 				if (!currentRunState.equals(RunStateEnum.STOPPED)) {
-					String msg =
-					getLogPrefix()+"currently in state [" + currentRunState + "], ignoring start() command";
-					warn(msg);
+					if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
+						info("receiver already in state [" + currentRunState + "]");
+					} else {
+						warn(getLogPrefix()+"currently in state [" + currentRunState + "], ignoring start() command");
+					}
 					return;
 				}
 				runState.setRunState(RunStateEnum.STARTING);
@@ -758,10 +760,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		// See also Adapter.stopRunning()
 		synchronized (runState) {
 			RunStateEnum currentRunState = getRunState();
-			if (currentRunState.equals(RunStateEnum.STARTING)
-					|| currentRunState.equals(RunStateEnum.STOPPING)
-					|| currentRunState.equals(RunStateEnum.STOPPED)) {
+			if (currentRunState.equals(RunStateEnum.STARTING)) {
 				warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
+				return;
+			} else if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
+				info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
 			if (currentRunState.equals(RunStateEnum.ERROR)) {

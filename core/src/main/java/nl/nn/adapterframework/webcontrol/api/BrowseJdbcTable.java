@@ -16,7 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToMap;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -141,13 +141,7 @@ public final class BrowseJdbcTable extends Base {
 		
 						String fielddefinition = "<fielddefinition>";
 						while(rs.next()) {
-							String field = "<field name=\""
-									+ rs.getString(4)
-									+ "\" type=\""
-									+ DB2XMLWriter.getFieldType(rs.getInt(5))
-									+ "\" size=\""
-									+ rs.getInt(7)
-									+ "\"/>";
+							String field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
 							fielddefinition = fielddefinition + field;
 							fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
 						}
@@ -203,7 +197,7 @@ public final class BrowseJdbcTable extends Base {
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
 			try {
-				resultMap = new QueryOutputToMap().parseString(result);
+				resultMap = new QueryOutputToListOfMaps().parseString(result);
 			} catch (IOException | SAXException e) {
 				throw new ApiException("Query result could not be parsed.", e);
 			}
