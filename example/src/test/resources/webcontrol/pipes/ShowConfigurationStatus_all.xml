@@ -22,444 +22,444 @@
       <warnings>
          <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
       </warnings>
-      <adapter name="WebControlShowConfigurationStatus"
-               config="IAF_WebControl"
+      <adapter config="IAF_WebControl"
                configUC="IAF*WEBCONTROL"
+               configured="true"
+               lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
+               messagesInProcess="0"
+               messagesProcessed="0"
+               name="WebControlShowConfigurationStatus"
                nameUC="WEBCONTROLSHOWCONFIGURATIONSTATUS"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowConfigurationStatus"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowConfigurationStatus"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowConfigurationStatus"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowConfigurationStatus"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="WebControlShowConfiguration"
-               config="IAF_WebControl"
-               configUC="IAF*WEBCONTROL"
+               name="WebControlShowConfiguration"
                nameUC="WEBCONTROLSHOWCONFIGURATION"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowConfiguration"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowConfiguration"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowConfiguration"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowConfiguration"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="WebControlWebservices"
-               config="IAF_WebControl"
-               configUC="IAF*WEBCONTROL"
+               name="WebControlWebservices"
                nameUC="WEBCONTROLWEBSERVICES"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlWebservices"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlWebservices"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlWebservices"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlWebservices"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="WebControlTestPipeLine"
-               config="IAF_WebControl"
-               configUC="IAF*WEBCONTROL"
+               name="WebControlTestPipeLine"
                nameUC="WEBCONTROLTESTPIPELINE"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlTestPipeLine"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlTestPipeLine"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlTestPipeLine"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlTestPipeLine"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="WebControlShowFlowDiagram"
-               config="IAF_WebControl"
-               configUC="IAF*WEBCONTROL"
+               name="WebControlShowFlowDiagram"
                nameUC="WEBCONTROLSHOWFLOWDIAGRAM"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowFlowDiagram"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowFlowDiagram"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowFlowDiagram"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowFlowDiagram"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="WebControlShowEnvironmentVariables"
-               config="IAF_WebControl"
-               configUC="IAF*WEBCONTROL"
+               name="WebControlShowEnvironmentVariables"
                nameUC="WEBCONTROLSHOWENVIRONMENTVARIABLES"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-get"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-post"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-post"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_Util"
+               configUC="IAF*UTIL"
+               configured="true"
+               description="Manage the database"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowEnvironmentVariables-get"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowEnvironmentVariables-post"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="WebControlShowEnvironmentVariables-post"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="ManageDatabase"
-               description="Manage the database"
-               config="IAF_Util"
-               configUC="IAF*UTIL"
+               name="ManageDatabase"
                nameUC="MANAGEDATABASE"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="ManageDatabase"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="ManageDatabase"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_Util"
+               configUC="IAF*UTIL"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="ManageDatabase"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="ManageDatabase"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="IbisDoc"
-               config="IAF_Util"
-               configUC="IAF*UTIL"
+               name="IbisDoc"
                nameUC="IBISDOC"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="IbisDoc"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="IbisDoc"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="IbisDoc"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="Ibis4Example"
+               configUC="IBIS4EXAMPLE"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="IbisDoc"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="IbisDoc"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="IbisDoc"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="HelloWorld"
-               config="Ibis4Example"
-               configUC="IBIS4EXAMPLE"
+               name="HelloWorld"
                nameUC="HELLOWORLD"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloWorld"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloWorld"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="Ibis4Example"
+               configUC="IBIS4EXAMPLE"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloWorld"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloWorld"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="HelloUniverse"
-               config="Ibis4Example"
-               configUC="IBIS4EXAMPLE"
+               name="HelloUniverse"
                nameUC="HELLOUNIVERSE"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloUniverse"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloUniverse"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="Ibis4Example"
+               configUC="IBIS4EXAMPLE"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloUniverse"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloUniverse"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="HelloWorlds"
-               config="Ibis4Example"
-               configUC="IBIS4EXAMPLE"
+               name="HelloWorlds"
                nameUC="HELLOWORLDS"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
+               stateAlert="false"
                upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloWorlds"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloWorlds"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="Ibis4Example"
+               configUC="IBIS4EXAMPLE"
+               configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
+               messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               messagesInError="0"
-               stateAlert="false"
-               logAlert="false">
-         <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloWorlds"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloWorlds"
-                      class="GenericReceiver"
-                      messagesReceived="0"
-                      messagesRetried="0"
-                      messagesRejected="0"/>
-         </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
-      </adapter>
-      <adapter name="HelloBeautifulWorld"
-               config="Ibis4Example"
-               configUC="IBIS4EXAMPLE"
+               name="HelloBeautifulWorld"
                nameUC="HELLOBEAUTIFULWORLD"
                started="true"
                state="Started"
-               lastMsgProcessState="-"
-               configured="true"
-               upSince="0000-00-00 00:00:00"
-               upSinceAge="-"
-               lastMessageDate="-"
-               messagesInProcess="0"
-               messagesProcessed="0"
-               messagesInError="0"
                stateAlert="false"
-               logAlert="false">
+               upSince="0000-00-00 00:00:00"
+               upSinceAge="-">
          <receivers>
-            <receiver isStarted="true"
-                      state="Started"
-                      name="HelloBeautifulWorld"
-                      class="GenericReceiver"
+            <receiver class="GenericReceiver"
+                      isStarted="true"
                       messagesReceived="0"
+                      messagesRejected="0"
                       messagesRetried="0"
-                      messagesRejected="0"/>
-            <receiver isStarted="true"
-                      state="Started"
                       name="HelloBeautifulWorld"
-                      class="GenericReceiver"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
                       messagesReceived="0"
+                      messagesRejected="0"
                       messagesRetried="0"
-                      messagesRejected="0"/>
+                      name="HelloBeautifulWorld"
+                      state="Started"/>
          </receivers>
-         <adapterMessages error="0" warn="0" info="10" lastMessageLevel="info"/>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
       </adapter>
       <summary>
-         <adapterState starting="0"
+         <adapterState error="0"
                        started="12"
                        startedNotAvailable="0"
-                       stopping="0"
+                       starting="0"
                        stopped="0"
-                       error="0"/>
-         <lastMsgProcessState ok="0" notApplicable="12" error="0"/>
-         <receiverState starting="0"
+                       stopping="0"/>
+         <lastMsgProcessState error="0" notApplicable="12" ok="0"/>
+         <receiverState error="0"
                         started="26"
                         startedNotAvailable="0"
-                        stopping="0"
+                        starting="0"
                         stopped="0"
-                        error="0"/>
-         <messageLevel error="0" warn="0" info="120"/>
+                        stopping="0"/>
+         <messageLevel error="0" info="120" warn="0"/>
       </summary>
   </registeredAdapters>
 </root>
