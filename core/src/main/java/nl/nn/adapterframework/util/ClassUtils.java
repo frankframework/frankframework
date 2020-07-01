@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -165,17 +164,22 @@ public class ClassUtils {
 
 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
 		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(timeoutMs);
-		conn.setReadTimeout(timeoutMs);
+		if (timeoutMs==0) {
+			timeoutMs = 10000;
+		}
+		if (timeoutMs>0) {
+			conn.setConnectTimeout(timeoutMs);
+			conn.setReadTimeout(timeoutMs);
+		}
 		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
 	}
 
+	public static Reader urlToReader(URL url) throws IOException {
+		return urlToReader(url, 0);
+	}
+	
 	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
-		try {
-			return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
-		} catch (UnsupportedEncodingException e) {
-			throw new IOException(e);
-		}
+		return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 	}
 
 	

@@ -5,11 +5,12 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
-public class OracleToH2TranslatorTest extends OracleToH2TranslatorTestBase {
+public class SqlTranslatorTestOracleToMsSql extends OracleToMsSqlTranslatorTestBase {
 
 	@Override
 	protected String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {
-		return OracleToH2Translator.convertQuery(queryExecutionContext, canModifyQueryExecutionContext);
+		SqlTranslator translator = new SqlTranslator("Oracle", "MS SQL");
+		return translator.translate(queryExecutionContext.getQuery());
 	}
 
 }
