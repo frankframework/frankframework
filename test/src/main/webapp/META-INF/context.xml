@@ -80,6 +80,30 @@
 		maxIdle="10"
 		validationQuery="select 1"
 	/>
+	<Resource
+		name="jdbc/ibis4test-mysql"
+		type="javax.sql.DataSource"
+		username="wearefrank_user"
+		password="wearefrankPass01"
+		driverClassName="com.mysql.cj.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/wearefrank_db"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
+	/>
+
+ 	<Resource 
+			name="jdbc/ibis4test-postgres" 
+			auth="Container"
+			type="javax.sql.DataSource" 
+			driverClassName="org.postgresql.Driver"
+			url="jdbc:postgresql://localhost:5432/wearefrank_db"
+			username="testiaf_user" 
+			password="testiaf_pass01" 
+			maxActive="20" 
+			maxIdle="10" 
+			maxWait="-1"
+		/>
 
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
@@ -107,4 +131,5 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+	
 </Context>
