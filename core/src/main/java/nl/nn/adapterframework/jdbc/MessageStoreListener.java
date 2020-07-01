@@ -41,7 +41,7 @@ import nl.nn.adapterframework.stream.Message;
 			name="MyListener"
 			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 			jmsRealm="jdbc"
-			slotId="${instance.name}/MyService"
+			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 		/>
 		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
