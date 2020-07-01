@@ -35,13 +35,14 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
@@ -50,6 +51,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
@@ -279,9 +281,7 @@ public class HttpSender extends HttpSenderBase {
 					method.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return method;
-			} else if (getMethodType().equals("POST")) {
-				HttpPost method = new HttpPost(relativePath.toString());
-
+			} else if (getMethodType().equals("POST") || getMethodType().equals("PUT")) {
 				HttpEntity entity;
 				if(postType.equals(PostType.RAW)) {
 					String messageString = message.asString();
@@ -296,33 +296,16 @@ public class HttpSender extends HttpSenderBase {
 					}
 					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
 				} else if(postType.equals(PostType.BINARY)) {
-					entity = new ByteArrayEntity(message.asByteArray(getCharSet()), getFullContentType());
+					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
 				} else {
 					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
 				}
 
-				method.setEntity(entity);
-				return method;
-			}
-			if (getMethodType().equals("PUT")) {
-				HttpPut method = new HttpPut(relativePath.toString());
-				HttpEntity entity;
-				if(postType.equals(PostType.RAW)) {
-					String messageString = message.asString();
-					if (parameters!=null) {
-						StringBuffer msg = new StringBuffer(messageString);
-						appendParameters(true,msg,parameters);
-						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
-							messageString=msg.substring(1);
-						} else {
-							messageString=msg.toString();
-						}
-					}
-					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
-				} else if(postType.equals(PostType.BINARY)) {
-					entity = new ByteArrayEntity(message.asByteArray(getCharSet()), getFullContentType());
+				HttpEntityEnclosingRequestBase method;
+				if (getMethodType().equals("POST")) {
+					method = new HttpPost(relativePath.toString());
 				} else {
-					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
+					method = new HttpPut(relativePath.toString());
 				}
 
 				method.setEntity(entity);
@@ -435,7 +418,6 @@ public class HttpSender extends HttpSenderBase {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
-		System.out.println(postType);
 		if(postType.equals(PostType.MTOM))
 			entity.setMtomMultipart();
 
@@ -609,13 +591,8 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBodyAsBase64(InputStream is) throws IOException {
-		byte[] bytes = Misc.streamToBytes(is);
-		if (bytes == null) {
-			return null;
-		}
-
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		return new Message( Base64.encodeBase64String(bytes) );
+		return new Message( new Base64InputStream(is, true) );
 	}
 
 	/**
@@ -642,8 +619,11 @@ public class HttpSender extends HttpSenderBase {
 					if(contentType.getCharset() != null)
 						charset = contentType.getCharset().name();
 
+					//TODO When the steam is never read, the connection won't be closed. For now, always read the message.
 					InputStream bodyPartInputStream = bodyPart.getInputStream();
-					result = new Message(bodyPartInputStream, charset);
+					String resultString = Misc.streamToString(bodyPartInputStream, charset);
+
+					result = new Message(resultString);
 					if (lastPart) {
 						bodyPartInputStream.close();
 					}
@@ -693,6 +673,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	@IbisDoc({"When false and <code>methodeType=POST</code> the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
 	public void setPostType(String type) throws ConfigurationException {
 		try {
 			this.postType = PostType.valueOf(type.toUpperCase());
@@ -702,11 +683,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	/**
-	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
-	 * @IbisDoc.default true
-	 */
-	@IbisDoc({"when false and <code>methodetype=post</code>, request parameters are put in the request body instead of in the url", "true"})
+	@IbisDoc({"When false and <code>methodeType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
 			if(!postType.equals(PostType.MTOM) && !postType.equals(PostType.FORMDATA)) { //Don't override if another type has explicitly been set
@@ -722,12 +699,7 @@ public class HttpSender extends HttpSenderBase {
 		return paramsInUrl;
 	}
 
-	/**
-	 * Only used when methodeType=POST and paramsInUrl=false.
-	 * Name of the request parameter which is used to put the input message in
-	 * @param inputMessageParam
-	 */
-	@IbisDoc({"(only used when <code>methodetype=post</code> and <code>paramsinurl=false</code>) name of the request parameter which is used to put the input message in", ""})
+	@IbisDoc({"(Only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) Name of the request parameter which is used to put the input message in", ""})
 	public void setInputMessageParam(String inputMessageParam) {
 		this.inputMessageParam = inputMessageParam;
 	}
@@ -735,10 +707,7 @@ public class HttpSender extends HttpSenderBase {
 		return inputMessageParam;
 	}
 
-	/**
-	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
-	 */
-	@IbisDoc({"when true, besides http status code 200 (ok) also the code 301 (moved_permanently), 302 (moved_temporarily) and 307 (temporary_redirect) are considered successful", "false"})
+	@IbisDoc({"When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
 	public void setIgnoreRedirects(boolean b) {
 		ignoreRedirects = b;
 	}
@@ -772,7 +741,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@IbisDoc({"when true, the result is base64 encoded", "false"})
-	public void setBase64(boolean b) {
+	public void setBase64(boolean b) { // TODO deprecate this. Let people use the Base64Pipe instead!
 		base64 = b;
 	}
 	public boolean isBase64() {

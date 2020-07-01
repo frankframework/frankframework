@@ -132,7 +132,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpRequestBase method = super.getMethod(uri, Message.asMessage(soapmsg), parameters, session);
+		HttpRequestBase method = super.getMethod(uri, new Message(soapmsg), parameters, session);
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
