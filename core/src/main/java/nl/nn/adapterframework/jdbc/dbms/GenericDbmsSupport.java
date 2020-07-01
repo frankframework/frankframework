@@ -427,7 +427,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			ISqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
 			if (translator==null) {
 				if (sqlTranslators.containsKey(sqlDialectFrom)) {
-					warnConvertQuery(sqlDialectFrom);
+					// if translator==null, but the key is present in the map, 
+					// then we already tried to setup this translator, and did not succeed. 
+					// No need to try again.
+					warnConvertQuery(sqlDialectFrom); 
 					return;
 				}
 				try {
@@ -441,7 +444,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 				}
 				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
 					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(sqlDialectFrom, null);
+					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
 					return;
 				}
 				sqlTranslators.put(sqlDialectFrom, translator);

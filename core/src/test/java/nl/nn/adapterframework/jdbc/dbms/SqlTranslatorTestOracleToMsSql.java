@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
-public class SqlTranslatorTestOracleToMsSql extends OracleToMsSqlTranslatorTest {
+public class SqlTranslatorTestOracleToMsSql extends OracleToMsSqlTranslatorTestBase {
 
 	@Override
 	protected String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {

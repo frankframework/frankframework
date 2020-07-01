@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class SqlTranslator implements ISqlTranslator {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private static final String PATTERN_FILE = "sql-translate.properties";
+	private static final String PATTERN_FILE = "SqlTranslationPatterns.properties";
 
 	private Map<String,Pattern> sources;
 	private Map<String,String>  targets;
@@ -110,7 +110,7 @@ public class SqlTranslator implements ISqlTranslator {
 	}
 
 	/**
-	 * Reads data from SOURCE_CSV file.
+	 * Reads data from PATTERN_FILE.
 	 * Puts the data in memory to be used later.
 	 * @throws IOException If database name can not be found or file can not be read.
 	 */
@@ -123,7 +123,7 @@ public class SqlTranslator implements ISqlTranslator {
 
 		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), PATTERN_FILE);
 
-		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl, 10000))) {
+		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
 			String line= reader.readLine();
 			while (line!=null) {
 				int equalsPos = line.indexOf("=");
@@ -153,7 +153,7 @@ public class SqlTranslator implements ISqlTranslator {
 			if (target==null || target.equals(source) || target.equals("$0")) {
 				it.remove();
 			} else {
-				log.debug(String.format("install translation pattern label [%s] source [%s] target [%s]", label,  source,  target));
+				log.debug(String.format("configured translation pattern label [%s] source [%s] target [%s]", label,  source,  target));
 			}
 		}
 		return true;

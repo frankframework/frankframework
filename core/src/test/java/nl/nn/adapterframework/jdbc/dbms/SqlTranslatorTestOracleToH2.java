@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
-public class SqlTranslatorTestOracleToH2 extends OracleToH2TranslatorTest {
+public class SqlTranslatorTestOracleToH2 extends OracleToH2TranslatorTestBase {
 
 	@Override
 	protected String convertQuery(QueryExecutionContext queryExecutionContext, boolean canModifyQueryExecutionContext) throws JdbcException, SQLException {
