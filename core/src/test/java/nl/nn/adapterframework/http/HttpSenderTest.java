@@ -24,6 +24,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
@@ -36,6 +37,39 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Override
 	public HttpSender createSender() {
 		return spy(new HttpSender());
+	}
+
+	@Test
+	public void relativeUrl() throws Throwable {
+		exception.expect(ConfigurationException.class);
+		exception.expectMessage("must use an absolute url starting with http(s)://");
+
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+
+		sender.setMethodType("GET");
+		sender.setUrl("relative/path");
+
+		sender.configure();
+	}
+
+	@Test
+	public void relativeUrlParameter() throws Throwable {
+		exception.expect(SenderException.class);
+		exception.expectMessage("must use an absolute url starting with http(s)://");
+
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+
+		sender.setMethodType("GET");
+		sender.setUrl(null);
+		Parameter urlParam = new Parameter();
+		urlParam.setName("url");
+		urlParam.setValue("relative/path");
+		sender.addParameter(urlParam);
+
+		sender.configure();
+		sender.open();
+
+		sender.sendMessage(null, null);
 	}
 
 	@Test
