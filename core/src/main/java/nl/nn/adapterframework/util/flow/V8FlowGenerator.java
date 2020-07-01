@@ -77,6 +77,6 @@ public class V8FlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() throws Exception {
-		GraphvizEngine.releaseThread();
+		engine.close();
 	}
 }

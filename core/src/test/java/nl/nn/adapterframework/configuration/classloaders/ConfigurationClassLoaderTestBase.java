@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
+public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
@@ -253,5 +253,13 @@ public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Moc
 		URL configURL = classLoader.getResource(configFile);
 		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.getPath().endsWith(file));
+	}
+
+	@Test
+	public void toStringTest() throws Exception {
+		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
+
+		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
+		assertEquals(logPrefix+"["+getConfigurationName()+"]", classLoader.toString());
 	}
 }
