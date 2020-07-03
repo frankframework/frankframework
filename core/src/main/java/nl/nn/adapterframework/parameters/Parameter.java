@@ -356,10 +356,10 @@ public class Parameter implements INamedObject, IWithParameters {
 		} else {
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
-				if (result==null || 
+				if (log.isDebugEnabled() && (result==null || 
 					result instanceof String  && ((String)result).isEmpty() ||
-					result instanceof Message && ((Message)result).isEmpty()) {
-					if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
+					result instanceof Message && ((Message)result).isEmpty())) {
+						log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, session);
