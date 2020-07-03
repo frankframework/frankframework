@@ -1,10 +1,10 @@
 version: "3"
 services:
   database:
-    image: iaf-oracle
-    container_name: oracle
+    build: .
+    container_name: iaf-test-oracle
     ports:
-      - "$HOSTPORT:1521"
+      - "1521:1521"
     expose:
       - "1521"
       - "5500"

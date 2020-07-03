@@ -2,10 +2,10 @@
 
 ## Getting Started
 
-You can see three folders
-    - IAF-MS-SQL
-    - IAF-Oracle
-    - IAF-MySQL
+There are three folders containing Docker configurations:
+    - MsSqlServer
+    - Oracle
+    - MySQL
 
 These instructions will cover usage information and for the docker container 
 
@@ -60,6 +60,9 @@ To check our container type:
 
 docker ps -a
 
+All containers setup a default database, named 'testiaf', and create a user 
+with login 'testiaf_user' and password 'testiaf_user00'.
+
 To get access inside of your container you can type: \
 [Windows] \
 winpty docker container exec -ti <container_ID> bash  \
@@ -67,7 +70,7 @@ winpty docker container exec -ti <container_ID> bash  \
 docker container exec -ti <container_ID> bash 
 
 You can login in mssql using this command: \
-/opt/mssql-tools/bin/sqlcmd -S localhost -U wearefrank_user -P "wearefrankPass01"
+/opt/mssql-tools/bin/sqlcmd -S localhost -U testiaf_user -P "testiaf_user00"
 
 You can login in MySQL using this command: \
-mysql -u wearefrank_user --password=wearefrankPass01
+mysql -u testiaf_user --password=testiaf_user00
