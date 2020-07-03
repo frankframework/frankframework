@@ -1,1 +1,1 @@
-c:/temp/testdata/bftp/in/EDIFACT.TXT
+${testdata.dir}/bftp/in/EDIFACT.TXT
