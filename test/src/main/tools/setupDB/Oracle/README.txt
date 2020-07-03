@@ -19,19 +19,16 @@ Next, start the Oracle container by using the docker-compose.yml file using:
 	docker-compose up -d
 
 The -d flag is used to run the container in the background.
-You can change the port of your host you want to connect to the container by changing the value in the .env file.
-It will take a while for the Oracle container to have started, you can check the status with "docker ps" and the container should say (healty)
+It will take a while for the Oracle container to have started, you can check the status with "docker ps" and the container should say (healthy)
 If you want to remove the container you can use "docker-compose down", if you just want to stop the container without removing it use "docker-compose stop" and use "docker-compose up" to start it up again.
 
 You will need to add the following to your context.xml file, which can be found at iaf\test\src\main\webapp\META-INF\, to connect to the database in the container.
-If a Resource node with name="jdbc/ibis4test" already exist you will need to replace it.
-Give the port that was used as the hostport in the .env file at HOSTPORT in the URL, do not change anything else.
 
 	<Resource
-		name="jdbc/ibis4test"
+		name="jdbc/ibis4test-oracle-docker"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:HOSTPORT:ORCLCDB"
-		user="c##testiaf_user"
-		password="c##testiaf_user"
+		URL="jdbc:oracle:thin:@localhost:9000:ORCLCDB"
+		user="testiaf_user"
+		password="testiaf_user"
 	/>
