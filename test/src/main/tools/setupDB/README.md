@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-There are three folders containing Docker configuration:
+There are three folders containing Docker configurations:
     - MsSqlServer
     - Oracle
     - MySQL
@@ -59,6 +59,9 @@ Successfully built bc1e68a2e558
 To check our container type: 
 
 docker ps -a
+
+All containers setup a default database, named 'testiaf', and create a user 
+with login 'testiaf_user' and password 'testiaf_user00'.
 
 To get access inside of your container you can type: \
 [Windows] \
