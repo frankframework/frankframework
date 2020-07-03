@@ -28,7 +28,7 @@ You will need to add the following to your context.xml file, which can be found 
 		name="jdbc/ibis4test-oracle-docker"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:9000:ORCLCDB"
+		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
 		user="testiaf_user"
-		password="testiaf_user"
+		password="testiaf_user00"
 	/>
