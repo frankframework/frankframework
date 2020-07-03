@@ -20,7 +20,7 @@ cat << !! >> $ORIGINAL_SETUP_SCRIPT
   echo "do iaf setup"
   echo "$QUERY_COMMAND $QUERY_PATH"
   $QUERY_COMMAND << EOF
-  `cat $QUERY_PATH`
+  $(cat $QUERY_PATH)
 EOF
   exitcode=\$?
   echo "iaf setup done, exitcode=\$exitcode"
