@@ -2,9 +2,10 @@
 
 ## Getting Started
 
-You can see two folders
-    - IAF-MS-SQL
-    - IAF-Oracle
+There are three folders containing Docker configuration:
+    - MsSqlServer
+    - Oracle
+    - MySQL
 
 These instructions will cover usage information and for the docker container 
 
@@ -31,8 +32,13 @@ home\iaf\docker\IAF-Oracle \
 and execute this command: \
 docker-compose --env-file docker/.env up -d
 
+FOR MySQL CONTAINER: \
+home\iaf\docker\IAF-MySQL \
+and execute this command: \
+docker-compose up -d
+
 you can see something like that:
-$ docker-compose up -d --buld \
+$ docker-compose up -d --build \
 Creating volume "iaf-ms-sql_db_data" with default driver \
 Building ************
 Step 1/4 : FROM *******  \
@@ -60,6 +66,8 @@ winpty docker container exec -ti <container_ID> bash  \
 [Linux] \
 docker container exec -ti <container_ID> bash 
 
-You can loggin in mssql using this command: \
-/opt/mssql-tools/bin/sqlcmd -S localhost -U wearefrank_user -P "wearefrankPass01"
+You can login in mssql using this command: \
+/opt/mssql-tools/bin/sqlcmd -S localhost -U testiaf_user -P "testiaf_user00"
 
+You can login in MySQL using this command: \
+mysql -u testiaf_user --password=testiaf_user00
