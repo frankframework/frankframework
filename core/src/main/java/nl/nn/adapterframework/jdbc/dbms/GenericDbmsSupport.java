@@ -244,6 +244,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException {
+		return prepareQueryTextForWorkQueuePeeking(batchSize, selectQuery, -1);
+	}
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		return selectQuery;
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
 		String query="select * from "+tableName+" where ROWNUM=1";

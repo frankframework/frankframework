@@ -359,7 +359,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				if (result==null || 
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty()) {
-					log.warn("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
+					if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, session);
@@ -381,9 +381,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
-			}
+			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
 			// if value is null then return specified default value
 			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
