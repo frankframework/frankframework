@@ -1,9 +1,6 @@
-DROP DATABASE wearefrank_db;
-CREATE DATABASE wearefrank_db;
-USE testiaf;
+CREATE DATABASE IF NOT EXISTS wearefrank_db;
+USE wearefrank_db;
 
-DROP USER 'wearefrank_user'@'localhost';
-
-CREATE USER 'wearefrank_user'@'localhost' IDENTIFIED BY 'wearefrankPass01';
+CREATE USER IF NOT EXISTS 'wearefrank_user'@'localhost' IDENTIFIED BY 'wearefrankPass01';
 
 GRANT ALL PRIVILEGES ON *.* TO 'wearefrank_user'@'localhost';
