@@ -253,8 +253,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
-		if (!uri.getScheme().matches("(?i)https?"))
+		if(uri.getScheme() == null) {
+			throw new URISyntaxException("", "must use an absolute url starting with http(s)://");
+		}
+		if (!uri.getScheme().matches("(?i)https?")) {
 			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
+		}
 
 		if (uri.getPath()==null) {
 			uri.setPath("/");
@@ -429,7 +433,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 		} catch (URISyntaxException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]");
+			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
 		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
