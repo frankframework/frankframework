@@ -16,5 +16,5 @@ GO
 ALTER ROLE db_owner ADD MEMBER [testiaf_user];
 GO
 
-ALTER ROLE SqlJDBCXAUser ADD MEMBER testiaf_user;
+ALTER ROLE SqlJDBCXAUser ADD MEMBER [testiaf_user];
 GO

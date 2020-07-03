@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS wearefrank_db;
-USE wearefrank_db;
+CREATE DATABASE IF NOT EXISTS testiaf;
+USE testiaf;
 
-CREATE USER IF NOT EXISTS 'wearefrank_user'@'localhost' IDENTIFIED BY 'wearefrankPass01';
+CREATE USER IF NOT EXISTS 'testiaf_user'@'localhost' IDENTIFIED BY 'testiaf_user00';
 
-GRANT ALL PRIVILEGES ON *.* TO 'wearefrank_user'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'testiaf_user'@'localhost';

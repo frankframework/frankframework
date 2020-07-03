@@ -9,7 +9,7 @@ services:
         volumes:
           - db_data:/var/opt/mssql
         ports:
-            - "2500:1433"
+            - "1433:1433"
         container_name: iaf-test-ms-sqlserver
         hostname: ms-sqlserver
 volumes:
