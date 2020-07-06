@@ -63,6 +63,18 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <packagingExcludes>.gitignore</packagingExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <profile>
       <id>proprietary</id>
