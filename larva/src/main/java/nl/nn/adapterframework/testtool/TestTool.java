@@ -3078,6 +3078,9 @@ public class TestTool {
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
 
+		// Map all identifier based properties once
+		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
+
 		/* numeric decodeUnzipContentBetweenKeys */
 		debugMessage("Check decodeUnzipContentBetweenKeys properties", writers);
 		boolean decodeUnzipContentBetweenKeysProcessed = false;
@@ -3100,7 +3103,7 @@ public class TestTool {
 		}
 
 		/* identifier based decodeUnzipContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = mapPropertiesByIdentifier("decodeUnzipContentBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
 		
 		Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
 	    while (decodeUnzipContentBetweenKeysIt.hasNext()) {
@@ -3143,7 +3146,7 @@ public class TestTool {
 		}
 
 		/* identifier based canonicaliseFilePathContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = mapPropertiesByIdentifier("canonicaliseFilePathContentBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys"); 
 		
 		Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
 	    while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
@@ -3177,7 +3180,7 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = mapPropertiesByIdentifier("ignoreRegularExpressionKey", properties);
+		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = ignoreMap.get("ignoreRegularExpressionKey");
 		
 		Iterator ignoreRegularExpressionKeyIt = ignoreRegularExpressionKey.entrySet().iterator();
 	    while (ignoreRegularExpressionKeyIt.hasNext()) {
@@ -3210,7 +3213,7 @@ public class TestTool {
 		}
 
 		/* identifier based removeRegularExpressionKey */
-		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = mapPropertiesByIdentifier("removeRegularExpressionKey", properties);
+		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = ignoreMap.get("removeRegularExpressionKey");
 		
 		Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
 	    while (removeRegularExpressionKeyIt.hasNext()) {
@@ -3243,7 +3246,7 @@ public class TestTool {
 		}
 
 		/* identifier based replaceRegularExpressionKeys */
-		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = mapPropertiesByIdentifier("replaceRegularExpressionKeys", properties);
+		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = ignoreMap.get("replaceRegularExpressionKeys");
 		
 		Iterator replaceRegularExpressionKeysIt = replaceRegularExpressionKeys.entrySet().iterator();
 	    while (replaceRegularExpressionKeysIt.hasNext()) {
@@ -3277,7 +3280,7 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = mapPropertiesByIdentifier("ignoreContentBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = ignoreMap.get("ignoreContentBetweenKeys");
 		
 		Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
 	    while (ignoreContentBetweenKeysIt.hasNext()) {
@@ -3311,7 +3314,7 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = mapPropertiesByIdentifier("ignoreKeysAndContentBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = ignoreMap.get("ignoreKeysAndContentBetweenKeys");
 		
 		Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
 	    while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
@@ -3345,7 +3348,7 @@ public class TestTool {
 		}
 
 		/* identifier based removeKeysAndContentBetweenKeys */
-		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = mapPropertiesByIdentifier("removeKeysAndContentBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = ignoreMap.get("removeKeysAndContentBetweenKeys");
 		
 		Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
 	    while (removeKeysAndContentBetweenKeysIt.hasNext()) {
@@ -3378,7 +3381,7 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreKey */
-		HashMap<String, HashMap<String, String>> ignoreKey = mapPropertiesByIdentifier("ignoreKey", properties);
+		HashMap<String, HashMap<String, String>> ignoreKey = ignoreMap.get("ignoreKey");
 		
 		Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
 	    while (ignoreKeyIt.hasNext()) {
@@ -3410,7 +3413,7 @@ public class TestTool {
 		}
 
 		/* identifier based removeKey */
-		HashMap<String, HashMap<String, String>> removeKey = mapPropertiesByIdentifier("removeKey", properties);
+		HashMap<String, HashMap<String, String>> removeKey = ignoreMap.get("removeKey");
 
 		Iterator removeKeyIt = removeKey.entrySet().iterator();
 		while (removeKeyIt.hasNext()) {
@@ -3443,7 +3446,7 @@ public class TestTool {
 		}
 
 		/* identifier based replaceKey */
-		HashMap<String, HashMap<String, String>> replaceKey = mapPropertiesByIdentifier("replaceKey", properties);
+		HashMap<String, HashMap<String, String>> replaceKey = ignoreMap.get("replaceKey");
 
 		Iterator replaceKeyIt = replaceKey.entrySet().iterator();
 		while (replaceKeyIt.hasNext()) {
@@ -3477,7 +3480,7 @@ public class TestTool {
 		}
 
 		/* identifier based replaceEverywhereKey */
-		HashMap<String, HashMap<String, String>> replaceEverywhereKey = mapPropertiesByIdentifier("replaceEverywhereKey", properties);
+		HashMap<String, HashMap<String, String>> replaceEverywhereKey = ignoreMap.get("replaceEverywhereKey");
 
 		Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
 		while (replaceEverywhereKeyIt.hasNext()) {
@@ -3519,7 +3522,7 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreCurrentTimeBetweenKeys */
-		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = mapPropertiesByIdentifier("ignoreCurrentTimeBetweenKeys", properties);
+		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = ignoreMap.get("ignoreCurrentTimeBetweenKeys");
 
 		Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
 		while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
@@ -3564,10 +3567,10 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreContentBeforeKey */
-		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = mapPropertiesByIdentifier("ignoreContentBeforeKey", properties);
+		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = ignoreMap.get("ignoreContentBeforeKey");
 
 		// merge all without .key attribute aswell
-		ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
+		// TODO: ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
 
 		Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
 		while (ignoreContentBeforeKeyIt.hasNext()) {
@@ -3606,10 +3609,10 @@ public class TestTool {
 		}
 
 		/* identifier based ignoreContentAfterKey */
-		HashMap<String, HashMap<String, String>> ignoreContentAfterKey = mapPropertiesByIdentifier("ignoreContentAfterKey", properties);
+		HashMap<String, HashMap<String, String>> ignoreContentAfterKey = ignoreMap.get("ignoreContentAfterKey");
 
 		// merge all without .key attribute aswell
-		ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
+		// TODO: ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
 
 		Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
 		while (ignoreContentAfterKeyIt.hasNext()) {
@@ -4214,34 +4217,44 @@ public class TestTool {
 	 * ignoreContentBetweenKeys.fieldA.key1=<field name="A">
 	 * ignoreContentBetweenKeys.fieldA.key2=</field>
 	 * 
-	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
 	 * @param properties Properties to be checked
-	 * @param attributes Attributes that should be returned, in the example "key1", "key2"
 	 * 
-	 * @return HashMap<String, HashMap<String, String>> as Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
+	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
 	*/
-	public static HashMap<String, HashMap<String, String>> mapPropertiesByIdentifier(String propertyName, Properties properties, ArrayList<String> attributes) {
-		HashMap<String, HashMap<String, String>> returnMap = new HashMap<String, HashMap<String, String>>();
+
+	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
+		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
-
+		
 		// Loop through all properties
-	    while (enums.hasMoreElements()) {
-
+		while (enums.hasMoreElements()) {
 			// Extract key
 			String key = enums.nextElement();
 
-			if(key.startsWith(propertyName + ".")) { // found match
+			// Extract ignore type
+			String ignore = key.split(Pattern.quote("."))[0];
+			ArrayList<String> attributes = findAttributesForIgnore(ignore);
 
+			if(attributes != null){
 				// Extract identifier
 				String id = key.split(Pattern.quote("."))[1];
 
+				// Find return map for ignore
+				HashMap<String, HashMap<String, String>> ignoreMap = returnMap.get(ignore);
+
+				// Create return map for ignore if not exist
+				if(ignoreMap == null) {
+					ignoreMap = new HashMap<String, HashMap<String, String>>();
+					returnMap.put(ignore, ignoreMap);
+				}
+
 				// Find return map for identifier
-				HashMap<String, String> ignore = returnMap.get(id);
+				HashMap<String, String> idMap = ignoreMap.get(id);
 
 				// Create return map for identifier if not exist
-				if(ignore == null) {
-					ignore = new HashMap<String, String>();
-					returnMap.put(id, ignore);
+				if(idMap == null) {
+					idMap = new HashMap<String, String>();
+					ignoreMap.put(id, idMap);
 				}
 
 				// Check attributes are provided 
@@ -4249,30 +4262,17 @@ public class TestTool {
 					// Loop through attributes to be searched for
 					for (String attribute : attributes) { 		      
 						if(key.endsWith("." + attribute)){
-							ignore.put(attribute, properties.getProperty(key));
+							idMap.put(attribute, properties.getProperty(key));
 						}
 					}
 				}
 				else { // assume value should be read and returned under attribute key 'value' (in case of ignoreKey, removeKey, replaceKey)
-					ignore.put("value", properties.getProperty(key));
+					idMap.put("value", properties.getProperty(key));
 				}
 			}
 		}
-
-	    return returnMap;
-	}
-
-	/**
-	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
-	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
-	 * 
-	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 * @param properties Properties to be checked
-	 * 
-	 * @return HashMap<String, HashMap<String, String>> as Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
-	*/
-	public static HashMap<String, HashMap<String, String>> mapPropertiesByIdentifier(String propertyName, Properties properties) {
-		return mapPropertiesByIdentifier(propertyName, properties, findAttributesForIgnore(propertyName));
+		
+		return returnMap; 
 	}
 
 	/**
@@ -4284,7 +4284,7 @@ public class TestTool {
 	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
-		ArrayList<String> attributes;
+		ArrayList<String> attributes = null;
 
 		switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys":
@@ -4308,10 +4308,11 @@ public class TestTool {
 			case "ignoreCurrentTimeBetweenKeys":
 				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"} ) );
 				break;
-			default:
-				// ignoreKey, removeKey, 
+			case "ignoreKey":
+			case "removeKey":
 				attributes = new ArrayList<String>();
-		  }
+				break;
+		}
 
 		return attributes;
 	}
