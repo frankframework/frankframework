@@ -155,7 +155,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	boolean forceCreateTable=false;
 
 	boolean createTable=false;
-    private String tableName="ibisstore";
+    private String tableName="IBISSTORE";
 	private String keyField="messageKey";
     private String idField="messageId";
 	private String correlationIdField="correlationId";
@@ -1443,7 +1443,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	/**
 	 * Sets the name of the table messages are stored in.
 	 */
-	@IbisDoc({"the name of the table messages are stored in", "ibisstore"})
+	@IbisDoc({"the name of the table messages are stored in", "IBISSTORE"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}

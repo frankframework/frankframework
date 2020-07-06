@@ -33,8 +33,10 @@ import org.apache.logging.log4j.Logger;
 public class DbmsSupportFactory implements IDbmsSupportFactory {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private final static String PRODUCT_NAME_ORACLE_="Oracle";
-	private final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";
+	public final static String PRODUCT_NAME_ORACLE="Oracle";
+	public final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";
+	public final static String PRODUCT_NAME_MYSQL="MySQL";
+
 
 	private Properties dbmsSupportMap; 
 
@@ -70,13 +72,17 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		}
 		else {
 			log.warn("no dbmsSupportMap specified, reverting to built in types");
-			if (PRODUCT_NAME_ORACLE_.equals(product)) {
+			if (PRODUCT_NAME_ORACLE.equals(product)) {
 				log.debug("Setting databasetype to ORACLE");
 				return new OracleDbmsSupport();
 			}
 			if (PRODUCT_NAME_MSSQLSERVER.equals(product)) {
 				log.debug("Setting databasetype to MSSQLSERVER");
 				return new MsSqlServerDbmsSupport();
+			}
+			if (PRODUCT_NAME_MYSQL.equals(product)) {
+				log.debug("Setting databasetype to MYSQL");
+				return new MySqlDbmsSupport();
 			}
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");

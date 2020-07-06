@@ -31,9 +31,10 @@ TagDatabase
  	</changeSet>
  	
 	<changeSet id="IBISDATA" author="Robert Karajev">
+		<validCheckSum>7:7f94b94d7dfc8a21af3f3c54f1cfda29</validCheckSum>
 		<comment>Add IBISDATA Table</comment>
 		<createTable tableName="IBISDATA">
-			<column name="DATAKEY" type="java.sql.Types.DECIMAL(10)">
+			<column name="DATAKEY" type="INT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISDATA"/>
 			</column>
 			<column name="DATA" type="BLOB"/>
@@ -41,9 +42,10 @@ TagDatabase
 	</changeSet>
 
 	<changeSet id="IBISTEMP" author="Robert Karajev">
+		<validCheckSum>7:4e0dba09800e08930e4d452e11f83566</validCheckSum>
 		<comment>Add IBISTEMP Table</comment>
 		<createTable tableName="IBISTEMP">
-			<column name="TKEY" type="java.sql.Types.DECIMAL(10)">
+			<column name="TKEY" type="INT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISTEMP"/>
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
