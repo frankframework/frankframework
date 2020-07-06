@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,40 +74,54 @@ public class DB2XMLWriter {
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
-    public static String getFieldType (int type) {
-	    switch (type) {
-	          case Types.INTEGER : return ("INTEGER");
-	          case Types.NUMERIC : return ("NUMERIC");
-	          case Types.CHAR :    return ("CHAR");
-	          case Types.DATE :    return ("DATE");
-	          case Types.TIMESTAMP : return ("TIMESTAMP");
-	          case Types.DOUBLE : return ("DOUBLE");
-	          case Types.FLOAT : return ("FLOAT");
-	          case Types.ARRAY : return ("ARRAY");
-	          case Types.BLOB : return ("BLOB");
-	          case Types.CLOB : return ("CLOB");
-	          case Types.DISTINCT : return ("DISTINCT");
-	          case Types.LONGVARBINARY : return ("LONGVARBINARY");
-	          case Types.VARBINARY : return ("VARBINARY");
-	          case Types.BINARY : return ("BINARY");
-	          case Types.REF : return ("REF");
-	          case Types.STRUCT : return ("STRUCT");
-	          case Types.JAVA_OBJECT  : return ("JAVA_OBJECT");
-	          case Types.VARCHAR  : return ("VARCHAR");
-	          case Types.TINYINT: return ("TINYINT");
-	          case Types.TIME: return ("TIME");
-	          case Types.REAL: return ("REAL");
-	          case Types.BOOLEAN: return ("BOOLEAN");
-	          case Types.BIT: return ("BIT");
-	          case Types.BIGINT: return ("BIGINT");
-	          case Types.SMALLINT: return ("SMALLINT");
+	public static String getFieldType (int type) {
+		switch (type) {
+			case Types.INTEGER :   return "INTEGER";
+			case Types.NUMERIC :   return "NUMERIC";
+			case Types.CHAR :      return "CHAR";
+			case Types.DATE :      return "DATE";
+			case Types.TIMESTAMP : return "TIMESTAMP";
+			case Types.DOUBLE :    return "DOUBLE";
+			case Types.FLOAT :     return "FLOAT";
+			case Types.ARRAY :     return "ARRAY";
+			case Types.BLOB :      return "BLOB";
+			case Types.CLOB :      return "CLOB";
+			case Types.DISTINCT :  return "DISTINCT";
+			case Types.LONGVARBINARY : return "LONGVARBINARY";
+			case Types.VARBINARY : return "VARBINARY";
+			case Types.BINARY :    return "BINARY";
+			case Types.REF :       return "REF";
+			case Types.STRUCT :    return "STRUCT";
+			case Types.JAVA_OBJECT : return "JAVA_OBJECT";
+			case Types.VARCHAR  :  return "VARCHAR";
+			case Types.TINYINT:    return "TINYINT";
+			case Types.TIME:       return "TIME";
+			case Types.REAL:       return "REAL";
+			case Types.BOOLEAN:    return "BOOLEAN";
+			case Types.BIT:        return "BIT";
+			case Types.BIGINT:     return "BIGINT";
+			case Types.SMALLINT:   return "SMALLINT";
+			case Types.DATALINK:   return "DATALINK";
+			case Types.DECIMAL:    return "DECIMAL";
+			case Types.LONGNVARCHAR: return "LONGNVARCHAR";
+			case Types.LONGVARCHAR: return "LONGVARCHAR";
+			case Types.NCHAR:      return "NCHAR";
+			case Types.NCLOB:      return "NCLOB";
+			case Types.NULL:       return "NULL";
+			case Types.NVARCHAR:   return "NVARCHAR";
+			case Types.OTHER:      return "OTHER";
+			case Types.REF_CURSOR: return "REF_CURSOR";
+			case Types.ROWID:      return "ROWID";
+			case Types.SQLXML:     return "SQLXML";
+			case Types.TIME_WITH_TIMEZONE: return "TIME_WITH_TIMEZONE";
+			case Types.TIMESTAMP_WITH_TIMEZONE: return "TIMESTAMP_WITH_TIMEZONE";
 		}
-     	return ("Unknown");
-    }
+		return "Unknown";
+	}
 
-   /**
-    * Retrieve the Resultset as a well-formed XML string
-    */
+	/**
+	 * Retrieve the Resultset as a well-formed XML string
+	 */
 	public String getXML(ResultSet rs) {
 		return getXML(rs, Integer.MAX_VALUE);
 	}
@@ -130,8 +144,8 @@ public class DB2XMLWriter {
 			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
 		}
 	}
-	
-	
+
+
 	public void getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
 	
 		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler)) {
@@ -160,12 +174,12 @@ public class DB2XMLWriter {
 
 						for (int j = 1; j <= nfields; j++) {
 							try (SaxElementBuilder field = fields.startElement("field")) {
-	
+
 								String columnName = "" + rsmeta.getColumnName(j);
 								if(convertFieldnamesToUppercase)
 									columnName = columnName.toUpperCase();
 								field.addAttribute("name", columnName);
-	
+
 								//Not every JDBC implementation implements these attributes!
 								try {
 									field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
@@ -215,7 +229,7 @@ public class DB2XMLWriter {
 				//----------------------------------------
 				// Process result rows
 				//----------------------------------------
-	
+
 				try (SaxElementBuilder queryresult = root.startElement(recordname)) {
 					while (rs.next() && rowCounter < maxlength) {
 						getRowXml(queryresult, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
@@ -239,7 +253,7 @@ public class DB2XMLWriter {
 			row.addAttribute("number", "" + rowNumber);
 			for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 				try (SaxElementBuilder resultField = row.startElement("field")) {
-	
+
 					String columnName = "" + rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase) 
 						columnName = columnName.toUpperCase();
