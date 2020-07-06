@@ -13,5 +13,6 @@
 			</column>
 		</columns>
 		<where>SLOTID IN ('ApiListenerDuplicateCheck', 'ApiListenerDuplicateCheck-Errors')</where>
+		<order>TYPE</order>
 	</select>
 </manageDatabaseREQ>

@@ -1,7 +1,7 @@
 version: "3"
 services:
     ms-sqlserver:
-        build: ./docker
+        build: .
         environment:
             SA_PASSWORD: "MssqlPass123"
             ACCEPT_EULA: "Y"
@@ -9,8 +9,8 @@ services:
         volumes:
           - db_data:/var/opt/mssql
         ports:
-            - "2500:1433"
-        container_name: ms-sqlserver
+            - "1433:1433"
+        container_name: iaf-test-ms-sqlserver
         hostname: ms-sqlserver
 volumes:
   db_data:

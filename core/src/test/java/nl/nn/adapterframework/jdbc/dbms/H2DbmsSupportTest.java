@@ -32,7 +32,7 @@ public class H2DbmsSupportTest {
 	@Test
 	public void testConvertMultipleQueriesOracleToH2() throws JdbcException, SQLException {
 		String query = "--------\n  --drop--\r\n--------\nDROP SEQUENCE SEQ_IBISSTORE;\nselect count(*) from ibisstore;";
-		String expected = "--------" + System.lineSeparator() + "--drop--" + System.lineSeparator() + "--------" + System.lineSeparator() + "DROP SEQUENCE IF EXISTS SEQ_IBISSTORE;" + "select count(*) from ibisstore;";
+		String expected = "--------\n  --drop--\r\n--------\nDROP SEQUENCE IF EXISTS SEQ_IBISSTORE;\nselect count(*) from ibisstore;";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		(new H2DbmsSupport()).convertQuery(queryExecutionContext, "Oracle");
 		assertEquals(expected, queryExecutionContext.getQuery());

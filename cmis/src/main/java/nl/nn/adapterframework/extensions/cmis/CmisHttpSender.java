@@ -55,7 +55,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		String methodType = (String) session.get("method");
@@ -139,7 +139,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
@@ -161,7 +161,7 @@ public class CmisHttpSender extends HttpSenderBase {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 
-		return "response";
+		return new Message("response");
 	}
 
 	public Response invoke(String method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {

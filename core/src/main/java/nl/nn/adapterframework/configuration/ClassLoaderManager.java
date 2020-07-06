@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -24,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -241,14 +241,36 @@ public class ClassLoaderManager {
 		if (classLoader == null)
 			throw new ConfigurationException("classloader cannot be null");
 
-		if (classLoader instanceof ReloadAware) {
-			((ReloadAware)classLoader).reload();
+		if (classLoader instanceof IConfigurationClassLoader) {
+			((IConfigurationClassLoader) classLoader).reload();
 		} else {
-			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
+			LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring reload");
 		}
 	}
 
 	public boolean contains(String currentConfigurationName) {
 		return (classLoaders.containsKey(currentConfigurationName));
+	}
+
+	/**
+	 * Removes all created ClassLoaders
+	 */
+	public void shutdown() {
+		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
+			String configurationClassLoader = iterator.next();
+			ClassLoader classLoader = classLoaders.get(configurationClassLoader);
+			if(classLoader instanceof IConfigurationClassLoader) {
+				((IConfigurationClassLoader) classLoader).destroy();
+			} else {
+				LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring destroy");
+			}
+			iterator.remove();
+			LOG.info("removed classloader ["+ClassUtils.nameOf(classLoader)+"]");
+		}
+		if(classLoaders.size() > 0) {
+			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders "+classLoaders);
+
+			classLoaders.clear();
+		}
 	}
 }

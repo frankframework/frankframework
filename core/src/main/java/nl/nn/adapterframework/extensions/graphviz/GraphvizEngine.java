@@ -37,7 +37,7 @@ import java.net.URL;
  */
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
-	private static final ThreadLocal<Env> ENVS = new ThreadLocal<Env>();
+	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
 	/**
@@ -58,7 +58,7 @@ public class GraphvizEngine {
 			this.graphvizVersion = graphvizVersion;
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries
-		getEnv();
+		getEngine();
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class GraphvizEngine {
 		}
 
 		String call = jsVizExec(src, options);
-		String result = getEnv().execute(call);
+		String result = getEngine().execute(call);
 		if(start > 0) {
 			log.debug("executed VisJs in ["+(System.currentTimeMillis() - start)+"]ms");
 		}
@@ -120,23 +120,21 @@ public class GraphvizEngine {
 	 * Creates the GraphvizEngine instance
 	 * @throws IOException when the VizJS file can't be found
 	 */
-	private Env getEnv() throws IOException {
-		if(null == ENVS.get()) {
+	private Engine getEngine() throws IOException {
+		if(null == engine) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource));
+			engine = new Engine(getVisJsWrapper(), visJsSource);
 		}
-		return ENVS.get();
+		return engine;
 	}
 
 	/**
 	 * Shuts down the GraphvizEngine instance
 	 */
-	public static void releaseThread() {
-		final Env env = ENVS.get();
-		if (env != null) {
-			env.close();
-			ENVS.remove();
+	public void close() {
+		if (engine != null) {
+			engine.close();
 		}
 	}
 
@@ -151,12 +149,12 @@ public class GraphvizEngine {
 				+ "}";
 	}
 
-	private static class Env {
+	private static class Engine {
 		protected Logger log = LogUtil.getLogger(this);
 		private JavascriptEngine<?> jsEngine;
 		private ResultHandler resultHandler;
 
-		Env(String initScript, String graphvisJsLibrary) {
+		Engine(String initScript, String graphvisJsLibrary) {
 			// Available JS Engines. Lower index has priority.
 			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
 

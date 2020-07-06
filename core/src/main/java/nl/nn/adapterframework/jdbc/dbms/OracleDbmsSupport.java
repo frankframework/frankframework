@@ -116,20 +116,25 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
-			/*
-			 * see:
-			 * http://www.psoug.org/reference/deadlocks.html
-			 * http://www.psoug.org/reference/select.html
-			 * http://www.ss64.com/ora/select.html
-			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
-			 */
-			if (wait < 0) {
-				return selectQuery+" FOR UPDATE SKIP LOCKED";
-			} else {
-				return selectQuery+" FOR UPDATE WAIT " + wait;
-			}
+		/*
+		 * see:
+		 * http://www.psoug.org/reference/deadlocks.html
+		 * http://www.psoug.org/reference/select.html
+		 * http://www.ss64.com/ora/select.html
+		 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
+		 */
+		if (wait < 0) {
+			return selectQuery+" FOR UPDATE SKIP LOCKED";
+		} else {
+			return selectQuery+" FOR UPDATE WAIT " + wait;
+		}
 	}
 
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		return selectQuery; // In Oracle, writers do not block readers
+	}
+	
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select * from "+tableName+" where ROWNUM=1";

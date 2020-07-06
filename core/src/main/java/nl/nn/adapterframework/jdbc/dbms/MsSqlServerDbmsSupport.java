@@ -1,5 +1,6 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +23,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -94,28 +94,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return "VARCHAR";
 	}
 	
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-				StringBuilder sb = new StringBuilder();
-				for (String singleQuery : multipleQueries) {
-					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
-					if (convertedQuery != null) {
-						sb.append(convertedQuery);
-						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
-						}
-					}
-				}
-				queryExecutionContext.setQuery(sb.toString());
-			} else {
-				warnConvertQuery(sqlDialectFrom);
-			}
-		}
-	}
 	
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
@@ -130,6 +108,22 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			result+=" WITH ("+(rowlock ? "rowlock," : "")+"updlock,readpast)";
 		} else {
 			result=result.substring(0,wherePos)+" WITH ("+(rowlock ? "rowlock," : "")+"updlock,readpast) "+result.substring(wherePos);
+		}
+		return result;
+	}
+
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		// see http://www.mssqltips.com/tip.asp?tip=1257
+		String result=selectQuery.substring(0,KEYWORD_SELECT.length())+(batchSize>0?" TOP "+batchSize:"")+selectQuery.substring(KEYWORD_SELECT.length());
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (readpast)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (readpast) "+result.substring(wherePos);
 		}
 		return result;
 	}

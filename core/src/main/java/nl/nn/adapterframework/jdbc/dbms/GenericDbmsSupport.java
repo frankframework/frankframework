@@ -23,7 +23,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -45,6 +47,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
+	
+	protected static Map<String,ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
 	public String getDbmsName() {
@@ -240,6 +244,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException {
+		return prepareQueryTextForWorkQueuePeeking(batchSize, selectQuery, -1);
+	}
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		return selectQuery;
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
 		String query="select * from "+tableName+" where ROWNUM=1";
@@ -413,10 +426,52 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return (""+value).toUpperCase();
 	}
 
+	protected ISqlTranslator createTranslator(String source, String target) throws JdbcException {
+		return new SqlTranslator(source, target);
+	}
+
 	@Override
 	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
-			warnConvertQuery(sqlDialectFrom);
+			ISqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
+			if (translator==null) {
+				if (sqlTranslators.containsKey(sqlDialectFrom)) {
+					// if translator==null, but the key is present in the map, 
+					// then we already tried to setup this translator, and did not succeed. 
+					// No need to try again.
+					warnConvertQuery(sqlDialectFrom); 
+					return;
+				}
+				try {
+					translator = createTranslator(sqlDialectFrom, getDbmsName());
+				} catch (IllegalArgumentException e) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(sqlDialectFrom, null);
+					return;
+				} catch (Exception e) {
+					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
+				}
+				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
+					return;
+				}
+				sqlTranslators.put(sqlDialectFrom, translator);
+			}
+			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
+			StringBuilder convertedQueries = null;
+			for (String singleQuery : multipleQueries) {
+				String convertedQuery = translator.translate(singleQuery);
+				if (convertedQuery != null) {
+					if (convertedQueries==null) {
+						convertedQueries = new StringBuilder();
+					} else {
+						convertedQueries.append("\n");
+					}
+					convertedQueries.append(convertedQuery);
+				}
+			}
+			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
 	}
 	
