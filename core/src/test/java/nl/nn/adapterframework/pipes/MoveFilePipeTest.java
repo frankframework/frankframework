@@ -274,6 +274,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath+"/itswrong");
         pipe.setFilename("cantmove.sc");
+        pipe.setNumberOfAttempts(1);
         pipe.configure();
         pipe.start();
 
@@ -325,6 +326,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.setDeleteEmptyDirectory(true);
         pipe.setFilename("deletable.sd");
         pipe.configure();
+        pipe.setNumberOfAttempts(1);
         pipe.start();
 
         doPipe(pipe, "xx", session);
@@ -358,6 +360,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.setMove2dir(destFolderPath+"/newas");
         pipe.setDirectory(sourceFolderPath);
         pipe.setFilename("sad.lk");
+        pipe.setNumberOfAttempts(1);
         pipe.configure();
         pipe.start();
 
