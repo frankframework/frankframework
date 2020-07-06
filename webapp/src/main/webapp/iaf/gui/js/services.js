@@ -781,7 +781,7 @@ angular.module('iaf.beheerconsole')
 				delete $rootScope.hooks[name][id];
 		};
 	}).filter('ucfirst', function() {
-		return function(input) {
+		return function(s) {
 			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
 		};
 	}).filter('truncate', function() {
@@ -807,6 +807,23 @@ angular.module('iaf.beheerconsole')
 		return function(input) {
 			if(input || input === 0) return input+"%";
 			else return "-";
+		};
+	}).filter('formatStatistics', function() {
+		return function(input, format) {
+			if(!input || !format) return; //skip when no input
+			var formatted = {};
+			for(key in format) {
+				var value = input[key];
+				if(!value && value !== 0) { // if no value, return a dash
+					value = "-";
+				}
+				if((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
+					value += "%";
+				}
+				formatted[key] = value;
+			}
+			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
+			return formatted;
 		};
 	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
 		function($rootScope, $http, Base64, $location, appConstants) {
