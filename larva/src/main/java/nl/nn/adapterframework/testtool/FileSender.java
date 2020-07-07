@@ -106,7 +106,7 @@ public class FileSender {
 		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
 		while (enums.hasMoreElements()) {
 			String key = enums.nextElement();
-			ant.setProperty("ac." + key, appConstants.getResolvedProperty(key));
+			ant.setProperty(key, appConstants.getResolvedProperty(key));
 		}
 
 		ant.init();
