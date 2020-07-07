@@ -1,0 +1,8 @@
+<project default="restart-iaf-example">
+	<target name="restart-iaf-example">
+		<exec executable="../../frank-runner/restart.bat" vmlauncher="false" failonerror="true">
+			<arg value="-Dproject.dir=iaf/example"/>
+			<arg value="-Dtests.dir=src/test/resources/TestTool"/>
+		</exec>
+	</target>
+</project>
