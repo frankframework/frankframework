@@ -88,7 +88,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	private String typeField="type";
 	private String type = "";
 	private String hostField="host";
-	private String host;
 	private boolean active=true;
 	private boolean blobsCompressed=true;
 	private boolean storeFullMessage=true;
@@ -222,9 +221,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		if (StringUtils.isEmpty(getSequenceName())) {
 			throw new ConfigurationException("Attribute [sequenceName] is not set");
 		}
-		if (StringUtils.isNotEmpty(getHostField())) {
-			host=Misc.getHostname();
-		}
 		createQueryTexts(getDbmsSupport());
 	}
 
@@ -356,45 +352,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 			return dbmsSupport.provideTrailingFirstRowsHint(100);
 		}
 		return "";
-	}
-
-	/**
-	 *	Checks if table exists, and creates when necessary. 
-	 */
-	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
-		Connection conn = getConnection();
-		try {
-			boolean tableMustBeCreated;
-
-			if (checkIfTableExists) {
-				try {
-					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
-					if (!isCreateTable() && tableMustBeCreated) {
-						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
-					}
-					 log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
-				} catch (JdbcException e) {
-					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
-					tableMustBeCreated=true;
-				}
-			} else {
-				log.info("did not check for existence of table ["+getPrefix()+getTableName()+"]");
-				tableMustBeCreated = false;
-			}
-
-			if (isCreateTable() && tableMustBeCreated || forceCreateTable) {
-				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
-				Statement stmt = conn.createStatement();
-				try {
-					createStorage(conn, stmt, dbmsSupport);
-				} finally {
-					stmt.close();
-					conn.commit();
-				}
-			}
-		} finally {
-			conn.close();
-		}
 	}
 
 	
@@ -839,113 +796,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		}
 	}
 
-
-	private class JdbcTransactionalStorageIteratorItem implements IMessageBrowsingIteratorItem {
-
-		private Connection conn;
-		private ResultSet rs;
-		private boolean closeOnRelease;
-		
-		public JdbcTransactionalStorageIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
-			super();
-			this.conn=conn;
-			this.rs=rs;
-			this.closeOnRelease=closeOnRelease;
-		}
-		
-		@Override
-		public String getId() throws ListenerException {
-			try {
-				return rs.getString(getKeyField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public String getOriginalId() throws ListenerException {
-			try {
-				return rs.getString(getIdField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public String getCorrelationId() throws ListenerException {
-			try {
-				return rs.getString(getCorrelationIdField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public Date getInsertDate() throws ListenerException {
-			try {
-				return rs.getTimestamp(getDateField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public Date getExpiryDate() throws ListenerException {
-			try {
-				return rs.getTimestamp(getExpiryDateField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public String getType() throws ListenerException {
-			if (StringUtils.isEmpty(getTypeField())) {
-				return null;
-			}
-			try {
-				return rs.getString(getTypeField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		@Override
-		public String getHost() throws ListenerException {
-			if (StringUtils.isEmpty(getHostField())) {
-				return null;
-			}
-			try {
-				return rs.getString(getHostField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-
-		@Override
-		public String getLabel() throws ListenerException {
-			if (StringUtils.isEmpty(getLabelField())) {
-				return null;
-			}
-			try {
-				return rs.getString(getLabelField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-
-		@Override
-		public String getCommentString() throws ListenerException {
-			try {
-				return rs.getString(getCommentField());
-			} catch (SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-
-		@Override
-		public void release() {
-			if (closeOnRelease) {
-				JdbcUtil.fullClose(conn, rs);
-			}
-		}
-		
-		
-	}
 
 
 
