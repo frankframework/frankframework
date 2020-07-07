@@ -22,7 +22,9 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +54,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String getDbmsName() {
-		return "generic";
+		return getDbms().getKey();
 	}
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_GENERIC;
+	public Dbms getDbms() {
+		return Dbms.GENERIC;
 	}
 
 	@Override
@@ -258,6 +260,14 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		String query="select * from "+tableName+" where ROWNUM=1";
 		return query;
 	} 
+
+	// method is used in JobDef.cleanupDatabase
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
@@ -511,4 +521,5 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 		return splittedQueries;
 	}
+
 }

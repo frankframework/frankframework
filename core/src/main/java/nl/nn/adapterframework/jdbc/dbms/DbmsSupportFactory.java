@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,10 +32,6 @@ import org.apache.logging.log4j.Logger;
  */
 public class DbmsSupportFactory implements IDbmsSupportFactory {
 	protected Logger log = LogUtil.getLogger(this.getClass());
-
-	public final static String PRODUCT_NAME_ORACLE="Oracle";
-	public final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";
-	public final static String PRODUCT_NAME_MYSQL="MySQL";
 
 
 	private Properties dbmsSupportMap; 
@@ -72,15 +68,15 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		}
 		else {
 			log.warn("no dbmsSupportMap specified, reverting to built in types");
-			if (PRODUCT_NAME_ORACLE.equals(product)) {
+			if (Dbms.ORACLE.getProductName().equals(product)) {
 				log.debug("Setting databasetype to ORACLE");
 				return new OracleDbmsSupport();
 			}
-			if (PRODUCT_NAME_MSSQLSERVER.equals(product)) {
+			if (Dbms.MSSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MSSQLSERVER");
 				return new MsSqlServerDbmsSupport();
 			}
-			if (PRODUCT_NAME_MYSQL.equals(product)) {
+			if (Dbms.MYSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MYSQL");
 				return new MySqlDbmsSupport();
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,14 +31,10 @@ import org.apache.commons.lang.StringUtils;
 public class Db2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_DB2;
+	public Dbms getDbms() {
+		return Dbms.DB2;
 	}
 	
-	@Override
-	public String getDbmsName() {
-		return "DB2";
-	}
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {

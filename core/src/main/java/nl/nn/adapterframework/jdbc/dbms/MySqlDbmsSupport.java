@@ -16,13 +16,14 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-//@formatter:off
 /**
 * Support for MySql/MariaDB.
 * 
@@ -30,13 +31,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_MYSQL;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return DbmsSupportFactory.PRODUCT_NAME_MYSQL;
+	public Dbms getDbms() {
+		return Dbms.MYSQL;
 	}
 
 	@Override
@@ -53,12 +49,12 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getClobFieldType() {
-		return "TEXT";
+		return "LONGTEXT";
 	}
 
 	@Override
 	public String getBlobFieldType() {
-		return "BLOB";
+		return "LONGBLOB";
 	}
 
 	@Override
@@ -85,28 +81,37 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-
-
-//	private int retrieveAutoIncrement(Connection connection, String tableName) throws JdbcException {
-//		String query = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + getSchema(connection) + "' AND TABLE_NAME='" + tableName + "' AND EXTRA LIKE '%auto_increment%'";
-//		int countAutoIncrement = JdbcUtil.executeIntQuery(connection, query);
-//		if (countAutoIncrement == 0) {
-//			throw new JdbcException("could not find auto_increment column for table [" + tableName + "]");
-//		} else if (countAutoIncrement > 1) {
-//			throw new JdbcException("could not have multiple auto_increment columns for table [" + tableName + "]");
-//		}
-//
-//		query = "SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + getSchema(connection) + "' AND TABLE_NAME='" + tableName + "'";
-//		int autoIncrement = JdbcUtil.executeIntQuery(connection, query);
-//		if (autoIncrement < 1) {
-//			return 1;
-//		}
-//		return autoIncrement;
-//	}
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TIMESTAMP('" + formattedDate + "')";
+	}
 
 
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws JdbcException {
 		String query = "ALTER TABLE " + tableName + " AUTO_INCREMENT=" + startWith;
 		return JdbcUtil.executeIntQuery(connection, query);
+	}
+
+	@Override
+	public String getAutoIncrementKeyFieldType() {
+		return "AUTOINCREMENT";
+	}
+
+	@Override
+	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
+		return "SELECT LAST_INSERT_ID()";
+	}
+
+
+	@Override
+	public String emptyClobValue() {
+		return "";
+	}
+
+	@Override
+	public String emptyBlobValue() {
+		return "";
 	}
 }

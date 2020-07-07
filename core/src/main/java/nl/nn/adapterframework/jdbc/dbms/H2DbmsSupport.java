@@ -33,13 +33,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	public final static String dbmsName = "H2";
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_H2;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return dbmsName;
+	public Dbms getDbms() {
+		return Dbms.H2;
 	}
 
 	@Override

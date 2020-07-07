@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
@@ -75,48 +75,7 @@ public class DB2XMLWriter {
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
-		switch (type) {
-			case Types.INTEGER :   return "INTEGER";
-			case Types.NUMERIC :   return "NUMERIC";
-			case Types.CHAR :      return "CHAR";
-			case Types.DATE :      return "DATE";
-			case Types.TIMESTAMP : return "TIMESTAMP";
-			case Types.DOUBLE :    return "DOUBLE";
-			case Types.FLOAT :     return "FLOAT";
-			case Types.ARRAY :     return "ARRAY";
-			case Types.BLOB :      return "BLOB";
-			case Types.CLOB :      return "CLOB";
-			case Types.DISTINCT :  return "DISTINCT";
-			case Types.LONGVARBINARY : return "LONGVARBINARY";
-			case Types.VARBINARY : return "VARBINARY";
-			case Types.BINARY :    return "BINARY";
-			case Types.REF :       return "REF";
-			case Types.STRUCT :    return "STRUCT";
-			case Types.JAVA_OBJECT : return "JAVA_OBJECT";
-			case Types.VARCHAR  :  return "VARCHAR";
-			case Types.TINYINT:    return "TINYINT";
-			case Types.TIME:       return "TIME";
-			case Types.REAL:       return "REAL";
-			case Types.BOOLEAN:    return "BOOLEAN";
-			case Types.BIT:        return "BIT";
-			case Types.BIGINT:     return "BIGINT";
-			case Types.SMALLINT:   return "SMALLINT";
-			case Types.DATALINK:   return "DATALINK";
-			case Types.DECIMAL:    return "DECIMAL";
-			case Types.LONGNVARCHAR: return "LONGNVARCHAR";
-			case Types.LONGVARCHAR: return "LONGVARCHAR";
-			case Types.NCHAR:      return "NCHAR";
-			case Types.NCLOB:      return "NCLOB";
-			case Types.NULL:       return "NULL";
-			case Types.NVARCHAR:   return "NVARCHAR";
-			case Types.OTHER:      return "OTHER";
-			case Types.REF_CURSOR: return "REF_CURSOR";
-			case Types.ROWID:      return "ROWID";
-			case Types.SQLXML:     return "SQLXML";
-			case Types.TIME_WITH_TIMEZONE: return "TIME_WITH_TIMEZONE";
-			case Types.TIMESTAMP_WITH_TIMEZONE: return "TIMESTAMP_WITH_TIMEZONE";
-		}
-		return "Unknown";
+		return JDBCType.valueOf(type).getName();
 	}
 
 	/**
