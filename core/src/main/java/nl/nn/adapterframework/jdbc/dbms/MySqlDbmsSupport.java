@@ -67,7 +67,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+" FOR UPDATE SKIP LOCKED"+(batchSize>0?" limit "+batchSize:"");
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
 		} else {
 			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
 		}
@@ -79,7 +79,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+" SKIP LOCKED"+(batchSize>0?" limit "+batchSize:"");
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED";
 		} else {
 			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
 		}
