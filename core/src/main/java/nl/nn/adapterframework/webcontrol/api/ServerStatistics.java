@@ -358,12 +358,11 @@ public class ServerStatistics extends Base {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
 				}
 			}
  		}
-		
-		
+
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());

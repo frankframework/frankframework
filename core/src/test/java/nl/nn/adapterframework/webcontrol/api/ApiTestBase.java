@@ -18,15 +18,19 @@ package nl.nn.adapterframework.webcontrol.api;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +45,8 @@ import org.mockito.Mockito;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -117,7 +123,13 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 
 		//Uppercase method, make sure url begins with a /
 		public String compileKey(String method, String path) {
-			String url = path; //May contain QueryParameters
+			String url = getRawUrl(path); //May contain QueryParameters
+
+			return String.format("%S:%s", method, url);
+		}
+
+		private String getRawUrl(String path) { //String QueryParams off path
+			String url = path;
 			if(!url.startsWith("/")) {
 				url = "/"+url;
 			}
@@ -125,19 +137,96 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			if(questionMark != -1) {
 				url = url.substring(0, questionMark);
 			}
+			return url;
+		}
 
-			return String.format("%S:%s", method, url);
+		private Method findRequest(String rsResourceKey) {
+			String uriSegments[] = rsResourceKey.split("/");
+
+			for (Iterator<String> it = rsRequests.keySet().iterator(); it.hasNext();) {
+				String pattern = it.next();
+				String patternSegments[] = pattern.split("/");
+
+				if (patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
+					continue;
+				}
+
+				int matches = 0;
+				for (int i = 0; i < uriSegments.length; i++) {
+					if(patternSegments[i].equals(uriSegments[i]) || (patternSegments[i].startsWith("{") && patternSegments[i].endsWith("}"))) {
+						matches++;
+					} else {
+						continue;
+					}
+				}
+				if(matches == uriSegments.length) {
+					return rsRequests.get(pattern);
+				}
+			}
+			return null;
 		}
 
 		public Response dispatchRequest(String httpMethod, String url) {
+			return dispatchRequest(httpMethod, url, null);
+		}
+
+		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata) {
 			String rsResourceKey = compileKey(httpMethod, url);
 			System.out.println("trying to dispatch request to ["+rsResourceKey+"]");
 
-			Method method = rsRequests.get(rsResourceKey);
-//			Class<?>[] parameters = method.getParameterTypes();
+			if(httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
+				fail("can't use arguments on a GET request");
+			}
+
+			Method method = findRequest(rsResourceKey);
+			if(method == null) {
+				fail("can't find resource ["+url+"] method ["+httpMethod+"]");
+			}
+			String methodPath = method.getAnnotation(Path.class).value();
+			System.out.println("found JAX-RS resource ["+compileKey(httpMethod, methodPath)+"]");
+
 			try {
-				Object[] object = new Object[0]; //TODO: figure out how to deal with QueryParams and MultipartRequests
-				ResponseImpl response = (ResponseImpl) method.invoke(jaxRsResource, object);
+				Parameter[] parameters = method.getParameters();
+				Object[] methodArguments = new Object[parameters.length]; //TODO: figure out how to deal with QueryParams and MultipartRequests
+
+				for (int i = 0; i < parameters.length; i++) {
+					Parameter parameter = parameters[i];
+
+					boolean isPathParameter = parameter.isAnnotationPresent(PathParam.class);
+					boolean isQueryParameter = parameter.isAnnotationPresent(QueryParam.class);
+
+					if(isPathParameter) {
+						String pathValue = findPathParameter(parameter, methodPath, url);
+
+						System.out.println("adding method argument ["+i+"] with value ["+pathValue+"]");
+						methodArguments[i] = pathValue;
+					} else if(isQueryParameter) {
+						Object value = findQueryParameter(parameter, url);
+
+						System.out.println("adding method argument ["+i+"] value ["+value+"] type ["+value.getClass().getSimpleName()+"]");
+						methodArguments[i] = value;
+					} else {
+						Consumes consumes = AnnotationUtils.findAnnotation(method, Consumes.class);
+						if(consumes == null) {
+							fail("found additional argument without consumes!");
+						}
+						if(jsonOrFormdata == null) {
+							fail("found unset parameter ["+parameter+"] on method!");
+						}
+
+						String mediaType = consumes.value()[0];
+						if(mediaType.equals(MediaType.APPLICATION_JSON)) { //We need to convert our input to json
+							Object value = convertInputToParameterType(parameter, jsonOrFormdata);
+
+							System.out.println("adding method argument ["+i+"] value ["+value+"] type ["+value.getClass().getSimpleName()+"]");
+							methodArguments[i] = value;
+						}
+					}
+				}
+
+				validateIfAllArgumentsArePresent(methodArguments, parameters);
+
+				ResponseImpl response = (ResponseImpl) method.invoke(jaxRsResource, methodArguments);
 				MultivaluedMap<String, Object> meta = new MetadataMap<>();
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);
@@ -145,14 +234,93 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 					String mediaType = produces.value()[0];
 					MediaType type = MediaType.valueOf(mediaType);
 					meta.add(HttpHeaders.CONTENT_TYPE, type);
+
+					if(mediaType.equals(MediaType.APPLICATION_JSON)) {
+						ObjectMapper objectMapper = new ObjectMapper();
+						String json = objectMapper.writeValueAsString(response.getEntity());
+						response.setEntity(json, null);
+					}
 				}
 
-				response.addMetadata(meta);
+				response.addMetadata(meta); //Headers
 				return response;
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				fail("error dispatching request ["+rsResourceKey+"]");
 				return null;
+			}
+		}
+
+		// Convert the json input to the parameter class type
+		private Object convertInputToParameterType(Parameter parameter, Object jsonOrFormdata) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			try {
+				return objectMapper.readValue((String) jsonOrFormdata, parameter.getType());
+			} catch (Throwable e) {
+				fail("error transforming json to type ["+parameter.getType()+"]");
+				return null;
+			}
+		}
+
+		private String findPathParameter(Parameter parameter, String methodPath, String url) {
+			PathParam pathParameter = parameter.getAnnotation(PathParam.class);
+			String path = String.format("{%s}", pathParameter.value());
+			System.out.println("looking up path ["+path+"]");
+
+			String pathSegments[] = methodPath.split("/");
+			String urlSegments[] = getRawUrl(url).split("/");
+			String pathValue = null;
+			for (int j = 0; j < pathSegments.length; j++) {
+				String segment = pathSegments[j];
+				if(segment.equals(path)) {
+					pathValue = urlSegments[j];
+					break;
+				}
+			}
+			if(pathValue == null) {
+				fail("unable to populate path param ["+path+"]");
+			}
+			return pathValue;
+		}
+
+		private Object findQueryParameter(Parameter parameter, String url) {
+			QueryParam queryParameter = parameter.getAnnotation(QueryParam.class);
+			int questionMark = url.indexOf("?");
+			if(questionMark == -1) {
+				fail("found query parameter ["+parameter+"] but not in URL ["+url+"]");
+			}
+	
+			String urlQueryParameters = url.substring(questionMark +1);
+			String urlQuerySegments[] = urlQueryParameters.split("&");
+			String queryValue = null;
+			for (String querySegment : urlQuerySegments) {
+				if(querySegment.startsWith(queryParameter.value()+"=")) {
+					queryValue = querySegment.substring(querySegment.indexOf("=")+1);
+					break;
+				}
+			}
+			if(queryValue == null) {
+				fail("unable to populate query param ["+queryParameter.value()+"]");
+			}
+	
+			Object value = null;
+			switch (parameter.getType().toGenericString()) {
+				case "boolean":
+					value = Boolean.parseBoolean(queryValue);
+					break;
+		
+				default:
+					fail("parameter type ["+parameter.getType()+"] not implemented");
+			}
+			return value;
+		}
+
+		private void validateIfAllArgumentsArePresent(Object[] methodArguments, Parameter[] parameters) {
+			for (int j = 0; j < methodArguments.length; j++) {
+				Object object = methodArguments[j];
+				if(object == null) {
+					fail("missing argument ["+j+"] for method, expecting type ["+parameters[j]+"]");
+				}
 			}
 		}
 	}
