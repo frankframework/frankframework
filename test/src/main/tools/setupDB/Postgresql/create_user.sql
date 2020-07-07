@@ -10,5 +10,5 @@ DROP DATABASE IF EXISTS testiaf;
 DROP ROLE IF EXISTS testiaf_user;
 --Create new database and user
 CREATE DATABASE testiaf;
-CREATE USER testiaf_user WITH PASSWORD 'testiaf_pass01';
+CREATE USER testiaf_user WITH PASSWORD 'testiaf_pass00';
 GRANT ALL PRIVILEGES ON DATABASE testiaf TO testiaf_user;
