@@ -114,12 +114,6 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Creates sendgrid mail object
-	 * @param input : XML file content
-	 * @param prc	
-	 * @return 
-	 * @throws SenderException
-	 * @throws DomBuilderException
-	 * @throws IOException 
 	 */
 	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException, IOException {
 		Mail mail = new Mail();
@@ -184,10 +178,6 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Sets content of email to mail Object
-	 * @param mail 
-	 * @param message 
-	 * @param messageBase64 
-	 * @param messageType 
 	 */
 	private void setMessage(Mail mail, MailSession mailSession) {
 		String message = mailSession.getMessage();

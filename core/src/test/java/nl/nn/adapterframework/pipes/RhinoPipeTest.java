@@ -33,7 +33,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("3");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "3", session);
-        assertEquals(res.getResult().asString(), "9");
+        assertEquals("9", res.getResult().asString());
     }
 
     @Test
@@ -43,7 +43,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("2");
         pipe.setLookupAtRuntime(true);
         PipeRunResult res = doPipe(pipe, "3", session);
-        assertEquals(res.getResult().asString(), "9");
+        assertEquals( "9", res.getResult().asString());
     }
 
     @Test
@@ -96,8 +96,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
         pipe.setjsfunctionArguments("3");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, 4 + "s", session);
-        assertEquals(res.getResult().asString(), "NaN");
-
+        assertEquals("NaN", res.getResult().asString());
     }
 
 }

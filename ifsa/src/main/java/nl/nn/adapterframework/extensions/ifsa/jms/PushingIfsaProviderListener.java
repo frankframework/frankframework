@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -23,9 +24,17 @@ import java.util.Map;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.ing.ifsa.IFSAHeader;
+import com.ing.ifsa.IFSAMessage;
+import com.ing.ifsa.IFSAPoisonMessage;
+import com.ing.ifsa.IFSAServiceName;
+import com.ing.ifsa.IFSAServicesProvided;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
@@ -43,18 +52,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
-import com.ing.ifsa.IFSAHeader;
-import com.ing.ifsa.IFSAMessage;
-import com.ing.ifsa.IFSAPoisonMessage;
-import com.ing.ifsa.IFSAServiceName;
-import com.ing.ifsa.IFSAServicesProvided;
 
 /**
  * Implementation of {@link IPortConnectedListener} that acts as an IFSA-service.
@@ -211,11 +212,11 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			    		    
 	    // on request-reply send the reply.
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
-			Message originalRawMessage;
-			if (rawMessageOrWrapper instanceof Message) { 
-				originalRawMessage = (Message)rawMessageOrWrapper;
+			javax.jms.Message originalRawMessage;
+			if (rawMessageOrWrapper instanceof javax.jms.Message) { 
+				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;
 			} else {
-				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
 				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
@@ -227,10 +228,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				try {
 					String result="<exception>no result</exception>";
 					if (plr!=null && plr.getResult()!=null) {
-						result=plr.getResult();
+						result=plr.getResult().asString();
 					}
 					sendReply(session, originalRawMessage, result);
-				} catch (IfsaException e) {
+				} catch (IfsaException | IOException e) {
 					try {
 						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {
@@ -252,8 +253,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 		return wrapper.getId();
 	}
-	protected String getStringFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
-		return wrapper.getText();
+	protected Message getMessageFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
+		return wrapper.getMessage();
 	}
 
 	
@@ -473,9 +474,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * @return input message for adapter.
 	 */
 	@Override
-	public String getStringFromRawMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage instanceof IMessageWrapper) {
-			return getStringFromWrapper((IMessageWrapper)rawMessage,threadContext);
+			return getMessageFromWrapper((IMessageWrapper)rawMessage,threadContext);
 		}
 		if (rawMessage instanceof IFSAPoisonMessage) {
 			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;
@@ -486,10 +487,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			} catch (Exception e) {
 				source = "unknown due to exeption:"+e.getMessage();
 			}
-			return  "<poisonmessage>"+
+			return  new Message("<poisonmessage>"+
 					"  <source>"+source+"</source>"+
 					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
-					"</poisonmessage>";
+					"</poisonmessage>");
 		}
 
 	    TextMessage message = null;
@@ -502,7 +503,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    try {
 	    	String result=message.getText();
 			threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
-	    	return result;
+	    	return new Message(result);
 	    } catch (JMSException e) {
 		    throw new ListenerException(getLogPrefix(),e);
 	    }
@@ -641,7 +642,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	public int getDeliveryCount(Object rawMessage) {
 		try {
-			Message message=(Message)rawMessage;
+			javax.jms.Message message=(javax.jms.Message)rawMessage;
 			int value = message.getIntProperty("JMSXDeliveryCount");
 			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
 			return value;

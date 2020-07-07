@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.testtool.Checkpoint;
@@ -73,10 +74,12 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	private IbisManager ibisManager;
 	private SecurityContext securityContext;
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -148,6 +151,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		jdbcTemplate = new JdbcTemplate(getDatasource());
 	}
 
+	@Override
 	public int getSize() throws StorageException {
 		try {
 			/* queryForInt() deprecated since version Spring 3.2.x
@@ -160,6 +164,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
 	public List getStorageIds() throws StorageException {
 		try {
 			List storageIds = jdbcTemplate.query(
@@ -176,6 +181,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords,
 			final List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
@@ -318,16 +324,19 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		return metadata;
 	}
 
+	@Override
 	public List getTreeChildren(String path) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public List getStorageIds(String path) throws StorageException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
 		report.setTestTool(testTool);
@@ -366,14 +375,8 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		return report;
 	}
 
+	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void storeWithoutException(Report report) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	private void addLikeExpression(StringBuilder query, List<Object> args,
@@ -429,11 +432,9 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
-				searchValueToParse = searchValue
-						+ "0000-00-00T00:00:00.000".substring(searchValue.length());
+				searchValueToParse = searchValue + "0000-00-00T00:00:00.000".substring(searchValue.length());
 			} else {
-				searchValueToParse = searchValue
-						+ "9999-12-31T23:59:59.999".substring(searchValue.length());
+				searchValueToParse = searchValue + "9999-12-31T23:59:59.999".substring(searchValue.length());
 			}
 			int year = -1;
 			int month = -1;
@@ -462,8 +463,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				Calendar calendar = new GregorianCalendar(year, month, 1);
 				int maxDayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 				if (dayOfMonth > maxDayOfMonth) {
-					searchValueToParse = searchValueToParse.substring(0, 8) +
-							maxDayOfMonth + searchValueToParse.substring(10);
+					searchValueToParse = searchValueToParse.substring(0, 8) + maxDayOfMonth + searchValueToParse.substring(10);
 				}
 			}
 		} else {
@@ -478,10 +478,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	private void throwExceptionOnInvalidTimestamp(String searchValue) throws StorageException {
-		throw new StorageException("Search value '"
-				+ searchValue
-				+ "' doesn't comply with (the beginning of) pattern "
-				+ TIMESTAMP_PATTERN);
+		throw new StorageException("Search value '" + searchValue + "' doesn't comply with (the beginning of) pattern " + TIMESTAMP_PATTERN);
 	}
 
 	private void addExpression(StringBuilder query, String expression) {
@@ -506,6 +503,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
 	public int getFilterType(String column) {
 		if (fixedStringColumns != null && fixedStringColumns.contains(column)) {
 			return FILTER_SELECT;
@@ -514,15 +512,13 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
 	public List getFilterValues(String column) throws StorageException {
 		String query;
 		if (fixedStringTables.containsKey(column)) {
-			query = "select " + column + " from "
-					+ fixedStringTables.get(column) + " order by " + column
-					+ " asc";
+			query = "select " + column + " from " + fixedStringTables.get(column) + " order by " + column + " asc";
 		} else {
-			query = "select distinct " + column + " from " + table
-					+ " order by " + column + " asc";
+			query = "select distinct " + column + " from " + table + " order by " + column + " asc";
 		}
 		try {
 			List filterValues = jdbcTemplate.query(query, new RowMapper() {
@@ -554,20 +550,23 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
 	public void store(Report report) throws StorageException {
 		throw new StorageException("Store method is not implemented");
 	}
 
+	@Override
 	public void update(Report report) throws StorageException {
 		throw new StorageException("Update method is not implemented");
 	}
 
+	@Override
 	public void delete(Report report) throws StorageException {
 		String errorMessage = null;
 		if ("Table EXCEPTIONLOG".equals(report.getName())) {
 			List checkpoints = report.getCheckpoints();
 			Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
-			String message = checkpoint.getMessage();
+			Message message = Message.asMessage(checkpoint.getMessage());
 			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
 				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
@@ -577,9 +576,13 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				if (!(processResult.getState().equalsIgnoreCase("success"))) {
 					errorMessage = "Delete failed (see logging for more details)";
 				} else {
-					String result = processResult.getResult();
-					if (!result.equalsIgnoreCase("<ok/>")) {
-						errorMessage = "Delete failed: " + result;
+					try {
+						String result = processResult.getResult().asString();
+						if (!result.equalsIgnoreCase("<ok/>")) {
+							errorMessage = "Delete failed: " + result;
+						}
+					} catch (IOException e) {
+						throw new StorageException("Delete failed", e);
 					}
 				}
 			} else {

@@ -47,7 +47,7 @@ public class PutInSession extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		Object v;
 		if (getValue() == null) {
-			v = message;
+			v = message.asObject();
 		} else {
 			v = value;
 		}

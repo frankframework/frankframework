@@ -269,8 +269,6 @@
 		<web-resource-collection>
 			<web-resource-name>ObserverAccessResourceCollection</web-resource-name>
 			<description>collection of url's for observer access</description>
-			<url-pattern>/</url-pattern>
-			<url-pattern>/index.jsp</url-pattern>
 			<url-pattern>/configHandler.do</url-pattern>
 			<url-pattern>/showAdapterStatistics.do</url-pattern>
 			<url-pattern>/showLogging.do</url-pattern>

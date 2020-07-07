@@ -25,18 +25,12 @@ import nl.nn.adapterframework.extensions.graphviz.Options;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
-import org.junit.After;
 import org.junit.Test;
 
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
 	private ClassLoader classLoader = this.getClass().getClassLoader();
-
-	@After
-	public void destroy() {
-		GraphvizEngine.releaseThread();
-	}
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws IOException {

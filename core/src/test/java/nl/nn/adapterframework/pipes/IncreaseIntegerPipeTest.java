@@ -36,7 +36,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         pipe.setIncrement(2);
         pipe.configure();
         doPipe(pipe, "doesnt matter", session);
-        assertEquals(session.get("a"), "6");
+        assertEquals("6", session.get("a"));
     }
 
     @Test

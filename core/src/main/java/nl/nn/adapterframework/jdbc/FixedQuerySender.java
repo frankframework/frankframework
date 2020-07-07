@@ -59,17 +59,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		return getQuery();
 	}
 
-	/**
-	 * Sets the SQL-query text to be executed each time sendMessage() is called.
-	 */
-	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called", ""})
-	public void setQuery(String query) {
-		this.query = query;
-	}
-	public String getQuery() {
-		return query;
-	}
-
 	@Override
 	public boolean canProvideOutputStream() {
 		return  "updateClob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getClobSessionKey()) ||
@@ -114,12 +103,21 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return new Message(executeStatementSet(blockHandle, message, session));
+		return executeStatementSet(blockHandle, message, session);
 	}
 
 	@Override
-	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected final Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
+	}
+
+
+	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called", ""})
+	public void setQuery(String query) {
+		this.query = query;
+	}
+	public String getQuery() {
+		return query;
 	}
 
 }

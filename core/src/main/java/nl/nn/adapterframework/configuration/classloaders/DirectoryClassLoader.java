@@ -45,8 +45,8 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		}
 
 		if(getBasePath() != null) { //Append BasePath, because legacy
-			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
 			log.debug("appending basepath ["+getBasePath()+"] to directory ["+directory+"]");
+			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
 		}
 
 		if (!this.directory.isDirectory()) {

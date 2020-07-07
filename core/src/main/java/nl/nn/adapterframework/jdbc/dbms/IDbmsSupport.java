@@ -85,6 +85,8 @@ public interface IDbmsSupport {
 
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException;
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);

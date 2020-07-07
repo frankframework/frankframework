@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
@@ -31,11 +33,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * JdbcListener base class.
@@ -63,9 +64,10 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 	protected Connection connection=null;
 
 	private String preparedSelectQuery;
+	private String preparedPeekQuery;
 
 	private boolean trace=false;
-	private boolean peekUntransacted=false;
+	private boolean peekUntransacted=true;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -78,6 +80,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		}
 		try {
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, getSelectQuery());
+			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? getPeekQuery() : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, getSelectQuery());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
@@ -119,7 +122,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	@Override
 	public boolean hasRawMessageAvailable() throws ListenerException {
-		if (StringUtils.isEmpty(getPeekQuery())) {
+		if (StringUtils.isEmpty(preparedPeekQuery)) {
 			return true;
 		} else {
 			if (isConnectionsArePooled()) {
@@ -147,9 +150,9 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
-			return !JdbcUtil.isQueryResultEmpty(conn, getPeekQuery());
+			return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + getPeekQuery() + "]", e);
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
 	}
 	
@@ -209,20 +212,20 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 						String key=rs.getString(getKeyField());
 						
 						if (StringUtils.isNotEmpty(getMessageField())) {
-							String message;
+							Message message;
 							if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-								message=JdbcUtil.getClobAsString(rs,getMessageField(),false);
+								message=new Message(JdbcUtil.getClobAsString(rs,getMessageField(),false));
 							} else {
 								if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-									message=JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false);
+									message=new Message(JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
 								} else {
-									message=rs.getString(getMessageField());
+									message=new Message(rs.getString(getMessageField()));
 								}
 							}
 							// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 							MessageWrapper mw = new MessageWrapper();
 							mw.setId(key);
-							mw.setText(message);
+							mw.setMessage(message);
 							result=mw;
 						} else {
 							result = key;
@@ -262,12 +265,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		return id;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		String message;
+	@Override
+	public Message extractMessage(Object rawMessage, Map context) throws ListenerException {
+		Message message;
 		if (rawMessage instanceof IMessageWrapper) {
-			message = ((IMessageWrapper)rawMessage).getText();
+			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else {
-			message = (String)rawMessage;
+			message = Message.asMessage(rawMessage);
 		}
 		return message;
 	}
@@ -280,6 +284,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		}
 	}
 
+	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
@@ -363,16 +368,22 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
-		if (peekQuery==null) {
-			peekQuery = selectQuery;
-		}
 	}
 	public String getSelectQuery() {
 		return selectQuery;
 	}
 
+	@Override
+	public void setPeekUntransacted(boolean b) {
+		peekUntransacted = b;
+	}
+	@Override
+	public boolean isPeekUntransacted() {
+		return peekUntransacted;
+	}
+
 	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
-	protected void setPeekQuery(String string) {
+	public void setPeekQuery(String string) {
 		peekQuery = string;
 	}
 	public String getPeekQuery() {
@@ -462,13 +473,4 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener {
 		this.trace = trace;
 	}
 
-	@Override
-	public boolean isPeekUntransacted() {
-		return peekUntransacted;
-	}
-
-	@Override
-	public void setPeekUntransacted(boolean b) {
-		peekUntransacted = b;
-	}
 }

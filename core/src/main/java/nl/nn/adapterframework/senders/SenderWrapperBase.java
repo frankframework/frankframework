@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,43 +111,9 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return cache;
 	}
 
-	
 	@Override
 	public abstract boolean isSynchronous() ;
-
 	public abstract void setSender(ISender sender);
-	
-	@IbisDoc({"when set, input is taken from this session key, instead of regular input", ""})
-	public void setGetInputFromSessionKey(String string) {
-		getInputFromSessionKey = string;
-	}
-	public String getGetInputFromSessionKey() {
-		return getInputFromSessionKey;
-	}
-
-	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", ""})
-	public void setGetInputFromFixedValue(String string) {
-		getInputFromFixedValue = string;
-	}
-	public String getGetInputFromFixedValue() {
-		return getInputFromFixedValue;
-	}
-
-	@IbisDoc({"when set, the result is stored under this session key", ""})
-	public void setStoreResultInSessionKey(String string) {
-		storeResultInSessionKey = string;
-	}
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
-	public void setPreserveInput(boolean preserveInput) {
-		this.preserveInput = preserveInput;
-	}
-	public boolean isPreserveInput() {
-		return preserveInput;
-	}
 
 	public void setSenderWrapperProcessor(SenderWrapperProcessor senderWrapperProcessor) {
 		this.senderWrapperProcessor = senderWrapperProcessor;
@@ -160,6 +126,38 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+
+	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
+	public void setGetInputFromSessionKey(String string) {
+		getInputFromSessionKey = string;
+	}
+	public String getGetInputFromSessionKey() {
+		return getInputFromSessionKey;
+	}
+
+	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
+	public void setGetInputFromFixedValue(String string) {
+		getInputFromFixedValue = string;
+	}
+	public String getGetInputFromFixedValue() {
+		return getInputFromFixedValue;
+	}
+
+	@IbisDoc({"3", "If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	public void setPreserveInput(boolean preserveInput) {
+		this.preserveInput = preserveInput;
+	}
+	public boolean isPreserveInput() {
+		return preserveInput;
+	}
+
+	@IbisDoc({"4", "If set, the result is stored under this session key", ""})
+	public void setStoreResultInSessionKey(String string) {
+		storeResultInSessionKey = string;
+	}
+	public String getStoreResultInSessionKey() {
+		return storeResultInSessionKey;
 	}
 
 }

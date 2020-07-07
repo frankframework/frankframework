@@ -23,7 +23,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import static org.junit.Assert.*;
 
-public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoader> {
+public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 
 	@Override
 	protected String getScheme() {

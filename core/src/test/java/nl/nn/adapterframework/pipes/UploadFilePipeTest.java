@@ -169,9 +169,9 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
     @Test
     public void testDoPipeCreateNonExistingDirectory() throws Exception {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
-        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+ File.separator + "new_dir");
+        session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", sourceFolderPath+"/new_dir");
         PipeRunResult res = doPipe(pipe, "dsfdf", session1);
-        assertEquals(sourceFolderPath + File.separator + "new_dir", res.getResult().asString());
+        assertEquals(sourceFolderPath+File.separator+"new_dir", res.getResult().asString());
     }
 
     /**
@@ -182,7 +182,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
         String key = "key"; pipe.setSessionKey(key); pipe.setDirectorySessionKey("key2");
         session1.put("key", zis); session1.put("fileName", "1.zip"); session1.put("key2", "");
         PipeRunResult res = doPipe(pipe, "dsfdf", session1);
-        assertNotEquals("something", res.getResult().toString());
+        assertNotEquals("something", res.getResult().asString());
         assertEquals(null, res.getPipeForward());
     }
 

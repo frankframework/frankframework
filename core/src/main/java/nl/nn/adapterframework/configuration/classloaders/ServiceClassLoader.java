@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 - 2019 Nationale-Nederlanden
+   Copyright 2016, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * ClassLoader that retrieves a configuration jar from an IBIS adapter
@@ -46,7 +47,7 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		IAdapter adapter = getIbisContext().getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter != null) {
 			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-			PipeLineResult processResult = adapter.processMessage(getCorrelationId(), getConfigurationName(), pipeLineSession);
+			PipeLineResult processResult = adapter.processMessage(getCorrelationId(), new Message(getConfigurationName()), pipeLineSession);
 			//TODO check result of pipeline
 			Object object = pipeLineSession.get("configurationJar");
 			if (object != null) {

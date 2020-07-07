@@ -24,7 +24,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
  * @author Niels Meijer
  *
  */
-public interface IConfigurationClassLoader extends ReloadAware {
+public interface IConfigurationClassLoader {
 
 	public enum ReportLevel {
 		DEBUG, INFO, WARN, ERROR;
@@ -56,4 +56,14 @@ public interface IConfigurationClassLoader extends ReloadAware {
 	 * @return the {@link ReportLevel} set for this {@link IConfigurationClassLoader}
 	 */
 	public ReportLevel getReportLevel();
+
+	/**
+	 * Unload the current IConfigurationClassLoader and load again upon successful unload.
+	 */
+	public void reload() throws ConfigurationException;
+
+	/**
+	 * Called upon destroying (and thus removing) the IConfigurationClassLoader
+	 */
+	public void destroy();
 }

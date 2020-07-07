@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base-interface for IPullingListener and IPushingListener.
@@ -70,7 +71,7 @@ public interface IListener<M> extends INamedObject {
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	String getStringFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
+	Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 

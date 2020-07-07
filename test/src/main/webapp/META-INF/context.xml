@@ -18,22 +18,24 @@
 		maxIdle="2"
 		maxWait="30000"
 	/>
+
 	<Resource
 		name="jdbc/ibis4test-oracle-docker"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:9000:ORCLCDB"
-		user="c##testiaf_user"
-		password="c##testiaf_user"
+		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		user="testiaf_user"
+		password="testiaf_user00"
 	/>
+
 	<Resource 
 		name="jdbc/ibis4test-mssql-microsoft" 
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource"
-		URL="jdbc:sqlserver://localhost:2500;database=wearefrank_db"
-		user="wearefrank_user"
-		password="wearefrankPass01"
+		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		user="testiaf_user"
+		password="testiaf_user00"
 		sendStringParametersAsUnicode="false"
 		sendTimeAsDatetime="true"
 		selectMethod="direct"
@@ -52,9 +54,9 @@
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
-		URL="jdbc:sqlserver://localhost:2500;database=wearefrank_db"
-		user="wearefrank_user"
-		password="wearefrankPass01"
+		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		user="testiaf_user"
+		password="testiaf_user00"
 		sendStringParametersAsUnicode="false"
 		sendTimeAsDatetime="true"
 		selectMethod="direct"
@@ -72,13 +74,38 @@
 		name="jdbc/ibis4test-mssql-jtds" 
 		auth="Container" 
 		type="javax.sql.DataSource"
-		username="wearefrank_user"
-		password="wearefrankPass01"
+		username="testiaf_user"
+		password="testiaf_user00"
 		driverClassName="net.sourceforge.jtds.jdbc.Driver"
-		url="jdbc:jtds:sqlserver://localhost:2500/wearefrank_db"
+		url="jdbc:jtds:sqlserver://localhost:1433/testiaf"
 		maxTotal="25"
 		maxIdle="10"
 		validationQuery="select 1"
+	/>
+
+	<Resource
+		name="jdbc/ibis4test-mysql"
+		type="javax.sql.DataSource"
+		username="testiaf_user"
+		password="testiaf_user00"
+		driverClassName="com.mysql.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/testiaf"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
+	/>
+
+	<Resource 
+		name="jdbc/ibis4test-postgres" 
+		auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="org.postgresql.Driver"
+		url="jdbc:postgresql://localhost:5432/wearefrank_db"
+		username="testiaf_user" 
+		password="testiaf_pass01" 
+		maxActive="20" 
+		maxIdle="10" 
+		maxWait="-1"
 	/>
 
 	<Resource
@@ -107,4 +134,5 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+	
 </Context>

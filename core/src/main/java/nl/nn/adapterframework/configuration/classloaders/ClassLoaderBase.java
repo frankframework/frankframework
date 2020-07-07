@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author Niels Meijer
  *
  */
-public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader, ReloadAware {
+public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
 
 	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
@@ -55,7 +56,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
-	private String logPrefix = null;
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
 	public ClassLoaderBase() {
@@ -235,7 +235,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		String path = name.replace(".", "/")+".class";
 		URL url = null;
 		if(allowCustomClasses) {
+			if(log.isTraceEnabled()) log.trace(String.format("attempting to load custom class [%s] path [%s]", name, path));
+
 			url = getResource(path);
+			if(url != null && log.isDebugEnabled()) log.debug(String.format("loading custom class url [%s] from classloader [%s]", url, this.toString()));
 		} else {
 			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
 		}
@@ -253,26 +256,21 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public String toString() {
-		if(StringUtils.isEmpty(getConfigurationName())) {
-			return super.toString();
-		}
+	public void reload() throws ConfigurationException {
+		log.debug("reloading classloader ["+getConfigurationName()+"]");
 
-		if(logPrefix==null) {
-			String superString = super.toString();
-			logPrefix = superString.substring(superString.lastIndexOf(".")+1)+"["+getConfigurationName()+"]";
-		}
-		return logPrefix;
+		AppConstants.removeInstance(this);
 	}
 
 	@Override
-	public void reload() throws ConfigurationException {
-		log.debug("reloading configuration ["+getConfigurationName()+"]");
-
-		if (getParent() instanceof ReloadAware) {
-			((ReloadAware)getParent()).reload();
-		}
+	public void destroy() {
+		log.debug("removing classloader ["+this.toString()+"]");
 
 		AppConstants.removeInstance(this);
+	}
+
+	@Override
+	public String toString() {
+		return ClassUtils.nameOf(this);
 	}
 }

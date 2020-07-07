@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.jms.Destination;
-//import javax.jms.Message;
 import javax.jms.Session;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +38,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -91,7 +89,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	private String cacheMode;
 	private IListenerConnector<javax.jms.Message> jmsConnector;
 	private IMessageHandler<javax.jms.Message> handler;
-	private IReceiver receiver;
+	private IReceiver<javax.jms.Message> receiver;
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
 
@@ -164,25 +162,31 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
 
-				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper; // cast can be safely done because javax.jms.Message is serializable, so no MessageWrapper in this case
-					long expiration=messageReceived.getJMSExpiration();
-					if (expiration!=0) {
-						timeToLive=expiration-new Date().getTime();
-						if (timeToLive<=0) {
-							log.warn("message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-							timeToLive=1000;
-							// In case of a temporary queue it might already
-							// have disappeared.
-							ignoreInvalidDestinationException = true;
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
 						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -192,7 +196,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(new Message(plr.getResult()), null);
+					getSender().sendMessage(plr.getResult(), null);
 				}
 			}
 
@@ -278,17 +282,17 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void setReceiver(IReceiver receiver) {
+	public void setReceiver(IReceiver<javax.jms.Message> receiver) {
 		this.receiver = receiver;
 	}
 	@Override
-	public IReceiver getReceiver() {
+	public IReceiver<javax.jms.Message> getReceiver() {
 		return receiver;
 	}
 
-	public ReceiverBase getReceiverBase() {
+	public ReceiverBase<javax.jms.Message> getReceiverBase() {
 		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
+			ReceiverBase<javax.jms.Message> rb = (ReceiverBase<javax.jms.Message>) receiver;
 			return rb;
 		}
 		return null;

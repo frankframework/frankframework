@@ -17,6 +17,8 @@ package nl.nn.adapterframework.core;
 
 import java.util.Map;
 
+import nl.nn.adapterframework.stream.Message;
+
 /**
  * Interface that {@link IPushingListener PushingListeners} can use to handle the messages they receive.
  * A call to any of the method defined in this interface will do to process the message.
@@ -45,20 +47,20 @@ public interface IMessageHandler<M> {
 	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
-	public String processRequest(IListener<M> origin, M rawMessage, String message) throws ListenerException;
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message) throws ListenerException;
 
 	/**
 	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
 	 */	
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, M rawMessage, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message) throws ListenerException;
+	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String,Object> context) throws ListenerException;
+	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
 	 *  Can be used if the calling system has no other way of returnin the exception to the caller. 
 	 */	
-	public String formatException(String extrainfo, String correlationId, String message, Throwable t);
+	public String formatException(String extrainfo, String correlationId, Message message, Throwable t);
 
 }

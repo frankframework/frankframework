@@ -92,6 +92,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 		excludeFilters.add(".*\\.IbisstoreSummaryQuerySender");
 		// Exclude classes that cannot be used directly in configurations
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.MessageSendingPipe");
+		
+		// Exclude classes that should only be used in internal configurations
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.doc\\.IbisDocPipe");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.webcontrol\\..*");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CreateRestViewPipe");
 	}
 	private static Map<String, String> ignores = new HashMap<String, String>();
 	static {

@@ -15,6 +15,7 @@
 */
 package nl.nn.ibistesttool.tibet2;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -33,21 +35,24 @@ import nl.nn.testtool.run.ReportRunner;
 public class Debugger extends nl.nn.ibistesttool.Debugger {
 	private static final String RESEND_ADAPTER = "ResendFromExceptionLog";
 
-	public List getStubStrategies() {
-		List stubStrategies = new ArrayList();
+	@Override
+	public List<String> getStubStrategies() {
+		List<String> stubStrategies = new ArrayList<>();
 		stubStrategies.add(STUB_STRATEY_NEVER);
 		return stubStrategies;
 	}
 
+	@Override
 	public String getDefaultStubStrategy() {
 		return STUB_STRATEY_NEVER;
 	}
 
+	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
 		if ("Table EXCEPTIONLOG".equals(originalReport.getName())) {
-			List checkpoints = originalReport.getCheckpoints();
-			Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
+			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
+			Checkpoint checkpoint = checkpoints.get(0);
 			String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
 			IAdapter adapter = ibisManager.getRegisteredAdapter(RESEND_ADAPTER);
 			if (adapter != null) {
@@ -58,13 +63,12 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 				try {
 					if(securityContext.getUserPrincipal() != null)
 						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-					PipeLineResult processResult = adapter.processMessage(correlationId, inputMessage, pipeLineSession);
-					if (!(processResult.getState().equalsIgnoreCase("success")
-							&& processResult.getResult().equalsIgnoreCase("<ok/>"))) {
-						errorMessage = "Rerun failed. Result of adapter "
-								+ RESEND_ADAPTER + ": "
-								+ processResult.getResult();
+					PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
+					if (!(processResult.getState().equalsIgnoreCase("success") && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
+						errorMessage = "Rerun failed. Result of adapter " + RESEND_ADAPTER + ": " + processResult.getResult().asString();
 					}
+				} catch (IOException e) {
+					errorMessage = "Rerun failed. Exception in adapter " + RESEND_ADAPTER + ": (" + e.getClass().getName()+") " + e.getMessage();
 				} finally {
 					synchronized(inRerun) {
 						inRerun.remove(correlationId);

@@ -206,7 +206,14 @@ angular.module('iaf.beheerconsole')
 
 		var raw_adapter_data = {};
 		var pollerCallback = function(allAdapters) {
-			for(adapterName in allAdapters) {
+			for(adapterName in raw_adapter_data) { //Check if any old adapters should be removed
+				if(!allAdapters[adapterName]) {
+					delete raw_adapter_data[adapterName];
+					delete $rootScope.adapters[adapterName];
+					Debug.log("removed adapter ["+adapterName+"]");
+				}
+			}
+			for(adapterName in allAdapters) { //Add new adapter information
 				var adapter = allAdapters[adapterName];
 
 				if(raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
@@ -1040,7 +1047,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', function($scope, Api, $stateParams, SweetAlert, $timeout) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -1053,6 +1060,37 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.stats = [];
+	var defaults = {"name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last"};
+	$scope.statisticsTimeBoundaries = angular.copy(defaults);
+	$scope.statisticsSizeBoundaries = angular.copy(defaults);
+	function populateBoundaries() {
+		var timeBoundaries = appConstants["Statistics.boundaries"].split(",");
+		var sizeBoundaries = appConstants["Statistics.size.boundaries"].split(",");
+		var percBoundaries = appConstants["Statistics.percentiles"].split(",");
+		Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
+
+		for(i in timeBoundaries) {
+			var j = timeBoundaries[i];
+			$scope.statisticsTimeBoundaries[j+"ms"] = "< " + j + "ms";
+		}
+		for(i in sizeBoundaries) {
+			var j = sizeBoundaries[i];
+			$scope.statisticsSizeBoundaries[j+"B"] = "< " + j + "B";
+		}
+		for(i in percBoundaries) {
+			var j = "p"+percBoundaries[i];
+			$scope.statisticsTimeBoundaries[j] = j;
+			$scope.statisticsSizeBoundaries[j] = j;
+		}
+	};
+	if(appConstants["Statistics.boundaries"]) {
+		populateBoundaries(); //AppConstants already loaded
+	}
+	else {
+		$scope.$on('appConstants', populateBoundaries); //Wait for appConstants trigger to load
+	}
+
+	$scope.statisticsNames = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
 		Api.Get("adapters/"+adapterName+"/statistics", function(data) {

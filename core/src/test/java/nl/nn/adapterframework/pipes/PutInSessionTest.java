@@ -14,48 +14,41 @@ import static org.junit.Assert.fail;
  */
 public class PutInSessionTest extends PipeTestBase<PutInSession> {
 
-    @Override
-    public PutInSession createPipe() {
-        return new PutInSession();
-    }
+	@Override
+	public PutInSession createPipe() {
+		return new PutInSession();
+	}
 
 
+	@Test
+	public void testConfigureWithoutValue() throws Exception {
+		pipe.setSessionKey("hola");
+		pipe.configure();
 
-    /**
-     * Method: configure()
-     */
+		String message = "val";
+		String expected = message;
+		doPipe(pipe, message, session);
 
-    @Test
-    public void testConfigureWithoutSessionKey() throws Exception {
-        pipe.setSessionKey("hola");
-        pipe.configure();
-        doPipe(pipe, "val", session);
-        Message m = new Message("String: val");
-        assertEquals(m.asString(), session.get("hola").toString());
+		assertEquals(expected, session.get("hola")); // must be type String and have this value 
+	}
 
-    }
+	@Test
+	public void testPutWithValue() throws Exception {
+		pipe.setSessionKey("hola");
+		pipe.setValue("val");
+		pipe.configure();
+		doPipe(pipe, "notimportant", session);
+		assertEquals("val", session.get("hola")); // must be type String and have this value 
+	}
 
-    /**
-     * Method: doPipe(Object input, IPipeLineSession session)
-     */
-    @Test
-    public void testPutWithSessionKey() throws Exception {
-        pipe.setSessionKey("hola");
-        pipe.setValue("val");
-        pipe.configure();
-        doPipe(pipe, "notimportant", session);
-        assertEquals("val", session.get("hola"));
-    }
-
-    @Test
-    public void testNoSessionKey() throws Exception {
-        exception.expectMessage("attribute sessionKey must be specified");
-        exception.expect(ConfigurationException.class);
-        pipe.setValue("val");
-        pipe.configure();
-        pipe.doPipe(null, session);
-        fail("this is expected to fail");
-    }
-
+	@Test
+	public void testNoSessionKey() throws Exception {
+		exception.expectMessage("attribute sessionKey must be specified");
+		exception.expect(ConfigurationException.class);
+		pipe.setValue("val");
+		pipe.configure();
+		pipe.doPipe(null, session);
+		fail("this is expected to fail");
+	}
 
 }

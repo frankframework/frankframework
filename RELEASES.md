@@ -20,6 +20,9 @@ Upcoming
 - Improve MessageStoreListener by adding peekUntransacted attribute
 - Add support for single pipeline SOAP 1.1 & 1.2 and REST JSON & XML, backed by XML-Schema validation, with OpenAPI 3.0 JSON Schema generation
 
+### Non backwards compatible changes
+
+- Change HashPipe attribute encoding into charset. Its default has changed from ISO8859-1 into UTF-8
 
 
 

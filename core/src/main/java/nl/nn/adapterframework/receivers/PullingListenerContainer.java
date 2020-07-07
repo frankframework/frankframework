@@ -150,11 +150,14 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				}
 			} catch (InterruptedException e) {
 				log.warn("polling interrupted", e);
+			} finally {
+				log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
+				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+					receiver.stopRunning();
+				}
+				receiver.closeAllResources();
+				ThreadContext.removeStack();
 			}
-			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
-			receiver.stopRunning();
-			receiver.closeAllResources();
-			ThreadContext.removeStack();
 		}
 	}
 

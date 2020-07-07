@@ -24,7 +24,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -52,6 +51,7 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -279,8 +279,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	public Message createMessage(Session session, String correlationID, String message)
-			throws NamingException, JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, String message) throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
@@ -288,7 +287,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return textMessage;
 	}
 
-	public void setMessageCorrelationID(Message message, String correlationID) 
+	public void setMessageCorrelationID(javax.jms.Message message, String correlationID)
 			throws JMSException {
 		if (null != correlationID) {
 			if (correlationIdMaxLength>=0) {
@@ -517,7 +516,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 
-
+	// TODO: send functions could benefit from have Message messages instead of String
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
 	}
@@ -525,7 +524,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
-		Message msg = createMessage(session, correlationId, message);
+		javax.jms.Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
 			if (useJms102()) {
@@ -582,12 +581,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param message
 	 * @return messageID of the sent message
 	 */
-	public String send(MessageProducer messageProducer, Message message)
-			throws NamingException, JMSException {
+	public String send(MessageProducer messageProducer, javax.jms.Message message) throws NamingException, JMSException {
 		return send(messageProducer, message, false);
 	}
-	public String send(MessageProducer messageProducer, Message message, boolean ignoreInvalidDestinationException)
-			throws NamingException, JMSException {
+	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"sender on ["+ getDestinationName() 
 				+ "] will send message with JMSDeliveryMode=[" + message.getJMSDeliveryMode()
@@ -628,11 +625,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param message
 	 * @return message ID of the sent message
 	 */
-	public String send(Session session, Destination dest, Message message)
+	public String send(Session session, Destination dest, javax.jms.Message message)
 		throws NamingException, JMSException {
 		return send(session, dest, message, false);
 	}
-	public String send(Session session, Destination dest, Message message, boolean ignoreInvalidDestinationException)
+	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException)
 			throws NamingException, JMSException {
 		try {
 			if (useJms102()) {
@@ -657,16 +654,14 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	protected String sendByQueue(QueueSession session, Queue destination,
-			Message message) throws NamingException, JMSException {
+	protected String sendByQueue(QueueSession session, Queue destination, javax.jms.Message message) throws NamingException, JMSException {
 		QueueSender tqs = session.createSender(destination);
 		tqs.send(message);
 		tqs.close();
 		return message.getJMSMessageID();
 	}
 
-	protected String sendByTopic(TopicSession session, Topic destination,
-			Message message) throws NamingException, JMSException {
+	protected String sendByTopic(TopicSession session, Topic destination, javax.jms.Message message) throws NamingException, JMSException {
 		TopicPublisher tps = session.createPublisher(destination);
 		tps.publish(message);
 		tps.close();
@@ -687,7 +682,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 //		TextMessage message = null;
 		String rawMessageText;
 /*
@@ -700,21 +695,21 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		rawMessageText= message.getText();
 */
 		if (rawMessage instanceof IMessageWrapper) {
-			rawMessageText = ((IMessageWrapper)rawMessage).getText();
+			rawMessageText = ((IMessageWrapper)rawMessage).getMessage().asString();
 		} else if (rawMessage instanceof TextMessage) {
 			rawMessageText = ((TextMessage)rawMessage).getText();
 		} else {
 			rawMessageText = (String)rawMessage;
 		}
 		if (!soap) {
-			return rawMessageText;
+			return new Message(rawMessageText);
 		}
 		String messageText=extractMessageBody(rawMessageText, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
 			String soapHeader=soapWrapper.getHeader(rawMessageText);
 			context.put(soapHeaderSessionKey,soapHeader);
 		}
-		return messageText;
+		return new Message(messageText);
 	}
 
 	protected String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {

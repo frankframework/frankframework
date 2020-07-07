@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Read messages from the ibisstore previously stored by a
@@ -39,18 +41,18 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 			name="MyListener"
 			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 			jmsRealm="jdbc"
-			slotId="${instance.name}/MyService"
-			sessionKeys="key1,key2"
-		/>
-		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
+			sessionKeys="key1,key2"
 		/>
 		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
 		&lt;errorStorage
 			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/ServiceName"
+		/>
+		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
+		&lt;messageLog
+			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
 		/>
@@ -98,12 +100,16 @@ public class MessageStoreListener extends JdbcQueryListener {
 		Object rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper messageWrapper = (MessageWrapper)rawMessage;
-			StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getText());
-			messageWrapper.setText((String)strTokenizer.next());
-			int i = 0;
-			while (strTokenizer.hasNext()) {
-				threadContext.put(sessionKeysList.get(i), strTokenizer.next());
-				i++;
+			try {
+				StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
+				messageWrapper.setMessage(new Message((String)strTokenizer.next()));
+				int i = 0;
+				while (strTokenizer.hasNext()) {
+					threadContext.put(sessionKeysList.get(i), strTokenizer.next());
+					i++;
+				}
+			} catch (IOException e) {
+				throw new ListenerException("cannot convert message",e);
 			}
 		}
 		return rawMessage;

@@ -224,7 +224,7 @@
                                 </div>
                                 <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
                                 </div>
-                                <div class="col-sm-2" title="Messages Processed">{{adapter.messagesProcessed}}
+                                <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">{{adapter.messagesProcessed}}
                                     <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
                                     <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
                                 </div>
