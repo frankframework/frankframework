@@ -37,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
@@ -54,9 +55,13 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public abstract class ApiTestBase<M extends Base> extends Mockito {
+	public enum IbisRole {
+		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
+	}
 
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
+	private SecurityContext securityContext = mock(SecurityContext.class);
 
 	abstract public M createJaxRsResource();
 
@@ -88,13 +93,22 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		for(Field field : resource.getClass().getDeclaredFields()) {
 			Context context = AnnotationUtils.findAnnotation(field, Context.class); //Injected JAX-WS Resources
 
-			if(context != null && field.getType().isAssignableFrom(Request.class)) {
-				Request request = new MockHttpRequest();
-				try {
-					field.set(resource, request);
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
-					fail("unable to inject Request");
+			if(context != null) {
+				if(field.getType().isAssignableFrom(Request.class)) {
+					Request request = new MockHttpRequest();
+					try {
+						field.set(resource, request);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+						fail("unable to inject Request");
+					}
+				} else if(field.getType().isAssignableFrom(SecurityContext.class)) {
+					try {
+						field.set(resource, securityContext);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+						fail("unable to inject Request");
+					}
 				}
 			}
 		}
@@ -103,6 +117,9 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	public class MockDispatcher {
 		public Map<String, Method> rsRequests = new HashMap<String, Method>();
 
+		/**
+		 * scan all methods in the JAX-RS class
+		 */
 		public void register(M jaxRsResource) {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
 			for(Method classMethod : classMethods) {
@@ -121,14 +138,18 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			}
 		}
 
-		//Uppercase method, make sure url begins with a /
+		/**
+		 * uppercase the HTTP method and combine with the resource path
+		 */
 		public String compileKey(String method, String path) {
-			String url = getRawUrl(path); //May contain QueryParameters
-
+			String url = getPath(path);
 			return String.format("%S:%s", method, url);
 		}
 
-		private String getRawUrl(String path) { //String QueryParams off path
+		/**
+		 * Makes sure the url begins with a slash and strips all QueryParams off the URL
+		 */
+		private String getPath(String path) {
 			String url = path;
 			if(!url.startsWith("/")) {
 				url = "/"+url;
@@ -140,6 +161,11 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			return url;
 		}
 
+		/**
+		 * Tries to find the correct JAX-RS method (with optional path parameter)
+		 * @param rsResourceKey unique key to identify all JAX-RS resources in the given resource class {@link M}
+		 * @return JAX-RS method or `null` when no resource is found
+		 */
 		private Method findRequest(String rsResourceKey) {
 			String uriSegments[] = rsResourceKey.split("/");
 
@@ -171,12 +197,25 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		}
 
 		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata) {
+			return dispatchRequest(httpMethod, url, jsonOrFormdata, null);
+		}
+
+		/**
+		 * Dispatches the mocked request.
+		 * @param httpMethod GET PUT POST DELETE
+		 * @param url the relative path of the FF! API
+		 * @param jsonOrFormdata when using PUT/POST requests, a json string of formdata object
+		 * @param role IbisRole if you want to test authorisation as well
+		 */
+		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role) {
+
 			String rsResourceKey = compileKey(httpMethod, url);
 			System.out.println("trying to dispatch request to ["+rsResourceKey+"]");
 
 			if(httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
 				fail("can't use arguments on a GET request");
 			}
+			applyIbisRole(role);
 
 			Method method = findRequest(rsResourceKey);
 			if(method == null) {
@@ -186,8 +225,8 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			System.out.println("found JAX-RS resource ["+compileKey(httpMethod, methodPath)+"]");
 
 			try {
-				Parameter[] parameters = method.getParameters();
-				Object[] methodArguments = new Object[parameters.length]; //TODO: figure out how to deal with QueryParams and MultipartRequests
+				Parameter[] parameters = method.getParameters(); //find all parameters in the JAX-RS method, and try to populate them.
+				Object[] methodArguments = new Object[parameters.length];
 
 				for (int i = 0; i < parameters.length; i++) {
 					Parameter parameter = parameters[i];
@@ -198,12 +237,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 					if(isPathParameter) {
 						String pathValue = findPathParameter(parameter, methodPath, url);
 
-						System.out.println("adding method argument ["+i+"] with value ["+pathValue+"]");
+						System.out.println("setting method argument ["+i+"] to value ["+pathValue+"]");
 						methodArguments[i] = pathValue;
 					} else if(isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
 
-						System.out.println("adding method argument ["+i+"] value ["+value+"] type ["+value.getClass().getSimpleName()+"]");
+						System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
 						methodArguments[i] = value;
 					} else {
 						Consumes consumes = AnnotationUtils.findAnnotation(method, Consumes.class);
@@ -218,8 +257,10 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 						if(mediaType.equals(MediaType.APPLICATION_JSON)) { //We need to convert our input to json
 							Object value = convertInputToParameterType(parameter, jsonOrFormdata);
 
-							System.out.println("adding method argument ["+i+"] value ["+value+"] type ["+value.getClass().getSimpleName()+"]");
+							System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
 							methodArguments[i] = value;
+						} else {
+							fail("mediaType ["+mediaType+"] not yet implemented"); //TODO: figure out how to deal with MultipartRequests
 						}
 					}
 				}
@@ -251,7 +292,18 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			}
 		}
 
-		// Convert the json input to the parameter class type
+		/**
+		 * If set, apply the IbisRole to the mocked request.
+		 */
+		protected void applyIbisRole(IbisRole role) {
+			if(role != null) {
+				doReturn(true).when(securityContext).isUserInRole(role.name());
+			}
+		}
+
+		/**
+		 * Convert the json input to the parameters class type
+		 */
 		private Object convertInputToParameterType(Parameter parameter, Object jsonOrFormdata) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
@@ -262,13 +314,17 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			}
 		}
 
+		/**
+		 * If a path parameter is used, try to find it
+		 * @return the resolved path parameter value
+		 */
 		private String findPathParameter(Parameter parameter, String methodPath, String url) {
 			PathParam pathParameter = parameter.getAnnotation(PathParam.class);
 			String path = String.format("{%s}", pathParameter.value());
 			System.out.println("looking up path ["+path+"]");
 
 			String pathSegments[] = methodPath.split("/");
-			String urlSegments[] = getRawUrl(url).split("/");
+			String urlSegments[] = getPath(url).split("/");
 			String pathValue = null;
 			for (int j = 0; j < pathSegments.length; j++) {
 				String segment = pathSegments[j];
@@ -283,6 +339,10 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			return pathValue;
 		}
 
+		/**
+		 * If a query parameter is used, try to find it
+		 * @return the resolved query parameter value
+		 */
 		private Object findQueryParameter(Parameter parameter, String url) {
 			QueryParam queryParameter = parameter.getAnnotation(QueryParam.class);
 			int questionMark = url.indexOf("?");
@@ -315,6 +375,9 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			return value;
 		}
 
+		/**
+		 * Validate that all arguments are correctly set on the (JAX-RS resource) method
+		 */
 		private void validateIfAllArgumentsArePresent(Object[] methodArguments, Parameter[] parameters) {
 			for (int j = 0; j < methodArguments.length; j++) {
 				Object object = methodArguments[j];
