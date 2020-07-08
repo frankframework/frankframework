@@ -37,8 +37,8 @@ public class SqlTranslatorTest {
 //				{"", "MS SQL", null, "java.lang.IllegalArgumentException"},
 				{"Oracle", "MS SQL", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (NEXT VALUE FOR SEQ_IBISTEMP,0x);"},
 				{"Oracle", "MS SQL", "SELECT SEQ_IBISTEMP.NEXTVAL FROM DuaL", "SELECT NEXT VALUE FOR SEQ_IBISTEMP"},
-				{"Oracle", "MySql", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;"},
-				{"Oracle", "MySql", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NULL,NULL,SYSDATE(), CURRENT_TIMESTAMP());"},
+				{"Oracle", "MySQL", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;"},
+				{"Oracle", "MySQL", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NULL,'',SYSDATE(), CURRENT_TIMESTAMP());"},
 //				{"postgresql", "Oracle", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;"},
 //				{"Oracle", "postgresql", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NEXTVAL('SEQ_IBISTEMP'),NULL,CURRENT_DATE, CURRENT_TIMESTAMP);"},
 				{"Oracle", "H2", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,'',SYSDATE, SYSTIMESTAMP);"},
@@ -61,7 +61,7 @@ public class SqlTranslatorTest {
 
 			System.out.println("IN : " + query);
 			System.out.println("OUT: " + out);
-			assertEquals(expected, out);
+			assertEquals(query, expected, out);
 		} catch (Throwable t) {
 			if (checkExceptionClass(t, expected)) {
 				Assert.assertTrue(true);

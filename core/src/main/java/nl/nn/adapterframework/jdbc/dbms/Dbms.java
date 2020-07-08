@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,32 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.Connection;
+public enum Dbms {
 
-/**
- * @author  Gerrit van Brakel
- * @since  
- */
-public interface IDbmsSupportFactory {
-
-	final int DBMS_GENERIC=0;
-	final int DBMS_ORACLE=1;
-	final int DBMS_MSSQLSERVER=2;
-	final int DBMS_DB2=3;
-	final int DBMS_H2=4;
-	final int DBMS_MYSQL=5;
+	NONE("none"),
+	GENERIC("generic"),
+	ORACLE("Oracle"),
+	MSSQL("MS_SQL", "Microsoft SQL Server"),
+	DB2("DB2"),
+	H2("H2"),
+	MYSQL("MySQL");
 	
-	IDbmsSupport getDbmsSupport(Connection conn);
+	private String key;
+	private String productName;
+	
+	private Dbms(String key) {
+		this(key, key);
+	}
+	private Dbms(String key, String productName) {
+		this.key = key;
+		this.productName = productName;
+	}
 
+	public String getKey() {
+		return key;
+	}
+
+	public String getProductName() {
+		return productName;
+	}
 }

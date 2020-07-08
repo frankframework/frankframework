@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -36,7 +37,7 @@ public interface IDbmsSupport {
 	/**
 	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
 	 */
-	int getDatabaseType(); 
+	Dbms getDbms(); 
 	String getDbmsName();
 	
 	/**
@@ -88,6 +89,7 @@ public interface IDbmsSupport {
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
+	String getDatetimeLiteral(Date date);
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

@@ -30,16 +30,10 @@ import org.apache.commons.lang.StringUtils;
  * @since  
  */
 public class OracleDbmsSupport extends GenericDbmsSupport {
-	public final static String dbmsName = "Oracle";
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_ORACLE;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return dbmsName;
+	public Dbms getDbms() {
+		return Dbms.ORACLE;
 	}
 
 	@Override
