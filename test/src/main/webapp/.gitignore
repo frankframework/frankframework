@@ -1,3 +1,4 @@
+# Ignore files copied by maven war:inplace (called by Frank!Runner)
 /iaf/
 /images/
 /js/
