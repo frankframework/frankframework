@@ -100,9 +100,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 			RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
 			Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-			log.info("checking authentication for user ["+securityContext.getUserPrincipal().getName()+"] on uri ["+method.getAnnotation(javax.ws.rs.Path.class).value()+"] required roles " + rolesSet.toString());
+			log.info("checking authorisation for user ["+securityContext.getUserPrincipal().getName()+"] on uri ["+method.getAnnotation(javax.ws.rs.Path.class).value()+"] required roles " + rolesSet.toString());
 
-			//Verifying username and password
 			if(!doAuth(securityContext, rolesSet)) {
 				requestContext.abortWith(FORBIDDEN);
 				return;
@@ -137,6 +136,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		return true;
 	}
 
+	/**
+	 * validate if the user has the required role to access the resource
+	 */
 	private boolean doAuth(SecurityContext securityContext, final Set<String> rolesSet) {
 		for (String role : rolesSet) {
 			if(securityContext.isUserInRole(role)) {

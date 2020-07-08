@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.HttpMethod;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
@@ -45,8 +47,19 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(200, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		//TODO: validate response.getEntity()
 		assertNotNull(response.getEntity());
+
+		String result = response.getEntity().toString();
+		assertThat(result, CoreMatchers.containsString("\"fileSystem\":{")); //Object
+		assertThat(result, CoreMatchers.containsString("\"framework\":{")); //Object
+		assertThat(result, CoreMatchers.containsString("\"instance\":{")); //Object
+		assertThat(result, CoreMatchers.containsString("\"configurations\":[")); //Array
+		assertThat(result, CoreMatchers.containsString("\"applicationServer\":\"")); //String
+		assertThat(result, CoreMatchers.containsString("\"javaVersion\":\"")); //String
+		assertThat(result, CoreMatchers.containsString("\"dtap.stage\":\"")); //String
+		assertThat(result, CoreMatchers.containsString("\"dtap.side\":\"")); //String
+		assertThat(result, CoreMatchers.containsString("\"processMetrics\":{")); //Object
+		assertThat(result, CoreMatchers.containsString("\"machineName\":\"")); //String
 	}
 
 	@Test
