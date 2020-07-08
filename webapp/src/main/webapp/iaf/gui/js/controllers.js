@@ -690,17 +690,19 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.showReferences = function() {
-		var config = $scope.selectedConfiguration;
+		window.open($scope.configurationFlowDiagram);
+	};
+	$scope.configurationFlowDiagram;
+	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
-
-		if(config == "All")
+		if(configurationName == "All")
 			url += "?flow=true";
 		else {
-			url += config + "/flow";
+			url += configurationName + "/flow";
 		}
-
-		window.open(url);
-	};
+		$scope.configurationFlowDiagram = url;
+	}
+	$scope.updateConfigurationFlowDiagram($scope.selectedConfiguration);
 
 	$scope.isConfigStubbed = {};
 	$scope.check4StubbedConfigs = function() {
@@ -715,6 +717,7 @@ angular.module('iaf.beheerconsole')
 		$scope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(name);
 		$scope.updateQueryParams();
+		$scope.updateConfigurationFlowDiagram(name);
 	};
 	if($state.params.configuration != "All")
 		$scope.changeConfiguration($state.params.configuration);

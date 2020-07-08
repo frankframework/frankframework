@@ -5191,6 +5191,20 @@ dd.project-people {
   max-height: 100%;
   max-width: 100%;
 }
+.configurationFlow {
+  position: relative;
+}
+.configurationFlow a {
+  display: block;
+  overflow: hidden;
+}
+.configurationFlow img {
+  max-height: 100%;
+  max-width: 100%;
+  height: 100px;
+  padding: 2px;
+  width: 100%;
+}
 @media (min-width: 1200px) {
   .messages {
     width: calc(100% - 250px);
