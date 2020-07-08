@@ -8,19 +8,6 @@
 			https://github.com/ibissource/iaf/blob/master/TESTING_WITH_IAF-TEST.md#1-proprietary-modules-and-jar-dependencies
 			<arg value="-Dapplication.server.type.custom=ACTIVEMQ"/>
 			-->
-			<!-- Set .configurationFile and .basePath properties specified in DeploymentSpecifics.properties back to default values -->
-			<arg value="-Dconfigurations.MainConfig.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.MainConfig.basePath=MainConfig"/>
-			<arg value="-Dconfigurations.HTTP.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.HTTP.basePath=HTTP"/>
-			<arg value="-Dconfigurations.UTIL.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.UTIL.basePath=UTIL"/>
-			<arg value="-Dconfigurations.TX.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.TX.basePath=TX"/>
-			<arg value="-Dconfigurations.JDBC.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.JDBC.basePath=JDBC"/>
-			<arg value="-Dconfigurations.JMS.configurationFile=Configuration.xml"/>
-			<arg value="-Dconfigurations.JMS.basePath=JMS"/>
 		</exec>
 	</target>
 </project>
