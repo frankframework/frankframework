@@ -58,11 +58,7 @@ angular.module('iaf.beheerconsole')
 			});
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
-					for (var configName in data["Application Constants"]) {
-						var configConstants = data["Application Constants"][configName];
-						appConstants = $.extend(appConstants, configConstants);
-						break;
-					}
+					appConstants = $.extend(appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
 
 					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
 					if(idleTime > 0) {
@@ -1004,7 +1000,7 @@ angular.module('iaf.beheerconsole')
 				instanceName = data["Application Constants"][configName]["instance.name"];
 			}
 		}
-		$scope.changeConfiguration(instanceName);
+		$scope.changeConfiguration("All");
 		$scope.environmentProperties = convertPropertiesToArray(data["Environment Variables"]);
 		$scope.systemProperties = convertPropertiesToArray(data["System Properties"]);
 	});
