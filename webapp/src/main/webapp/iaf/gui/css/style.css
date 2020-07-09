@@ -6788,6 +6788,13 @@ body.body-small .vote-icon {
 .hideBtn1170.minw180px {
   min-width: 180px;
 }
+.hamburger {
+  display: none;
+  padding: 2px 6px;
+  margin-left: 20px;
+  vertical-align: unset;
+  margin-top: 17px;
+}
 
 @media (max-width: 1170px) {
   .hideBtn1170 span {
@@ -6817,6 +6824,16 @@ body.body-small .vote-icon {
 @media (max-width: 768px) {
   .maxWidth768 {
     width: 100%;
+  }
+  .minimalize {
+    display: none;
+  }
+  .hamburger {
+    display: inline-block;
+  }
+  ul.navbar-top-links.navbar-right {
+    clear: both;
+    margin-left: 20px;
   }
   #page-wrapper {
     position: inherit;
