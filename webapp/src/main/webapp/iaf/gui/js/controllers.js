@@ -223,7 +223,7 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
-							adapter.status = 'stopped';
+							adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
