@@ -68,6 +68,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		url: "/status?configuration&filter&search",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
+		reloadOnSearch: false,
 		data: {
 			pageTitle: 'Adapter Status',
 			breadcrumbs: 'Adapter > Status',
