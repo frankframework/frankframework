@@ -34,9 +34,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.common.util.Base64Exception;
-import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;
 import org.apache.logging.log4j.Logger;
@@ -46,8 +43,8 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Manages authorization per resource/collection.
  * 
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since   7.0-B1
+ * @author  Niels Meijer
  */
 
 @Provider
@@ -55,7 +52,6 @@ import nl.nn.adapterframework.util.LogUtil;
 public class AuthorizationFilter implements ContainerRequestFilter {
 
 	private static final Response FORBIDDEN = Response.status(Response.Status.FORBIDDEN).build();
-	private static final Response UNAUTHORIZED = Response.status(Response.Status.UNAUTHORIZED).build();
 	private static final Response SERVER_ERROR = Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -63,6 +59,11 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
+		SecurityContext securityContext = requestContext.getSecurityContext();
+		if(securityContext.getUserPrincipal() == null) {
+			return; //No userPrincipal, authentication is disabled.
+		}
+
 		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
 			//Preflight in here?
 			return;
@@ -87,17 +88,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 		//Presume `PermitAll` when RolesAllowed annotation is not set
 		if(method.isAnnotationPresent(RolesAllowed.class)) {
-			SecurityContext securityContext = requestContext.getSecurityContext();
-
-			if(securityContext.getUserPrincipal() == null) {
-				if(!login(requestContext)) { //Not logged in. Manually trying to authenticate the user
-					requestContext.abortWith(UNAUTHORIZED);
-					return;
-				} else {
-					log.info("manually logged in user [" + securityContext.getUserPrincipal().getName()+"]");
-				}
-			}
-
 			RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
 			Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
 			log.info("checking authorisation for user ["+securityContext.getUserPrincipal().getName()+"] on uri ["+method.getAnnotation(javax.ws.rs.Path.class).value()+"] required roles " + rolesSet.toString());
@@ -107,33 +97,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 				return;
 			}
 		}
-	}
-
-	private boolean login(ContainerRequestContext requestContext) {
-		String authorization = requestContext.getHeaderString("Authorization");
-		if(StringUtils.isEmpty(authorization)) {
-			return false; //Abort request when no Authorization header is present
-		}
-
-		String[] parts = authorization.split(" ");
-		if (parts.length != 2 || !"Basic".equals(parts[0])) {
-			return false;
-		}
-
-		String decodedValue = null;
-		try {
-			decodedValue = new String(Base64Utility.decode(parts[1]));
-		} catch (Base64Exception ex) {
-			return false;
-		}
-		String[] namePassword = decodedValue.split(":");
-
-		try {
-			request.login(namePassword[0], namePassword[1]);
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
 	}
 
 	/**
