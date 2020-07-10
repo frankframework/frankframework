@@ -59,6 +59,7 @@ public interface IDbmsSupport {
 	String getInsertedAutoIncrementValueQuery(String sequenceName);
 
 	String getTimestampFieldType();
+	String getDatetimeLiteral(Date date);
 
 	String getClobFieldType();
 	boolean mustInsertEmptyClobBeforeData();
@@ -89,7 +90,10 @@ public interface IDbmsSupport {
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
-	String getDatetimeLiteral(Date date);
+
+	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
+	void prepareSessionForDirtyRead(Connection conn) throws JdbcException;
+	void returnSessionToRepeatableRead(Connection conn) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);
