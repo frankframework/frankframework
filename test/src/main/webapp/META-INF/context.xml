@@ -88,7 +88,7 @@
 		type="javax.sql.DataSource"
 		username="testiaf_user"
 		password="testiaf_user00"
-		driverClassName="com.mysql.jdbc.Driver"
+		driverClassName="com.mysql.cj.jdbc.Driver"
 		url="jdbc:mysql://localhost:3306/testiaf"
 		maxActive="50"
 		maxIdle="2"
