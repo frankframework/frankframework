@@ -906,9 +906,7 @@ public class JdbcUtil {
 	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.isAfterLast();
-			} catch (SQLException e) {
-				throw new JdbcException("could not obtain value using query [" + query + "]", e);
+				return !rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called, at least in H2 and MsSqlServer
 			}
 		} catch (SQLException e) {
 			throw new JdbcException("could not obtain value using query [" + query + "]", e);
