@@ -64,6 +64,7 @@ public final class AppConstants extends Properties implements Serializable {
 		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
 
 		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
+		//TODO JdbcUtil has static references to AppConstants causing it to load twice!
 		Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
 		if (databaseProperties!=null) {
 			putAll(databaseProperties);
@@ -72,6 +73,7 @@ public final class AppConstants extends Properties implements Serializable {
 		//Add all ibis properties
 		putAll(additionalProperties);
 
+		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
 			log.info("created new AppConstants instance for classloader ["+ClassUtils.nameOf(classLoader)+"]");
 		}
@@ -117,7 +119,7 @@ public final class AppConstants extends Properties implements Serializable {
 		removeInstance(AppConstants.class.getClassLoader());
 	}
 
-	public static void removeInstance(final ClassLoader cl) {
+	public static synchronized void removeInstance(final ClassLoader cl) {
 		ClassLoader classLoader = cl;
 		if(classLoader == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
@@ -264,7 +266,7 @@ public final class AppConstants extends Properties implements Serializable {
 
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
-			String theFilename= tokenizer.nextToken().trim();
+			String theFilename = tokenizer.nextToken().trim();
 			try {
 				ClassLoader cl = classLoader;
 				if(classLoader == null) {
@@ -296,7 +298,7 @@ public final class AppConstants extends Properties implements Serializable {
 					log.info("Application constants loaded from url [" + url.toString() + "]");
 				}
 
-				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additonal properties if it's defined...
+				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
 				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
