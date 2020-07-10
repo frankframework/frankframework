@@ -163,7 +163,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 
 		/**
 		 * Tries to find the correct JAX-RS method (with optional path parameter)
-		 * @param rsResourceKey unique key to identify all JAX-RS resources in the given resource class {@link M}
+		 * @param rsResourceKey unique key to identify all JAX-RS resources in the given resource class 
 		 * @return JAX-RS method or `null` when no resource is found
 		 */
 		private Method findRequest(String rsResourceKey) {
