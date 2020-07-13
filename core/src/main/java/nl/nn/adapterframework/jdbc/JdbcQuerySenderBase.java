@@ -131,6 +131,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private boolean lockRows=false;
 	private int lockWait=-1;
+	private boolean dirtyRead=false;
 	
 	private String convertedResultQuery;
 
@@ -200,6 +201,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		String query = queryExecutionContext.getQuery();
 		if (isLockRows()) {
 			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
+		}
+		if (isDirtyRead()) {
+			query = getDbmsSupport().prepareQueryTextForDirtyRead(query);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
@@ -282,11 +286,28 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
+		if (isDirtyRead()) {
+			try {
+				getDbmsSupport().prepareSessionForDirtyRead(connection);
+			} catch (JdbcException e) {
+				throw new SenderException(getLogPrefix() + "cannot prepare connection for dirty read", e);
+			}
+		}
 		try {
-			return executeStatementSet(queryExecutionContext, message, session);
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
+			try {
+				return executeStatementSet(queryExecutionContext, message, session);
+			} finally {
+				closeStatementSet(queryExecutionContext, session);
+			}
 		} finally {
-			closeStatementSet(queryExecutionContext, session);
+			if (isDirtyRead()) {
+				try {
+					getDbmsSupport().returnSessionToRepeatableRead(connection);
+				} catch (JdbcException e) {
+					throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+				}
+			}
 		}
 	}
 	
@@ -618,6 +639,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		QueryExecutionContext queryExecutionContext;
 		try {
 			connection = getConnectionWithTimeout(getTimeout());
+			if (isDirtyRead()) {
+				try {
+					getDbmsSupport().prepareSessionForDirtyRead(connection);
+				} catch (JdbcException e) {
+					throw new StreamingException(getLogPrefix() + "cannot prepare connection for dirty read", e);
+				}
+			}
 			queryExecutionContext = getQueryExecutionContext(connection, null, session);
 		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
 			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
@@ -648,6 +676,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
+		} finally {
+			if (isDirtyRead()) {
+				try {
+					getDbmsSupport().returnSessionToRepeatableRead(connection);
+				} catch (JdbcException e) {
+					throw new StreamingException(getLogPrefix() + "cannot return connection to repeatable read", e);
+				}
+			}
 		}
 	}
 
@@ -656,20 +692,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected Message executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
-		ResultSet resultset=null;
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
 
 			log.debug(getLogPrefix() + "executing a SELECT SQL command");
-			resultset = statement.executeQuery();
+			try (ResultSet resultset = statement.executeQuery()) {
 
-			if (getStartRow()>1) {
-				resultset.absolute(getStartRow()-1);
-				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
-			}				
-			return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+				if (getStartRow()>1) {
+					resultset.absolute(getStartRow()-1);
+					log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
+				}				
+				return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+			}
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
 		} catch (JdbcException e) {
@@ -678,14 +714,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
 		} catch (JMSException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
-		} finally {
-			try {
-				if (resultset!=null) {
-					resultset.close();
-				}
-			} catch (SQLException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
-			}
 		}
 	}
 
@@ -778,7 +806,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, IPipeLineSession session, ParameterList parameterList) throws SenderException {
-		ResultSet resultset=null;
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
@@ -800,8 +827,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			if (resStmt!=null) {
 				if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
-				ResultSet rs = resStmt.executeQuery();
-				return getResult(rs);
+				try (ResultSet rs = resStmt.executeQuery()) {
+					return getResult(rs);
+				}
 			}
 			if (getColumnsReturnedList()!=null) {
 				return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
@@ -820,14 +848,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
-		} finally {
-			try {
-				if (resultset!=null) {
-					resultset.close();
-				}
-			} catch (SQLException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
-			}
 		}
 	}
 
@@ -1193,12 +1213,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	@IbisDoc({"42", "Wharset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
+	@IbisDoc({"42", "Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
 	 public void setStreamCharset(String string) {
 		streamCharset = string;
 	}
 	public String getStreamCharset() {
 		return streamCharset;
+	}
+
+	@IbisDoc({"43", "If true, then select queries are executed with isolation mode 'read uncommitted'.", "false"})
+	public void setDirtyRead(boolean dirtyRead) {
+		this.dirtyRead = dirtyRead;
+	}
+	public boolean isDirtyRead() {
+		return dirtyRead;
 	}
 
 }

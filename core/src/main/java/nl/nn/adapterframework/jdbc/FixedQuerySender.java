@@ -70,6 +70,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
+			if (isDirtyRead()) {
+				try {
+					getDbmsSupport().prepareSessionForDirtyRead(connection);
+				} catch (JdbcException e) {
+					throw new SenderException(getLogPrefix() + "cannot prepare connection for dirty read", e);
+				}
+			}
 			return super.prepareStatementSet(null, connection, null, session);
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get StatementSet",e);
@@ -83,9 +90,19 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			super.closeStatementSet(blockHandle, session);
 		} finally {
 			try {
-				closeConnectionForSendMessage(blockHandle.getConnection(), session);
-			} catch (JdbcException | TimeOutException e) {
-				throw new SenderException("cannot close connection", e);
+				if (isDirtyRead()) {
+					try {
+						getDbmsSupport().returnSessionToRepeatableRead(blockHandle.getConnection());
+					} catch (JdbcException e) {
+						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+					}
+				}
+			} finally {
+				try {
+					closeConnectionForSendMessage(blockHandle.getConnection(), session);
+				} catch (JdbcException | TimeOutException e) {
+					throw new SenderException("cannot close connection", e);
+				}
 			}
 		}
 	}

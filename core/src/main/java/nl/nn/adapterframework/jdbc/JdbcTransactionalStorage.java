@@ -464,9 +464,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 		selectListQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ listClause+ getWhereClause(null,false)+
 						  " ORDER BY "+getDateField()+(StringUtils.isNotEmpty(getOrder())?" " + getOrder():"")+provideTrailingFirstRowsHint(dbmsSupport);
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-        checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-        checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
-		getMessageCountQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
+		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
+		try {
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForDirtyRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
+		} catch (JdbcException e) {
+			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
+		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
 		}
@@ -1172,11 +1176,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			throw new ListenerException(e);
 		}
 		try {
-			String dirtyReadQuery = getDbmsSupport().prepareQueryTextForDirtyRead(getMessageCountQuery);
-			System.err.println("TEST MY CUSTOM CLASS "+dirtyReadQuery);
 			getDbmsSupport().prepareSessionForDirtyRead(conn);
 			try {
-				PreparedStatement stmt = conn.prepareStatement(dirtyReadQuery);			
+				PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery);			
 				applyStandardParameters(stmt, false, false);
 				ResultSet rs =  stmt.executeQuery();
 

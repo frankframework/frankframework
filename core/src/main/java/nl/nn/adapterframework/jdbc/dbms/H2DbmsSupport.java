@@ -73,11 +73,13 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public void prepareSessionForDirtyRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+		// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
+		//JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
 	}
 	@Override
 	public void returnSessionToRepeatableRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+		// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
+		//JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
 	}
 
 }
