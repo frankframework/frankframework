@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -286,28 +287,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		if (isDirtyRead()) {
-			try {
-				getDbmsSupport().prepareSessionForDirtyRead(connection);
-			} catch (JdbcException e) {
-				throw new SenderException(getLogPrefix() + "cannot prepare connection for dirty read", e);
-			}
-		}
-		try {
+		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session);
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
-		} finally {
-			if (isDirtyRead()) {
-				try {
-					getDbmsSupport().returnSessionToRepeatableRead(connection);
-				} catch (JdbcException e) {
-					throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
-				}
-			}
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
 		}
 	}
 	
@@ -639,13 +627,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		QueryExecutionContext queryExecutionContext;
 		try {
 			connection = getConnectionWithTimeout(getTimeout());
-			if (isDirtyRead()) {
-				try {
-					getDbmsSupport().prepareSessionForDirtyRead(connection);
-				} catch (JdbcException e) {
-					throw new StreamingException(getLogPrefix() + "cannot prepare connection for dirty read", e);
-				}
-			}
 			queryExecutionContext = getQueryExecutionContext(connection, null, session);
 		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
 			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
@@ -676,14 +657,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-		} finally {
-			if (isDirtyRead()) {
-				try {
-					getDbmsSupport().returnSessionToRepeatableRead(connection);
-				} catch (JdbcException e) {
-					throw new StreamingException(getLogPrefix() + "cannot return connection to repeatable read", e);
-				}
-			}
 		}
 	}
 

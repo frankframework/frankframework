@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -70,14 +71,10 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
-			if (isDirtyRead()) {
-				try {
-					getDbmsSupport().prepareSessionForDirtyRead(connection);
-				} catch (JdbcException e) {
-					throw new SenderException(getLogPrefix() + "cannot prepare connection for dirty read", e);
-				}
-			}
-			return super.prepareStatementSet(null, connection, null, session);
+			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
+			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			result.setJdbcSession(jdbcSession);
+			return result;
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get StatementSet",e);
 		}
@@ -90,10 +87,10 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			super.closeStatementSet(blockHandle, session);
 		} finally {
 			try {
-				if (isDirtyRead()) {
+				if (blockHandle.getJdbcSession()!=null) {
 					try {
-						getDbmsSupport().returnSessionToRepeatableRead(blockHandle.getConnection());
-					} catch (JdbcException e) {
+						blockHandle.getJdbcSession().close();
+					} catch (Exception e) {
 						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
 					}
 				}

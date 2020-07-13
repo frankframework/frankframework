@@ -92,8 +92,7 @@ public interface IDbmsSupport {
 	String getFirstRecordQuery(String tableName) throws JdbcException;
 
 	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
-	void prepareSessionForDirtyRead(Connection conn) throws JdbcException;
-	void returnSessionToRepeatableRead(Connection conn) throws JdbcException;
+	JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

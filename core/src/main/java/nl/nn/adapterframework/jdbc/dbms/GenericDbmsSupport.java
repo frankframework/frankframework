@@ -273,12 +273,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return selectQuery;
 	}
 	@Override
-	public void prepareSessionForDirtyRead(Connection conn) throws JdbcException {
-		// do nothing by default
-	}
-	@Override
-	public void returnSessionToRepeatableRead(Connection conn) throws JdbcException {
-		// do nothing by default
+	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+		return null;
 	}
 
 

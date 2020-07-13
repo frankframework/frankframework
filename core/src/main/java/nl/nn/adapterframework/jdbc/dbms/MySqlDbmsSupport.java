@@ -89,13 +89,17 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public void prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
 		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
 		JdbcUtil.executeStatement(conn, "START TRANSACTION");
-	}
-	@Override
-	public void returnSessionToRepeatableRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "COMMIT");
+		return new JdbcSession() {
+
+			@Override
+			public void close() throws Exception {
+				JdbcUtil.executeStatement(conn, "COMMIT");
+			}
+			
+		};
 	}
 
 
