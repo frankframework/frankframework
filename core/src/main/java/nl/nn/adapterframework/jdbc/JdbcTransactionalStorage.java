@@ -1172,15 +1172,23 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			throw new ListenerException(e);
 		}
 		try {
-			PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery);			
-			applyStandardParameters(stmt, false, false);
-			ResultSet rs =  stmt.executeQuery();
+			String dirtyReadQuery = getDbmsSupport().prepareQueryTextForDirtyRead(getMessageCountQuery);
+			System.err.println("TEST MY CUSTOM CLASS "+dirtyReadQuery);
+			getDbmsSupport().prepareSessionForDirtyRead(conn);
+			try {
+				PreparedStatement stmt = conn.prepareStatement(dirtyReadQuery);			
+				applyStandardParameters(stmt, false, false);
+				ResultSet rs =  stmt.executeQuery();
 
-			if (!rs.next()) {
-				log.warn(getLogPrefix()+"no message count found");
-				return 0;
+				if (!rs.next()) {
+					log.warn(getLogPrefix()+"no message count found");
+					return 0;
+				}
+				
+				return rs.getInt(1);
+			} finally {
+				getDbmsSupport().returnSessionToRepeatableRead(conn);
 			}
-			return rs.getInt(1);			
 			
 		} catch (Exception e) {
 			throw new ListenerException("cannot determine message count",e);
