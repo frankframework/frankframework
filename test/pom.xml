@@ -77,7 +77,7 @@
 					<webResources>
 						<resource>
 							<directory>src/main/configurations</directory>
-							<targetPath>WEB-INF/classes</targetPath>
+							<targetPath>WEB-INF/classes/configurations</targetPath>
 						</resource>
 					</webResources>
 				</configuration>
@@ -120,7 +120,7 @@
 						</resource>
 						<resource>
 							<directory>src/main/configurations</directory>
-							<targetPath>WEB-INF/classes</targetPath>
+							<targetPath>WEB-INF/classes/configurations</targetPath>
 						</resource>
  						<resource>
 							<directory>src/test/testtool</directory>

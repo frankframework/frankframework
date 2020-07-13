@@ -2,6 +2,8 @@
 	<target name="restart-iaf-test">
 		<exec executable="../../frank-runner/restart.bat" vmlauncher="false" failonerror="true">
 			<arg value="-Dproject.dir=iaf/test"/>
+			<!-- In DeploymentSpecifics.properties the configurations part of the path is added to configurations.*.* properties, hence remove it here from configurations.dir that has default value src/main/configurations -->
+			<arg value="-Dconfigurations.dir=src/main"/>
 			<!--
 			Optionally change application.server.type.custom as described in StageSpecifics_LOC.properties
 			Please note that ACTIVEMQ requires extra jar files that the Frank!Runner doesn't download yet, see:
