@@ -71,8 +71,8 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
-			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
 			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
 			result.setJdbcSession(jdbcSession);
 			return result;
 		} catch (JdbcException e) {
