@@ -80,6 +80,10 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 				log.debug("Setting databasetype to MYSQL");
 				return new MySqlDbmsSupport();
 			}
+			if (Dbms.MARIADB.getProductName().equals(product)) {
+				log.debug("Setting databasetype to MARIADB");
+				return new MySqlDbmsSupport();
+			}
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");
 		return new GenericDbmsSupport();
