@@ -15,49 +15,36 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -82,21 +69,17 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	private String dateField="messageDate";
 	private String commentField="comments";
 	private String messageField="message";
+	private String slotIdField="slotId";
 	private String expiryDateField="expiryDate";
 	private String labelField="label";
 	private String slotId=null;
 	private String typeField="type";
 	private String type = "";
 	private String hostField="host";
-	private boolean active=true;
 	private boolean blobsCompressed=true;
-	private boolean storeFullMessage=true;
 	private String indexName="IX_IBISSTORE";
 
 	private String prefix="";
-	private int retention = 30;
-	private String schemaOwner4Check=null;
-	private boolean onlyStoreWhenMessageIdUnique=false;
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
@@ -116,17 +99,14 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 
 	private PlatformTransactionManager txManager;
 
-	protected String insertQuery;
 	protected String deleteQuery;
-	protected String selectKeyQuery;
 	protected String selectListQuery;
 	protected String selectContextQuery;
 	protected String selectDataQuery;
-    protected String checkMessageIdQuery;
-    protected String checkCorrelationIdQuery;
+	protected String checkMessageIdQuery;
+	protected String checkCorrelationIdQuery;
 	protected String getMessageCountQuery;
-	protected String selectDataQuery2;
-    
+
 	protected boolean selectKeyQueryIsDbmsSupported;
 	
 	// the following for Oracle
@@ -138,16 +118,11 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
 	private static final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
 	private static final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";
-	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
-	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";	
 	
-	private static final boolean documentQueries=false;
 	private boolean useIndexHint;
 	private boolean useFirstRowsHint;
 	private boolean useParameters;
 	private boolean assumePrimaryKeyUnique;
-	private boolean checkTable;
-	private boolean checkIndices;	
 
 
 	public JdbcMessageBrowser() {
@@ -166,43 +141,8 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		useFirstRowsHint = ac.getBoolean(PROPERTY_USE_FIRST_ROWS_HINT, true);
 		useParameters = ac.getBoolean(PROPERTY_USE_PARAMETERS, true);
 		assumePrimaryKeyUnique = ac.getBoolean(PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE, true);
-		checkTable = ac.getBoolean(PROPERTY_CHECK_TABLE, false);
-		checkIndices = ac.getBoolean(PROPERTY_CHECK_INDICES, true);
 	}
 
-	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName) throws JdbcException {
-		if (StringUtils.isNotEmpty(columnName) && !dbms.isColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
-			ConfigurationWarnings.add(this, log, "table [" + getTableName() + "] has no column [" + columnName + "]");
-		}
-	}
-
-
-	private void checkIndexOnColumnPresent(Connection connection, String column) {
-		if (!getDbmsSupport().hasIndexOnColumn(connection, getSchemaOwner4Check(), getTableName(), column)) {
-			ConfigurationWarnings.add(this, log, "table ["+getTableName()+"] has no index on column ["+column+"]");
-		}
-	}
-
-	private void checkIndexOnColumnsPresent(Connection connection, List<String> columns) {
-		if (columns!=null && !columns.isEmpty()) {
-			if (!getDbmsSupport().hasIndexOnColumns(connection, getSchemaOwner4Check(), getTableName(), columns)) {
-				String msg="table ["+getTableName()+"] has no index on columns ["+columns.get(0);
-				for (int i=1;i<columns.size();i++) {
-					msg+=","+columns.get(i);
-				}
-				msg+="]";
-				ConfigurationWarnings.add(this, log, msg);
-			}
-		}
-	}
-
-	private void checkSequence(Connection connection) {
-		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
-			//no more checks
-		} else {
-			ConfigurationWarnings.add(this, log, "sequence ["+getSequenceName()+"] not present");
-		}
-	}
 
 	
 	@Override
@@ -212,97 +152,21 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
-		if (StringUtils.isEmpty(getTableName())) {
-			throw new ConfigurationException("Attribute [tableName] is not set");
-		}
-		if (useIndexHint && StringUtils.isEmpty(getIndexName())) {
-			throw new ConfigurationException("Attribute [indexName] is not set and useIndexHint=true");
-		}
-		if (StringUtils.isEmpty(getSequenceName())) {
-			throw new ConfigurationException("Attribute [sequenceName] is not set");
-		}
-		createQueryTexts(getDbmsSupport());
 	}
 
-	/**
-	 * change datatypes used for specific database vendor. 
-	 */
-	protected void setDataTypes(IDbmsSupport dbmsSupport) {
-		if (StringUtils.isEmpty(getKeyFieldType())) {
-			setKeyFieldType(dbmsSupport.getAutoIncrementKeyFieldType());
-		}
-		if (StringUtils.isEmpty(getDateFieldType())) {
-			setDateFieldType(dbmsSupport.getTimestampFieldType());
-		}
-		if (StringUtils.isEmpty(getTextFieldType())) {
-			setTextFieldType(dbmsSupport.getTextFieldType());
-		}
-		if (StringUtils.isEmpty(getMessageFieldType())) {
-			setMessageFieldType(dbmsSupport.getBlobFieldType());
-		}
-	}
 
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
-		setDataTypes(dbmsSupport);
-		boolean keyFieldsNeedsInsert=dbmsSupport.autoIncrementKeyMustBeInserted();
-		boolean blobFieldsNeedsEmptyBlobInsert=dbmsSupport.mustInsertEmptyBlobBeforeData();
-		insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
-						(keyFieldsNeedsInsert?getKeyField()+",":"")+
-						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
-						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
-						(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
-						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
-						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
-						(isStoreFullMessage()?","+getMessageField():"")+
-						(isOnlyStoreWhenMessageIdUnique()?") SELECT ":") VALUES (")+
-						(keyFieldsNeedsInsert?dbmsSupport.autoIncrementInsertValue(getPrefix()+getSequenceName())+",":"")+
-						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
-						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
-						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
-						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
-						"?,?,?,?,?"+
-						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+
-						(isOnlyStoreWhenMessageIdUnique()?" "+dbmsSupport.getFromForTablelessSelect()+" WHERE NOT EXISTS (SELECT * FROM IBISSTORE WHERE "+getIdField()+" = ?"+(StringUtils.isNotEmpty(getSlotId())?" AND "+getSlotIdField()+" = ?":"")+")":")");
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
-		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
-		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
-							getWhereClause(getIdField()+"=?"+
-										" AND " +getCorrelationIdField()+"=?"+
-										" AND "+getDateField()+"=?",false);
-		}
 		String listClause=getListClause();
 		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
 		selectListQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ listClause+ getWhereClause(null,false)+
 						  " ORDER BY "+getDateField()+(StringUtils.isNotEmpty(getOrder())?" " + getOrder():"")+provideTrailingFirstRowsHint(dbmsSupport);
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-        checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-        checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
+		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
 		getMessageCountQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
-		}
-		selectDataQuery2 = "SELECT " + getMessageField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getIdField() + "=?";
-		if (documentQueries && log.isDebugEnabled()) {
-			log.debug(
-					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
-					documentQuery("deleteQuery",deleteQuery,"Verwijder een regel uit de tabel, via de primary key")+
-					documentQuery("selectKeyQuery",selectKeyQuery,"Haal de huidige waarde op van de sequence voor messageKey")+
-					documentQuery("selectContextQuery",selectContextQuery,"Haal de niet blob velden van een regel op, via de primary key")+
-					documentQuery("selectListQuery",selectListQuery,"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
-					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
-					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
-					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")+
-					documentQuery("selectDataQuery2",selectDataQuery2,"Haal de blob van een regel op, via een messageId")
-//					+"\n"
-//					+"\n- slotId en type zou via ? kunnen"
-//					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
-//					+"\n- selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen"
-//					+"\n- we zouden de index hint via een custom property aan en uit kunnen zetten"
-					);
 		}
 	}
 
@@ -330,10 +194,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		  " ORDER BY "+getDateField()+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
-	private String documentQuery(String name, String query, String purpose) {
-		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
-	}
-
 	private String provideIndexHintAfterFirstKeyword(IDbmsSupport dbmsSupport) {
 		if (useIndexHint) {
 			return dbmsSupport.provideIndexHintAfterFirstKeyword(getPrefix()+getTableName(), getPrefix()+getIndexName());
@@ -354,9 +214,6 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		return "";
 	}
 
-	
-	
-	
 	protected String getWhereClause(String clause, boolean primaryKeyIsPartOfClause) {
 		if (primaryKeyIsPartOfClause && assumePrimaryKeyUnique || StringUtils.isEmpty(getSlotId())) {
 			if (StringUtils.isEmpty(clause)) {
@@ -370,77 +227,10 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		}
 		return result;
 	}
-
-
-
-	/**
-	 * Retrieves the value of the primary key for the record just inserted. 
-	 */
-	private String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
-		PreparedStatement stmt=null;
-		
-		try {			
-			if (log.isDebugEnabled()) {
-				log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
-			}
-			stmt = conn.prepareStatement(selectKeyQuery);			
-			if (!selectKeyQueryIsDbmsSupported) {
-				int paramPos=applyStandardParameters(stmt, true, false);
-				stmt.setString(paramPos++,messageId);
-				stmt.setString(paramPos++,correlationId);
-				stmt.setTimestamp(paramPos++, receivedDateTime);
-			}
 	
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
-				if (!rs.next()) {
-					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
-				}
-				return "<id>" + rs.getString(1) + "</id>";
-			} finally {
-				if (rs!=null) {
-					rs.close();
-				}
-			}
-		} finally {
-			if (stmt!=null) {
-				stmt.close();
-			}
-		}
-	}
+	
+	
 
-
-	private boolean isMessageDifferent(Connection conn, String messageId, M message) throws SQLException{
-		PreparedStatement stmt = null;
-		int paramPosition=0;
-		
-		try{
-			// preparing database query statement.
-			stmt = conn.prepareStatement(selectDataQuery2);
-			stmt.clearParameters();
-			stmt.setString(++paramPosition, messageId);
-			// executing query, getting message as response in a result set.
-			ResultSet rs = stmt.executeQuery();
-			// if rs.next() needed as you can not simply call rs.
-			if (rs.next()) {
-				String dataBaseMessage = retrieveObject(rs, 1).toString();
-				String inputMessage = message.toString();
-				if (dataBaseMessage.equals(inputMessage)) {
-					return false;
-				}
-				return true;
-			}
-			return true;
-		} catch (Exception e) {
-			log.warn("Exception comparing messages", e);
-			return true;
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-	}
 	
 	private String createResultString(boolean isMessageDifferent){
 		String resultStringStart = "<results>";
@@ -518,45 +308,40 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 
 	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
+		try (Connection conn = getConnection()) {
 			String query = getSelectListQuery(getDbmsSupport(), startTime, endTime, order);
 			if (log.isDebugEnabled()) {
 				log.debug("preparing selectListQuery ["+query+"]");
 			}
-			PreparedStatement stmt = conn.prepareStatement(query);
-			if (startTime==null && endTime==null) {
-				applyStandardParameters(stmt, false, false);
-			} else {
-				int paramPos=applyStandardParameters(stmt, true, false);
-				if (startTime!=null) {
-					stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
+			try (PreparedStatement stmt = conn.prepareStatement(query)) {
+				if (startTime==null && endTime==null) {
+					applyStandardParameters(stmt, false, false);
+				} else {
+					int paramPos=applyStandardParameters(stmt, true, false);
+					if (startTime!=null) {
+						stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
+					}
+					if (endTime!=null) {
+						stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
+					}
 				}
-				if (endTime!=null) {
-					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
-				}
+				ResultSet rs =  stmt.executeQuery();
+				return new ResultSetIterator(conn,rs);
 			}
-			ResultSet rs =  stmt.executeQuery();
-			return new ResultSetIterator(conn,rs);
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
-//	protected String getSelector() {
-//		if (StringUtils.isEmpty(getSlotId())) {
-//			return null;
-//		}
-//		if (StringUtils.isEmpty(getType())) {
-//			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'");
-//		}
-//		return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'")+" AND "+getTypeField()+"="+(useParameters?"?":"'"+getType()+"'");
-//	}
+	protected String getSelector() {
+		if (StringUtils.isEmpty(getSlotId())) {
+			return null;
+		}
+		if (StringUtils.isEmpty(getType())) {
+			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'");
+		}
+		return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'")+" AND "+getTypeField()+"="+(useParameters?"?":"'"+getType()+"'");
+	}
 
 	private int applyStandardParameters(PreparedStatement stmt, boolean moreParametersFollow, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=1;
@@ -584,25 +369,13 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 
 	@Override
 	public void deleteMessage(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(deleteQuery);	
-			applyStandardParameters(stmt, messageId, true);
-			stmt.execute();
-			
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				stmt.execute();
 			}
+		} catch (Exception e) {
+			throw new ListenerException(e);
 		}
 	}
 
@@ -618,10 +391,9 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 			} else {
 				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
-			ObjectInputStream ois = new ObjectInputStream(blobStream);
-			M result = (M)ois.readObject();
-			ois.close();
-			return result;
+			try (ObjectInputStream ois = new ObjectInputStream(blobStream)) {
+				return (M)ois.readObject();
+			}
 		} finally {
 			if (blobStream!=null) {
 				blobStream.close();
@@ -653,113 +425,75 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 
 	@Override
 	public int getMessageCount() throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery);			
-			applyStandardParameters(stmt, false, false);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				log.warn(getLogPrefix()+"no message count found");
-				return 0;
+		try (Connection conn = getConnection()) {
+			try (JdbcSession session = getDbmsSupport().prepareSessionForDirtyRead(conn)) {
+				try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
+					applyStandardParameters(stmt, false, false);
+					try (ResultSet rs =  stmt.executeQuery()) {
+						if (!rs.next()) {
+							log.warn(getLogPrefix()+"no message count found");
+							return 0;
+						}
+						return rs.getInt(1);
+					}
+				}
 			}
-			return rs.getInt(1);			
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot determine message count",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
-			applyStandardParameters(stmt, originalMessageId, false);
-			ResultSet rs =  stmt.executeQuery();
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery)) {
+				applyStandardParameters(stmt, originalMessageId, false);
+				try (ResultSet rs =  stmt.executeQuery()) {
 
-			if (!rs.next()) {
-				return false;
+					if (!rs.next()) {
+						return false;
+					}
+					
+					return true;
+				}
 			}
-			
-			return true;
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 	@Override
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery);	
-			applyStandardParameters(stmt, correlationId, false);
-			ResultSet rs =  stmt.executeQuery();
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
+				try (ResultSet rs =  stmt.executeQuery()) {
 
-			if (!rs.next()) {
-				return false;
+					if (!rs.next()) {
+						return false;
+					}
+					
+					return true;
+				}
 			}
-			
-			return true;
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);			
-			applyStandardParameters(stmt, messageId, true);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				try (ResultSet rs =  stmt.executeQuery()) {
+	
+					if (!rs.next()) {
+						throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+					}
+					return new JdbcTransactionalStorageIteratorItem(conn, rs,true);
+				}
 			}
-			return new JdbcTransactionalStorageIteratorItem(conn, rs,true);
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}
@@ -767,35 +501,131 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 
 	@Override
 	public M browseMessage(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(selectDataQuery);
-			applyStandardParameters(stmt, messageId, true);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				try (ResultSet rs =  stmt.executeQuery()) {
+	
+					if (!rs.next()) {
+						throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+					}
+					return retrieveObject(rs,1);
+				}
 			}
-			return retrieveObject(rs,1);
-
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ungly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
+
+	private class JdbcTransactionalStorageIteratorItem implements IMessageBrowsingIteratorItem {
+
+		private Connection conn;
+		private ResultSet rs;
+		private boolean closeOnRelease;
+		
+		public JdbcTransactionalStorageIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
+			super();
+			this.conn=conn;
+			this.rs=rs;
+			this.closeOnRelease=closeOnRelease;
+		}
+		
+		@Override
+		public String getId() throws ListenerException {
+			try {
+				return rs.getString(getKeyField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public String getOriginalId() throws ListenerException {
+			try {
+				return rs.getString(getIdField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public String getCorrelationId() throws ListenerException {
+			try {
+				return rs.getString(getCorrelationIdField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public Date getInsertDate() throws ListenerException {
+			try {
+				return rs.getTimestamp(getDateField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public Date getExpiryDate() throws ListenerException {
+			try {
+				return rs.getTimestamp(getExpiryDateField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public String getType() throws ListenerException {
+			if (StringUtils.isEmpty(getTypeField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getTypeField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		@Override
+		public String getHost() throws ListenerException {
+			if (StringUtils.isEmpty(getHostField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getHostField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
+		@Override
+		public String getLabel() throws ListenerException {
+			if (StringUtils.isEmpty(getLabelField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getLabelField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
+		@Override
+		public String getCommentString() throws ListenerException {
+			try {
+				return rs.getString(getCommentField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
+		@Override
+		public void release() {
+			if (closeOnRelease) {
+				JdbcUtil.fullClose(conn, rs);
+			}
+		}
+		
+		
+	}
 
 
 
@@ -817,7 +647,7 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	/**
 	 * Sets the name of the table messages are stored in.
 	 */
-	@IbisDoc({"the name of the table messages are stored in", "ibisstore"})
+	@IbisDoc({"the name of the table messages are stored in", "IBISSTORE"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
@@ -934,6 +764,21 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 	}
 
 
+	protected String getSlotId() {
+		return slotId;
+	}
+	protected String getSlotIdField() {
+		return slotIdField;
+	}
+	protected String getType() {
+		return type;
+	}
+	protected String getTypeField() {
+		return typeField;
+	}
+	protected String getHostField() {
+		return hostField;
+	}
 
 
 	public void setOrder(String string) {
@@ -982,38 +827,8 @@ public class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser
 		return prefix;
 	}
 
-	@IbisDoc({"the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever", "30"})
-	public void setRetention(int retention) {
-		this.retention = retention;
-	}
-	public int getRetention() {
-		return retention;
-	}
-
-	@IbisDoc({"schema owner to be used to check the database", "&lt;current_schema&gt; (only for oracle)"})
-	public void setSchemaOwner4Check(String string) {
-		schemaOwner4Check = string;
-	}
-	public String getSchemaOwner4Check() {
-		return schemaOwner4Check;
-	}
 
 
-	@IbisDoc({"when set to <code>true</code>, the full message is stored with the log. can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "<code>true</code>"})
-	public void setStoreFullMessage(boolean storeFullMessage) {
-		this.storeFullMessage = storeFullMessage;
-	}
-	public boolean isStoreFullMessage() {
-		return storeFullMessage;
-	}
-
-	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
-		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
-	}
-	public boolean isOnlyStoreWhenMessageIdUnique() {
-		return onlyStoreWhenMessageIdUnique;
-	}
-	
 	@Override
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
