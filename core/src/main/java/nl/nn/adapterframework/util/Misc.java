@@ -490,7 +490,8 @@ public class Misc {
 	}
 
 	/**
-	 * Concatenates two strings, if specified, uses the separator in between two strings.
+	 * Concatenates two strings, if specified, uses the separator in between two strings. 
+	 * Does not use any seperators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
 	 *     <pre>
