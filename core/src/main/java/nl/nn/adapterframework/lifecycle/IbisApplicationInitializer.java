@@ -60,6 +60,12 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		return applicationContext;
 	}
 
+	@Override
+	public void closeWebApplicationContext(ServletContext servletContext) {
+		servletContext.log("Stopping IBIS WebApplicationInitializer");
+		super.closeWebApplicationContext(servletContext);
+	}
+
 	/*
 	 * Purely here to print the CXF SpringBus ID
 	 */
