@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -70,7 +71,10 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
-			return super.prepareStatementSet(null, connection, null, session);
+			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
+			result.setJdbcSession(jdbcSession);
+			return result;
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get StatementSet",e);
 		}
@@ -83,9 +87,19 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			super.closeStatementSet(blockHandle, session);
 		} finally {
 			try {
-				closeConnectionForSendMessage(blockHandle.getConnection(), session);
-			} catch (JdbcException | TimeOutException e) {
-				throw new SenderException("cannot close connection", e);
+				if (blockHandle.getJdbcSession()!=null) {
+					try {
+						blockHandle.getJdbcSession().close();
+					} catch (Exception e) {
+						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+					}
+				}
+			} finally {
+				try {
+					closeConnectionForSendMessage(blockHandle.getConnection(), session);
+				} catch (JdbcException | TimeOutException e) {
+					throw new SenderException("cannot close connection", e);
+				}
 			}
 		}
 	}

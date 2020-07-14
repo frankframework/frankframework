@@ -26,7 +26,7 @@ TagDatabase
  		<comment>For some reason oracle is a bit silly so we cant update?</comment>
 		<dropColumn tableName="IBISPROP" columnName="LASTMODBY"/>
 		<addColumn tableName="IBISPROP">
-       		<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
 		</addColumn>
  	</changeSet>
  	
@@ -43,9 +43,12 @@ TagDatabase
 			<column name="TTIMESTAMP" type="DATETIME"/>
 			<column name="TDATE" type="TIME"/>
 			<column name="TBLOB1" type="LONGBLOB"/>
-			<column name="TCLOB" type="LONGCLOB"/>
+			<column name="TCLOB" type="CLOB"/> <!-- might want to try LONGTEXT -->
 			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
+		<modifySql dbms="mssql" >
+			<replace replace="[int] IDENTITY (1, 1)" with="INT"/>
+		</modifySql>
 	</changeSet>
 
 	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">

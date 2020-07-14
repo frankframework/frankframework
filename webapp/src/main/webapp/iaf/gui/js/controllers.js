@@ -58,11 +58,7 @@ angular.module('iaf.beheerconsole')
 			});
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
-					for (var configName in data["Application Constants"]) {
-						var configConstants = data["Application Constants"][configName];
-						appConstants = $.extend(appConstants, configConstants);
-						break;
-					}
+					appConstants = $.extend(appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
 
 					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
 					if(idleTime > 0) {
@@ -227,7 +223,7 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
-							adapter.status = 'stopped';
+							adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
@@ -690,17 +686,19 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.showReferences = function() {
-		var config = $scope.selectedConfiguration;
+		window.open($scope.configurationFlowDiagram);
+	};
+	$scope.configurationFlowDiagram;
+	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
-
-		if(config == "All")
+		if(configurationName == "All")
 			url += "?flow=true";
 		else {
-			url += config + "/flow";
+			url += configurationName + "/flow";
 		}
-
-		window.open(url);
-	};
+		$scope.configurationFlowDiagram = url;
+	}
+	$scope.updateConfigurationFlowDiagram($scope.selectedConfiguration);
 
 	$scope.isConfigStubbed = {};
 	$scope.check4StubbedConfigs = function() {
@@ -715,6 +713,7 @@ angular.module('iaf.beheerconsole')
 		$scope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(name);
 		$scope.updateQueryParams();
+		$scope.updateConfigurationFlowDiagram(name);
 	};
 	if($state.params.configuration != "All")
 		$scope.changeConfiguration($state.params.configuration);
@@ -1001,7 +1000,7 @@ angular.module('iaf.beheerconsole')
 				instanceName = data["Application Constants"][configName]["instance.name"];
 			}
 		}
-		$scope.changeConfiguration(instanceName);
+		$scope.changeConfiguration("All");
 		$scope.environmentProperties = convertPropertiesToArray(data["Environment Variables"]);
 		$scope.systemProperties = convertPropertiesToArray(data["System Properties"]);
 	});

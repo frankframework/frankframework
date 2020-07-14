@@ -380,9 +380,11 @@ public class TransformerPool {
 	 */
 	public void close() {
 		try {
-			pool.clear();
-			pool.close();
-			pool=null;
+			if (pool!=null) {
+				pool.clear();
+				pool.close();
+				pool=null;
+			}
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
