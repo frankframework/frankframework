@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -29,7 +27,8 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	protected static Logger log = LogUtil.getLogger(StringResolver.class);
+	// Not allowed to use a static reference to the logger in this class.
+	// Log4j2 uses StringResolver during instantiation.
 
 	private static final String DELIM_START = "${";
 	private static final char DELIM_STOP = '}';
@@ -55,7 +54,7 @@ public class StringResolver {
 		try {
 			return System.getProperty(key, def);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			log.warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
+			LogUtil.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
 			return def;
 		}
 	}

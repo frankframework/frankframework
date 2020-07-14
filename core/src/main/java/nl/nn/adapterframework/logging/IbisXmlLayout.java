@@ -50,7 +50,7 @@ import org.jdom2.output.XMLOutputter;
 public class IbisXmlLayout extends IbisMaskingLayout {
 	private boolean alwaysWriteExceptions = true;
 
-	IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
+	protected IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
 		super(config, charset);
 		this.alwaysWriteExceptions = alwaysWriteExceptions;
 	}
