@@ -75,6 +75,14 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
+	
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+	}
+
 
 	@Override
 	public String getBlobFieldType() {
@@ -127,10 +135,18 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
-	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		String result=selectQuery;
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (nolock)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (nolock) "+result.substring(wherePos);
+		}
+		return result;
 	}
 
 	@Override

@@ -106,6 +106,13 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getTimestampFieldType() {
 		return "TIMESTAMP";
 	}
+	// method is used in JobDef.cleanupDatabase
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
 
 	@Override
 	public String getClobFieldType() {
@@ -261,13 +268,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return query;
 	} 
 
-	// method is used in JobDef.cleanupDatabase
 	@Override
-	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+		return selectQuery;
 	}
+	@Override
+	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+		return null;
+	}
+
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
