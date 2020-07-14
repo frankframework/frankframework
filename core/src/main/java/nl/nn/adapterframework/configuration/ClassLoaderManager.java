@@ -76,7 +76,7 @@ public class ClassLoaderManager {
 		catch (Exception e) {
 			throw new ConfigurationException("invalid classLoaderType ["+className+"]", e);
 		}
-		LOG.debug("successfully instantiated classloader ["+classLoader.toString()+"] with parent classloader ["+parentClassLoader.toString()+"]");
+		LOG.debug("successfully instantiated classloader ["+ClassUtils.nameOf(classLoader)+"] with parent classloader ["+ClassUtils.nameOf(parentClassLoader)+"]");
 
 		//If the classLoader implements IClassLoader, configure it
 		if(classLoader instanceof IConfigurationClassLoader) {
@@ -95,12 +95,12 @@ public class ClassLoaderManager {
 
 				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 				Object castValue = getCastValue(method.getParameterTypes()[0], value);
-				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+loader.toString()+"]");
+				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(loader)+"]");
 
 				try {
 					method.invoke(loader, castValue);
 				} catch (Exception e) {
-					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+loader.toString()+"]", e);
+					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
 				}
 			}
 
@@ -127,7 +127,7 @@ public class ClassLoaderManager {
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			LOG.info("configured classloader ["+loader.toString()+"]");
+			LOG.info("configured classloader ["+ClassUtils.nameOf(loader)+"]");
 		}
 
 		return classLoader;
@@ -170,7 +170,7 @@ public class ClassLoaderManager {
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
-			LOG.debug("created a new classLoader ["+classLoader.toString()+"] with parentConfig ["+parentConfig+"]");
+			LOG.debug("created a new classLoader ["+ClassUtils.nameOf(classLoader)+"] with parentConfig ["+parentConfig+"]");
 		}
 		else
 			classLoader = createClassloader(configurationName, classLoaderType);

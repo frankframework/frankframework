@@ -22,12 +22,12 @@
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateClobViaInputMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateClob" jmsRealm="jdbc"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readClobAsResultMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -41,7 +41,7 @@
 			</pipe>
 			<pipe name="WaitForClobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteClobViaInputMessage2" getInputFromSessionKey="">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateClob" jmsRealm="jdbc"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 				<forward name="success" path="transformOriginalMessageForClob" />
@@ -61,14 +61,14 @@
 				storeResultInSessionKey="clobSource">
 			</pipe>
 			<pipe name="updateClobViaSessionKey" getInputFromSessionKey="dummyInput" > <!-- make sure input is not the same as clobSource session variable -->
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=? FOR UPDATE" queryType="updateClob" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateClob" jmsRealm="jdbc" 
 					clobSessionKey="clobSource">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
 			<pipe name="prepareClobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
 			<pipe name="readClobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
 					clobSessionKey="clobResult">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
@@ -89,12 +89,12 @@
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessage" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
 				scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -109,7 +109,7 @@
 			</pipe>
 			<pipe name="WaitForBlobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteBlobViaInputMessage2" getInputFromSessionKey="">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="transformOriginalMessageForBlob" />
@@ -129,14 +129,14 @@
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE" queryType="updateblob" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob" jmsRealm="jdbc" 
 					blobSessionKey="blobSource">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="prepareBlobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
 			<pipe name="readBlobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
 					blobSessionKey="blobResult">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -157,13 +157,13 @@
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessageNotCompressed">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc"
 				blobsCompressed="false"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessageNotCompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
 				blobsCompressed="false" scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -183,14 +183,14 @@
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE" queryType="updateblob" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob" jmsRealm="jdbc" 
 					blobSessionKey="blobSource" blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="prepareBlobResultSessionKey2" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult2.txt" />
 			<pipe name="readBlobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true" 
 					blobSessionKey="blobResult" blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey"/>
 				</sender>
@@ -206,12 +206,12 @@
 				</sender>
 			</pipe>
 			<pipe name="updateBlobViaInputMessageReadAsIfcompressed" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc" blobsCompressed="false"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" jmsRealm="jdbc" blobsCompressed="false"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobReadAsIfcompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM ibistemp WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" 
 				scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>

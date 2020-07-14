@@ -37,6 +37,12 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -48,16 +54,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
@@ -155,20 +156,20 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	boolean forceCreateTable=false;
 
 	boolean createTable=false;
-    private String tableName="ibisstore";
-	private String keyField="messageKey";
-    private String idField="messageId";
-	private String correlationIdField="correlationId";
-	private String dateField="messageDate";
-	private String commentField="comments";
-	private String messageField="message";
-	private String slotIdField="slotId";
-	private String expiryDateField="expiryDate";
-	private String labelField="label";
+    private String tableName="IBISSTORE";
+	private String keyField="MESSAGEKEY";
+    private String idField="MESSAGEID";
+	private String correlationIdField="CORRELATIONID";
+	private String dateField="MESSAGEDATE";
+	private String commentField="COMMENTS";
+	private String messageField="MESSAGE";
+	private String slotIdField="SLOTID";
+	private String expiryDateField="EXPIRYDATE";
+	private String labelField="LABEL";
 	private String slotId=null;
-	private String typeField="type";
+	private String typeField="TYPE";
 	private String type = "";
-	private String hostField="host";
+	private String hostField="HOST";
 	private String host;
 	private boolean active=true;
 	private boolean blobsCompressed=true;
@@ -464,9 +465,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 		selectListQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ listClause+ getWhereClause(null,false)+
 						  " ORDER BY "+getDateField()+(StringUtils.isNotEmpty(getOrder())?" " + getOrder():"")+provideTrailingFirstRowsHint(dbmsSupport);
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-        checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-        checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
-		getMessageCountQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
+		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
+		try {
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForDirtyRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
+		} catch (JdbcException e) {
+			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
+		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
 		}
@@ -640,13 +645,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	 * Retrieves the value of the primary key for the record just inserted. 
 	 */
 	private String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
-		PreparedStatement stmt=null;
-		
-		try {			
-			if (log.isDebugEnabled()) {
-				log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
-			}
-			stmt = conn.prepareStatement(selectKeyQuery);			
+		if (log.isDebugEnabled()) {
+			log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
+		}
+		try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery)) {
 			if (!selectKeyQueryIsDbmsSupported) {
 				int paramPos=applyStandardParameters(stmt, true, false);
 				stmt.setString(paramPos++,messageId);
@@ -654,21 +656,11 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 				stmt.setTimestamp(paramPos++, receivedDateTime);
 			}
 	
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
+			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
 				}
 				return "<id>" + rs.getString(1) + "</id>";
-			} finally {
-				if (rs!=null) {
-					rs.close();
-				}
-			}
-		} finally {
-			if (stmt!=null) {
-				stmt.close();
 			}
 		}
 	}
@@ -893,7 +885,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			txStatus = txManager.getTransaction(TXREQUIRED);
 		}
 		try {
-			Connection conn;
 			String result;
 			if (messageId==null) {
 				throw new SenderException("messageId cannot be null");
@@ -901,12 +892,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			if (correlationId==null) {
 				throw new SenderException("correlationId cannot be null");
 			}
-			try {
-				conn = getConnection();
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
-			try {
+			try (Connection conn = getConnection()) {
 				Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
 				if (messageId.length()>MAXIDLEN) {
 					messageId=messageId.substring(0,MAXIDLEN);
@@ -928,12 +914,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			
 			} catch (Exception e) {
 				throw new SenderException("cannot serialize message",e);
-			} finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.error("error closing JdbcConnection", e);
-				}
 			}
 		} finally {
 			if (txStatus!=null) {
@@ -1030,32 +1010,27 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
+		try (Connection conn = getConnection()) {
 			String query = getSelectListQuery(getDbmsSupport(), startTime, endTime, order);
 			if (log.isDebugEnabled()) {
 				log.debug("preparing selectListQuery ["+query+"]");
 			}
-			PreparedStatement stmt = conn.prepareStatement(query);
-			if (startTime==null && endTime==null) {
-				applyStandardParameters(stmt, false, false);
-			} else {
-				int paramPos=applyStandardParameters(stmt, true, false);
-				if (startTime!=null) {
-					stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
+			try (PreparedStatement stmt = conn.prepareStatement(query)) {
+				if (startTime==null && endTime==null) {
+					applyStandardParameters(stmt, false, false);
+				} else {
+					int paramPos=applyStandardParameters(stmt, true, false);
+					if (startTime!=null) {
+						stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
+					}
+					if (endTime!=null) {
+						stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
+					}
 				}
-				if (endTime!=null) {
-					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
-				}
+				ResultSet rs =  stmt.executeQuery();
+				return new ResultSetIterator(conn,rs);
 			}
-			ResultSet rs =  stmt.executeQuery();
-			return new ResultSetIterator(conn,rs);
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
@@ -1096,25 +1071,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 	@Override
 	public void deleteMessage(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(deleteQuery);	
-			applyStandardParameters(stmt, messageId, true);
-			stmt.execute();
-			
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				stmt.execute();
 			}
+		} catch (Exception e) {
+			throw new ListenerException(e);
 		}
 	}
 
@@ -1130,10 +1093,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 			} else {
 				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
-			ObjectInputStream ois = new ObjectInputStream(blobStream);
-			S result = (S)ois.readObject();
-			ois.close();
-			return result;
+			try (ObjectInputStream ois = new ObjectInputStream(blobStream)) {
+				return (S)ois.readObject();
+			}
 		} finally {
 			if (blobStream!=null) {
 				blobStream.close();
@@ -1165,113 +1127,75 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 	@Override
 	public int getMessageCount() throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery);			
-			applyStandardParameters(stmt, false, false);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				log.warn(getLogPrefix()+"no message count found");
-				return 0;
+		try (Connection conn = getConnection()) {
+			try (JdbcSession session = getDbmsSupport().prepareSessionForDirtyRead(conn)) {
+				try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
+					applyStandardParameters(stmt, false, false);
+					try (ResultSet rs =  stmt.executeQuery()) {
+						if (!rs.next()) {
+							log.warn(getLogPrefix()+"no message count found");
+							return 0;
+						}
+						return rs.getInt(1);
+					}
+				}
 			}
-			return rs.getInt(1);			
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot determine message count",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
-			applyStandardParameters(stmt, originalMessageId, false);
-			ResultSet rs =  stmt.executeQuery();
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery)) {
+				applyStandardParameters(stmt, originalMessageId, false);
+				try (ResultSet rs =  stmt.executeQuery()) {
 
-			if (!rs.next()) {
-				return false;
+					if (!rs.next()) {
+						return false;
+					}
+					
+					return true;
+				}
 			}
-			
-			return true;
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 	@Override
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery);	
-			applyStandardParameters(stmt, correlationId, false);
-			ResultSet rs =  stmt.executeQuery();
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
+				try (ResultSet rs =  stmt.executeQuery()) {
 
-			if (!rs.next()) {
-				return false;
+					if (!rs.next()) {
+						return false;
+					}
+					
+					return true;
+				}
 			}
-			
-			return true;
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);			
-			applyStandardParameters(stmt, messageId, true);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				try (ResultSet rs =  stmt.executeQuery()) {
+	
+					if (!rs.next()) {
+						throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+					}
+					return new JdbcTransactionalStorageIteratorItem(conn, rs,true);
+				}
 			}
-			return new JdbcTransactionalStorageIteratorItem(conn, rs,true);
-			
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}
@@ -1279,32 +1203,21 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 	@Override
 	public S browseMessage(String messageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(selectDataQuery);
-			applyStandardParameters(stmt, messageId, true);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
+				applyStandardParameters(stmt, messageId, true);
+				try (ResultSet rs =  stmt.executeQuery()) {
+	
+					if (!rs.next()) {
+						throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+					}
+					return retrieveObject(rs,1);
+				}
 			}
-			return retrieveObject(rs,1);
-
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ungly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
 	}
 
@@ -1443,7 +1356,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	/**
 	 * Sets the name of the table messages are stored in.
 	 */
-	@IbisDoc({"the name of the table messages are stored in", "ibisstore"})
+	@IbisDoc({"the name of the table messages are stored in", "IBISSTORE"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}

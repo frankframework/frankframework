@@ -88,6 +88,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setDatasourceName(datasource);
 				qs.setQueryType("select");
 				qs.setBlobSmartGet(true);
+				qs.setDirtyRead(true);
 				qs.configure(true);
 				qs.open();
 				result = qs.sendMessage(new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
@@ -253,17 +254,21 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			datesBuilder.add(Json.createObjectBuilder().add("id",date).add("count",count).build());
 		}
 
-		slotBuilder.add("datecount",slotdatecount);
-		slotBuilder.add("msgcount",slotmsgcount);
-		slotBuilder.add("dates", datesBuilder.build());
-		slotsBuilder.add(slotBuilder.build());
+		if (slotBuilder!=null) {
+			slotBuilder.add("datecount",slotdatecount);
+			slotBuilder.add("msgcount",slotmsgcount);
+			slotBuilder.add("dates", datesBuilder.build());
+			slotsBuilder.add(slotBuilder.build());
+		}
 		
-		typeBuilder.add("slotcount",typeslotcount);
-		typeBuilder.add("datecount",typedatecount);
-		typeBuilder.add("msgcount",typemsgcount);
-		typeBuilder.add("slots", slotsBuilder.build());
-		types.add(typeBuilder.build());
-
+		if (typeBuilder!=null) {
+			typeBuilder.add("slotcount",typeslotcount);
+			typeBuilder.add("datecount",typedatecount);
+			typeBuilder.add("msgcount",typemsgcount);
+			typeBuilder.add("slots", slotsBuilder.build());
+			types.add(typeBuilder.build());
+		}
+		
 		JsonStructure result = types.build();
 		return new Message(result.toString());
 	}
