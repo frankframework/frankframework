@@ -1,0 +1,34 @@
+<module>
+	<adapter name="SecurityHandler">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="GenericRestRouterPost">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-securityHandler" />
+		</receiver>
+		<pipeline firstPipe="getAllowAllSecurityHandler">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="getAllowAllSecurityHandler" className="nl.nn.adapterframework.pipes.PutAllowAllSecurityHandlerInSession">
+				<forward name="success" path="switchSecurityHandler" />
+			</pipe>
+
+			<pipe name="switchSecurityHandler" className="nl.nn.adapterframework.pipes.IsAllSecurityHandlerAllowed" getInputFromSessionKey="securityHandler">
+				<forward name="then" path="getPrincipalName" />
+				<forward name="else" path="failWithException" />
+			</pipe>
+
+			<pipe name="failWithException" className="nl.nn.adapterframework.pipes.ExceptionPipe" getInputFromFixedValue="NOT_ALL_SECURITY_HANDLER_ALLOWED">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="getPrincipalName" className="nl.nn.adapterframework.pipes.GetPrincipalPipe" getInputFromFixedValue="&lt;helloWorld/&gt;">
+				<forward name="success" path="text2Xml" />
+			</pipe>
+
+			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" xmlTag="result" includeXmlDeclaration="false" useCdataSection="false">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+</module>

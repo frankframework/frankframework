@@ -26,7 +26,13 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   4.3
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
-
+	private boolean throwException = true;
+	private DummyPrincipal dummyPrincipal = null;
+	
+	public AllowAllSecurityHandler(boolean throwException) {
+		this.throwException = throwException;
+	}
+	
 	@Override
 	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return true;
@@ -34,7 +40,12 @@ public class AllowAllSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException {
-		throw new NotImplementedException("no default user available");
+		if (throwException) {
+			throw new NotImplementedException("no default user available");
+		}
+		if (dummyPrincipal == null) {
+			dummyPrincipal = new DummyPrincipal();
+		}
+		return dummyPrincipal;
 	}
-
 }

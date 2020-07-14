@@ -55,6 +55,7 @@
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
+	<!ENTITY SecurityHandler SYSTEM "./ConfigurationSecurityHandler.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -113,4 +114,5 @@
 	&BlockEnabledSenders;
 	&SoapValidator;
 	&ApiWsdlGenerator;
+	&SecurityHandler;
 </configuration>
