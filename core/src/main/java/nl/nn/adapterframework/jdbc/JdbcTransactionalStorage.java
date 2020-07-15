@@ -550,8 +550,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 	 *	Checks if table exists, and creates when necessary. 
 	 */
 	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
-		Connection conn = getConnection();
-		try {
+		try (Connection conn = getConnection()) {
 			boolean tableMustBeCreated;
 
 			if (checkIfTableExists) {
@@ -572,16 +571,11 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 			if (isCreateTable() && tableMustBeCreated || forceCreateTable) {
 				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
-				Statement stmt = conn.createStatement();
-				try {
+				try (Statement stmt = conn.createStatement()) {
 					createStorage(conn, stmt, dbmsSupport);
-				} finally {
-					stmt.close();
-					conn.commit();
-				}
+				} 
+				conn.commit();
 			}
-		} finally {
-			conn.close();
 		}
 	}
 
@@ -1010,28 +1004,42 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcFacade
 
 	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
-		try (Connection conn = getConnection()) {
+		Connection conn;
+		PreparedStatement stmt=null;
+		IMessageBrowsingIterator result=null;
+		try {
+			conn = getConnection();
+		} catch (JdbcException e) {
+			throw new ListenerException(e);
+		}
+		try {
 			String query = getSelectListQuery(getDbmsSupport(), startTime, endTime, order);
 			if (log.isDebugEnabled()) {
 				log.debug("preparing selectListQuery ["+query+"]");
 			}
-			try (PreparedStatement stmt = conn.prepareStatement(query)) {
-				if (startTime==null && endTime==null) {
-					applyStandardParameters(stmt, false, false);
-				} else {
-					int paramPos=applyStandardParameters(stmt, true, false);
-					if (startTime!=null) {
-						stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
-					}
-					if (endTime!=null) {
-						stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
-					}
+			stmt = conn.prepareStatement(query);
+			if (startTime==null && endTime==null) {
+				applyStandardParameters(stmt, false, false);
+			} else {
+				int paramPos=applyStandardParameters(stmt, true, false);
+				if (startTime!=null) {
+					stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
 				}
-				ResultSet rs =  stmt.executeQuery();
-				return new ResultSetIterator(conn,rs);
+				if (endTime!=null) {
+					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
+				}
 			}
-		} catch (Exception e) {
+			ResultSet rs =  stmt.executeQuery();
+			result = new ResultSetIterator(conn,rs);
+			return result;
+		} catch (SQLException e) {
 			throw new ListenerException(e);
+		} finally {
+			if (result==null) {
+				// in happy flow IMessageBrowsingIterator will close resources.
+				// If it has not been created, we'll have to close them here.
+				JdbcUtil.fullClose(conn, stmt);
+			}
 		}
 	}
 
