@@ -16,7 +16,7 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResult with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
-		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResult with attribute returnString set to 0a4544b6-37489ec0_15ad0f006ae_-7ff3
+		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResult with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
 		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
@@ -275,7 +275,14 @@
 				<xsl:element name="pipe">
 					<xsl:apply-templates select="@*[name()!='type']" />
 					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResult</xsl:attribute>
-					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+					<xsl:choose>
+						<xsl:when test="@type='numeric'">
+							<xsl:attribute name="returnString">1234567890123456789012345678901</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
