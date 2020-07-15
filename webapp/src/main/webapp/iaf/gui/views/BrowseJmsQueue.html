@@ -1,8 +1,10 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="BrowseJmsQueueCtrl">
-	<div class="alert alert-warning" role="alert" type="warning" ng-if="error">
+<div class="wrapper wrapper-content animated fadeInRight"
+	ng-controller="BrowseJmsQueueCtrl">
+	<div class="alert alert-warning" role="alert" type="warning"
+		ng-if="error">
 		<span class="ng-binding ng-scope" ng-bind-html="error"></span>
 	</div>
 	<div class="row">
@@ -16,39 +18,75 @@
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Select a JMS realm</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="realm" ng-model="form.realm">
-									<option ng-repeat="realm in jmsRealms" selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
+								<select class="form-control m-b" name="realm"
+									ng-model="form.realm">
+									<option ng-repeat="realm in jmsRealms"
+										selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Destination Name</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="destination" type="text" ng-model="form.destination"/>
+								<input class="form-control m-b" name="destination" type="text"
+									ng-model="form.destination" />
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Destination Type</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="type" ng-model="form.type">
+								<select class="form-control m-b" name="type"
+									ng-model="form.type">
 									<option ng-repeat="type in destinationTypes">{{type}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Number of messages only</label>
+							<label class="col-sm-3 control-label">Number of messages
+								only</label>
 							<div class="col-sm-9">
-								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.rowNumbersOnly" /></span>
+								<span class="form-control m-b" style="border: none;"><input
+									icheck type="checkbox" ng-model="form.rowNumbersOnly" /></span>
 							</div>
 						</div>
 						<div class="col-sm-3 m-t-md">
-							<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+							<button class="btn btn-info btn-w-m font-bold" type="button"
+								ng-click="reset()">Reset</button>
 						</div>
 						<div class="col-sm-9 m-t-md">
-							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+							<button class="btn btn-primary btn-w-m font-bold" type="submit"
+								ng-click="submit(form)">Send</button>
 						</div>
 					</form>
 				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-12" ng-if="messages">
+		<div class="ibox float-e-margins">
+			<div class="ibox-title">
+				<h4>Result</h4>
+			</div>
+			<div class="ibox-content">{{destination}}</div>
+			<div class="ibox-content">
+				<table class="table jmsBrowse">
+					<thead>
+						<tr>
+							<th>messageId</th>
+							<th>correlationId</th>
+							<th>insertDate</th>
+							<th>messageId</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="row in messages">
+							<td>{{row.id}}</td>
+							<td>{{row.correlationId}}</td>
+							<td>{{row.insertDate}}</td>
+							<td>{{row.expiryDate}}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>

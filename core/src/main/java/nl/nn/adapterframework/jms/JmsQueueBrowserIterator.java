@@ -54,14 +54,17 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 		this.enm=queueBrowser.getEnumeration(); 
 	}
 
+	@Override
 	public boolean hasNext() {
 		return enm.hasMoreElements();
 	}
 
+	@Override
 	public IMessageBrowsingIteratorItem next() {
 		return new JmsMessageBrowserIteratorItem((Message)enm.nextElement());
 	}
 
+	@Override
 	public void close() throws ListenerException {
 		try {
 			queueBrowser.close();
