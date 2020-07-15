@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,20 +13,34 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.jdbc.dbms;
 
-/**
- * Interface for helper class for MessageBrowsers. 
- * 
- * @author  Gerrit van Brakel
- * @since   4.3
- */
-public interface IMessageBrowsingIterator extends AutoCloseable {
+public enum Dbms {
 
-	boolean hasNext() throws ListenerException;
-	IMessageBrowsingIteratorItem  next() throws ListenerException;
+	NONE("none"),
+	GENERIC("generic"),
+	ORACLE("Oracle"),
+	MSSQL("MS_SQL", "Microsoft SQL Server"),
+	DB2("DB2"),
+	H2("H2"),
+	MYSQL("MySQL");
+	
+	private String key;
+	private String productName;
+	
+	private Dbms(String key) {
+		this(key, key);
+	}
+	private Dbms(String key, String productName) {
+		this.key = key;
+		this.productName = productName;
+	}
 
-	@Override
-	void  close() throws ListenerException;
+	public String getKey() {
+		return key;
+	}
 
+	public String getProductName() {
+		return productName;
+	}
 }

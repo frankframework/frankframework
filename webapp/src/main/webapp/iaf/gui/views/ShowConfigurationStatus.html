@@ -36,7 +36,8 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins m-n">
                 <div class="ibox-title summary">
-                    <h4>Configuration summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span></h4>
+                    <h4 class="col-md-9">Configuration Summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span></h4>
+                    <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="row">
@@ -102,7 +103,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3 configurationFlow">
+                            <a ng-href="{{configurationFlowDiagram}}" target="_blank"><img ng-src="{{configurationFlowDiagram}}" alt="Configuration Flow Diagram"></a>
                         </div>
                     </div>
                 </div>
@@ -167,7 +169,7 @@
                     </div>
                     <div class="row full-width">
                         <div class="col-lg-6 col-md-12 clear">
-                            <h4>Configuration messages</h4>
+                            <h4>Configuration Messages</h4>
                         </div>
                     </div>
                 </div>

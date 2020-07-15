@@ -214,7 +214,7 @@ public class TestLogMessages {
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
 		}
 		finally {
-			IbisMaskingLayout.setMaxLength(0);
+			IbisMaskingLayout.setMaxLength(-1);
 			TestAppender.removeAppender(appender);
 		}
 	}

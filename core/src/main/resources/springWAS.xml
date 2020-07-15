@@ -24,16 +24,4 @@
 		factory-method="getTransactionManager"
 	/>
 
-<!-- Disable WebSphereMsSqlServerDbmsSupport temporarily, to see if BLOB/CLOB handling can be supported without temporary files
-	<bean id="dbmsSupportFactory" 
-		parent="dbmsSupportFactoryDefault"
-	>
-		<property name="dbmsSupportMap">
-			<props merge="true">
-				<prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.WebSphereMsSqlServerDbmsSupport</prop>
-			</props>
-		</property>
-		
-	</bean>
- -->
 </beans>

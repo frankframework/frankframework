@@ -33,13 +33,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	public final static String dbmsName = "H2";
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_H2;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return dbmsName;
+	public Dbms getDbms() {
+		return Dbms.H2;
 	}
 
 	@Override
@@ -75,5 +70,19 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		Blob blob=rs.getStatement().getConnection().createBlob();
 		return blob;
 	}
+
+//	@Override
+//	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
+//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+//		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+//		return new AutoCloseable() {
+//
+//			@Override
+//			public void close() throws Exception {
+//				JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//			}
+//			
+//		}
+//	}
 
 }

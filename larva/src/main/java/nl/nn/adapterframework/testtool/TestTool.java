@@ -3685,8 +3685,6 @@ public class TestTool {
 	 * @param property
 	 * @param writers
 	 * @param session TODO
-	 * @param propertiesDirectory suffix for filenames specified by properties
-	 *                            with a .valuefile suffix. Can be left empty.
 	 *  
 	 * @return A map with parameters
 	 */
