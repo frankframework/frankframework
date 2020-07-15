@@ -46,6 +46,13 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "select type, slotid, " + messageDateConverter + " msgdate, count(*) msgcount from IBISSTORE group by slotid, type, " + messageDateConverter + " order by type, slotid, " + messageDateConverter;
 	}
 
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TIMESTAMP('" + formattedDate + "')";
+	}
+
 
 	@Override
 	public String getClobFieldType() {
@@ -82,10 +89,17 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "TIMESTAMP('" + formattedDate + "')";
+	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+		JdbcUtil.executeStatement(conn, "START TRANSACTION");
+		return new JdbcSession() {
+
+			@Override
+			public void close() throws Exception {
+				JdbcUtil.executeStatement(conn, "COMMIT");
+			}
+			
+		};
 	}
 
 

@@ -70,13 +70,13 @@ public final class BrowseJdbcTable extends Base {
 				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("table")) {
-				tableName = entry.getValue().toString().toLowerCase();
+				tableName = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("where")) {
-				where = entry.getValue().toString().toLowerCase();
+				where = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("order")) {
-				order = entry.getValue().toString().toLowerCase();
+				order = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("rowNumbersOnly")) {
 				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
@@ -123,71 +123,68 @@ public final class BrowseJdbcTable extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 
-			//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
-				qs.setQueryType("select");
-				qs.setBlobSmartGet(true);
-				qs.setIncludeFieldDefinition(true);
-				qs.configure(true);
-				qs.open();
+			qs.setQueryType("select");
+			qs.setSqlDialect("Oracle");
+			qs.setBlobSmartGet(true);
+			qs.setIncludeFieldDefinition(true);
+			qs.configure(true);
+			qs.open();
 
-				try (Connection conn =qs.getConnection()) {
-					ResultSet rs = null;
-					try {
-						rs = conn.getMetaData().getColumns(null, null, tableName, null);
-						if (!rs.isBeforeFirst()) {
-							rs.close();
-							rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
-						}
-		
-						String fielddefinition = "<fielddefinition>";
-						while(rs.next()) {
-							String field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
-							fielddefinition = fielddefinition + field;
-							fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
-						}
-						fielddefinition = fielddefinition + "</fielddefinition>";
-		
-						String browseJdbcTableExecuteREQ =
-							"<browseJdbcTableExecuteREQ>"
-								+ "<dbmsName>"
-								+ qs.getDbmsSupport().getDbmsName()
-								+ "</dbmsName>"
-								+ "<tableName>"
-								+ tableName
-								+ "</tableName>"
-								+ "<where>"
-								+ XmlUtils.encodeChars(where)
-								+ "</where>"
-								+ "<numberOfRowsOnly>"
-								+ rowNumbersOnly
-								+ "</numberOfRowsOnly>"
-								+ "<order>"
-								+ order
-								+ "</order>"
-								+ "<rownumMin>"
-								+ minRow
-								+ "</rownumMin>"
-								+ "<rownumMax>"
-								+ maxRow
-								+ "</rownumMax>"
-								+ fielddefinition
-								+ "<maxColumnSize>1000</maxColumnSize>"
-								+ "</browseJdbcTableExecuteREQ>";
-						URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
-						if (url != null) {
-							Transformer t = XmlUtils.createTransformer(url);
-							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-						}
-						result = qs.sendMessage(new Message(query), null).asString();
-					} finally {
-						if (rs!=null) {
-							rs.close();
-						}
+			try (Connection conn =qs.getConnection()) {
+				ResultSet rs = null;
+				try {
+					rs = conn.getMetaData().getColumns(null, null, tableName, null);
+					if (!rs.isBeforeFirst()) {
+						rs.close();
+						rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
+					}
+	
+					String fielddefinition = "<fielddefinition>";
+					while(rs.next()) {
+						String field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
+						fielddefinition = fielddefinition + field;
+						fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+					}
+					fielddefinition = fielddefinition + "</fielddefinition>";
+	
+					String browseJdbcTableExecuteREQ =
+						"<browseJdbcTableExecuteREQ>"
+							+ "<dbmsName>"
+							+ qs.getDbmsSupport().getDbmsName()
+							+ "</dbmsName>"
+							+ "<tableName>"
+							+ tableName
+							+ "</tableName>"
+							+ "<where>"
+							+ XmlUtils.encodeChars(where)
+							+ "</where>"
+							+ "<numberOfRowsOnly>"
+							+ rowNumbersOnly
+							+ "</numberOfRowsOnly>"
+							+ "<order>"
+							+ order
+							+ "</order>"
+							+ "<rownumMin>"
+							+ minRow
+							+ "</rownumMin>"
+							+ "<rownumMax>"
+							+ maxRow
+							+ "</rownumMax>"
+							+ fielddefinition
+							+ "<maxColumnSize>1000</maxColumnSize>"
+							+ "</browseJdbcTableExecuteREQ>";
+					URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
+					if (url != null) {
+						Transformer t = XmlUtils.createTransformer(url);
+						query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+					}
+					result = qs.sendMessage(new Message(query), null).asString();
+				} finally {
+					if (rs!=null) {
+						rs.close();
 					}
 				}
-			//} else {
-				//error("errors.generic","This function only supports oracle databases",null);
-			//}
+			}
 		} catch (Throwable t) {
 			throw new ApiException("An error occured on executing jdbc query ["+query+"]", t);
 		} finally {

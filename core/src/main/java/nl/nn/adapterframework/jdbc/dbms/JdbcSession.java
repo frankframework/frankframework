@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,20 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.jdbc.dbms;
 
-/**
- * Interface for helper class for MessageBrowsers. 
- * 
- * @author  Gerrit van Brakel
- * @since   4.3
- */
-public interface IMessageBrowsingIterator extends AutoCloseable {
-
-	boolean hasNext() throws ListenerException;
-	IMessageBrowsingIteratorItem  next() throws ListenerException;
-
-	@Override
-	void  close() throws ListenerException;
+public abstract class JdbcSession implements AutoCloseable {
 
 }
