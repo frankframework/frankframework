@@ -294,8 +294,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
+		} catch (SenderException|TimeOutException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+			throw new SenderException(e);
 		}
 	}
 	
