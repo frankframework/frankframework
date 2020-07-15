@@ -174,10 +174,6 @@ abstract class AbstractConvertor implements Convertor {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
 	 */
 	protected File getUniqueFile() {
 

@@ -16,7 +16,9 @@ import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 
 /**
  * IfMultipart Tester.
@@ -69,31 +71,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     }
 
 
-
-    @Test
-    @Order(12)
-    public void everythingNull() throws ConfigurationException, PipeStartException, PipeRunException {
-        exception.expect(ConfigurationException.class);
-        pipe.setFilename(null);
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = pipe.doPipe(null, session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-    @Test
-    @Order(11)
-    public void nonExistingFileWithEverythingNull() throws ConfigurationException, PipeStartException, PipeRunException {
-        exception.expect(ConfigurationException.class);
-        pipe.configure(pipeline);
-        pipe.start();
-        PipeRunResult res = doPipe(pipe, "testdoc", session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
     @Test
     @Order(1)
     public void nonExistingFileWithSourceAndTargetDirectories() throws ConfigurationException, PipeStartException, PipeRunException {
@@ -125,43 +102,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
         assertEquals(pipeForwardThen, res.getPipeForward().getName());
     }
-    @Test
-    @Order(13)
-    public void cantMoveAsItAlreadyExists() throws ConfigurationException, PipeStartException, PipeRunException {
-        exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file ["+sourceFolderPath+"/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc]: Could not move file ["+sourceFolderPath+"/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc] because it already exists");
-
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath);
-        pipe.setMove2file("cantmove.sc");
-        pipe.setFilename("cantmove.sc");
-        pipe.setNumberOfBackups(0);
-        pipe.setThrowException(true);
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = pipe.doPipe(null, session);
-
-    }
-
-    @Test
-    @Order(14)
-    public void cantMoveFileAsItsDirectoryIsFalse() throws ConfigurationException, PipeStartException, PipeRunException {
-        exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file ["+sourceFolderPath+"/itswrong/cantmove.sc] to file ["+destFolderPath+"/cantmove.sc]: (IOException) Could not move file ["+sourceFolderPath+"/itswrong/cantmove.sc] to ["+destFolderPath+"/cantmove.sc]");
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath+"/itswrong");
-        pipe.setFilename("cantmove.sc");
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = doPipe(pipe, "xdfgfx", session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-
-
 
     @Test
     @Order(3)
@@ -197,67 +137,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     }
 
 
-
-    @Test
-    @Order(15)
-    public void appendFilesNotCompatible() throws ConfigurationException, PipeStartException, PipeRunException {
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath);
-        pipe.setFilename("notCompatible.txt");
-        pipe.setMove2file("notCompatible.asd");
-        pipe.setOverwrite(false);
-        pipe.setAppend(true);
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = pipe.doPipe(null, session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-    @Test
-    @Order(7)
-    public void moveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath);
-        pipe.setWildcard("*.md");
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = pipe.doPipe(null, session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-    @Test
-    @Order(16)
-    public void cantMoveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException {
-        //exception.expect(PipeRunException.class);
-        //exception.expectMessage("no files with wildcard [*.xd] found in directory ["+sourceFolderPath+"]");
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath);
-        pipe.setWildcard("*.xd");
-        pipe.configure();
-        pipe.start();
-        PipeRunResult res = pipe.doPipe(null, session);
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-    @Test
-    @Order(10)
-    public void moveFilesWithWildcardSessionKeyTest() throws ConfigurationException, PipeStartException, PipeRunException {
-
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory(sourceFolderPath);
-        pipe.setWildcardSessionKey("a");
-        session.put("a", (String) "*.txt");
-        pipe.configure();
-        pipe.start();
-        PipeRunResult res = doPipe(pipe, "sd", session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
     @Test
     @Order(5)
     public void moveFileAndDeleteDirectory()throws ConfigurationException, PipeStartException, PipeRunException {
@@ -269,38 +148,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.start();
 
         PipeRunResult res = doPipe(pipe,"xx", session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-    @Test
-    @Order(17)
-    public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
-        exception.expect(PipeRunException.class);
-        exception.expectMessage("Error while moving file [/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd/deletable.sd] to file ["+destFolderPath+"/deletable.sd]: (IOException) Could not move file [/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd/deletable.sd] to ["+destFolderPath+"/deletable.sd]");
-        pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd");// some random, wrong directory path
-        pipe.setDeleteEmptyDirectory(true);
-        pipe.setFilename("deletable.sd");
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = doPipe(pipe, "xx", session);
-
-        assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-    @Test
-    @Order(18)
-    public void cantDeleteDirectoryAsItIsNotEmpty() throws ConfigurationException, PipeStartException, PipeRunException {
-        //exception.expect(PipeRunException.class);
-        //exception.expectMessage("directory ["+cantdeleteFolderPath+"] is not empty");
-        pipe.setMove2dir(destFolderPath);//for MAC, different for Windows
-        pipe.setDirectory(cantdeleteFolderPath);//for MAC, different for Windows
-        pipe.setDeleteEmptyDirectory(true);
-        pipe.setFilename("deletable.sd");
-        pipe.configure();
-        pipe.start();
-
-        PipeRunResult res = doPipe(pipe, "xx", session);
 
         assertEquals(pipeForwardThen, res.getPipeForward().getName());
     }
@@ -321,31 +168,17 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     }
 
     @Test
-    @Order(19)
-    public void failCreatingNewDirectory() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
-        exception.expect(PipeRunException.class);
-        pipe.setCreateDirectory(false);
-        pipe.setMove2dir(destFolderPath+"/newas");
+    @Order(7)
+    public void moveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+        pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath);
-        pipe.setFilename("sad.lk");
+        pipe.setWildcard("*.md");
         pipe.configure();
         pipe.start();
 
-        PipeRunResult res = doPipe(pipe, "xx", session);
+        PipeRunResult res = pipe.doPipe(null, session);
 
         assertEquals(pipeForwardThen, res.getPipeForward().getName());
-    }
-
-    @Test
-    @Order(9)
-    public void testThrowException() throws ConfigurationException, PipeStartException, PipeRunException {
-        exception.expect(ConfigurationException.class);
-        pipe.setThrowException(true);
-        pipe.configure();
-        pipe.start();
-
-        //PipeRunResult res = pipe.doPipe("xx", session);
-        assertEquals(3, pipe.getNumberOfBackups());
     }
 
     @Test
@@ -362,6 +195,177 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         PipeRunResult res = doPipe(pipe, "xx", session);
         assertEquals(pipeForwardThen, res.getPipeForward().getName());
     }
+    @Test
+    @Order(9)
+    public void testThrowException() throws ConfigurationException, PipeStartException, PipeRunException {
+        exception.expect(ConfigurationException.class);
+        pipe.setThrowException(true);
+        pipe.configure();
+        pipe.start();
+
+        //PipeRunResult res = pipe.doPipe("xx", session);
+        fail("this is expected to fail");
+    }
+
+    @Test
+    @Order(10)
+    public void moveFilesWithWildcardSessionKeyTest() throws ConfigurationException, PipeStartException, PipeRunException {
+
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory(sourceFolderPath);
+        pipe.setWildcardSessionKey("a");
+        session.put("a", (String) "*.txt");
+        pipe.configure();
+        pipe.start();
+        PipeRunResult res = doPipe(pipe, "sd", session);
+
+        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+    }
 
 
+
+
+    @Test
+    @Order(11)
+    public void nonExistingFileWithEverythingNull() throws ConfigurationException, PipeStartException, PipeRunException {
+        exception.expect(ConfigurationException.class);
+        pipe.configure(pipeline);
+        pipe.start();
+        doPipe(pipe, "testdoc", session);
+
+        fail("this is expected to fail");
+    }
+
+    @Test
+    @Order(12)
+    public void everythingNull() throws ConfigurationException, PipeStartException, PipeRunException {
+        exception.expect(ConfigurationException.class);
+        pipe.setFilename(null);
+        pipe.configure();
+        pipe.start();
+
+        pipe.doPipe(null, session);
+
+        fail("this is expected to fail");
+    }
+
+    @Test
+    @Order(13)
+    public void cantMoveAsItAlreadyExists() throws ConfigurationException, PipeStartException, PipeRunException {
+        exception.expect(PipeRunException.class);
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory(sourceFolderPath);
+        pipe.setMove2file("cantmove.sc");
+        pipe.setFilename("cantmove.sc");
+        pipe.setNumberOfBackups(0);
+        pipe.setThrowException(true);
+        pipe.configure();
+        pipe.start();
+
+        pipe.doPipe(null, session);
+
+        fail("this is expected to fail");
+    }
+
+    @Test
+    @Order(14)
+    public void cantMoveFileAsItsDirectoryIsFalse() throws ConfigurationException, PipeStartException, PipeRunException {
+        exception.expect(PipeRunException.class);
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory(sourceFolderPath+"/itswrong");
+        pipe.setFilename("cantmove.sc");
+        pipe.setNumberOfAttempts(1);
+        pipe.configure();
+        pipe.start();
+
+        doPipe(pipe, "xdfgfx", session);
+
+        fail("this is expected to fail");
+    }
+
+    @Test
+    @Order(15)
+    public void appendFilesNotCompatible() throws ConfigurationException, PipeStartException, PipeRunException {
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory(sourceFolderPath);
+        pipe.setFilename("notCompatible.txt");
+        pipe.setMove2file("notCompatible.asd");
+        pipe.setOverwrite(false);
+        pipe.setAppend(true);
+        pipe.configure();
+        pipe.start();
+
+        PipeRunResult res = pipe.doPipe(null, session);
+
+        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+    }
+
+
+    @Test
+    @Order(16)
+    public void cantMoveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException {
+        //exception.expect(PipeRunException.class);
+        //exception.expectMessage("no files with wildcard [*.xd] found in directory ["+sourceFolderPath+"]");
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory(sourceFolderPath);
+        pipe.setWildcard("*.xd");
+        pipe.configure();
+        pipe.start();
+        PipeRunResult res = pipe.doPipe(null, session);
+        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+    }
+
+
+
+    @Test
+    @Order(17)
+    public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+        exception.expect(PipeRunException.class);
+        pipe.setMove2dir(destFolderPath);
+        pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd");// some random, wrong directory path
+        pipe.setDeleteEmptyDirectory(true);
+        pipe.setFilename("deletable.sd");
+        pipe.configure();
+        pipe.setNumberOfAttempts(1);
+        pipe.start();
+
+        doPipe(pipe, "xx", session);
+
+        fail("this is expected to fail");
+    }
+    @Test
+    @Order(18)
+    public void cantDeleteDirectoryAsItIsNotEmpty() throws ConfigurationException, PipeStartException, PipeRunException {
+        //exception.expect(PipeRunException.class);
+        //exception.expectMessage("directory ["+cantdeleteFolderPath+"] is not empty");
+        pipe.setMove2dir(destFolderPath);//for MAC, different for Windows
+        pipe.setDirectory(cantdeleteFolderPath);//for MAC, different for Windows
+        pipe.setDeleteEmptyDirectory(true);
+        pipe.setFilename("deletable.sd");
+        pipe.configure();
+        pipe.start();
+
+        PipeRunResult res = doPipe(pipe, "xx", session);
+
+        assertEquals(pipeForwardThen, res.getPipeForward().getName());
+    }
+
+
+
+    @Test
+    @Order(19)
+    public void failCreatingNewDirectory() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+        exception.expect(PipeRunException.class);
+        pipe.setCreateDirectory(false);
+        pipe.setMove2dir(destFolderPath+"/newas");
+        pipe.setDirectory(sourceFolderPath);
+        pipe.setFilename("sad.lk");
+        pipe.setNumberOfAttempts(1);
+        pipe.configure();
+        pipe.start();
+
+        doPipe(pipe, "xx", session);
+
+        fail("this is expected to fail");
+    }
 }

@@ -12,8 +12,8 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.headers.post["Content-Type"] = "application/json";
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
-		this.Get = function (uri, callback, error, httpOptions) {
-			var defaultHttpOptions = { headers:{}};
+		this.Get = function (uri, callback, error, httpOptions, intercept) {
+			var defaultHttpOptions = { headers:{}, intercept: intercept };
 
 			if(httpOptions) {
 				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
@@ -39,7 +39,7 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Post = function () { // uri, object, callback, error || uri, object, headers, callback, error
+		this.Post = function () { // uri, object, callback, error, intercept 4xx errors
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
 			var object = (args.shift() || {});
@@ -47,15 +47,14 @@ angular.module('iaf.beheerconsole')
 			if(object instanceof FormData) {
 				headers = { 'Content-Type': undefined }; //Unset default contentType when posting formdata
 			}
-			if(args.length == 3) {
-				headers = args.shift();
-			}
 			var callback = args.shift();
 			var error = args.shift();
+			var intercept = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
 				transformRequest: angular.identity,
+				intercept: intercept,
 			}).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
@@ -64,7 +63,7 @@ angular.module('iaf.beheerconsole')
 			}).catch(function(response){ errorException(response, error); });
 		};
 
-		this.Put = function (uri, object, callback, error) {
+		this.Put = function (uri, object, callback, error, intercept) {
 			var headers = {};
 			var data = {};
 			if(object != null) {
@@ -76,10 +75,12 @@ angular.module('iaf.beheerconsole')
 					headers["Content-Type"] = "application/json";
 				}
 			}
+			var intercept = intercept;
 
 			return $http.put(buildURI(uri), data, {
 				headers: headers,
 				transformRequest: angular.identity,
+				intercept: intercept,
 			}).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
@@ -91,12 +92,26 @@ angular.module('iaf.beheerconsole')
 		this.Delete = function () { // uri, callback, error || uri, object, callback, error
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
-			var request = {url:buildURI(uri), method: "delete" };
-			if(args.length == 3) { //if 3 args are left, we have an object!
-				request.data = args.shift();
+			var request = {url:buildURI(uri), method: "delete", headers:{} };
+			var callback;
+
+			var object = args.shift(); // this can be a function or an object.
+			if(object instanceof Function) { //we have a callback function, that means no object is present!
+				callback = object; // set the callback method accordingly
+			} else {
+				if(object instanceof FormData) {
+					request.data = object;
+					request.headers["Content-Type"] = undefined;
+				} else {
+					request.data = JSON.stringify(object);
+					request.headers["Content-Type"] = "application/json";
+				}
+
+				callback = args.shift(); // the previous argument was an object, that means the next object is the callback!
 			}
-			var callback = args.shift();
+
 			var error = args.shift();
+			request.intercept = args.shift();
 
 			return $http(request).then(function(response){
 				if(callback && typeof callback === 'function') {
@@ -766,7 +781,7 @@ angular.module('iaf.beheerconsole')
 				delete $rootScope.hooks[name][id];
 		};
 	}).filter('ucfirst', function() {
-		return function(input) {
+		return function(s) {
 			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
 		};
 	}).filter('truncate', function() {
@@ -793,6 +808,23 @@ angular.module('iaf.beheerconsole')
 			if(input || input === 0) return input+"%";
 			else return "-";
 		};
+	}).filter('formatStatistics', function() {
+		return function(input, format) {
+			if(!input || !format) return; //skip when no input
+			var formatted = {};
+			for(key in format) {
+				var value = input[key];
+				if(!value && value !== 0) { // if no value, return a dash
+					value = "-";
+				}
+				if((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
+					value += "%";
+				}
+				formatted[key] = value;
+			}
+			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
+			return formatted;
+		};
 	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
 		function($rootScope, $http, Base64, $location, appConstants) {
 		var authToken;
@@ -806,8 +838,7 @@ angular.module('iaf.beheerconsole')
 				var location = sessionStorage.getItem('location') || "status";
 				var absUrl = window.location.href.split("login")[0];
 				window.location.href = (absUrl + location);
-				//window.location.reload();
-				//$location.path(location);
+				window.location.reload();
 			},
 			loggedin: function() {
 				var token = sessionStorage.getItem('authToken');
@@ -1053,4 +1084,54 @@ angular.module('iaf.beheerconsole')
 			}
 			return false;
 		};
+	}]).service('Toastr', ['toaster', function(toaster) {
+		this.error = function(title, text) {
+			toaster.pop({type: 'error', title: title, body: text});
+		};
+		this.success = function(title, text) {
+			toaster.pop({type: 'success', title: title, body: text});
+		};
+	}]).config(['$httpProvider', function($httpProvider) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function(appConstants, $q, Misc, Toastr, $location) {
+			return {
+				request: function(config) {
+					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+						config.url = config.url + '?v=' + ff_version;
+					}
+					return config;
+				},
+				responseError: function(rejection) {
+					if(rejection.config) { //It should always have a config object, but just in case!
+						if(rejection.config.url && rejection.config.url.indexOf(Misc.getServerPath()) < 0) return $q.reject(rejection); //Don't capture non-api requests
+
+						switch (rejection.status) {
+							case -1:
+								if(appConstants.init == 1) {
+									if(rejection.config.headers["Authorization"] != undefined) {
+										console.warn("Authorization error");
+									}
+								}
+								else if(appConstants.init == 2) {
+									console.warn("Connection to the server was lost!");
+								}
+								break;
+							case 401:
+								sessionStorage.clear();
+								$location.path("login");
+								break;
+							case 403:
+								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
+								break;
+							case 500:
+								if(rejection.config.intercept != undefined && rejection.config.intercept === false) return $q.reject(rejection); //Don't capture when explicitly disabled
+								if(rejection.data != null && rejection.data.error != null) //When formatted data is returned, Toast it!
+									Toastr.error("Server Error", rejection.data.error);
+								break;
+						}
+					}
+					// otherwise, default behaviour
+					return $q.reject(rejection);
+				}
+			};
+		}]);
 	}]);

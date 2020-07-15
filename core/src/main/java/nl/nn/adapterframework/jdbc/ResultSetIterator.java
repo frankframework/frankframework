@@ -73,7 +73,7 @@ class ResultSetIterator implements IDataIterator<String> {
 	public String next() throws SenderException {
 		try {
 			lineChecked=false;
-			return DB2XMLWriter.getRowXml(rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toXML();
+			return DB2XMLWriter.getRowXml(rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

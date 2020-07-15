@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
@@ -50,8 +51,8 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -61,7 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -402,14 +403,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int totalCounter = 0;
 		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 			ReceiverBase receiver = (ReceiverBase) receiverIt.next();
-			ITransactionalStorage errorStorage = receiver.getErrorStorage();
+			IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 			if (errorStorage != null) {
 				int counter;
 				try {
 					counter = getErrorStorageMessageCountWithTimeout(errorStorage, 10);
 				} catch (Exception e) {
-					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName()
-							+ "]", e);
+					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName() + "]", e);
 					return -1;
 				}
 				totalCounter += counter;
@@ -418,8 +418,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return totalCounter;
 	}
 
-	private int getErrorStorageMessageCountWithTimeout(ITransactionalStorage errorStorage,
-			int timeout) throws ListenerException, TimeOutException {
+	private int getErrorStorageMessageCountWithTimeout(IMessageBrowser errorStorage, int timeout) throws ListenerException, TimeOutException {
 		if (timeout <= 0) {
 			return errorStorage.getMessageCount();
 		}
@@ -521,9 +520,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return adapterXML;
 	}
 
-	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter,
-			ShowConfigurationStatusManager showConfigurationStatusManager,
-			ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
+	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager, ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
 		Iterator recIt = adapter.getReceiverIterator();
 		if (!recIt.hasNext()) {
 			return null;
@@ -579,8 +576,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (listener instanceof HasSender) {
 						sender = ((HasSender) listener).getSender();
 					}
-					ITransactionalStorage ts;
-					ts = rb.getErrorStorage();
+					IMessageBrowser ts = rb.getErrorStorageBrowser();
 					receiverXML.addAttribute("hasErrorStorage", "" + (ts != null));
 					if (ts != null) {
 						try {
@@ -594,7 +590,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							receiverXML.addAttribute("errorStorageCount", "error");
 						}
 					}
-					ts = rb.getMessageLog();
+					ts = rb.getMessageLogBrowser();
 					receiverXML.addAttribute("hasMessageLog", "" + (ts != null));
 					if (ts != null) {
 						try {
@@ -618,11 +614,11 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
 							JmsListenerBase jlb = (JmsListenerBase) listener;
-							JmsMessageBrowser jmsBrowser;
+							JmsBrowser<javax.jms.Message> jmsBrowser;
 							if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-								jmsBrowser = new JmsMessageBrowser();
+								jmsBrowser = new JmsBrowser<>();
 							} else {
-								jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
+								jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
 							}
 							jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 							jmsBrowser.setJmsRealm(jlb.getJmsRealName());
@@ -801,10 +797,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
 			adapterMessage.addAttribute("level", level);
 			adapterMessages.addSubElement(adapterMessage);
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperLevel.ERROR.name())) {
 				showConfigurationStatusManager.countMessagesError++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperLevel.WARN.name())) {
 					showConfigurationStatusManager.countMessagesWarn++;
 				} else {
 					showConfigurationStatusManager.countMessagesInfo++;
@@ -823,10 +819,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int cmi = 0;
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
 			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
-			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+			if (level.equals(MessageKeeperLevel.ERROR.name())) {
 				cme++;
 			} else {
-				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				if (level.equals(MessageKeeperLevel.WARN.name())) {
 					cmw++;
 				} else {
 					cmi++;
@@ -843,8 +839,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
 					.getMessageLevel();
 			adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
-			if (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
-					|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL)) {
+			if (lastMessageLevel.equals(MessageKeeperLevel.ERROR.name())
+					|| lastMessageLevel.equals(MessageKeeperLevel.WARN.name())) {
 				showConfigurationStatusAdapterManager.logAlert = true;
 			}
 		}

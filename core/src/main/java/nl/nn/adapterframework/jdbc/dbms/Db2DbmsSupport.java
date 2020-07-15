@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,14 +30,13 @@ import org.apache.commons.lang.StringUtils;
  */
 public class Db2DbmsSupport extends GenericDbmsSupport {
 
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_DB2;
+	@Override
+	public Dbms getDbms() {
+		return Dbms.DB2;
 	}
 	
-	public String getDbmsName() {
-		return "DB2";
-	}
 
+	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
@@ -49,14 +48,21 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_updateclause.htm
 		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_skiplockeddata.htm
 		// http://www.ibm.com/developerworks/data/library/techarticle/dm-0907oracleappsondb2/#code-hd
-		return selectQuery+" FOR UPDATE";
+		return selectQuery+" FOR UPDATE"; // TODO: test to add SKIP LOCKED DATA";
 	}
 
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		return selectQuery; // + " SKIP LOCKED DATA";
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select * from "+tableName+" fetch first 1 rows only";
 		return query;
 	} 
 
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT SERVER FROM SYSIBM.SYSDUMMY1");
 	}

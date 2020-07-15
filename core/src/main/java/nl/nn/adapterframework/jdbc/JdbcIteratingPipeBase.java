@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,6 +30,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -46,7 +46,9 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implements HasPhysicalDestination {
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
-	
+
+	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
+
 	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
@@ -138,22 +140,8 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.addParameter(p);
 	}
 
-
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
-	public void setQuery(String query) {
-		querySender.setQuery(query);
-	}
-
 	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		querySender.setProxiedDataSources(proxiedDataSources);
-	}
-
-	@IbisDoc({"2", "can be configured from jmsrealm, too", ""})
-	public void setDatasourceName(String datasourceName) {
-		querySender.setDatasourceName(datasourceName);
-	}
-	public String getDatasourceName() {
-		return querySender.getDatasourceName();
 	}
 
 	@Override
@@ -164,13 +152,27 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-	
-	@IbisDoc({"3", "When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)", "false"})
+
+
+	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	public void setQuery(String query) {
+		querySender.setQuery(query);
+	}
+
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	public void setDatasourceName(String datasourceName) {
+		querySender.setDatasourceName(datasourceName);
+	}
+	public String getDatasourceName() {
+		return querySender.getDatasourceName();
+	}
+
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDoc({"4", "When set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'", "-1"})
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}

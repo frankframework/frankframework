@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
-import javax.jms.Message;
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
@@ -28,9 +28,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * FxF extension of EsbJmsListener.
@@ -74,8 +72,8 @@ public class FxfListener extends EsbJmsListener {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.
 		// The message will be placed in the errorstore due to this, 
@@ -84,8 +82,7 @@ public class FxfListener extends EsbJmsListener {
 			File srcFile = null;
 			File dstFile = null;
 			try {
-				String srcFileName = (String) threadContext
-						.get(getFxfFileSessionKey());
+				String srcFileName = (String) threadContext.get(getFxfFileSessionKey());
 				if (StringUtils.isEmpty(srcFileName)) {
 					warn("No file to move");
 				} else {
@@ -94,40 +91,29 @@ public class FxfListener extends EsbJmsListener {
 						warn("File [" + srcFileName + "] does not exist");
 					} else {
 						File srcDir = srcFile.getParentFile();
-						String dstDirName = srcDir.getParent() + File.separator
-								+ getProcessedSiblingDirectory();
+						String dstDirName = srcDir.getParent() + File.separator + getProcessedSiblingDirectory();
 						dstFile = new File(dstDirName, srcFile.getName());
 						dstFile = FileUtils.getFreeFile(dstFile);
 						if (!dstFile.getParentFile().exists()) {
 							if (isCreateProcessedDirectory()) {
 								if (dstFile.getParentFile().mkdirs()) {
-									log.debug("Created directory ["
-											+ dstFile.getParent() + "]");
+									log.debug("Created directory [" + dstFile.getParent() + "]");
 								} else {
-									log.warn("Directory ["
-											+ dstFile.getParent()
-											+ "] could not be created");
+									log.warn("Directory [" + dstFile.getParent() + "] could not be created");
 								}
 							} else {
-								log.warn("Directory [" + dstFile.getParent()
-										+ "] does not exist");
+								log.warn("Directory [" + dstFile.getParent() + "] does not exist");
 							}
 						}
 						if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
-							warn("Could not move file ["
-									+ srcFile.getAbsolutePath() + "] to file ["
-									+ dstFile.getAbsolutePath() + "]");
+							warn("Could not move file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 						} else {
-							log.info("Moved file [" + srcFile.getAbsolutePath()
-									+ "] to file [" + dstFile.getAbsolutePath()
-									+ "]");
+							log.info("Moved file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 						}
 					}
 				}
 			} catch (Exception e) {
-				warn("Error while moving file [" + srcFile.getAbsolutePath()
-						+ "] to file [" + dstFile.getAbsolutePath() + "]: "
-						+ e.getMessage());
+				warn("Error while moving file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]: " + e.getMessage());
 			}
 		}
 	}
@@ -143,10 +129,7 @@ public class FxfListener extends EsbJmsListener {
 			ReceiverBase rb = (ReceiverBase) iReceiver;
 			IAdapter iAdapter = rb.getAdapter();
 			if (iAdapter != null) {
-				iAdapter.getMessageKeeper().add(
-						"WARNING: " + msg
-								+ (t != null ? ": " + t.getMessage() : ""),
-						MessageKeeperMessage.WARN_LEVEL);
+				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}
 		}
 	}

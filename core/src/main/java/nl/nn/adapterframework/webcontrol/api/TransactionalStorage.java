@@ -38,8 +38,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -48,11 +47,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -91,9 +90,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLog();
+			storage = receiver.getMessageLogBrowser();
 		else
-			storage = receiver.getErrorStorage();
+			storage = receiver.getErrorStorageBrowser();
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
@@ -123,9 +122,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLog();
+			storage = receiver.getMessageLogBrowser();
 		else
-			storage = receiver.getErrorStorage();
+			storage = receiver.getErrorStorageBrowser();
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
@@ -167,9 +166,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLog();
+			storage = receiver.getMessageLogBrowser();
 		else
-			storage = receiver.getErrorStorage();
+			storage = receiver.getErrorStorageBrowser();
 
 		if(storage == null) {
 			throw new ApiException("no IMessageBrowser found");
@@ -232,7 +231,7 @@ public class TransactionalStorage extends Base {
 	public Response resendReceiverMessages(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			MultipartFormDataInput input
+			MultipartBody input
 		) throws ApiException {
 
 		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
@@ -291,7 +290,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		deleteMessage(receiver.getErrorStorage(), messageId);
+		deleteMessage(receiver.getErrorStorageBrowser(), messageId);
 
 		return Response.status(Response.Status.OK).build();
 	}
@@ -305,7 +304,7 @@ public class TransactionalStorage extends Base {
 	public Response deleteReceiverMessages(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			MultipartFormDataInput input
+			MultipartBody input
 		) throws ApiException {
 
 		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
@@ -324,7 +323,7 @@ public class TransactionalStorage extends Base {
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				deleteMessage(receiver.getErrorStorage(), messageIds[i]);
+				deleteMessage(receiver.getErrorStorageBrowser(), messageIds[i]);
 			}
 			catch(Exception e) {
 				if(e instanceof ApiException) {
@@ -446,17 +445,9 @@ public class TransactionalStorage extends Base {
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
 
-	private String[] getMessages(MultipartFormDataInput input) {
-		try {
-			Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-			if(inputDataMap.get("messageIds") != null) {
-				String messageIds = inputDataMap.get("messageIds").get(0).getBodyAsString();
-				return messageIds.split(",");
-			}
-		} catch (IOException e) {
-			throw new ApiException(e);
-		}
-		return null;
+	private String[] getMessages(MultipartBody inputDataMap) {
+		String messageIds = resolveStringFromMap(inputDataMap, "messageIds");
+		return messageIds.split(",");
 	}
 
 	private void deleteMessage(IMessageBrowser storage, String messageId) {
@@ -508,12 +499,16 @@ public class TransactionalStorage extends Base {
 		String msg = null;
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
-				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-				msg = msgsgs.getText();
+				try {
+					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					msg = msgsgs.getMessage().asString();
+				} catch (IOException e) {
+					throw new ApiException(e, 500);
+				}
 			} else {
 				try {
 					if (listener!=null) {
-						msg = listener.getStringFromRawMessage(rawmsg, null);
+						msg = listener.extractMessage(rawmsg, null).asString();
 					} 
 				} catch (Exception e) {
 					log.warn("Exception reading value raw message", e);
@@ -575,52 +570,43 @@ public class TransactionalStorage extends Base {
 
 		Date startDate = null;
 		Date endDate = null;
-		try {
-			IMessageBrowsingIterator iterator = null;
-			try {
-				iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder());
-	
-				int count;
-				List<Object> messages = new LinkedList<Object>();
-				for (count=0; iterator.hasNext(); ) {
-					IMessageBrowsingIteratorItem iterItem = iterator.next();
-					try {
-						if(!filter.matchAny(iterItem))
-							continue;
+		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
+			int count;
+			List<Object> messages = new LinkedList<Object>();
+			
+			for (count=0; iterator.hasNext(); ) {
+				IMessageBrowsingIteratorItem iterItem = iterator.next();
+				try {
+					if(!filter.matchAny(iterItem))
+						continue;
 
-						count++;
-						if (count > filter.skipMessages()) { 
-							Map<String, Object> message = new HashMap<String, Object>(3);
+					count++;
+					if (count > filter.skipMessages()) { 
+						Map<String, Object> message = new HashMap<String, Object>(3);
 
-							message.put("id", iterItem.getId());
-							message.put("pos", count);
-							message.put("originalId", iterItem.getOriginalId());
-							message.put("correlationId", iterItem.getCorrelationId());
-							message.put("type", iterItem.getType());
-							message.put("host", iterItem.getHost());
-							message.put("insertDate", iterItem.getInsertDate());
-							message.put("expiryDate", iterItem.getExpiryDate());
-							message.put("comment", iterItem.getCommentString());
-							message.put("label", iterItem.getLabel());
-							messages.add(message);
-						}
-		
-						if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
-							log.warn("stopped iterating messages after ["+count+"]: limit reached");
-							break;
-						}
-					} finally {
-						iterItem.release();
+						message.put("id", iterItem.getId());
+						message.put("pos", count);
+						message.put("originalId", iterItem.getOriginalId());
+						message.put("correlationId", iterItem.getCorrelationId());
+						message.put("type", iterItem.getType());
+						message.put("host", iterItem.getHost());
+						message.put("insertDate", iterItem.getInsertDate());
+						message.put("expiryDate", iterItem.getExpiryDate());
+						message.put("comment", iterItem.getCommentString());
+						message.put("label", iterItem.getLabel());
+						messages.add(message);
 					}
+	
+					if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
+						log.warn("stopped iterating messages after ["+count+"]: limit reached");
+						break;
+					}
+				} finally {
+					iterItem.release();
 				}
-				returnObj.put("messages", messages);
 			}
-			finally {
-				if(iterator != null)
-					iterator.close();
-			}
-		}
-		catch (ListenerException|IOException e) {
+			returnObj.put("messages", messages);
+		} catch (ListenerException|IOException e) {
 			throw new ApiException(e);
 		}
 
@@ -749,7 +735,7 @@ public class TransactionalStorage extends Base {
 				Object rawmsg = storage.browseMessage(iterItem.getId());
 				String msg = null;
 				if (listener != null) {
-					msg = listener.getStringFromRawMessage(rawmsg, new HashMap<String, Object>());
+					msg = listener.extractMessage(rawmsg, new HashMap<String, Object>()).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}

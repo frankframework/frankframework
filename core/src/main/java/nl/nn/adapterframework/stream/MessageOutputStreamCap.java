@@ -24,16 +24,11 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeForward;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
-	public MessageOutputStreamCap(INamedObject owner, PipeForward forward) {
-		super(owner, null, forward);
-	}
-
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
-		super(owner, null, next);
+		super(owner, next);
 	}
 
 	@Override

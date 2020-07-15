@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -49,7 +50,7 @@ import org.jdom2.output.XMLOutputter;
 public class IbisXmlLayout extends IbisMaskingLayout {
 	private boolean alwaysWriteExceptions = true;
 
-	IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
+	protected IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
 		super(config, charset);
 		this.alwaysWriteExceptions = alwaysWriteExceptions;
 	}
@@ -103,7 +104,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		public void setElementContent(String value) {
 			if (value != null) {
-				element.setText(value);
+				//Escape illegal JDOM characters
+				element.setText(StringEscapeUtils.escapeJava(value));
 			}
 		}
 

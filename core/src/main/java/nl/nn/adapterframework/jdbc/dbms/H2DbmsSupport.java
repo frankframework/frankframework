@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,8 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -35,13 +33,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	public final static String dbmsName = "H2";
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_H2;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return dbmsName;
+	public Dbms getDbms() {
+		return Dbms.H2;
 	}
 
 	@Override
@@ -54,29 +47,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";
 	}
 
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-				StringBuilder sb = new StringBuilder();
-				for (String singleQuery : multipleQueries) {
-					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-					String convertedQuery = OracleToH2Translator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
-					if (convertedQuery != null) {
-						sb.append(convertedQuery);
-						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
-						}
-					}
-				}
-				queryExecutionContext.setQuery(sb.toString());
-			} else {
-				warnConvertQuery(sqlDialectFrom);
-			}
-		}
-	}
-	
 	@Override
 	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		Clob clob=rs.getStatement().getConnection().createClob();
@@ -100,5 +70,19 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		Blob blob=rs.getStatement().getConnection().createBlob();
 		return blob;
 	}
+
+//	@Override
+//	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
+//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+//		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+//		return new AutoCloseable() {
+//
+//			@Override
+//			public void close() throws Exception {
+//				JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//			}
+//			
+//		}
+//	}
 
 }

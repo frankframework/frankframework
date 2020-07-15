@@ -81,12 +81,6 @@ public class PdfAttachmentUtil {
 	 * </p>
 	 * 
 	 * if there are no attachments null is returned otherwise rootPdf.
-	 * 
-	 * @param cisConversionResult
-	 *            wiht the given pdf and its attachments.
-	 * @param rootPdf
-	 *            the pdf created with the attachments embedded.
-	 * @throws IOException
 	 */
 	protected void addAttachmentInSinglePdf() throws IOException {
 		try {

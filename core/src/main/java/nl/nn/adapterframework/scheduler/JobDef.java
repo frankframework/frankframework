@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,7 +58,7 @@ import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -77,7 +76,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
@@ -94,6 +93,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -519,10 +519,10 @@ public class JobDef {
 								}
 								String msg = "error while setting lock: " + e.getMessage();
 								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 									log.info(getLogPrefix()+msg);
 								} else {
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 									log.error(getLogPrefix()+msg);
 								}
 							}
@@ -543,7 +543,7 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
+									getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 									log.warn(getLogPrefix()+msg);
 								}
 							}
@@ -562,7 +562,7 @@ public class JobDef {
 			}
 		} else {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		}
 	}
@@ -624,8 +624,6 @@ public class JobDef {
 
 	private void cleanupDatabase(IbisManager ibisManager) {
 		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
 
 		List<String> jmsRealmNames = new ArrayList<String>();
 
@@ -665,12 +663,7 @@ public class JobDef {
 			DirectQuerySender qs;
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealmName);
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
-			} else {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
+			String deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < "+qs.getDbmsSupport().getDatetimeLiteral(date);
 			setQuery(deleteQuery);
 			qs = null;
 			executeQueryJob(ibisManager);
@@ -709,25 +702,14 @@ public class JobDef {
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(mlo.getJmsRealmName());
 			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-					+ mlo.getKeyField() + " IN (SELECT "
-						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (rowlock,updlock,readpast) WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			if (qs.getDatabaseType() == Dbms.MSSQL) {
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+						+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date)+")";
 			}
 			else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < TO_TIMESTAMP('" + formattedDate
-						+ "', 'YYYY-MM-DD HH24:MI:SS')";
+				deleteQuery = "DELETE FROM " + mlo.getTableName() 
+					+ " WHERE " + mlo.getTypeField() + " IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date);
 			}
 			qs = null;
 			setQuery(deleteQuery);
@@ -745,7 +727,7 @@ public class JobDef {
 	private void checkReload(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 			log.info(getLogPrefix() + msg);
 			return;
 		}
@@ -775,8 +757,8 @@ public class JobDef {
 						rs = stmt.executeQuery();
 						if (rs.next()) {
 							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if(StringUtils.isEmpty(configVersion)) {
+							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
 								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
 							}
 							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
@@ -837,7 +819,7 @@ public class JobDef {
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperLevel.ERROR);
 			return;
 		}
 
@@ -967,7 +949,7 @@ public class JobDef {
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		} finally {
 			qs.close();
@@ -1006,7 +988,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg, e);
 		}
 	}
@@ -1225,7 +1207,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) throws ConfigurationException {
 		try {
 			this.function = JobDefFunctions.fromValue(function);

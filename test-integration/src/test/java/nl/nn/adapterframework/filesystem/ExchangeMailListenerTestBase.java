@@ -267,7 +267,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		//assertEquals("name","x",fileSystem.getName(file));
@@ -300,7 +300,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		
@@ -349,7 +349,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		
@@ -402,7 +402,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		
@@ -455,7 +455,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		

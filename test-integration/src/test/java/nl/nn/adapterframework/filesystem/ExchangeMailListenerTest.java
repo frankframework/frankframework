@@ -12,6 +12,7 @@ import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -44,7 +45,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		String message = mailListener.getStringFromRawMessage(rawMessage, threadContext);
+		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
 		System.out.println("message ["+message+"]");
 		//assertEquals("name","x",fileSystem.getName(file));
@@ -83,7 +84,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(PipeLineExit.EXIT_STATE_SUCCESS);
-		plr.setResult("ResultOfPipeline");
+		plr.setResult(new Message("ResultOfPipeline"));
 		plr.setExitCode(200);
 		
 		mailListener.afterMessageProcessed(plr, rawMessage, threadContext);

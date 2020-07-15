@@ -81,8 +81,8 @@ public class ServletManager {
 	}
 
 	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiated IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
-		getServletContext().log("instantiated IbisInitializer servlet ["+servletName+"]");
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
+		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
 		AppConstants appConstants = AppConstants.getInstance();

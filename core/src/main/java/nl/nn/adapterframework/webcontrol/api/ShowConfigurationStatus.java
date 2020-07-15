@@ -49,12 +49,16 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
@@ -64,25 +68,21 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -404,17 +404,17 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
 
-		FlowDiagram flowDiagram = getIbisContext().getBean("flowDiagram", FlowDiagram.class);
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
 			if(dot) {
-				response.entity(flowDiagram.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+				response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
 			} else {
-				response.entity(flowDiagram.get(adapter)).type("image/svg+xml");
+				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
 			}
 			return response.build();
-		} catch (SAXException | TransformerException | GraphvizException | IOException e) {
+		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);
 		}
 	}
@@ -641,8 +641,7 @@ public final class ShowConfigurationStatus extends Base {
 						sender = ((HasSender)listener).getSender();
 					}
 					//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-					ITransactionalStorage ts;
-					ts=rb.getErrorStorage();
+					IMessageBrowser ts = rb.getErrorStorageBrowser();
 					receiverInfo.put("hasErrorStorage", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -652,11 +651,11 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in errorstore", e);
 							receiverInfo.put("errorStorageCount", "error");
 						}
 					}
-					ts=rb.getMessageLog();
+					ts=rb.getMessageLogBrowser();
 					receiverInfo.put("hasMessageLog", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -666,7 +665,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("messageLogCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in messageLog", e);
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}
@@ -679,11 +678,11 @@ public final class ShowConfigurationStatus extends Base {
 					}
 					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 						JmsListenerBase jlb = (JmsListenerBase) listener;
-						JmsMessageBrowser jmsBrowser;
+						JmsBrowser<javax.jms.Message> jmsBrowser;
 						if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-							jmsBrowser = new JmsMessageBrowser();
+							jmsBrowser = new JmsBrowser<>();
 						} else {
-							jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
+							jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
 						}
 						jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 						jmsBrowser.setJmsRealm(jlb.getJmsRealName());

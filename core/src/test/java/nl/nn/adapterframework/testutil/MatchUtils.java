@@ -60,23 +60,26 @@ public class MatchUtils {
 	public static String xmlPretty(String xml, boolean removeNamespaces) {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
-		PrettyPrintFilter ppf = new PrettyPrintFilter();
-		ppf.setContentHandler(xmlWriter);
-		ContentHandler contentHandler = ppf;
+		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter);
 		if (removeNamespaces) {
-			NamespaceRemovingFilter nrf = new NamespaceRemovingFilter();
-			nrf.setContentHandler(contentHandler);
-			contentHandler=nrf;
+			contentHandler = new NamespaceRemovingFilter(contentHandler);
 		}
 		try {
-			XmlUtils.parseXml(contentHandler, xml);
+			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
 			return "ERROR: could not prettyfy: ("+e.getClass().getName()+") "+e.getMessage();
 		}
 	}
 
+	public static void assertXmlEquals(String xmlExp, String xmlAct) {
+		assertXmlEquals(null, xmlExp, xmlAct);
+	}
 
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
+		assertXmlEquals(description, xmlExp, xmlAct, false);
+	}
+	
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
 		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces);
 		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);

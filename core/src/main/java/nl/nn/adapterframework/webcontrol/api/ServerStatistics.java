@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -52,8 +51,8 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -73,7 +72,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 @Path("/")
 public class ServerStatistics extends Base {
-	@Context ServletConfig servletConfig;
+
 	@Context Request request;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -93,13 +92,12 @@ public class ServerStatistics extends Base {
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() == null) {
-				cfg.put("type", configuration.getClassLoaderType());
-			} else {
+			cfg.put("type", configuration.getClassLoaderType());
+			if(configuration.getConfigurationException() != null) {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
 			}
 
-			ClassLoader classLoader = configuration.getClassLoader().getParent();
+			ClassLoader classLoader = configuration.getClassLoader();
 			if(classLoader instanceof DatabaseClassLoader) {
 				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
@@ -125,8 +123,15 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("name", getIbisContext().getApplicationName());
+		Map<String, Object> framework = new HashMap<String, Object>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<String, Object>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
 
 		String dtapStage = appConstants.getProperty("dtap.stage");
 		returnMap.put("dtap.stage", dtapStage);
@@ -145,7 +150,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", getIbisContext().getUptimeDate());
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
 	@GET
@@ -177,7 +182,7 @@ public class ServerStatistics extends Base {
 				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
 					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
-						ITransactionalStorage errorStorage = receiver.getErrorStorage();
+						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {
 								esr += errorStorage.getMessageCount();
@@ -295,19 +300,21 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
 
-		Level loglevel = null;
-		Boolean logIntermediaryResults = true;
-		int maxMessageLength = -1;
+		Boolean logIntermediaryResults = null;
+		int maxMessageLength = IbisMaskingLayout.getMaxLength();
 		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
-
-		Logger rootLogger = LogUtil.getRootLogger();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("loglevel")) {
-				loglevel = Level.toLevel(""+value);
+				Level loglevel = Level.toLevel(""+value, null);
+				Logger rootLogger = LogUtil.getRootLogger();
+				if(loglevel != null && rootLogger.getLevel() != loglevel) {
+					Configurator.setLevel(rootLogger.getName(), loglevel);
+					msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+				}
 			}
 			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
 				logIntermediaryResults = Boolean.parseBoolean(""+value);
@@ -320,19 +327,16 @@ public class ServerStatistics extends Base {
 			}
 		}
 
-		if(loglevel != null && rootLogger.getLevel() != loglevel) {
-			Configurator.setLevel(rootLogger.getName(), loglevel);
-			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
-		}
-
-		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-		if(logIntermediary != logIntermediaryResults) {
-			AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-
-			if(msg.length() > 0)
-				msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			else
-				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+		if(logIntermediaryResults != null) {
+			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
+			if(logIntermediary != logIntermediaryResults) {
+				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
+	
+				if(msg.length() > 0)
+					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+				else
+					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+			}
 		}
 
 		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
@@ -343,7 +347,7 @@ public class ServerStatistics extends Base {
 			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
 
-		if (enableDebugger!=null) {
+		if (enableDebugger != null) {
 			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
@@ -353,12 +357,11 @@ public class ServerStatistics extends Base {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
 				}
 			}
  		}
-		
-		
+
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());

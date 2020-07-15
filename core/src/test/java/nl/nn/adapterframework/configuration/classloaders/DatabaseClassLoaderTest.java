@@ -40,7 +40,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.testutil.TestAppender;
 
-public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
+public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
 	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
 	private final String ERROR_SUFFIX = "]";
 

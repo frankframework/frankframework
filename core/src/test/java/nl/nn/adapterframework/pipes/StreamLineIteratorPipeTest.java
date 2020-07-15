@@ -155,5 +155,35 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testBasicWithoutXmlEscaping() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithoutXmlCharsEscaped.txt");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testBasicWithXmlEscaping() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setEscapeXml(true);
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithXmlCharsEscaped.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+	}
 
 }

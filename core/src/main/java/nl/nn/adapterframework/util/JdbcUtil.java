@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -66,6 +66,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Database-oriented utility functions.
@@ -80,6 +81,7 @@ public class JdbcUtil {
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
 	private static Properties jdbcProperties = null;
 
+	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
 		if (warningsElem!=null) {
@@ -88,6 +90,7 @@ public class JdbcUtil {
 		return null;
 	}
 
+	@Deprecated
 	public static void warningsToXml(SQLWarning warnings, XmlBuilder parent) {
 		XmlBuilder warningsElem=warningsToXmlBuilder(warnings);
 		if (warningsElem!=null) {
@@ -95,6 +98,7 @@ public class JdbcUtil {
 		}
 	}
 
+	@Deprecated
 	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {
 		if (warnings!=null) {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
@@ -122,6 +126,33 @@ public class JdbcUtil {
 			return warningsElem;
 		}
 		return null;
+	}
+
+
+	public static void warningsToXml(SQLWarning warnings, SaxElementBuilder parent) throws SAXException {
+		if (warnings!=null) {
+			try (SaxElementBuilder elementBuilder = parent.startElement("warnings")) {
+				while (warnings!=null) {
+					try (SaxElementBuilder warning = elementBuilder.startElement("warning")) {
+						warning.addAttribute("errorCode",""+warnings.getErrorCode());
+						warning.addAttribute("sqlState",""+warnings.getSQLState());
+
+						String message=warnings.getMessage();
+						
+		 				Throwable cause=warnings.getCause();
+						if (cause!=null) {
+							warning.addAttribute("cause",cause.getClass().getName());
+							if (message==null) {
+								message=cause.getMessage();
+							} else {
+								message=message+": "+cause.getMessage();
+							}
+						}
+						warning.addAttribute("message",message);
+					}
+				}
+			}
+		}
 	}
 
 	public static boolean isBlobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
@@ -394,7 +425,7 @@ public class JdbcUtil {
 			String rawMessage;
 			if (objectOK) {
 				if (result instanceof IMessageWrapper) {
-					rawMessage = ((IMessageWrapper)result).getText();
+					rawMessage = ((IMessageWrapper)result).getMessage().asString();
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
 				} else {
@@ -872,6 +903,15 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				return !rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
+			}
+		} catch (SQLException e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
+		}
+	}
 
 	public static void executeStatement(Connection connection, String query) throws JdbcException {
 		executeStatement(connection,query,null,null);

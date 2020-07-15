@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -258,7 +258,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 							}
 						}
 					}
-					return new Message(getStringFromRawMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper));
+					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
 					if (mc != null) { 
 						try { 

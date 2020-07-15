@@ -36,7 +36,8 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins m-n">
                 <div class="ibox-title summary">
-                    <h4>Configuration summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span></h4>
+                    <h4 class="col-md-9">Configuration Summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span></h4>
+                    <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="row">
@@ -102,7 +103,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3 configurationFlow">
+                            <a ng-href="{{configurationFlowDiagram}}" target="_blank"><img ng-src="{{configurationFlowDiagram}}" alt="Configuration Flow Diagram"></a>
                         </div>
                     </div>
                 </div>
@@ -167,7 +169,7 @@
                     </div>
                     <div class="row full-width">
                         <div class="col-lg-6 col-md-12 clear">
-                            <h4>Configuration messages</h4>
+                            <h4>Configuration Messages</h4>
                         </div>
                     </div>
                 </div>
@@ -224,7 +226,7 @@
                                 </div>
                                 <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
                                 </div>
-                                <div class="col-sm-2" title="Messages Processed">{{adapter.messagesProcessed}}
+                                <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">{{adapter.messagesProcessed}}
                                     <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
                                     <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
                                 </div>
@@ -316,7 +318,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="receiver in adapter.receivers">
+                                        <tr ng-repeat="receiver in adapter.receivers" ng-class="::{'text-danger' : (receiver.state == 'error')}">
                                             <td>{{::receiver.name}}</td>
                                             <td>{{::receiver.listener.class}} ({{::receiver.listener.destination}})</td>
                                             <td>{{::receiver.messages.retried}}</td>
@@ -334,7 +336,8 @@
                                                 <span class="pull-right">
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
 
                                                     <span class="text-danger">
                                                         <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">

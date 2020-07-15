@@ -2,7 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 
 import static org.junit.Assert.assertEquals;
-
+import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -100,8 +100,4 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		
 		assertEquals("greaterthan", prr.getPipeForward().getName());
 	}
-
-
-
-
 }

@@ -12,10 +12,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * FixedResult Tester.
@@ -43,6 +42,15 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     }
 
+    public static Parameter setUp(IPipeLineSession session1){
+        Parameter param = new Parameter();
+        param.setName("param1");
+        param.setValue("abs");
+        param.setSessionKey("*");
+        session1.put("param1","yarr");
+        return param;
+    }
+
 
 
     /**
@@ -50,11 +58,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
      */
     @Test
     public void testSuccess() throws Exception {
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setFileName(sourceFolderPath);
@@ -63,41 +67,35 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getResult().toString(), "inside the file");
+        assertEquals("inside the file", res.getResult().asString());
     }
 
     @Test
     public void testFailAsWrongDirectory() throws Exception {
         exception.expectMessage("Pipe [FixedResult under test] cannot find resource [/Pipes/2.txt/something]");
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setFileName(sourceFolderPath + "/something");
         pipe.setReplaceFrom("param1");
         pipe.setReplaceTo("kar");
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertTrue(!res.getPipeForward().getName().isEmpty());
-
+        doPipe(pipe, "whatisthis", session1);
+        fail("this is expected to fail");
     }
 
     @Test
     public void testEmptyFileName() throws Exception{
         exception.expectMessage("Pipe [FixedResult under test] has neither fileName nor fileNameSessionKey nor returnString specified");
         pipe.configure();
+        fail("this should fail");
     }
 
     @Test
     public void xsltSuccess() throws Exception{
-        Parameter param = new Parameter(); pipe.setSubstituteVars(true);
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
+        pipe.setSubstituteVars(true);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
@@ -106,16 +104,14 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+        assertEquals("success", res.getPipeForward().getName());
     }
+  
     @Test
     public void xsltFailForTransformation() throws Exception{
         exception.expect(PipeRunException.class);
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
@@ -123,17 +119,14 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReplaceTo("kar");
         pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+        doPipe(pipe, "whatisthis", session1);
+        fail("this is expected to fail");
     }
 
     @Test
     public void xsltFailForFindingFileButSuceed() throws Exception{
-        Parameter param = new Parameter();
-        param.setName("param1");
-        param.setValue("abs");
-        param.setSessionKey("*");
-        session1.put("param1","yarr");
+        Parameter param = setUp(session1);
+        pipe.addParameter(param);
         pipe.addParameter(param);
         pipe.setLookupAtRuntime(true);
         pipe.setStyleSheetName("/Xslt/importNsddsotFound/namdsfe2.xsl");
@@ -141,7 +134,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
         pipe.setReplaceTo("kar"); pipe.setReturnString("${param1}andandandparam2");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, "whatisthis", session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+        assertEquals("success", res.getPipeForward().getName());
     }
 
 

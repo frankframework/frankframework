@@ -16,11 +16,10 @@ public class SkipEmptyTagsFilterTest {
 	
 	public void testXmlWriter(XMLFilterImpl filter, String input, String expected) throws IOException, SAXException {
 		XmlWriter xmlWriter = new XmlWriter();
-		PrettyPrintFilter ppf = new PrefixMappingObservingFilter();
+		PrettyPrintFilter ppf = new PrefixMappingObservingFilter(xmlWriter);
 		ppf.setIndent("");
-		ppf.setContentHandler(xmlWriter);
 		filter.setContentHandler(ppf);
-		XmlUtils.parseXml(filter, input);
+		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
 
@@ -28,7 +27,7 @@ public class SkipEmptyTagsFilterTest {
 	public void testSkipEmptyTagsFilter() throws Exception {
 		String input =    TestFileUtils.getTestFile("/SkipEmptyTags/in.xml");
 		String expected = TestFileUtils.getTestFile("/SkipEmptyTags/SkipEmptyTagsTestOut.xml");
-		SkipEmptyTagsFilter filter = new SkipEmptyTagsFilter();
+		SkipEmptyTagsFilter filter = new SkipEmptyTagsFilter(null);
 		testXmlWriter(filter,input,expected);
 	}
 	
