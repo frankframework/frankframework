@@ -5,6 +5,7 @@
 				className="nl.nn.adapterframework.receivers.DirectoryListener" 
 				inputDirectory="${testdata.dir}/batch/in"
 				outputDirectory="${testdata.dir}/batch/out"
+				createFolders="true"
 				wildcard="*.*"
 				overwrite="true"
 				fileTimeSensitive="true"
