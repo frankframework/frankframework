@@ -1655,10 +1655,14 @@ angular.module('iaf.beheerconsole')
 .controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', 'SweetAlert', function($scope, Api, Poller, $state, SweetAlert) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
+	$scope.searchFilter = "";
 
 	Poller.add("schedules", function(data) {
 		$.extend($scope, data);
 	}, true, 5000);
+	$scope.$on('$destroy', function() {
+		Poller.remove("schedules");
+	});
 
 	$scope.start = function() {
 		Api.Put("schedules", {action: "start"});
