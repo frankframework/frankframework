@@ -1,6 +1,6 @@
 <project default="copy.files">
 	<target name="copy.files">
-		<property name="root.dir" value="c:/temp/testdata/rest" />
+		<property name="root.dir" value="${testdata.dir}/rest" />
 		<delete dir="${root.dir}" />
 		<mkdir dir="${root.dir}" />
 	</target>
