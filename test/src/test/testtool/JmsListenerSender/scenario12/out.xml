@@ -1,1 +1,22 @@
-<throwable><class>nl.nn.adapterframework.core.SenderException</class><message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-JmsFFSenderWithDatasource]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception: &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message><cause><throwable><class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class><message>RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception</message><cause><throwable><class>nl.nn.adapterframework.core.ListenerException</class><message>&lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message><cause><throwable><class>nl.nn.adapterframework.core.PipeRunException</class><message>&lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message></throwable></cause></throwable></cause></throwable></cause></throwable>
+<throwable>
+  <class>nl.nn.adapterframework.core.SenderException</class>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-JmsFFSenderWithDatasource]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception: &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
+  <cause>
+    <throwable>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <message>RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception</message>
+      <cause>
+        <throwable>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>&lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>&lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
+            </throwable>
+          </cause>
+        </throwable>
+      </cause>
+    </throwable>
+  </cause>
+</throwable>

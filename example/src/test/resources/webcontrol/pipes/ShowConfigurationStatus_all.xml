@@ -8,7 +8,7 @@
   </configurations>
   <registeredAdapters all="true" log="false">
       <configurationMessages>
-         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] LiquiBase applied [6] change(s) and added tag [IAF_Util:6:Niels Meijer]</configurationMessage>
+         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] LiquiBase applied [7] change(s) and added tag [IAF_Util:7:Ali Sihab Akcan]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_Util] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] LiquiBase applying change [Ibis4Example:1:Niels Meijer] description [insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE] tag [Ibis4Example:1:Niels Meijer]</configurationMessage>

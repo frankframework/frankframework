@@ -1685,10 +1685,14 @@ angular.module('iaf.beheerconsole')
 .controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', 'SweetAlert', function($scope, Api, Poller, $state, SweetAlert) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
+	$scope.searchFilter = "";
 
 	Poller.add("schedules", function(data) {
 		$.extend($scope, data);
 	}, true, 5000);
+	$scope.$on('$destroy', function() {
+		Poller.remove("schedules");
+	});
 
 	$scope.start = function() {
 		Api.Put("schedules", {action: "start"});
@@ -1731,11 +1735,13 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			name:"",
+			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
 			interval:-1,
 			message:"",
+			description:"",
 			locker:false,
 			lockkey:"",
 			persistent:true,
@@ -1746,12 +1752,14 @@ angular.module('iaf.beheerconsole')
 		$scope.state = [];
 
 		fd.append("name", $scope.form.name);
+		fd.append("group", $scope.form.group);
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
+		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 
@@ -1759,11 +1767,13 @@ angular.module('iaf.beheerconsole')
 			$scope.addAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
+					group:"",
 					adapter:"",
 					receiver:"",
 					cron:"",
 					interval:-1,
 					message:"",
+					description:"",
 					locker:false,
 					lockkey:"",
 					persistent:true,
@@ -1773,7 +1783,6 @@ angular.module('iaf.beheerconsole')
 			$scope.addAlert("warning", error);
 		}, false);
 	};
-
 }])
 
 .controller('EditScheduleCtrl', ['$scope', 'Api', 'Misc', '$stateParams', '$state', function($scope, Api, Misc, $stateParams, $state) {
@@ -1786,11 +1795,13 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			name:"",
+			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
 			interval:-1,
 			message:"",
+			description:"",
 			locker:false,
 			lockkey:"",
 			persistent:true,
@@ -1799,11 +1810,13 @@ angular.module('iaf.beheerconsole')
 	Api.Get(url, function(data) {
 		$scope.form = {
 				name: data.name,
+				group: data.group,
 				adapter: data.adapter,
 				receiver: data.receiver,
 				cron: data.triggers[0].cronExpression,
 				interval: -1,
 				message: data.message,
+				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
 				persistent: true,
@@ -1815,12 +1828,14 @@ angular.module('iaf.beheerconsole')
 		$scope.state = [];
 
 		fd.append("name", $scope.form.name);
+		fd.append("group", $scope.form.group);
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
+		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 

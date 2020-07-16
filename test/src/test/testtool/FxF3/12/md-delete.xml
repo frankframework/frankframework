@@ -1,6 +1,7 @@
 <manageDatabaseREQ>
 	<delete>
 		<tableName>IBISSTORE</tableName>
+		<where>SLOTID IN ('${applicationId}/FxF3InSender', '${applicationId}/FxF3InListener')</where>
 	</delete>
 <!-- 	<alter>
 		<sequenceName>SEQ_IBISSTORE</sequenceName>
