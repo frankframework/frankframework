@@ -209,7 +209,6 @@ public class Misc {
 	/**
 	 * Overloaded version of streamToStream that calls the main version with closeInput set to true.
 	 * @see #streamToStream(InputStream, OutputStream, boolean)
-	 * @inheritDoc
 	 */
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input,output,true);
@@ -290,7 +289,6 @@ public class Misc {
 
 	/**
 	 * @see #readerToWriter(Reader, Writer, boolean)
-	 * @inheritDoc
 	 */
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		readerToWriter(reader,writer,true);
@@ -389,7 +387,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
-	 * @inheritDoc
 	 * @return String that's included in the stream
 	 */
 	public static String streamToString(InputStream stream) throws IOException {
@@ -398,7 +395,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
 		return streamToString(stream, null, streamEncoding, false);
@@ -406,7 +402,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
@@ -414,7 +409,6 @@ public class Misc {
 
 	/**
 	 * @see #readerToString(Reader, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
@@ -422,7 +416,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
@@ -431,7 +424,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String resourceToString(URL resource) throws IOException {
 		return resourceToString(resource, null, false);
@@ -439,7 +431,6 @@ public class Misc {
 
 	/**
 	 * @see #streamToString(InputStream, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
 		return resourceToString(resource, endOfLineString, false);
@@ -519,7 +510,6 @@ public class Misc {
 
 	/**
 	 * @see #hide(String)
-	 * @inheritDoc
 	 * @return hidden string with all characters replaced with '*'
 	 */
 	public static String hide(String string) {
@@ -559,7 +549,6 @@ public class Misc {
 	/**
 	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
 	 * @see #streamToString(InputStream, String, boolean)
-	 * @inheritDoc
 	 */
 	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);
@@ -569,7 +558,6 @@ public class Misc {
 	/**
 	 * Zips the input string with the default input stream encoding.
 	 * @see #gzip(byte[])
-	 * @inheritDoc
 	 */
 	public static byte[] gzip(String input) throws IOException {
 		return gzip(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
@@ -606,7 +594,6 @@ public class Misc {
 	/**
 	 * Unzips a zipped byte array to a string
 	 * @see #gunzip(byte[])
-	 * @inheritDoc
 	 * @param input
 	 */
 	public static String gunzipToString(byte[] input) throws DataFormatException, IOException {
@@ -650,7 +637,6 @@ public class Misc {
 	/**
 	 * Compresses the input string using the default stream encoding.
 	 * @see #compress(byte[])
-	 * @inheritDoc
 	 */
 	public static byte[] compress(String input) throws IOException {
 		return compress(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
@@ -697,7 +683,6 @@ public class Misc {
 
 	/**
 	 * @see #decompress(byte[])
-	 * @inheritDoc
 	 */
 	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(decompress(input),"\n",false);
@@ -937,7 +922,6 @@ public class Misc {
 
 	/**
 	 * @see #toFileSize(long, boolean)
-	 * @inheritDoc
 	 */
 	public static String toFileSize(long value) {
 		return toFileSize(value, false);
@@ -945,7 +929,6 @@ public class Misc {
 
 	/**
 	 * @see #toFileSize(long, boolean, boolean)
-	 * @inheritDoc
 	 */
 	public static String toFileSize(long value, boolean format) {
 		return toFileSize(value, format, false);
@@ -1239,7 +1222,6 @@ public class Misc {
 	 * Edits the input string according to the regex and the hide method specified.
 	 * @see #hideFirstHalf(String, String)
 	 * @see #hideAll(String, String)
-	 * @inheritDoc
 	 */
 	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
 		if (StringUtils.isEmpty(regexForHiding)) {
@@ -1255,7 +1237,6 @@ public class Misc {
 	/**
 	 * Hides the first half of the string.
 	 * @see #hideAll(String, String, int)
-	 * @inheritDoc
 	 */
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
@@ -1265,7 +1246,6 @@ public class Misc {
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message.
 	 * @see #hideAll(String, Collection, int)
-	 * @inheritDoc
 	 */
 	public static String hideAll(String message, Collection<String> collection) {
 		return hideAll(message, collection, 0);
@@ -1275,7 +1255,6 @@ public class Misc {
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message
 	 * @see #hideAll(String, String, int)
-	 * @inheritDoc
 	 */
 	public static String hideAll(String message, Collection<String> collection, int mode) {
 		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
@@ -1290,7 +1269,6 @@ public class Misc {
 
 	/**
 	 * @see #hideAll(String, String, int)
-	 * @inheritDoc
 	 */
 	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
