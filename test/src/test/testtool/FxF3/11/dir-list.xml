@@ -1,3 +1,3 @@
-<directory name="TESTDATA_DIR" count="1">
+<directory name="TESTDATA_DIR/fxf" count="1">
 	<file name="file.txt" size="14634" fSize="14 kB" directory="false" canonicalName="TESTDATA_DIR\fxf\NNX01234\processed\file.txt" modificationDate="11-08-15" modificationTime="16:07:54"/>
 </directory>
