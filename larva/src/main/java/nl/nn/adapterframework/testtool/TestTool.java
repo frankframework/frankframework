@@ -4370,7 +4370,7 @@ public class TestTool {
 			case "ignoreRegularExpressionKey":
 			case "removeRegularExpressionKey":
 			case "ignoreContentBeforeKey":
-			case "ignoreContentAfterKey ":
+			case "ignoreContentAfterKey":
 				attributes = new ArrayList( Arrays.asList( new String[]{"key"} ) );
 				break;
 			case "ignoreCurrentTimeBetweenKeys":
