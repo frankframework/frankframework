@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -51,6 +51,12 @@
 			<groupId>javax.servlet</groupId>
 			<version>2.5</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.3.162</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -127,6 +133,34 @@
 							<targetPath>testtool</targetPath>
 						</resource>
 					</webResources>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.tomcat.embed</groupId>
+						<artifactId>tomcat-embed-core</artifactId>
+						<version>7.0.93</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!--fork>true</fork -->
+					<path>/iaf-test</path>
+					<port>80</port>
+					<systemProperties>
+						<JAVA_OPTS>-Xms256m -Xmx1G</JAVA_OPTS>
+						<log.dir>c:/temp</log.dir>
+						<log.dir.match>(?i)c:[\\/]temp</log.dir.match>
+						<otap.stage>LOC</otap.stage>
+						<strutsConsole.enabled>true</strutsConsole.enabled>
+					</systemProperties>
+					<contextFile>${project.basedir}\src\main\webapp\META-INF\context.xml-h2</contextFile>
+					<useTestClasspath>true</useTestClasspath>
+					<addContextWarDependencies>true</addContextWarDependencies>
+					<warSourceDirectory>${project.build.directory}/${project.build.finalName}/</warSourceDirectory>
 				</configuration>
 			</plugin>
 		</plugins>

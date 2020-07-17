@@ -1,0 +1,26 @@
+<project default="startTomcat">
+	<!-- run with java 8 -->
+	<target name="init">
+		<property name="project.root.dir" value="${basedir}/../../../.." />
+		<property name="maven.home" value="C:/DataX/Software/Installed/apache-maven-3.6.3" />
+		<property name="maven.repo.local" value="C:/DataX/Software/Data/Maven/repository" />
+		<property name="m2.dir" value="${project.root.dir}/../../ija-api/.m2" />
+		<property name="diff.exe" value="${project.root.dir}/../../IbisAlgemeenWasbak/WinDiff/WinDiff.Exe" />
+	</target>
+	<target name="startTomcat" depends="init" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+		<path id="maven-ant-tasks.classpath" path="${basedir}/maven-ant-tasks-2.1.3.jar" />
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
+		<artifact:mvn pom="${project.root.dir}/pom.xml" mavenHome="${maven.home}" fork="true">
+			<jvmarg value="-Dmaven.multiModuleProjectDirectory=${maven.home}" />
+			<arg value="-Dmaven.repo.local=${maven.repo.local}" />
+			<arg value="-Dlarva.windiff.command=${diff.exe}" />
+			<arg value="tomcat7:run" />
+			<!-- following settings are required for NN -->
+			<arg value="-Djava.security.properties=${m2.dir}/my.java.security" />
+			<arg value="-Djavax.net.ssl.trustStore=${m2.dir}/NNTrustStore.jks" />
+			<arg value="-Dsettings.security=${m2.dir}/settings-security.xml" />
+			<arg value="-s" />
+			<arg value="${m2.dir}/settings.xml" />
+		</artifact:mvn>
+	</target>
+</project>

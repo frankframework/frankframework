@@ -1,8 +1,8 @@
 <Context>
 	<Resource
-		name="jdbc/ibis4test"
+		name="jdbc/ibis4test-h2"
 		type="org.h2.jdbcx.JdbcDataSource"
-		factory="org.apache.naming.factory.BeanFactory" 
-		URL="jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE"
+		factory="org.apache.naming.factory.BeanFactory"
+		URL="jdbc:h2:file:./target/ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;MVCC=true"
 	/>
 </Context>
