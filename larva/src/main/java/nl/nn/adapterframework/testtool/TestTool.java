@@ -3163,6 +3163,41 @@ public class TestTool {
 	        canonicaliseFilePathContentBetweenKeysIt.remove(); 
 		}
 
+		/* numeric formatDecimalContentBetweenKeys */
+		debugMessage("Check formatDecimalContentBetweenKeys properties", writers);
+		boolean formatDecimalContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!formatDecimalContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+				i++;
+			} else {
+				formatDecimalContentBetweenKeysProcessed = true;
+			}
+		}
+
+		/* identifier based formatDecimalContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys"); 
+		
+		Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
+	    while (formatDecimalContentBetweenKeysIt.hasNext()) {
+	        Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
+			HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
+			
+	        String key1 = formatDecimalContentBetweenKeysPair.get("key1");
+			String key2 = formatDecimalContentBetweenKeysPair.get("key2");
+			
+			debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+
+			formatDecimalContentBetweenKeysIt.remove(); 
+		}
+
 		/* numeric ignoreRegularExpressionKey */
 		debugMessage("Check ignoreRegularExpressionKey properties", writers);
 		boolean ignoreRegularExpressionKeyProcessed = false;
@@ -3960,6 +3995,40 @@ public class TestTool {
 		return result;
 	}
 
+	public static String formatDecimalContentBetweenKeys(String string,
+		String key1, String key2, Map writers) {
+		String result = string;
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				String doubleAsString = result.substring(i + key1.length(), j);
+				try {
+					double d = Double.parseDouble(doubleAsString);
+					result = result.substring(0, i) + key1 + format(d)
+							+ result.substring(j);
+					i = result.indexOf(key1, i + key1.length()
+							+ doubleAsString.length() + key2.length());
+				} catch (NumberFormatException e) {
+					i = -1;
+					errorMessage(
+							"Could not parse double value: " + e.getMessage(),
+							e, writers);
+				}
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	private static String format(double d) {
+		if (d == (long) d)
+			return String.format("%d", (long) d);
+		else
+			return String.format("%s", d);
+	}
+
 	public static String ignoreContentBeforeKey(String string, String key) {
 		int i = string.indexOf(key);
 		if (i == -1) {
@@ -4294,6 +4363,7 @@ public class TestTool {
 			case "ignoreKeysAndContentBetweenKeys":
 			case "removeKeysAndContentBetweenKeys":
 			case "replaceKey":
+			case "formatDecimalContentBetweenKeys":
 			case "replaceEverywhereKey":
 				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2"} ) );
 				break;

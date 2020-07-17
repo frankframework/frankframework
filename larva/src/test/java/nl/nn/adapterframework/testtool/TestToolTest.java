@@ -214,6 +214,31 @@ public class TestToolTest {
     }
 
     @Test
+    public void formatDecimalContentBetweenKeysFromIgnoreMap() {
+        String propertyName = "formatDecimalContentBetweenKeys";
+        
+        Properties scenario = new Properties();
+        String key1 = "<field name='zip'>";
+        String key2 = "</field'>";
+        scenario.setProperty(propertyName + ".identifier.key1", key1);
+        scenario.setProperty(propertyName + ".identifier.key2", key2);
+
+        HashMap<String, HashMap<String, HashMap<String, String>>> result = TestTool.mapPropertiesToIgnores(scenario);
+        assertNotNull(result);
+        assertEquals(result.size(), 1);
+
+        HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+        assertNotNull(ignore);
+        assertEquals(ignore.size(), 1);
+
+        HashMap<String, String> identifier = ignore.get("identifier");
+        assertNotNull(identifier);
+
+        assertEquals(identifier.get("key1"), key1);
+        assertEquals(identifier.get("key2"), key2);
+    }
+
+    @Test
     public void ignoreRegularExpressionKeyFromIgnoreMap() {
         String propertyName = "ignoreRegularExpressionKey";
         
