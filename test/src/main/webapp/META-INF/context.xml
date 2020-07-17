@@ -32,27 +32,6 @@
 		name="jdbc/ibis4test-mssql-microsoft" 
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
-		type="com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource"
-		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
-		user="testiaf_user"
-		password="testiaf_user00"
-		sendStringParametersAsUnicode="false"
-		sendTimeAsDatetime="true"
-		selectMethod="direct"
-		responseBuffering="adaptive"
-		packetSize="4096"
-		loginTimeout="10"
-		lockTimeout="2000"
-		lastUpdateCount="false"
-		encrypt="false"
-		disableStatementPooling="true"
-		applicationName="iaf-test on TomCat"
-		applicationIntent="readwrite"
-	/>
-	<Resource 
-		name="jdbc/ibis4test-mssql-microsoft-xa" 
-		auth="Container" 
-		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
 		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
 		user="testiaf_user"
@@ -70,18 +49,6 @@
 		applicationName="iaf-test on TomCat"
 		applicationIntent="readwrite"
 	/>
-	<Resource 
-		name="jdbc/ibis4test-mssql-jtds" 
-		auth="Container" 
-		type="javax.sql.DataSource"
-		username="testiaf_user"
-		password="testiaf_user00"
-		driverClassName="net.sourceforge.jtds.jdbc.Driver"
-		url="jdbc:jtds:sqlserver://localhost:1433/testiaf"
-		maxTotal="25"
-		maxIdle="10"
-		validationQuery="select 1"
-	/>
 
 	<Resource
 		name="jdbc/ibis4test-mysql"
@@ -93,6 +60,16 @@
 		maxActive="50"
 		maxIdle="2"
 		maxWait="30000"
+	/>
+
+	<Resource
+		name="jdbc/ibis4test-mysql-xa"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
+		user="testiaf_user"
+		password="testiaf_user00"
+		url="jdbc:mysql://localhost:3306/testiaf"
+		sslMode="DISABLED"
 	/>
 
 	<Resource 
