@@ -2044,22 +2044,36 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('BrowseJmsQueueCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('BrowseJmsQueueCtrl', ['$scope', 'Api', 'Cookies', function($scope, Api, Cookies) {
 	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.form = {};
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
+	var browseJmsQueue = Cookies.get("browseJmsQueue");
+	if(browseJmsQueue) {
+		$scope.form = browseJmsQueue;
+	}
+
+	$scope.messages = [];
+	$scope.numberOfMessages = -1;
 	$scope.submit = function(formData) {
 		if(!formData || !formData.destination) {
 			$scope.error = "Please specify a jms realm and destination!";
 			return;
 		}
+
+		Cookies.set("browseJmsQueue", formData);
 		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
 		if(!formData.type) formData.type = $scope.destinationTypes[0] || false;
 
-		Api.Post("jms/browse", JSON.stringify(formData), function(returnData, status) {
+		Api.Post("jms/browse", JSON.stringify(formData), function(data) {
+			$.extend($scope, data);
+			if(!data.messages) {
+				$scope.messages = [];
+			}
 			$scope.error = "";
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
@@ -2075,6 +2089,9 @@ angular.module('iaf.beheerconsole')
 			$scope.form.rowNumbersOnly = "";
 		if($scope.form.type)
 			$scope.form.type = $scope.destinationTypes[0];
+
+		$scope.messages = [];
+		$scope.numberOfMessages = -1;
 	};
 }])
 
