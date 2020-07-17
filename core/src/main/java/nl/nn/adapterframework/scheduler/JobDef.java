@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,7 +58,7 @@ import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -625,8 +624,6 @@ public class JobDef {
 
 	private void cleanupDatabase(IbisManager ibisManager) {
 		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
 
 		List<String> jmsRealmNames = new ArrayList<String>();
 
@@ -666,12 +663,7 @@ public class JobDef {
 			DirectQuerySender qs;
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealmName);
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
-			} else {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
+			String deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < "+qs.getDbmsSupport().getDatetimeLiteral(date);
 			setQuery(deleteQuery);
 			qs = null;
 			executeQueryJob(ibisManager);
@@ -710,25 +702,14 @@ public class JobDef {
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(mlo.getJmsRealmName());
 			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-					+ mlo.getKeyField() + " IN (SELECT "
-						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (rowlock,updlock,readpast) WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			if (qs.getDatabaseType() == Dbms.MSSQL) {
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+						+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date)+")";
 			}
 			else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < TO_TIMESTAMP('" + formattedDate
-						+ "', 'YYYY-MM-DD HH24:MI:SS')";
+				deleteQuery = "DELETE FROM " + mlo.getTableName() 
+					+ " WHERE " + mlo.getTypeField() + " IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date);
 			}
 			qs = null;
 			setQuery(deleteQuery);

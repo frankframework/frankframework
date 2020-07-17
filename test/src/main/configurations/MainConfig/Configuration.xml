@@ -7,6 +7,7 @@
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
 	<!ENTITY SkipEmptyTags SYSTEM "./ConfigurationSkipEmptyTags.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
+	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
 	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
@@ -64,6 +65,7 @@
 	&ExceptionPipe;
 	&SkipEmptyTags;
 	&ReplacerPipe;
+	&ReplaceInputAndPreserve;
 	&CompareStringPipe;
 	&CompareXmlStringPipe;
 	&QuerySender;

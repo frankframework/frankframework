@@ -52,4 +52,32 @@
 			</div>
 		</div>
 	</div>
+	<div class="col-lg-12" ng-if="messages">
+		<div class="ibox float-e-margins">
+			<div class="ibox-title">
+				<h4>Result</h4>
+			</div>
+			<div class="ibox-content">{{destination}}</div>
+			<div class="ibox-content">
+				<table class="table jmsBrowse">
+					<thead>
+						<tr>
+							<th>messageId</th>
+							<th>correlationId</th>
+							<th>insertDate</th>
+							<th>messageId</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="row in messages">
+							<td>{{row.id}}</td>
+							<td>{{row.correlationId}}</td>
+							<td>{{row.insertDate}}</td>
+							<td>{{row.expiryDate}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </div>

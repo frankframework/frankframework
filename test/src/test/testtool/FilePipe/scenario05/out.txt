@@ -1,1 +1,1 @@
-c:/temp/testdata/test.txt
+TESTDATA_DIR/test.txt

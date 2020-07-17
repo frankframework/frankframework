@@ -36,6 +36,7 @@ public class JdbcTableListener extends JdbcListener {
 	private String statusValueProcessed;
 	private String statusValueError;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy tableName");
@@ -76,6 +77,7 @@ public class JdbcTableListener extends JdbcListener {
 				" WHERE "+getKeyField()+"=?";
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" "+getTableName();
 	}
@@ -91,11 +93,13 @@ public class JdbcTableListener extends JdbcListener {
 	}
 
 	@IbisDoc({"primary key field of the table, used to identify messages", ""})
+	@Override
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
 	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
+	@Override
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}

@@ -26,7 +26,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -272,7 +271,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 
 	/*
-	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
+	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
 	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException {

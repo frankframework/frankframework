@@ -8,7 +8,7 @@
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
 		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
-		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender, FileSender and MessageStoreSender
+		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender, FileSender, JavascriptSender, MessageStoreSender and ZipWriterSender
 		- disable all elements sapSystems
 		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
@@ -16,8 +16,8 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResult with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
-		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResult with attribute returnString set to 0a4544b6-37489ec0_15ad0f006ae_-7ff3
-		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
+		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResult with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
+		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
@@ -158,6 +158,9 @@
 							<xsl:when test="@className='nl.nn.adapterframework.senders.ReloadSender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>
+							<xsl:when test="@className='nl.nn.adapterframework.compression.ZipWriterSender'">
+								<xsl:call-template name="copy" />
+							</xsl:when>
 							<xsl:otherwise>
 								<xsl:element name="sender">
 									<xsl:if test="string-length(@name)&gt;0">
@@ -272,11 +275,18 @@
 				<xsl:element name="pipe">
 					<xsl:apply-templates select="@*[name()!='type']" />
 					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResult</xsl:attribute>
-					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+					<xsl:choose>
+						<xsl:when test="@type='numeric'">
+							<xsl:attribute name="returnString">1234567890123456789012345678901</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
-			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe')">
+			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe')">
 				<xsl:element name="pipe">
 					<xsl:attribute name="name">
 						<xsl:value-of select="@name"/>

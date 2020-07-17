@@ -160,7 +160,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void testBase64Decoder() throws IOException {
 		HttpSender sender = createHttpSender();
 		InputStream content = new ByteArrayInputStream("<dummy result/>".getBytes());
-		String result = sender.getResponseBodyAsBase64(content).trim();
+		String result = sender.getResponseBodyAsBase64(content).asString().trim();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result);
 	}
 
@@ -198,7 +198,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
-		assertEquals("", result);
+		assertEquals(null, result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
@@ -219,7 +219,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
-		assertEquals("", result);
+		assertEquals(null, result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
@@ -240,7 +240,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
-		assertEquals("", result);
+		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", Misc.streamToString(stream));
@@ -261,7 +261,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
-		assertEquals("", result);
+		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", Misc.streamToString(stream));

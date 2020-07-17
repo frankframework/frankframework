@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -36,7 +37,7 @@ public interface IDbmsSupport {
 	/**
 	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
 	 */
-	int getDatabaseType(); 
+	Dbms getDbms(); 
 	String getDbmsName();
 	
 	/**
@@ -58,6 +59,7 @@ public interface IDbmsSupport {
 	String getInsertedAutoIncrementValueQuery(String sequenceName);
 
 	String getTimestampFieldType();
+	String getDatetimeLiteral(Date date);
 
 	String getClobFieldType();
 	boolean mustInsertEmptyClobBeforeData();
@@ -85,7 +87,25 @@ public interface IDbmsSupport {
 
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException;
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
+
+	/**
+	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will not place locks itself.
+	 * Will always be executed together with {@link #prepareSessionForDirtyRead(Connection)}.
+	 * Should return the query unmodified if no special action is required.
+	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForDirtyRead(String)}
+	 */
+	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
+	/**
+	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForDirtyRead(String)}, 
+	 * are executed, they will not be blocked by locks, and will not place locks itself.
+	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state.
+	 * Should return null if no preparation of the connection is required.
+	 * For an example, see {@link MySqlDbmsSupport#prepareSessionForDirtyRead(Connection)}
+	 */
+	JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

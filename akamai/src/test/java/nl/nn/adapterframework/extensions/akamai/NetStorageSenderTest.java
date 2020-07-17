@@ -42,8 +42,8 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public NetStorageSender createSender() {
 		return spy(new NetStorageSender() {
 			@Override
-			public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-				return getResponseBodyAsString(responseHandler);
+			public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+				return new Message( getResponseBodyAsString(responseHandler) );
 			}
 		});
 	}

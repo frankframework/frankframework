@@ -34,8 +34,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.cxf.common.util.Base64Exception;
-import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;
 import org.apache.logging.log4j.Logger;
@@ -45,16 +43,15 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Manages authorization per resource/collection.
  * 
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since   7.0-B1
+ * @author  Niels Meijer
  */
 
-//@Provider //Turn off this filter as long as we let the server handle authentication via the web.xml
+@Provider
 @Priority(Priorities.AUTHORIZATION)
 public class AuthorizationFilter implements ContainerRequestFilter {
 
 	private static final Response FORBIDDEN = Response.status(Response.Status.FORBIDDEN).build();
-	private static final Response UNAUTHORIZED = Response.status(Response.Status.UNAUTHORIZED).build();
 	private static final Response SERVER_ERROR = Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -62,6 +59,11 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
+		SecurityContext securityContext = requestContext.getSecurityContext();
+		if(securityContext.getUserPrincipal() == null) {
+			return; //No userPrincipal, authentication is disabled.
+		}
+
 		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
 			//Preflight in here?
 			return;
@@ -70,7 +72,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		Message message = JAXRSUtils.getCurrentMessage();
 		Method method = (Method)message.get("org.apache.cxf.resource.method");
 		if(method == null) {
-			log.error("Unable to fetch method from CXF Message");
+			log.error("unable to fetch resource method from CXF Message");
 			requestContext.abortWith(SERVER_ERROR);
 		}
 
@@ -86,22 +88,10 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 		//Presume `PermitAll` when RolesAllowed annotation is not set
 		if(method.isAnnotationPresent(RolesAllowed.class)) {
-			SecurityContext securityContext = requestContext.getSecurityContext();
-
-			if(securityContext.getUserPrincipal() == null) {
-				if(!login(requestContext)) { //Not logged in. Manually trying to authenticate the user
-					requestContext.abortWith(UNAUTHORIZED);
-					return;
-				} else {
-					System.out.println("manually logged in user [" + securityContext.getUserPrincipal().getName()+"]");
-				}
-			}
-
 			RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
 			Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-			System.out.println("Checking authentication for user ["+securityContext.getUserPrincipal().getName()+"] uri ["+method.getAnnotation(javax.ws.rs.Path.class).value()+"] roles " + rolesSet.toString());
+			log.info("checking authorisation for user ["+securityContext.getUserPrincipal().getName()+"] on uri ["+method.getAnnotation(javax.ws.rs.Path.class).value()+"] required roles " + rolesSet.toString());
 
-			//Verifying username and password
 			if(!doAuth(securityContext, rolesSet)) {
 				requestContext.abortWith(FORBIDDEN);
 				return;
@@ -109,29 +99,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		}
 	}
 
-	private boolean login(ContainerRequestContext requestContext) {
-		String authorization = requestContext.getHeaderString("Authorization");
-		String[] parts = authorization.split(" ");
-		if (parts.length != 2 || !"Basic".equals(parts[0])) {
-			return false;
-		}
-
-		String decodedValue = null;
-		try {
-			decodedValue = new String(Base64Utility.decode(parts[1]));
-		} catch (Base64Exception ex) {
-			return false;
-		}
-		String[] namePassword = decodedValue.split(":");
-
-		try {
-			request.login(namePassword[0], namePassword[1]);
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-
+	/**
+	 * validate if the user has the required role to access the resource
+	 */
 	private boolean doAuth(SecurityContext securityContext, final Set<String> rolesSet) {
 		for (String role : rolesSet) {
 			if(securityContext.isUserInRole(role)) {

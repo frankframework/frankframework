@@ -58,11 +58,7 @@ angular.module('iaf.beheerconsole')
 			});
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
-					for (var configName in data["Application Constants"]) {
-						var configConstants = data["Application Constants"][configName];
-						appConstants = $.extend(appConstants, configConstants);
-						break;
-					}
+					appConstants = $.extend(appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
 
 					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
 					if(idleTime > 0) {
@@ -227,7 +223,7 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
-							adapter.status = 'stopped';
+							adapter.status = 'warning';
 					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
@@ -690,17 +686,19 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.showReferences = function() {
-		var config = $scope.selectedConfiguration;
+		window.open($scope.configurationFlowDiagram);
+	};
+	$scope.configurationFlowDiagram;
+	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
-
-		if(config == "All")
+		if(configurationName == "All")
 			url += "?flow=true";
 		else {
-			url += config + "/flow";
+			url += configurationName + "/flow";
 		}
-
-		window.open(url);
-	};
+		$scope.configurationFlowDiagram = url;
+	}
+	$scope.updateConfigurationFlowDiagram($scope.selectedConfiguration);
 
 	$scope.isConfigStubbed = {};
 	$scope.check4StubbedConfigs = function() {
@@ -715,6 +713,7 @@ angular.module('iaf.beheerconsole')
 		$scope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(name);
 		$scope.updateQueryParams();
+		$scope.updateConfigurationFlowDiagram(name);
 	};
 	if($state.params.configuration != "All")
 		$scope.changeConfiguration($state.params.configuration);
@@ -1001,7 +1000,7 @@ angular.module('iaf.beheerconsole')
 				instanceName = data["Application Constants"][configName]["instance.name"];
 			}
 		}
-		$scope.changeConfiguration(instanceName);
+		$scope.changeConfiguration("All");
 		$scope.environmentProperties = convertPropertiesToArray(data["Environment Variables"]);
 		$scope.systemProperties = convertPropertiesToArray(data["System Properties"]);
 	});
@@ -1047,7 +1046,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', function($scope, Api, $stateParams, SweetAlert, $timeout) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -1060,6 +1059,37 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.stats = [];
+	var defaults = {"name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last"};
+	$scope.statisticsTimeBoundaries = angular.copy(defaults);
+	$scope.statisticsSizeBoundaries = angular.copy(defaults);
+	function populateBoundaries() {
+		var timeBoundaries = appConstants["Statistics.boundaries"].split(",");
+		var sizeBoundaries = appConstants["Statistics.size.boundaries"].split(",");
+		var percBoundaries = appConstants["Statistics.percentiles"].split(",");
+		Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
+
+		for(i in timeBoundaries) {
+			var j = timeBoundaries[i];
+			$scope.statisticsTimeBoundaries[j+"ms"] = "< " + j + "ms";
+		}
+		for(i in sizeBoundaries) {
+			var j = sizeBoundaries[i];
+			$scope.statisticsSizeBoundaries[j+"B"] = "< " + j + "B";
+		}
+		for(i in percBoundaries) {
+			var j = "p"+percBoundaries[i];
+			$scope.statisticsTimeBoundaries[j] = j;
+			$scope.statisticsSizeBoundaries[j] = j;
+		}
+	};
+	if(appConstants["Statistics.boundaries"]) {
+		populateBoundaries(); //AppConstants already loaded
+	}
+	else {
+		$scope.$on('appConstants', populateBoundaries); //Wait for appConstants trigger to load
+	}
+
+	$scope.statisticsNames = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
 		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
@@ -1655,10 +1685,14 @@ angular.module('iaf.beheerconsole')
 .controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', 'SweetAlert', function($scope, Api, Poller, $state, SweetAlert) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
+	$scope.searchFilter = "";
 
 	Poller.add("schedules", function(data) {
 		$.extend($scope, data);
 	}, true, 5000);
+	$scope.$on('$destroy', function() {
+		Poller.remove("schedules");
+	});
 
 	$scope.start = function() {
 		Api.Put("schedules", {action: "start"});
@@ -1701,11 +1735,13 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			name:"",
+			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
 			interval:-1,
 			message:"",
+			description:"",
 			locker:false,
 			lockkey:"",
 			persistent:true,
@@ -1716,12 +1752,14 @@ angular.module('iaf.beheerconsole')
 		$scope.state = [];
 
 		fd.append("name", $scope.form.name);
+		fd.append("group", $scope.form.group);
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
+		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 
@@ -1729,11 +1767,13 @@ angular.module('iaf.beheerconsole')
 			$scope.addAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
+					group:"",
 					adapter:"",
 					receiver:"",
 					cron:"",
 					interval:-1,
 					message:"",
+					description:"",
 					locker:false,
 					lockkey:"",
 					persistent:true,
@@ -1743,7 +1783,6 @@ angular.module('iaf.beheerconsole')
 			$scope.addAlert("warning", error);
 		}, false);
 	};
-
 }])
 
 .controller('EditScheduleCtrl', ['$scope', 'Api', 'Misc', '$stateParams', '$state', function($scope, Api, Misc, $stateParams, $state) {
@@ -1756,11 +1795,13 @@ angular.module('iaf.beheerconsole')
 
 	$scope.form = {
 			name:"",
+			group:"",
 			adapter:"",
 			receiver:"",
 			cron:"",
 			interval:-1,
 			message:"",
+			description:"",
 			locker:false,
 			lockkey:"",
 			persistent:true,
@@ -1769,11 +1810,13 @@ angular.module('iaf.beheerconsole')
 	Api.Get(url, function(data) {
 		$scope.form = {
 				name: data.name,
+				group: data.group,
 				adapter: data.adapter,
 				receiver: data.receiver,
 				cron: data.triggers[0].cronExpression,
 				interval: -1,
 				message: data.message,
+				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
 				persistent: true,
@@ -1785,12 +1828,14 @@ angular.module('iaf.beheerconsole')
 		$scope.state = [];
 
 		fd.append("name", $scope.form.name);
+		fd.append("group", $scope.form.group);
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
+		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
 		fd.append("lockkey", $scope.form.lockkey);
 

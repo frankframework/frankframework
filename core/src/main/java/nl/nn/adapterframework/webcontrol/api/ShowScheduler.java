@@ -179,14 +179,14 @@ public final class ShowScheduler extends Base {
 			List<String> jobGroupNames = scheduler.getJobGroupNames();
 
 			for(String jobGroupName : jobGroupNames) {
-				Map<String, Object> jobsInGroup = new HashMap<String, Object>();
+				List<Map<String, Object>> jobsInGroupList = new ArrayList<>();
 
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
-					jobsInGroup.put(jobKey.getName(), getJobData(jobKey, false));
+					jobsInGroupList.add(getJobData(jobKey, false));
 				}
-				jobGroups.put(jobGroupName, jobsInGroup);
+				jobGroups.put(jobGroupName, jobsInGroupList);
 			}
 		} catch (Exception e) {
 			log.error("error retrieving job from jobgroup", e);
@@ -448,7 +448,8 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSchedule(MultipartBody input) throws ApiException {
-		return createSchedule(null, input);
+		String jobGroupName = resolveStringFromMap(input, "group");
+		return createSchedule(jobGroupName, input);
 	}
 
 	@PUT
@@ -528,6 +529,8 @@ public final class ShowScheduler extends Base {
 
 		String message = resolveStringFromMap(inputDataMap, "message");
 
+		String description = resolveStringFromMap(inputDataMap, "description");
+		
 		SchedulerHelper sh = manager.getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
@@ -538,6 +541,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setReceiverName(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
+		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
 		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -590,8 +594,8 @@ public final class ShowScheduler extends Base {
 						}
 					}
 	
-					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-							+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
+							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
 					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 						stmt.setString(1, name);
 						stmt.setString(2, jobGroup);
@@ -600,9 +604,10 @@ public final class ShowScheduler extends Base {
 						stmt.setString(5, cronExpression);
 						stmt.setInt(6, interval);
 						stmt.setClob(7, new StringReader(message));
-						stmt.setBoolean(8, hasLocker);
-						stmt.setString(9, lockKey);
-						stmt.setString(10, user);
+						stmt.setString(8, description);
+						stmt.setBoolean(9, hasLocker);
+						stmt.setString(10, lockKey);
+						stmt.setString(11, user);
 		
 						success = stmt.executeUpdate() > 0;
 					}

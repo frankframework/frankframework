@@ -21,7 +21,6 @@ import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -103,7 +102,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			return (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 		}
 	}
-	
+
 	protected void releaseSession(Session session) throws ListenerException {
 		if (isSessionsArePooled()) {
 			closeSession(session);
@@ -125,7 +124,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
 		}
 	}
-	
+
 	protected void releaseReceiver(MessageConsumer receiver, String correlationId) throws ListenerException {
 		if ((isSessionsArePooled() || StringUtils.isNotEmpty(correlationId)) && receiver != null) {
 			try {
@@ -179,43 +178,44 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
-	
 		try {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
-	
+
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
-				Session session=null;
-				
-	
+
 				log.debug(getLogPrefix()+"sending reply message with correlationID [" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageSent=(javax.jms.Message)rawMessageOrWrapper; // cast can be safely done because javax.jms.Message is serializable, so no MessageWrapper in this case
-					long expiration=messageSent.getJMSExpiration();
-					if (expiration!=0) {
-						timeToLive=expiration-new Date().getTime();
-						if (timeToLive<=0) {
-							log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-							timeToLive=1000;
-							// In case of a temporary queue it might already
-							// have disappeared.
-							ignoreInvalidDestinationException = true;
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
 						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
 					}
 				}
-				if (threadContext!=null) {
-					session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-				}
+				Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
 						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
-						releaseSession(session);					 
+						releaseSession(session);
 					}
-				}  else {
+				} else {
 					send(session, replyTo, cid, plr.getResult().asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
@@ -223,9 +223,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					log.debug(getLogPrefix()+"itself has no sender to send the result (An enclosing Receiver might still have one).");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+
-							"no replyTo address found or not configured to use replyTo, using default destination" 
-							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					getSender().sendMessage(plr.getResult(), null);
 				}
@@ -266,10 +264,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			throw new ListenerException(e);
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 */
@@ -277,7 +275,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public javax.jms.Message getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
-	
+
 	@Override
 	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeOutException {
 		javax.jms.Message msg = getRawMessageFromDestination(correlationId, threadContext);
@@ -358,7 +356,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 	
 
-
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
 	}
@@ -367,9 +364,5 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
-
-
-
-
 
 }
