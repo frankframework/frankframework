@@ -1,6 +1,4 @@
-FROM mcr.microsoft.com/mssql/server
-COPY sqljdbc_xa.dll /opt/mssql-tools/bin/sqljdbc_xa.dll
+FROM mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04
 COPY create_user.sql /
-COPY xa_install.sql /
 COPY dockerInit.sh /
 CMD /bin/bash /dockerInit.sh
