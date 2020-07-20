@@ -142,15 +142,18 @@ public class PullingListenerContainer implements IThreadCountControllable {
 				}
 			} catch (InterruptedException e) {
 				log.warn("polling interrupted", e);
+			} finally {
+				log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
+				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+					receiver.stopRunning();
+				}
+				receiver.closeAllResources();
+				NDC.remove();
 			}
-			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
-			receiver.stopRunning();
-			receiver.closeAllResources();
-			NDC.remove();
 		}
 	}
-    
-    private class ListenTask implements SchedulingAwareRunnable {
+
+	private class ListenTask implements SchedulingAwareRunnable {
 
 		public boolean isLongLived() {
 			return false;

@@ -3,7 +3,7 @@
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="SchedulerCtrl">
 	<div class="row">
-		<div class="col-lg-12" ng-if="::scheduler.name">
+		<div class="col-lg-12" ng-show="::scheduler.name">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<div ng-if="databaseSchedulesEnabled" class="pull-right">
@@ -85,22 +85,31 @@
 							</tbody>
 						</table>
 					</div>
+					<div class="col-md-12 space-15">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Search ..." ng-model="searchFilter" ng-model-options="{debounce: 500}" name="search" />
+							<i ng-show="searchFilter.length" ng-click="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+							<span class="input-group-addon">
+								<i class="fa fa-search" aria-hidden="true"></i>
+							</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
 		<div class="col-lg-12" ng-repeat="(jobGroupName, jobs) in jobs">
-			<div ng-init="showContent = true" class="ibox float-e-margins">
+			<div ng-init="showContent = true" class="ibox float-e-margins" ng-if="(jobs | filter:searchFilter:name).length > 0">
 				<div ng-click="showContent = !showContent" class="ibox-title pointer">
 					<div class="ibox-tools pull-right">
 						<a> <i class="fa fa-chevron-{{(showContent) ? 'up' : 'down' }}"></i></a>
 					</div>
 					<h4>Jobgroup: {{::jobGroupName}}</h4>
 				</div>
-				<div class="ibox-content" ng-repeat="job in jobs" ng-if="showContent">
+				<div class="ibox-content" ng-repeat="job in jobs | orderBy:'name' | filter:searchFilter:name" ng-if="showContent">
 					<div class="col-md-12">
 						<div class="pull-right">
 							<button ng-if="::job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
-							<button title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
+							<button ng-if="::job.type=='DATABASE'" title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
 							<button ng-if="job.state=='PAUSED'" title="Resume Job" class="btn btn-warning btn-xs" type="button" ng-click="resume(jobGroupName, job.name)"><i class="fa fa-play"></i> Resume</button>
 							<button ng-if="job.state!='PAUSED'" title="Pause Job" class="btn btn-warning btn-xs" type="button" ng-click="pause(jobGroupName, job.name)"><i class="fa fa-pause"></i> Pause</button>
 							<button title="Trigger Job" class="btn btn-info btn-xs" type="button" ng-click="trigger(jobGroupName, job.name)"><i class="fa fa-arrow-circle-o-right"></i> Trigger</button>
