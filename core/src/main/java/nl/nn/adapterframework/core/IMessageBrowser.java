@@ -28,6 +28,11 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 
 	enum SortOrder { NONE, ASC, DESC };
 
+	public static final String TYPE_ERRORSTORAGE="E";
+	public static final String TYPE_MESSAGESTORAGE="M";
+	public static final String TYPE_MESSAGELOG_PIPE="L";
+	public static final String TYPE_MESSAGELOG_RECEIVER="A";
+
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
 	 */
