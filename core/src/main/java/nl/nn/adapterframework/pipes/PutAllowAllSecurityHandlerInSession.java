@@ -15,7 +15,6 @@ message   Copyright 2018 Nationale-Nederlanden
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.AllowAllSecurityHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -35,39 +34,13 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Peter Leeuwenburgh
  */
 public class PutAllowAllSecurityHandlerInSession extends FixedForwardPipe {
-	private String sessionKey = "securityHandler";
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-
-		// check the presence of a sessionKey
-		if (getSessionKey() == null) {
-			throw new ConfigurationException(
-					getLogPrefix(null) + "has a null value for sessionKey");
-		}
-	}
 
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		AllowAllSecurityHandler allowAllSecurityHandler = new AllowAllSecurityHandler(false);
-
-		session.put(this.getSessionKey(), allowAllSecurityHandler);
-
+		session.put(IPipeLineSession.securityHandlerKey, allowAllSecurityHandler);
 		if (log.isDebugEnabled()) {
-			log.debug(
-					getLogPrefix(session) + "stored [" + allowAllSecurityHandler
-							+ "] in pipeLineSession under key ["
-							+ getSessionKey() + "]");
+			log.debug(getLogPrefix(session) + "stored [" + allowAllSecurityHandler + "] in pipeLineSession under key [" + IPipeLineSession.securityHandlerKey + "]");
 		}
-
 		return new PipeRunResult(getForward(), message);
-	}
-
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(String newSessionKey) {
-		sessionKey = newSessionKey;
 	}
 }
