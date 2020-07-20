@@ -2,18 +2,8 @@ version: "3"
 services:
     ms-sqlserver:
         build: .
-        environment:
-            SA_PASSWORD: "MssqlPass123"
-            ACCEPT_EULA: "Y"
-            MSSQL_AGENT_ENABLED: "true"
-            MSSQL_RPC_PORT: "135"
-            MSSQL_DTC_TCP_PORT: "51000"
         volumes:
           - db_data:/var/opt/mssql
-        ports:
-            - "1433:1433"
-            - "135:135"
-            - "51000:51000"
         container_name: iaf-test-ms-sqlserver
         hostname: ms-sqlserver
 volumes:

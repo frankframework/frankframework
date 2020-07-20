@@ -29,7 +29,7 @@
 	/>
 
 	<Resource 
-		name="jdbc/ibis4test-mssql-microsoft" 
+		name="jdbc/ibis4test-mssql" 
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"

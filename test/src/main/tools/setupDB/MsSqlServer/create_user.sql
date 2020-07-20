@@ -4,10 +4,11 @@
 USE master;
 GO
 
-print "enable jdbc XA support"
+print 'enable jdbc XA support';
+-- see https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-configure-msdtc-docker?view=sql-server-2017
 EXEC sp_sqljdbc_xa_install
 
-print 'create user testiaf_user'
+print 'create user testiaf_user';
 CREATE LOGIN testiaf_user WITH PASSWORD = 'testiaf_user00';
 GO
 
