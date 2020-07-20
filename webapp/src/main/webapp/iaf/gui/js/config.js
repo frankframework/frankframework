@@ -65,6 +65,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		url: "/status?configuration&filter&search",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
+		reloadOnSearch: false,
 		data: {
 			pageTitle: 'Adapter Status',
 			breadcrumbs: 'Adapter > Status',
@@ -213,7 +214,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/ShowConfiguration.html",
 		data: {
 			pageTitle: 'Configurations',
-			breadcrumbs: 'Configuration > Show',
+			breadcrumbs: 'Configurations > Show',
 		}
 	})
 	.state('pages.upload_configuration', {
@@ -254,7 +255,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/ShowLogging.html",
 		data: {
 			pageTitle: 'Logging',
-			breadcrumbs: 'Show Logging'
+			breadcrumbs: 'Logging'
 		},
 		params : {
 			directory : null,
@@ -282,7 +283,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/TestPipeline.html",
 		data: {
 			pageTitle: 'Test a PipeLine',
-			breadcrumbs: 'Test > PipeLine'
+			breadcrumbs: 'Testing > Test a PipeLine'
 		}
 	})
 	.state('pages.test_servicelistener', {
@@ -290,7 +291,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/TestServiceListener.html",
 		data: {
 			pageTitle: 'Test a ServiceListener',
-			breadcrumbs: 'Test > ServiceListener'
+			breadcrumbs: 'Testing > Test a ServiceListener'
 		}
 	})
 	.state('pages.webservices', {
@@ -408,7 +409,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Larva',
-			breadcrumbs: 'Test > Larva',
+			breadcrumbs: 'Testing > Larva',
 			iframe: true
 		},
 		controller: function($scope, Misc, $interval){
@@ -420,7 +421,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Ladybug',
-			breadcrumbs: 'Test > Ladybug',
+			breadcrumbs: 'Testing > Ladybug',
 			iframe: true
 		},
 		controller: function($scope, Misc, $timeout){
