@@ -56,12 +56,9 @@
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mysql://localhost:3306/testiaf?disableMariaDbDriver"
+		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
-		maxActive="50"
-		maxIdle="2"
-		maxWait="30000"
 	/>
 
 	<Resource 
