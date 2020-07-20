@@ -89,7 +89,7 @@
 		username="testiaf_user"
 		password="testiaf_user00"
 		driverClassName="com.mysql.cj.jdbc.Driver"
-		url="jdbc:mysql://localhost:3306/testiaf"
+		url="jdbc:mysql://localhost:3306/testiaf?disableMariaDbDriver"
 		maxActive="50"
 		maxIdle="2"
 		maxWait="30000"
@@ -107,7 +107,19 @@
 		maxIdle="10" 
 		maxWait="-1"
 	/>
-
+	
+	<Resource
+		name="jdbc/ibis4test-mariadb"
+		type="javax.sql.DataSource"
+		username="testiaf_user"
+		password="testiaf_user00"
+		driverClassName="org.mariadb.jdbc.Driver"
+		url="jdbc:mariadb://localhost:3306/testiaf"
+		maxActive="50"
+		maxIdle="2"
+		maxWait="30000"
+	/>
+	
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
