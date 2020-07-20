@@ -52,24 +52,13 @@
 
 	<Resource
 		name="jdbc/ibis4test-mysql"
-		type="javax.sql.DataSource"
-		username="testiaf_user"
-		password="testiaf_user00"
-		driverClassName="com.mysql.cj.jdbc.Driver"
-		url="jdbc:mysql://localhost:3306/testiaf"
-		maxActive="50"
-		maxIdle="2"
-		maxWait="30000"
-	/>
-
-	<Resource
-		name="jdbc/ibis4test-mysql-xa"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
 		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
+		allowPublicKeyRetrieval="true"
 	/>
 
 	<Resource 
