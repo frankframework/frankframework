@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.jms.JmsBrowser;
+import nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 
 /**
@@ -71,6 +72,8 @@ public final class BrowseQueue extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		String jmsRealm = null, destination = null, type = null;
+		boolean rowNumbersOnly = false;
+		boolean showPayload = false;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -82,6 +85,12 @@ public final class BrowseQueue extends Base {
 			}
 			if(key.equalsIgnoreCase("type")) {
 				type = entry.getValue().toString();
+			}
+			if(key.equalsIgnoreCase("rowNumbersOnly")) {
+				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("payload")) {
+				showPayload = Boolean.parseBoolean(entry.getValue().toString());
 			}
 		}
 
@@ -118,8 +127,9 @@ public final class BrowseQueue extends Base {
 					} catch (Exception e) {
 						log.warn("Could not get insertDate",e);
 					}
-					message.put("type", item.getType());
-					message.put("label", item.getLabel());
+					if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
+						message.put("text", ((JmsMessageBrowserIteratorItem) item).getText());
+					}
 	
 					messages.add(message);
 				}
@@ -127,8 +137,10 @@ public final class BrowseQueue extends Base {
 
 			log.debug("Browser returned " + messages.size() + " messages");
 			returnMap.put("numberOfMessages", messages.size());
-			returnMap.put("messages", messages);
 
+			if(!rowNumbersOnly) {
+				returnMap.put("messages", messages);
+			}
 		}
 		catch (Exception e) {
 			throw new ApiException("Error occured browsing messages", e);

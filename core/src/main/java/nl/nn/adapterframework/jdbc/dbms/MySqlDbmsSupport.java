@@ -72,7 +72,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
 		} else {
-			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
@@ -84,7 +84,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED";
 		} else {
-			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
