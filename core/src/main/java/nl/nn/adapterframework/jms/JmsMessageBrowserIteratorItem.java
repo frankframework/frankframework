@@ -33,6 +33,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 		this.msg=msg;
 	}
 
+	@Override
 	public String getId() throws ListenerException {
 		try {
 			return msg.getJMSMessageID();
@@ -40,6 +41,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getOriginalId() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_ORIGINAL_ID);
@@ -47,6 +49,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getCorrelationId() throws ListenerException {
 		try {
 			return msg.getJMSCorrelationID();
@@ -54,17 +57,18 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public Date getInsertDate() throws ListenerException {
 		try {
-			Date date=new Date(msg.getLongProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE));
-			if (date!=null) {
-				return date;
+			if (msg.getObjectProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE)!=null) {
+				return new Date(msg.getLongProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE));
 			}
 			return new Date(msg.getJMSTimestamp());
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public Date getExpiryDate() throws ListenerException {
 		try {
 			return new Date(msg.getJMSExpiration());
@@ -72,6 +76,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getType() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_TYPE);
@@ -79,6 +84,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getHost() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_HOST);
@@ -86,6 +92,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getCommentString() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_COMMENTS);
@@ -93,6 +100,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+	@Override
 	public String getLabel() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_LABEL);
@@ -125,6 +133,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 		}
 	}
 
+	@Override
 	public void release() {
 		// close never required, as message is serializable
 	}

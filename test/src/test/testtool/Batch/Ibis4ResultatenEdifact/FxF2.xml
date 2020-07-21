@@ -1,4 +1,4 @@
 <FXF>
   <Transfer_name>BATCHFF2</Transfer_name>
-  <Local_File>c:\temp\testdata\i4rEdifact.txt</Local_File>
+  <Local_File>${testdata.dir}/i4rEdifact.txt</Local_File>
 </FXF>

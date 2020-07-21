@@ -1,6 +1,7 @@
 <manageDatabaseREQ>
 	<select>
 		<tableName>IBISSTORE</tableName>
+		<where>SLOTID IN ('${applicationId}/MessageStoreListener', '${applicationId}/MessageStoreListener2')</where>
 		<order>MESSAGEKEY</order>
 	</select>
 </manageDatabaseREQ>

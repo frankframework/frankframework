@@ -217,7 +217,12 @@ public class TransformerPool {
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
 	 */
 	public static TransformerPool getUtilityInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
-		return new TransformerPool(xsltString, null, xsltVersion, null);
+		return new TransformerPool(xsltString, null, xsltVersion, null) {
+			@Override
+			public void close() {
+				// Not closing UtilityInstance, there are no ClassLoader references, and as it's shared between adapters it should never be closed.
+			}
+		};
 	}
 
 	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
@@ -391,6 +396,10 @@ public class TransformerPool {
 	}
 
 	protected Transformer getTransformer() throws TransformerConfigurationException {
+		if(pool == null) {
+			throw new IllegalStateException("TransformerPool does not exist, did you forget to call open()?");
+		}
+
 		try {
 			reloadTransformerPool();
 			return (Transformer)pool.borrowObject();

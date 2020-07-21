@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
@@ -25,14 +24,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.Invocable;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.function.Consumer;
 
-public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
+public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
 	private Logger log = LogUtil.getLogger(this);
-	private NashornScriptEngine engine;
+	private ScriptEngine engine;
 	private String alias;
 
 	@Override
@@ -49,7 +49,7 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 	@Override
 	public void startRuntime() {
 		ScriptEngineManager engineManager = new ScriptEngineManager();
-		engine = (NashornScriptEngine) engineManager.getEngineByName("nashorn");
+		engine = engineManager.getEngineByName("nashorn");
 
 		if (StringUtils.isNotEmpty(alias))
 			executeScript(alias + " = this;");
@@ -82,7 +82,7 @@ public class Nashorn implements JavascriptEngine<NashornScriptEngine> {
 	}
 
 	@Override
-	public NashornScriptEngine getEngine() {
+	public ScriptEngine getEngine() {
 		return engine;
 	}
 
