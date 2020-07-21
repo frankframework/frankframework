@@ -43,7 +43,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 5"; // Mariadb has no 'skip locked'
 		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait; 
 		}
 	}
 
