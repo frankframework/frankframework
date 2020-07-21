@@ -15,6 +15,15 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.jdbc.JdbcException;
+
 /**
 * Support for MariaDB.
 * 
@@ -24,6 +33,54 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	@Override
 	public Dbms getDbms() {
 		return Dbms.MARIADB;
+	}
+
+	@Override
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		if (wait < 0) {
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 5"; // Mariadb has no 'skip locked'
+		} else {
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
+		}
+	}
+
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		if (wait < 0) {
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:""); // Mariadb has no 'skip locked'
+		} else {
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
+		}
+	}
+
+	@Override
+	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Clob clob=rs.getStatement().getConnection().createClob();
+		return clob;
+	}
+
+	@Override
+	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Clob clob=rs.getStatement().getConnection().createClob();
+		return clob;
+	}
+
+	
+	@Override
+	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Blob blob=rs.getStatement().getConnection().createBlob();
+		return blob;
+	}
+	@Override
+	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Blob blob=rs.getStatement().getConnection().createBlob();
+		return blob;
 	}
 
 }

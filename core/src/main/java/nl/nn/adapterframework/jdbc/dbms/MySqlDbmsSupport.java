@@ -110,7 +110,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getAutoIncrementKeyFieldType() {
-		return "AUTOINCREMENT";
+		return "INT AUTO_INCREMENT";
 	}
 
 	@Override

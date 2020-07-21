@@ -9,6 +9,7 @@ services:
       MYSQL_DATABASE: testiaf
       MYSQL_USER: testiaf_user
       MYSQL_PASSWORD: testiaf_user00
+      wait_timeout: 10
     ports:
       - 3306:3306
     container_name: iaf-test-mariadb
