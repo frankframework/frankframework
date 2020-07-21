@@ -691,9 +691,9 @@ angular.module('iaf.beheerconsole')
 	$scope.configurationFlowDiagram;
 	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
-		if(configurationName == "All")
+		if(configurationName == "All") {
 			url += "?flow=true";
-		else {
+		} else {
 			url += configurationName + "/flow";
 		}
 		$scope.configurationFlowDiagram = url;
