@@ -101,7 +101,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
         }
         log.debug("Initializing key manager");
         if (StringUtils.isEmpty(algorithm)) {
-        	algorithm= KeyManagerFactory.getDefaultAlgorithm();
+        	algorithm=KeyManagerFactory.getDefaultAlgorithm();
         	log.debug("using default KeyManager algorithm ["+algorithm+"]");
         } else {
         	log.debug("using configured KeyManager algorithm ["+algorithm+"]");
