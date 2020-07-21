@@ -1,5 +1,5 @@
 <module>
-	<adapter name="read message of queue" active="${active.jms}">
+	<adapter name="read message of queue" active="${active.tibco}">
 		<receiver
 			name="test_esb_receiver"
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
@@ -34,7 +34,7 @@
 
 		</pipeline>
 	</adapter>
-	<adapter name="put message on queue" active="${active.jms}">
+	<adapter name="put message on queue" active="${active.tibco}">
 		<receiver
 			name="Put On"
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
