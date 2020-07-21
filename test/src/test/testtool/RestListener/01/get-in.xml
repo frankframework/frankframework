@@ -1,1 +1,1 @@
-<filename>${testdata.dir}\rest\id.xml</filename>
+<filename>${testdata.dir}${file.separator}rest${file.separator}id.xml</filename>
