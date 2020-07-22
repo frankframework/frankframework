@@ -43,8 +43,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";
+	public String getTimestampAsDate(String columnName) {
+		return "formatdatetime("+columnName+",'yyyy-MM-dd')";
 	}
 
 	@Override

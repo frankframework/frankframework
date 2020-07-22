@@ -82,6 +82,10 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		String formattedDate = formatter.format(date);
 		return "CONVERT(datetime, '" + formattedDate + "', 120)";
 	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "CONVERT(VARCHAR(10), "+columnName+", 120)";
+	}
 
 
 	@Override
@@ -182,11 +186,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
-	}
-
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}
 
 	@Override

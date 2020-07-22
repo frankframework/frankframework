@@ -61,8 +61,7 @@
 		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
-		connectTimeout="2000"
-		socketTimeout="2000"
+		socketTimeout="100000"
 	/>
 
 	<Resource
