@@ -2,9 +2,11 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertEquals;
@@ -161,6 +163,44 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	}
 
+	/*
+	@Test
+	public void testCreateTransformer() throws Exception {
+		String xslt = "<xsl:stylesheet version=\"1.0\"\n" + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n" + "\n" + "<xsl:template match=\"/\">\n" +
+				"  <html>\n" + "  <body>\n" + "    <h2>My CD Collection</h2>\n" + "    <table border=\"1\">\n" + "      <tr bgcolor=\"#9acd32\">\n" +
+				"        <th>Title</th>\n" + "        <th>Artist</th>\n" + "      </tr>\n" + "      <xsl:for-each select=\"catalog/cd\">\n" +
+				"        <tr>\n" + "          <td><xsl:value-of select=\"title\"/></td>\n" + "          <td><xsl:value-of select=\"artist\"/></td>\n" +
+				"        </tr>\n" + "      </xsl:for-each>\n" + "    </table>\n" + "  </body>\n" + "  </html>\n" + "</xsl:template>\n" +
+				"\n" + "</xsl:stylesheet>";
+		Transformer t = XmlUtils.createTransformer(xslt);
+		assertEquals( "ads", t.getOutputProperties().stringPropertyNames().toArray()[3]);
+	}*/ // will edit this case
+
+	@Test
+	public void testEncodeChars() {
+		String s = "test&";
+		String encoded = XmlUtils.encodeChars(s);
+		String decoded = XmlUtils.decodeChars(encoded);
+		assertEquals("test&amp;", encoded);
+		assertEquals("test&", decoded);
+	}
+
+	@Test
+	public void testEncodeUrl(){
+		String a = XmlUtils.encodeURL("https://wearefrank&.nl/");
+		assertEquals("https%3A%2F%2Fwearefrank%26.nl%2F", a);
+	}
+
+	@Test
+	public void testIsPrintableUnicodeChar(){
+		boolean a = XmlUtils.isPrintableUnicodeChar(10);
+		boolean b = XmlUtils.isPrintableUnicodeChar(10001);
+		boolean c = XmlUtils.isPrintableUnicodeChar(-5);
+
+		assertEquals(true, a);
+		assertEquals(true, b);
+		assertEquals(false, c);
+	}
 
 
 }
