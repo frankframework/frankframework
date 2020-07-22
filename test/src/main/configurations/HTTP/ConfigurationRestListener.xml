@@ -250,7 +250,7 @@
 			</exits>
 
 			<pipe name="createFileNameKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
+				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}${file.separator}rest${file.separator}result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>
 
