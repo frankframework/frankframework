@@ -103,7 +103,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-3 configurationFlow">
+                        <div class="col-md-3 configurationFlow" ng-if="configurationFlowDiagram">
                             <a ng-href="{{configurationFlowDiagram}}" target="_blank"><img ng-src="{{configurationFlowDiagram}}" alt="Configuration Flow Diagram"></a>
                         </div>
                     </div>
@@ -131,7 +131,7 @@
                                 <button ng-show="selectedConfiguration != 'All' && reload" disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
                                 <button ng-show="selectedConfiguration == 'All' && !reload" title="Full Reload" ng-click="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
                                 <button ng-show="selectedConfiguration == 'All' && reload" disabled="disabled" title="Full Reload" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                                <button title="Show Adapter References" ng-click="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
+                                <button ng-if="configurationFlowDiagram" title="Show Adapter References" ng-click="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
                             </div>
                         </div>
                         <div class="ibox-left">
