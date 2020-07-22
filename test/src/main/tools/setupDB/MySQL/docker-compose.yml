@@ -6,6 +6,9 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: MySqlRootPassword
+      innodb_lock_wait_timeout: 5
+      wait_timeout: 5
+      lock_wait_timeout: 5
     ports:
       - 3306:3306
     container_name: iaf-test-my-sql
