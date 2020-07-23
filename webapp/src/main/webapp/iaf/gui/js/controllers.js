@@ -2058,7 +2058,9 @@ angular.module('iaf.beheerconsole')
 
 	$scope.messages = [];
 	$scope.numberOfMessages = -1;
+	$scope.processing = false;
 	$scope.submit = function(formData) {
+		$scope.processing = true;
 		if(!formData || !formData.destination) {
 			$scope.error = "Please specify a jms realm and destination!";
 			return;
@@ -2074,8 +2076,10 @@ angular.module('iaf.beheerconsole')
 				$scope.messages = [];
 			}
 			$scope.error = "";
+			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
+			$scope.processing = false;
 		});
 	};
 
@@ -2091,6 +2095,7 @@ angular.module('iaf.beheerconsole')
 
 		$scope.messages = [];
 		$scope.numberOfMessages = -1;
+		$scope.processing = false;
 	};
 }])
 
