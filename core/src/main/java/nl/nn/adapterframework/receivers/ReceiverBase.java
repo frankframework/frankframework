@@ -287,7 +287,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	};
 
 	private class ProcessResultCacheItem {
-		int tryCount;
+		int receiveCount;
 		Date receiveDate;
 		String comments;
 	}
@@ -1316,11 +1316,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		if (cacheItem==null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for messageId ["+messageId+"]");
 			cacheItem= new ProcessResultCacheItem();
-			cacheItem.tryCount=1;
+			cacheItem.receiveCount=1;
 			cacheItem.receiveDate=receivedDate;
 		} else {
-			cacheItem.tryCount++;
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"increased try count for messageId ["+messageId+"] to ["+cacheItem.tryCount+"]");
+			cacheItem.receiveCount++;
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"increased try count for messageId ["+messageId+"] to ["+cacheItem.receiveCount+"]");
 		}
 		cacheItem.comments=errorMessage;
 		processResultCache.put(messageId, cacheItem);
@@ -1359,20 +1359,21 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				return false;
 			} else {
 				if (getMaxRetries()<0) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times; maxRetries=["+getMaxRetries()+"]");
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
 					return false;
 				}
-				if (prci.tryCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+				if (prci.receiveCount<=getMaxRetries()) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
 					resetRetryInterval();
 					return false;
 				}
-				warn("message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+				warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
 				String comments="too many retries";
-				if (prci.tryCount>getMaxRetries()+1) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
+				if (prci.receiveCount>getMaxRetries()+1) {
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
 				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
+				prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
 				return true;
 			}
 		} 

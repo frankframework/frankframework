@@ -1,6 +1,12 @@
 FROM mcr.microsoft.com/mssql/server
-COPY sqljdbc_xa.dll /opt/mssql-tools/bin/sqljdbc_xa.dll
 COPY create_user.sql /
-COPY xa_install.sql /
 COPY dockerInit.sh /
+ENV SA_PASSWORD MssqlPass123
+ENV ACCEPT_EULA Y
+ENV MSSQL_AGENT_ENABLED true
+ENV MSSQL_RPC_PORT 135
+ENV MSSQL_DTC_TCP_PORT 51000
+EXPOSE 1433
+EXPOSE 135
+EXPOSE 51000
 CMD /bin/bash /dockerInit.sh
