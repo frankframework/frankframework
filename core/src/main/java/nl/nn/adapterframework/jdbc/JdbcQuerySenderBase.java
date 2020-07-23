@@ -294,8 +294,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
+		} catch (SenderException|TimeOutException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+			throw new SenderException(e);
 		}
 	}
 	
@@ -811,13 +813,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				return new Message(Integer.toString(numRowsAffected));
 			}
 			return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",sqle );
-		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
-		} catch (JMSException e) {
+		} catch (SQLException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing query ["+query+"]",e );
+		} catch (JdbcException|IOException|JMSException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);

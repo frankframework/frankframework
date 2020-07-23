@@ -1,57 +1,56 @@
 <manageDatabaseRLY>
-<completionInformation>
-<returnCode>OK</returnCode>
-</completionInformation>
-<results>
-<result item="1">
-<result>
-  <fielddefinition>
-    <field columnClassName="java.math.BigDecimal" columnDisplaySize="22" columnTypeName="NUMBER" isCurrency="true" name="MESSAGEKEY" precision="38" scale="0" type="NUMERIC"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TYPE" precision="1" scale="0" type="CHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="SLOTID" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="HOST" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="MESSAGEID" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="256" columnTypeName="VARCHAR2" isCurrency="false" name="CORRELATIONID" precision="256" scale="0" type="VARCHAR"/>
-    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="MESSAGEDATE" precision="0" scale="6" type="TIMESTAMP"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="1000" columnTypeName="VARCHAR2" isCurrency="false" name="COMMENTS" precision="1000" scale="0" type="VARCHAR"/>
-    <field columnClassName="oracle.sql.BLOB" columnDisplaySize="4000" columnTypeName="BLOB" isCurrency="false" name="MESSAGE" precision="-1" scale="0" type="BLOB"/>
-    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="EXPIRYDATE" precision="0" scale="6" type="TIMESTAMP"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="LABEL" precision="100" scale="0" type="VARCHAR"/>
-  </fielddefinition>
-  <rowset>
-    <row number="0">
-      <field name="MESSAGEKEY">13513</field>
-      <field name="TYPE">L</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/JmsFFSenderWithRead</field>
-      <field name="HOST">LPAB00000018345</field>
-      <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:15:40:1:1</field>
-      <field name="CORRELATIONID">Test Tool correlation id</field>
-      <field name="MESSAGEDATE">2018-07-13 13:39:34</field>
-      <field name="COMMENTS">no audit trail</field>
-      <field name="MESSAGE">&lt;request action="subcall_java_exception"&gt;&#13;
-	&lt;value&gt;test&lt;/value&gt;&#13;
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="MESSAGEKEY" type="NUMERIC" columnDisplaySize="39" precision="38" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="HOST" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="MESSAGEID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="CORRELATIONID" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="MESSAGEDATE" type="TIMESTAMP" columnDisplaySize="11" precision="0" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="oracle.sql.TIMESTAMP"/>
+					<field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="MESSAGE" type="BLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="oracle.jdbc.OracleBlob"/>
+					<field name="EXPIRYDATE" type="TIMESTAMP" columnDisplaySize="11" precision="0" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="oracle.sql.TIMESTAMP"/>
+					<field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="MESSAGEKEY">161507</field>
+						<field name="TYPE">L</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/JmsFFSenderWithRead</field>
+						<field name="HOST">LPZWNL000019314</field>
+						<field name="MESSAGEID">ID:LPZWNL000019314-61775-1594817770290-3:27:22:1:1</field>
+						<field name="CORRELATIONID">Test Tool correlation id</field>
+						<field name="MESSAGEDATE">2020-07-15 15:44:07</field>
+						<field name="COMMENTS">no audit trail</field>
+						<field name="MESSAGE">&lt;request action="subcall_java_exception"&gt;
+	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>
-      <field name="EXPIRYDATE">2018-08-12 13:39:34</field>
-      <field name="LABEL" null="true"/>
-    </row>
-    <row number="1">
-      <field name="MESSAGEKEY">13514</field>
-      <field name="TYPE">E</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/JmsFFListener</field>
-      <field name="HOST">LPAB00000018345</field>
-      <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:15:40:1:1</field>
-      <field name="CORRELATIONID">Test Tool correlation id</field>
-      <field name="MESSAGEDATE">2018-07-13 13:39:34</field>
-      <field name="COMMENTS">too many retries; ERROR</field>
-      <field name="MESSAGE">&lt;request action="subcall_java_exception"&gt;
-	&lt;value&gt;**st&lt;/value&gt;
+						<field name="EXPIRYDATE">2020-08-14 15:44:07</field>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="1">
+						<field name="MESSAGEKEY">161508</field>
+						<field name="TYPE">E</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/JmsFFListener</field>
+						<field name="HOST">LPZWNL000019314</field>
+						<field name="MESSAGEID">ID:LPZWNL000019314-61775-1594817770290-3:27:22:1:1</field>
+						<field name="CORRELATIONID">Test Tool correlation id</field>
+						<field name="MESSAGEDATE">2020-07-15 15:44:07</field>
+						<field name="COMMENTS">too many retries; ERROR</field>
+						<field name="MESSAGE">&lt;request action="subcall_java_exception"&gt;
+	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>
-      <field name="EXPIRYDATE" null="true"/>
-      <field name="LABEL" null="true"/>
-    </row>
-  </rowset>
-</result>
-
-</result>
-</results>
+						<field name="EXPIRYDATE" null="true"/>
+						<field name="LABEL" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
 </manageDatabaseRLY>

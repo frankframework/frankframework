@@ -60,6 +60,7 @@ public interface IDbmsSupport {
 
 	String getTimestampFieldType();
 	String getDatetimeLiteral(Date date);
+	String getTimestampAsDate(String columnName);
 
 	String getClobFieldType();
 	boolean mustInsertEmptyClobBeforeData();

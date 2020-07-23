@@ -100,6 +100,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		return false;
 	}
 
+	@Override
 	public int getMessageCount() throws ListenerException {
 		QueueBrowser queueBrowser=null;
 		Session session = null;

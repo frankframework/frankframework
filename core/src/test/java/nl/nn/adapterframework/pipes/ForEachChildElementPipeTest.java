@@ -17,6 +17,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -797,6 +798,27 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		assertEquals(expected, actual);
 	}
+
+	@Test
+	public void testBulk2Parallel() throws Exception, IOException {
+		pipe.setSender(getElementRenderer());
+		pipe.setTargetElement("XDOC");
+		pipe.setBlockSize(4);
+		pipe.setParallel(true);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setMaxChildThreads(2);
+		pipe.setRemoveNamespaces(false);
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+	}
+
 
 	@Test
 	public void testRemoveNamespacesInAttributes() throws Exception, IOException {

@@ -316,6 +316,10 @@ public class ClassUtils {
 	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
 	 */
 	public static String nameOf(ClassLoader classLoader) {
+		if(classLoader == null) {
+			return "<null>";
+		}
+
 		String logPrefix = nameOf((Object) classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
 		if(classLoader instanceof IConfigurationClassLoader) {
 			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();

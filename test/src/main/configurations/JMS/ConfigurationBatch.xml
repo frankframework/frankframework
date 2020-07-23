@@ -3,8 +3,10 @@
 		<receiver name="BatchFileListener" pollInterval="1">
 			<listener 
 				className="nl.nn.adapterframework.receivers.DirectoryListener" 
-				inputDirectory="${testdata.dir}/batch/in"
-				outputDirectory="${testdata.dir}/batch/out"
+				inputFolder="${testdata.dir}/batch/in"
+				processedFolder="${testdata.dir}/batch/out"
+				errorFolder="${testdata.dir}/batch/error"
+				createFolders="true"
 				wildcard="*.*"
 				overwrite="true"
 				fileTimeSensitive="true"
@@ -13,8 +15,8 @@
 
 		<receiver 
 			name="FxfListener" 
-            maxRetries="0"
-            active="${active.fxf}">
+			maxRetries="0"
+			active="${active.fxf}">
 			<listener 
 				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
 				destinationName="jms/fxf_request" 
@@ -25,7 +27,7 @@
 				workDirectory="yyyy" 
 				fxfDestinationName="zzzz" 
 			/>
-	        <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				jmsRealm="jdbc" 
 				slotId="${applicationId}/BatchFxfListener" />
 		</receiver>
