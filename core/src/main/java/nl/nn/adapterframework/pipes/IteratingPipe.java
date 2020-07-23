@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -171,6 +172,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		if (getMaxChildThreads()>0) {
 			childThreadSemaphore=new Semaphore(getMaxChildThreads());
+		}
+		if (isParallel() && getTaskExecutor()==null) {
+			setTaskExecutor(new ConcurrentTaskExecutor());
 		}
 	}
 
@@ -430,7 +434,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						count++;
 						String itemResult;
 						if (pse.getThrowable() == null) {
-							itemResult = pse.getReply().toString();
+							itemResult = pse.getReply().asString();
 						} else {
 							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}

@@ -239,5 +239,17 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		PipeRunResult prr = doPipe(new Message(""));
 		MatchUtils.assertXmlEquals("null iterator", expected, prr.getResult().asString(), true);
 	}
-	
+
+	@Test
+	public void testParallel() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		configurePipe();
+		pipe.start();
+		testTenLines();
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
 }
