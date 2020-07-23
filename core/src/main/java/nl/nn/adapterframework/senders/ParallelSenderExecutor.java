@@ -62,7 +62,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			sk.addValue(t2-t1);
 		} finally {
 			if (semaphore!=null) {
-				semaphore.release(); // might need to think/test if race conditions between semaphore and guard may exist
+				semaphore.release();
 			}
 			guard.releaseResource();
 		}

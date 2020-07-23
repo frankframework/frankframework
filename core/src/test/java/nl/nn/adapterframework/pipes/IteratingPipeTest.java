@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -245,6 +246,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		pipe.setSender(getElementRenderer(false));
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		configurePipe();
 		pipe.start();
 		testTenLines();

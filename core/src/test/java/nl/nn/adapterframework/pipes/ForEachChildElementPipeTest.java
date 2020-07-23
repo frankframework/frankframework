@@ -17,6 +17,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -804,6 +805,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setTargetElement("XDOC");
 		pipe.setBlockSize(4);
 		pipe.setParallel(true);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setMaxChildThreads(2);
 		pipe.setRemoveNamespaces(false);
 		configurePipe();

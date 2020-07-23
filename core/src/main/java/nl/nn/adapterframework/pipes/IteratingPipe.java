@@ -27,7 +27,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -172,9 +171,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		if (getMaxChildThreads()>0) {
 			childThreadSemaphore=new Semaphore(getMaxChildThreads());
-		}
-		if (isParallel() && getTaskExecutor()==null) {
-			setTaskExecutor(new ConcurrentTaskExecutor());
 		}
 	}
 
@@ -407,6 +403,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			} finally {
 				if (!isParallel() && childThreadSemaphore!=null) {
+					// only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
 					childThreadSemaphore.release();
 				}
 			}
