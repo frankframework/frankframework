@@ -219,9 +219,6 @@ public class Adapter implements IAdapter, NamedBean {
 		if (sb.length() > 0) {
 			composedHideRegex = sb.toString();
 		}
-		if (!configurationSucceeded) {
-			throw new ConfigurationException("Configuration of Adapter ["+getName()+"] dit not succeed");
-		}
 	}
 
 	public void configureReceiver(IReceiver receiver) {
