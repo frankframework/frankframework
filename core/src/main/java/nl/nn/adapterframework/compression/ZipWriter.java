@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.compression;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,12 +22,13 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Helper class to create Zip archives.
@@ -98,25 +96,14 @@ public class ZipWriter {
 		}
 	}
 
-	public void writeEntry(String filename, Object contents, boolean close, String charset) throws CompressionException, IOException {
+	public void writeEntry(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
 		if (StringUtils.isEmpty(filename)) {
 			throw new CompressionException("filename cannot be empty");		
 		}
 		openEntry(filename);
 		if (contents!=null) {
-			if (contents instanceof byte[]) {
-				getZipoutput().write((byte[])contents);
-			} else if (contents instanceof InputStream) {
-				InputStream is = (InputStream)contents;
-				try {
-					Misc.streamToStream(is,getZipoutput());
-				} finally {
-					if (close) {
-						is.close();
-					}
-				}
-			} else {
-				getZipoutput().write(contents.toString().getBytes(charset));
+			try (InputStream is = contents.asInputStream( charset)) {
+				Misc.streamToStream(is,getZipoutput());
 			}
 		} else { 
 			log.warn("contents of zip entry ["+filename+"] is null");
@@ -124,40 +111,24 @@ public class ZipWriter {
 		closeEntry();
 	}
 
-	public void writeEntryWithCompletedHeader(String filename, Object contents, boolean close, String charset) throws CompressionException, IOException {
+	public void writeEntryWithCompletedHeader(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
 		if (StringUtils.isEmpty(filename)) {
 			throw new CompressionException("filename cannot be empty");		
 		}
 		
 		byte[] contentBytes = null;
-		BufferedInputStream bis = null;
-		long size = 0;
+		int size = 0;
 		if (contents!=null) {
-			if (contents instanceof byte[]) {
-				contentBytes = (byte[])contents;
-			} else if (contents instanceof InputStream) {
-				contentBytes = Misc.streamToBytes((InputStream)contents);
-			} else {
-				contentBytes = contents.toString().getBytes(charset);
-			}
-			bis = new BufferedInputStream(new ByteArrayInputStream(contentBytes));
-			size = bis.available();
+			contentBytes = contents.asByteArray(charset);
 		} else { 
 			log.warn("contents of zip entry ["+filename+"] is null");
 		}
 		
-		int bytesRead;
-		byte[] buffer = new byte[1024];
 		CRC32 crc = new CRC32();
 		crc.reset();
-		if (bis!=null) {
-			while ((bytesRead = bis.read(buffer)) != -1) {
-				crc.update(buffer, 0, bytesRead);
-			}
-			bis.close();
-		}
-		if (contents!=null) {
-			bis = new BufferedInputStream(new ByteArrayInputStream(contentBytes));
+		if (contentBytes!=null) {
+			size = contentBytes.length;
+			crc.update(contentBytes, 0, size);
 		}
 		ZipEntry entry = new ZipEntry(filename);
 		entry.setMethod(ZipEntry.STORED);
@@ -165,11 +136,8 @@ public class ZipWriter {
 		entry.setSize(size);
 		entry.setCrc(crc.getValue());
 		getZipoutput().putNextEntry(entry);
-		if (bis!=null) {
-			while ((bytesRead = bis.read(buffer)) != -1) {
-				getZipoutput().write(buffer, 0, bytesRead);
-			}
-			bis.close();
+		if (contentBytes!=null) {
+			getZipoutput().write(contentBytes, 0, contentBytes.length);
 		}
 		getZipoutput().closeEntry();
 	}
