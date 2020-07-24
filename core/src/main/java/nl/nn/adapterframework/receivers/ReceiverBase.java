@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -613,10 +614,14 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser()!=null) {
 					ConfigurationWarnings.add(this, log, "Default errorStorageBrowser provided by listener is overridden by configured errorStorage");
-			}
+				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					this.errorStorage = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+					if (errorStoreBrowser instanceof IConfigurable) {
+						((IConfigurable)errorStoreBrowser).configure();
+					}
+					this.errorStorage = errorStoreBrowser;
 				}
 			}
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
@@ -633,7 +638,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					this.messageLog = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
+					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
+					if (messageLogBrowser!=null && messageLogBrowser instanceof IConfigurable) {
+						((IConfigurable)messageLogBrowser).configure();
+					}
+					this.messageLog = messageLogBrowser;
 				}
 			}
 			if (isTransacted()) {
