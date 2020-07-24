@@ -64,7 +64,7 @@
 			</column>
 			<column>
 				<name>tnumber</name>
-				<value>1973,000.123</value>
+				<value>1974,000.123</value>
 				<type>number</type>
 				<decimalSeparator>.</decimalSeparator>
 				<groupingSeparator>,</groupingSeparator>
