@@ -911,7 +911,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	@IbisDoc({"the name of the column message themselves are stored in", "message"})
 	@Override
 	public void setMessageField(String messageField) {
-		super.setMessageField(messageField);;
+		super.setMessageField(messageField);
 	}
 
 	@IbisDoc({"the name of the column comments are stored in", "comments"})
@@ -929,13 +929,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	@IbisDoc({"the name of the column the timestamp for expiry is stored in", "expirydate"})
 	@Override
 	public void setExpiryDateField(String expiryDateField) {
-		super.setExpiryDateField(expiryDateField);;
+		super.setExpiryDateField(expiryDateField);
 	}
 
 	@IbisDoc({"the name of the column labels are stored in", "label"})
 	@Override
 	public void setLabelField(String labelField) {
-		super.setLabelField(labelField);;
+		super.setLabelField(labelField);
 	}
 
 	@IbisDoc({"the name of the column correlation-ids are stored in", "correlationid"})

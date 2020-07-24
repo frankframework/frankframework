@@ -187,10 +187,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private class ResultSetIterator implements IMessageBrowsingIterator {
 		
-		Connection conn;
-		ResultSet  rs;
-		boolean current;
-		boolean eof;
+		private Connection conn;
+		private ResultSet  rs;
+		private boolean current;
+		private boolean eof;
 		
 		ResultSetIterator(Connection conn, ResultSet rs) throws SQLException {
 			this.conn=conn;
@@ -331,12 +331,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 			try (PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery)) {
 				applyStandardParameters(stmt, originalMessageId, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
-
-					if (!rs.next()) {
-						return false;
-					}
-					
-					return true;
+					return rs.next();
 				}
 			}
 		} catch (Exception e) {
@@ -349,12 +344,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
 				try (ResultSet rs =  stmt.executeQuery()) {
-
-					if (!rs.next()) {
-						return false;
-					}
-					
-					return true;
+					return rs.next();
 				}
 			}
 		} catch (Exception e) {
