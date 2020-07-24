@@ -690,7 +690,10 @@ angular.module('iaf.beheerconsole')
 		}
 		$scope.configurationFlowDiagram = url;
 	}
-	$scope.updateConfigurationFlowDiagram($scope.selectedConfiguration);
+
+	$scope.$on('appConstants', function() {
+		$scope.updateConfigurationFlowDiagram($scope.selectedConfiguration);
+	});
 
 	$scope.isConfigStubbed = {};
 	$scope.check4StubbedConfigs = function() {
@@ -749,10 +752,6 @@ angular.module('iaf.beheerconsole')
 
 .controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'appConstants', 'Alert', '$interval', 'Toastr', 
 	function($scope, authService, $timeout, appConstants, Alert, $interval, Toastr) {
-	Toastr.error("Unauthorized", "Please authenticate");
-	/*$interval(function() {
-		$scope.notifications = Alert.get(true);
-	}, 200);*/
 	$timeout(function() {
 		$scope.notifications = Alert.get();
 		angular.element(".main").show();
@@ -2069,7 +2068,9 @@ angular.module('iaf.beheerconsole')
 
 	$scope.messages = [];
 	$scope.numberOfMessages = -1;
+	$scope.processing = false;
 	$scope.submit = function(formData) {
+		$scope.processing = true;
 		if(!formData || !formData.destination) {
 			$scope.error = "Please specify a jms realm and destination!";
 			return;
@@ -2085,8 +2086,10 @@ angular.module('iaf.beheerconsole')
 				$scope.messages = [];
 			}
 			$scope.error = "";
+			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
+			$scope.processing = false;
 		});
 	};
 
@@ -2102,6 +2105,7 @@ angular.module('iaf.beheerconsole')
 
 		$scope.messages = [];
 		$scope.numberOfMessages = -1;
+		$scope.processing = false;
 	};
 }])
 
