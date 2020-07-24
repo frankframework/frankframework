@@ -570,7 +570,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			stmt.setString(++parPos,correlationId);
 			stmt.setTimestamp(++parPos, receivedDateTime);
 			stmt.setString(++parPos, comments);
-			if (TYPE_MESSAGELOG_PIPE.equalsIgnoreCase(getType()) || TYPE_MESSAGELOG_RECEIVER.equalsIgnoreCase(getType())) {
+			if (StorageType.MESSAGELOG_PIPE.getCode().equalsIgnoreCase(getType()) || StorageType.MESSAGELOG_RECEIVER.getCode().equalsIgnoreCase(getType())) {
 				if (getRetention()<0) {
 					stmt.setTimestamp(++parPos, null);
 				} else {

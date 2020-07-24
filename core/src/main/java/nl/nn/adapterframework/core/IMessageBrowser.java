@@ -26,12 +26,25 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public interface IMessageBrowser<M> extends IXAEnabled {
 
-	enum SortOrder { NONE, ASC, DESC };
-
-	public static final String TYPE_ERRORSTORAGE="E";
-	public static final String TYPE_MESSAGESTORAGE="M";
-	public static final String TYPE_MESSAGELOG_PIPE="L";
-	public static final String TYPE_MESSAGELOG_RECEIVER="A";
+	public enum SortOrder { NONE, ASC, DESC };
+	
+	public enum StorageType {
+		NONE(null),
+		ERRORSTORAGE("E"),
+		MESSAGELOG_PIPE("L"),
+		MESSAGELOG_RECEIVER("A"),
+		MESSAGESTORAGE("M");
+		
+		private String code;
+		
+		private StorageType(String code) {
+			this.code = code;
+		}
+		
+		public String getCode() {
+			return code;
+		}
+	}
 
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.

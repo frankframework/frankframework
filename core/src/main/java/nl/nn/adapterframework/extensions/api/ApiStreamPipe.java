@@ -153,12 +153,8 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	private String selectMessageKey(String slotId, String messageId)
-			throws JdbcException {
-		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
-				+ ITransactionalStorage.TYPE_MESSAGESTORAGE
-				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
-				+ "'";
+	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
+		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='" + ITransactionalStorage.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
 			return JdbcUtil.executeStringQuery(conn, query);
@@ -174,8 +170,7 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private String selectMessage(String messageKey) throws JdbcException {
-		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
-				+ messageKey + "'";
+		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
 			return JdbcUtil.executeBlobQuery(conn, query);
@@ -191,8 +186,7 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private void deleteMessage(String messageKey) throws JdbcException {
-		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey
-				+ "'";
+		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
 			JdbcUtil.executeStatement(conn, query);

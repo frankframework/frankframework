@@ -44,7 +44,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		super();
 	}
 	
-	public JdbcTableMessageBrowser(JdbcTableListener tableListener, String statusValue, boolean asErrorStorage) {
+	public JdbcTableMessageBrowser(JdbcTableListener tableListener, String statusValue, StorageType storageType) {
 		this();
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
@@ -52,7 +52,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		setTableName(tableListener.getTableName());
 		setMessageField(StringUtils.isNotEmpty(tableListener.getMessageField())?tableListener.getMessageField():tableListener.getKeyField());
 		setDateField(tableListener.getTimestampField());
-		setType(asErrorStorage ? TYPE_ERRORSTORAGE : TYPE_MESSAGELOG_RECEIVER);
+		setType(storageType.getCode());
 		selectCondition=Misc.concatStrings(tableListener.getStatusField()+ "='"+statusValue+"'", " AND ", tableListener.getSelectCondition());
 	}
 

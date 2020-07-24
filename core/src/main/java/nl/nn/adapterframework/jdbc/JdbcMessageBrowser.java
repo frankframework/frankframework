@@ -577,7 +577,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		if (StringUtils.isNotEmpty(order)) {
 			return order;
 		} else {
-			if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
 				return errorsOrder; //Defaults to ASC
 			} else {
 				return messagesOrder; //Defaults to DESC

@@ -85,7 +85,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueProcessed(), false);
+		return new JdbcTableMessageBrowser(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getStatusValueError())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueError(), true);
+		return new JdbcTableMessageBrowser(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
 	}
 
 
