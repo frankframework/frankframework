@@ -562,7 +562,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	protected String getType() {
 		return type;
 	}
-	protected String getTypeField() {
+	public String getTypeField() {
 		return typeField;
 	}
 	protected String getHostField() {
