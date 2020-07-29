@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -1005,7 +1006,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				messageLog.setSlotId(getName());
 			}
 			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_PIPE);
+				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
 			}
 		}
 	}

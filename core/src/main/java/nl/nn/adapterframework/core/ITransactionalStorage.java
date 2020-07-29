@@ -32,10 +32,6 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 
 	public static final int MAXCOMMENTLEN=1000;
 
-	public static final String TYPE_ERRORSTORAGE="E";
-	public static final String TYPE_MESSAGESTORAGE="M";
-	public static final String TYPE_MESSAGELOG_PIPE="L";
-	public static final String TYPE_MESSAGELOG_RECEIVER="A";
 
 
 	/**

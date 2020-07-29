@@ -446,7 +446,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 
-	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "false"})
+	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}

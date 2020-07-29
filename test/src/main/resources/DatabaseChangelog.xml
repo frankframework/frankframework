@@ -43,7 +43,7 @@ TagDatabase
 			<column name="TTIMESTAMP" type="DATETIME"/>
 			<column name="TDATE" type="TIME"/>
 			<column name="TBLOB1" type="LONGBLOB"/>
-			<column name="TCLOB" type="CLOB"/> <!-- might want to try LONGTEXT -->
+			<column name="TCLOB" type="CLOB"/> <!-- is set as LONGTEXT for MySQL and MariaDB -->
 			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
 		<modifySql dbms="mssql" >
@@ -56,4 +56,17 @@ TagDatabase
 		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
+	<changeSet id="FIX_MYSQL_XA" author="Gerrit van Brakel" dbms="mysql">
+		<comment>create index to avoid locks, e.g. while deleting. This helps to fix some lock wait timeouts, but not all</comment>
+		<createIndex 
+			indexName="IX_IBISTEMP" tableName="IBISTEMP" unique="true">
+			<column name="TNUMBER" />
+			<column name="TKEY" />
+		</createIndex>
+		<createIndex 
+			indexName="IX_IBISSTORE_03" tableName="IBISSTORE" unique="true">
+			<column name="SLOTID" />
+			<column name="MESSAGEKEY" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>

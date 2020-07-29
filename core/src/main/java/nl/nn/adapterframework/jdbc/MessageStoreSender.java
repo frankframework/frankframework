@@ -90,7 +90,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		if (paramList != null) {
 			paramList.configure();
 		}
-		setType(TYPE_MESSAGESTORAGE);
+		setType(StorageType.MESSAGESTORAGE.getCode());
 		setOnlyStoreWhenMessageIdUnique(isOnlyStoreWhenMessageIdUnique());
 		super.configure();
 	}

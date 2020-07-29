@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
@@ -63,7 +64,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled, HasStatistics {
+public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled, HasStatistics {
 	
 	private String name;
 	private String authAlias = null;
@@ -88,6 +89,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		configureCredentials();
 		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());

@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -287,7 +288,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	};
 
 	private class ProcessResultCacheItem {
-		int tryCount;
+		int receiveCount;
 		Date receiveDate;
 		String comments;
 	}
@@ -524,7 +525,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				if (this.errorSender == null && this.errorStorage == null) {
 					this.errorStorage = this.tmpInProcessStorage;
 					info("has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-					getErrorStorage().setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
+					getErrorStorage().setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 				} else {
 					info("has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
 				}
@@ -613,10 +614,14 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser()!=null) {
 					ConfigurationWarnings.add(this, log, "Default errorStorageBrowser provided by listener is overridden by configured errorStorage");
-			}
+				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					this.errorStorage = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+					if (errorStoreBrowser instanceof IConfigurable) {
+						((IConfigurable)errorStoreBrowser).configure();
+					}
+					this.errorStorage = errorStoreBrowser;
 				}
 			}
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
@@ -633,7 +638,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					this.messageLog = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
+					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
+					if (messageLogBrowser!=null && messageLogBrowser instanceof IConfigurable) {
+						((IConfigurable)messageLogBrowser).configure();
+					}
+					this.messageLog = messageLogBrowser;
 				}
 			}
 			if (isTransacted()) {
@@ -1316,11 +1325,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		if (cacheItem==null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for messageId ["+messageId+"]");
 			cacheItem= new ProcessResultCacheItem();
-			cacheItem.tryCount=1;
+			cacheItem.receiveCount=1;
 			cacheItem.receiveDate=receivedDate;
 		} else {
-			cacheItem.tryCount++;
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"increased try count for messageId ["+messageId+"] to ["+cacheItem.tryCount+"]");
+			cacheItem.receiveCount++;
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"increased try count for messageId ["+messageId+"] to ["+cacheItem.receiveCount+"]");
 		}
 		cacheItem.comments=errorMessage;
 		processResultCache.put(messageId, cacheItem);
@@ -1359,20 +1368,21 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				return false;
 			} else {
 				if (getMaxRetries()<0) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times; maxRetries=["+getMaxRetries()+"]");
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
 					return false;
 				}
-				if (prci.tryCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+				if (prci.receiveCount<=getMaxRetries()) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
 					resetRetryInterval();
 					return false;
 				}
-				warn("message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+				warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
 				String comments="too many retries";
-				if (prci.tryCount>getMaxRetries()+1) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
+				if (prci.receiveCount>getMaxRetries()+1) {
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
 				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
+				prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
 				return true;
 			}
 		} 
@@ -1774,7 +1784,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
 				errorStorage.setSlotId(getName());
 			}
-			errorStorage.setType(ITransactionalStorage.TYPE_ERRORSTORAGE);
+			errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 		}
 	}
 	
@@ -1788,7 +1798,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
+			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		}
 	}
 
