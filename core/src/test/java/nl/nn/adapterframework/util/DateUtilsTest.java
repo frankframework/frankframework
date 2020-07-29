@@ -1,8 +1,6 @@
 package nl.nn.adapterframework.util;
 
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.Date;
 
@@ -17,13 +15,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class DateUtilsTest {
 
-	@Before
-	public void before() throws Exception {
-	}
-
-	@After
-	public void after() throws Exception {
-	}
 
 	/**
 	 * Method: format(Date date, String dateFormat)
