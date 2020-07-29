@@ -2,14 +2,10 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
-import static org.junit.Assert.assertEquals;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -107,100 +103,6 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	}
 
-	@Test
-	public void testMakeDetectXsltVersionXslt(){
-		String s = XmlUtils.makeDetectXsltVersionXslt();
-		assertEquals("<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\"><xsl:output method=\"text\"/><xsl:template match=\"/\"><xsl:value-of select=\"xsl:stylesheet/@version\"/></xsl:template></xsl:stylesheet>", s);
-	}
-
-	@Test
-	public void testGetDetectXsltVersionTransformerPool() throws Exception{
-		TransformerPool tp = XmlUtils.getDetectXsltVersionTransformerPool();
-		testTransformerPool(tp, "<xx:root xmlns:xx=\"xyz\"><a xmlns=\"xyz\">a</a><b></b><c/></xx:root>", "");
-		assertEquals("text", tp.getOutputMethod());
-	}
-
-	@Test
-	public void testSkipXMLDeclaration(){
-		String s = XmlUtils.skipXmlDeclaration("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xyz\"><a>a</a><b/><c/></root>");
-		assertEquals("<root xmlns=\"xyz\"><a>a</a><b/><c/></root>", s);
-	}
-	@Test
-	public void testSkipDocTypeDeclaration(){
-		String s = XmlUtils.skipDocTypeDeclaration(
-				"<!DOCTYPE note SYSTEM \"Note.dtd\">\n" + "<note>\n" + "<to>Tove</to>\n" +
-						"<from>Jani</from>\n" + "<heading>Reminder</heading>\n" + "<body>Don't forget me this weekend!</body>\n" +
-						"</note>");
-		assertEquals("<note>\n" + "<to>Tove</to>\n" + "<from>Jani</from>\n" + "<heading>Reminder</heading>\n" +
-				"<body>Don't forget me this weekend!</body>\n" +
-				"</note>", s);
-	}
-
-	@Test
-	public void testReadXmlSkipDeclaration() throws Exception{
-		String s = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xyz\"><a>a</a><b/><c/></root>";
-		byte[] arr = s.getBytes();
-		String res = XmlUtils.readXml(arr, "", true);
-		assertEquals("<root xmlns=\"xyz\"><a>a</a><b/><c/></root>", res);
-	}
-
-	@Test
-	public void testReadXMLDefaultEncoding() throws Exception{
-		String s = "<?xml version=\"1.0\"?><root xmlns=\"xyz\"><a>a</a><b/><c/></root>";
-		byte[] arr = s.getBytes();
-		String res = XmlUtils.readXml(arr, "utf-8", true);
-		String resUtf16 = XmlUtils.readXml(arr, "utf-16", true);
-		assertEquals("<root xmlns=\"xyz\"><a>a</a><b/><c/></root>", res);
-		assertEquals("㰿硭氠癥牳楯渽∱⸰∿㸼牯潴⁸浬湳㴢硹稢㸼愾愼⽡㸼戯㸼振㸼⽲潯琾", resUtf16);
-	}
-
-	@Test
-	public void testReadXMLwithOffsetLength() throws Exception{
-		String s = "<?xml version=\"1.0\"?><root xmlns=\"xyz\"><a>a</a><b/><c/></root>";
-		byte[] arr = s.getBytes();
-		String res = XmlUtils.readXml(arr, 6, 25, "", true, false);
-		assertEquals("version=\"1.0\"?><root xmln", res);
-
-	}
-
-	/*
-	@Test
-	public void testCreateTransformer() throws Exception {
-		String xslt = "<xsl:stylesheet version=\"1.0\"\n" + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n" + "\n" + "<xsl:template match=\"/\">\n" +
-				"  <html>\n" + "  <body>\n" + "    <h2>My CD Collection</h2>\n" + "    <table border=\"1\">\n" + "      <tr bgcolor=\"#9acd32\">\n" +
-				"        <th>Title</th>\n" + "        <th>Artist</th>\n" + "      </tr>\n" + "      <xsl:for-each select=\"catalog/cd\">\n" +
-				"        <tr>\n" + "          <td><xsl:value-of select=\"title\"/></td>\n" + "          <td><xsl:value-of select=\"artist\"/></td>\n" +
-				"        </tr>\n" + "      </xsl:for-each>\n" + "    </table>\n" + "  </body>\n" + "  </html>\n" + "</xsl:template>\n" +
-				"\n" + "</xsl:stylesheet>";
-		Transformer t = XmlUtils.createTransformer(xslt);
-		assertEquals( "ads", t.getOutputProperties().stringPropertyNames().toArray()[3]);
-	}*/ // will edit this case
-
-	@Test
-	public void testEncodeChars() {
-		String s = "test&";
-		String encoded = XmlUtils.encodeChars(s);
-		String decoded = XmlUtils.decodeChars(encoded);
-		assertEquals("test&amp;", encoded);
-		assertEquals("test&", decoded);
-	}
-
-	@Test
-	public void testEncodeUrl(){
-		String a = XmlUtils.encodeURL("https://wearefrank&.nl/");
-		assertEquals("https%3A%2F%2Fwearefrank%26.nl%2F", a);
-	}
-
-	@Test
-	public void testIsPrintableUnicodeChar(){
-		boolean a = XmlUtils.isPrintableUnicodeChar(10);
-		boolean b = XmlUtils.isPrintableUnicodeChar(10001);
-		boolean c = XmlUtils.isPrintableUnicodeChar(-5);
-
-		assertEquals(true, a);
-		assertEquals(true, b);
-		assertEquals(false, c);
-	}
 
 
 }
