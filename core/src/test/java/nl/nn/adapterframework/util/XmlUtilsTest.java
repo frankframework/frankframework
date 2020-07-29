@@ -15,7 +15,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testXslt(XmlUtils.makeRemoveNamespacesXslt(omitXmlDeclaration, indent),input,expected);
 		testTransformerPool(XmlUtils.getRemoveNamespacesTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
-
+	
 	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeGetRootNamespaceXslt(),input,expected);
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(),input,expected);
