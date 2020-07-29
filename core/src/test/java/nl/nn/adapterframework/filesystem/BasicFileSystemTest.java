@@ -17,16 +17,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.util.StreamUtil;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
 	protected FS fileSystem;
 	/**
 	 * Returns the file system 
-	 * @return fileSystem
-	 * @throws ConfigurationException
 	 */
 	protected abstract FS createFileSystem();
 
@@ -82,11 +79,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 
+	@Override
 	protected void equalsCheck(String content, String actual) {
 		assertEquals(content, actual);
 	}
 
 
+	@Override
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 	}
@@ -114,7 +113,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
-		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
+		String actual = Message.asString(in);
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
 	}

@@ -1,6 +1,6 @@
 <project default="setup.dir">
 	<target name="setup.dir">
-		<property name="root.dir" value="c:/temp/testdata/b64"/>
+		<property name="root.dir" value="${testdata.dir}/b64"/>
 		<delete dir="${root.dir}"/>
 		<mkdir dir="${root.dir}"/>
 		<copy file="file.txt" todir="${root.dir}"/>

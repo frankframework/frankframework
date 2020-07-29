@@ -13,10 +13,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import java.io.ByteArrayInputStream;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * FilePipe Tester.
@@ -67,7 +67,9 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setActions("create");
         pipe.configure();
         PipeRunResult res = doPipe(pipe, var, session1);
-        assertEquals(res.getPipeForward().getName(), "success");
+
+        assertEquals("success", res.getPipeForward().getName());
+
     }
 
     @Test
@@ -94,6 +96,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setActions("create");
         pipe.configure();
         doPipe(pipe, var, session1);
+        fail("this will fail");
     }
 
 } 

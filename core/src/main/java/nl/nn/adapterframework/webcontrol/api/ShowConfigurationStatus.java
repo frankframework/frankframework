@@ -58,6 +58,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
@@ -72,8 +73,8 @@ import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -640,8 +641,7 @@ public final class ShowConfigurationStatus extends Base {
 						sender = ((HasSender)listener).getSender();
 					}
 					//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-					ITransactionalStorage ts;
-					ts=rb.getErrorStorage();
+					IMessageBrowser ts = rb.getErrorStorageBrowser();
 					receiverInfo.put("hasErrorStorage", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -651,11 +651,11 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in errorstore", e);
 							receiverInfo.put("errorStorageCount", "error");
 						}
 					}
-					ts=rb.getMessageLog();
+					ts=rb.getMessageLogBrowser();
 					receiverInfo.put("hasMessageLog", (ts!=null));
 					if (ts!=null) {
 						try {
@@ -665,7 +665,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("messageLogCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
+							log.warn("Cannot determine number of messages in messageLog", e);
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}
@@ -678,11 +678,11 @@ public final class ShowConfigurationStatus extends Base {
 					}
 					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 						JmsListenerBase jlb = (JmsListenerBase) listener;
-						JmsMessageBrowser jmsBrowser;
+						JmsBrowser<javax.jms.Message> jmsBrowser;
 						if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-							jmsBrowser = new JmsMessageBrowser();
+							jmsBrowser = new JmsBrowser<>();
 						} else {
-							jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
+							jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
 						}
 						jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 						jmsBrowser.setJmsRealm(jlb.getJmsRealName());

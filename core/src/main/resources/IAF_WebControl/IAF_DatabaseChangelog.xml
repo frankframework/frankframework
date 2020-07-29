@@ -36,7 +36,7 @@ TagDatabase
 			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
 			<column name="MESSAGEDATE" type="DATETIME"/>
 			<column name="COMMENTS" type="java.sql.Types.VARCHAR(1000)"/>
-			<column name="MESSAGE" type="BLOB"/>
+			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL, compatible with BLOB for other dbmses -->
 			<column name="EXPIRYDATE" type="DATETIME"/>
 			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
@@ -127,6 +127,13 @@ TagDatabase
 		</createTable>
 		<!-- in Quartz the JobKey is defined by name and group, hence this being the primairy key constraint in the database as well -->
 		<addPrimaryKey tableName="IBISSCHEDULES" columnNames="JOBNAME, JOBGROUP" constraintName="PK_IBISSCHEDULES"/>
+	</changeSet>
+	
+	<changeSet id="IAF_Util:7" author="Ali Sihab Akcan">
+		<comment>Add description column to IBISSCHEDULES Table</comment>
+		<addColumn tableName="IBISSCHEDULES" >
+			<column afterColumn="MESSAGE" name="DESCRIPTION"  type="java.sql.Types.VARCHAR(255)"/> 
+		</addColumn>
 	</changeSet>
 
 </databaseChangeLog>

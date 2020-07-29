@@ -48,7 +48,6 @@ public interface Convertor {
 	 * @param conversionOption
 	 * @return
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, File file,
-			ConversionOption conversionOption);
+	CisConversionResult convertToPdf(MediaType mediaType, String filename, File file, ConversionOption conversionOption);
 
 }

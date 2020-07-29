@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -45,10 +44,10 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
+import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -142,6 +141,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	
 	private boolean closeIteratorOnExit=true;
 	private boolean parallel = false;
+	private int maxChildThreads = 0;
 	
 	private int blockSize=0;
 
@@ -152,6 +152,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private StatisticsKeeper senderStatisticsKeeper;
 	private StatisticsKeeper stopConditionStatisticsKeeper;
 
+	private Semaphore childThreadSemaphore=null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -167,6 +168,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
+		}
+		if (getMaxChildThreads()>0) {
+			childThreadSemaphore=new Semaphore(getMaxChildThreads());
 		}
 	}
 
@@ -275,9 +279,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		 * @return true when looping should continue, false when stop is required. 
 		 */
 		public boolean handleItem(I item) throws SenderException, TimeOutException, IOException {
-			if (isParallel() && isCollectResults()) {
-				guard.addResource();
-			}
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
 					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
@@ -314,80 +315,97 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					log.debug(getLogPrefix(session)+"iteration ["+totalItems+"] item ["+message+"]");
 				} 
 			}
-			try {
-				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, guard, senderStatisticsKeeper);
-					if (isCollectResults()) {
-						executorList.add(pse);
-					}
-					getTaskExecutor().execute(pse);
-				} else {
-					if (getBlockSize()>0 && itemsInBlock==0) {
-						startBlock();
-					}
-					long senderStartTime= System.currentTimeMillis();
-					if (sender instanceof IBlockEnabledSender<?>) {
-						itemResult = ((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session).asString();
-					} else {
-						itemResult = sender.sendMessage(message, session).asString();
-					}
-					long senderEndTime = System.currentTimeMillis();
-					long senderDuration = senderEndTime - senderStartTime;
-					senderStatisticsKeeper.addValue(senderDuration);
-					if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
-						itemsInBlock=0;
-						endBlock();
-					}
-				}
-				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
-					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
-				}
-				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
-					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
-				}
-			} catch (SenderException e) {
-				if (isIgnoreExceptions()) {
-					log.info(getLogPrefix(session)+"ignoring SenderException after excution of sender for item ["+item+"]",e);
-					itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
-				} else {
-					throw e;
-				}
-			} catch (TimeOutException e) {
-				if (isIgnoreExceptions()) {
-					log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
-					itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
-				} else {
-					throw e;
+			if (childThreadSemaphore!=null) {
+				try {
+					childThreadSemaphore.acquire();
+				} catch (InterruptedException e) {
+					throw new SenderException(getLogPrefix(session)+ " interrupted waiting for thread",e);
 				}
 			}
-			try {
-				if (isCollectResults() && !isParallel()) {
-					addResult(totalItems, message, itemResult);
-				}
-				if (getMaxItems()>0 && totalItems>=getMaxItems()) {
-					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
-					return false;
-				}
-				if (getStopConditionTp()!=null) {
-					long stopConditionStartTime = System.currentTimeMillis();
-					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
-					long stopConditionEndTime = System.currentTimeMillis();
-					long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
-					stopConditionStatisticsKeeper.addValue(stopConditionDuration);
-					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
-						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
-						return false;
+			try { 
+				try {
+					if (isParallel()) {
+						if (isCollectResults()) {
+							guard.addResource();
+						}
+						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper);
+						if (isCollectResults()) {
+							executorList.add(pse);
+						}
+						getTaskExecutor().execute(pse);
 					} else {
-						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
+						if (getBlockSize()>0 && itemsInBlock==0) {
+							startBlock();
+						}
+						long senderStartTime= System.currentTimeMillis();
+						if (sender instanceof IBlockEnabledSender<?>) {
+							itemResult = ((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session).asString();
+						} else {
+							itemResult = sender.sendMessage(message, session).asString();
+						}
+						long senderEndTime = System.currentTimeMillis();
+						long senderDuration = senderEndTime - senderStartTime;
+						senderStatisticsKeeper.addValue(senderDuration);
+						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
+							itemsInBlock=0;
+							endBlock();
+						}
+					}
+					if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
+						throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+					}
+					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
+						throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+					}
+				} catch (SenderException e) {
+					if (isIgnoreExceptions()) {
+						log.info(getLogPrefix(session)+"ignoring SenderException after excution of sender for item ["+item+"]",e);
+						itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+					} else {
+						throw e;
+					}
+				} catch (TimeOutException e) {
+					if (isIgnoreExceptions()) {
+						log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
+						itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
+					} else {
+						throw e;
 					}
 				}
-				return true;
-			} catch (SAXException e) {
-				throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
-			} catch (TransformerException e) {
-				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
-			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+				try {
+					if (isCollectResults() && !isParallel()) {
+						addResult(totalItems, message, itemResult);
+					}
+					if (getMaxItems()>0 && totalItems>=getMaxItems()) {
+						log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+						return false;
+					}
+					if (getStopConditionTp()!=null) {
+						long stopConditionStartTime = System.currentTimeMillis();
+						String stopConditionResult = getStopConditionTp().transform(itemResult,null);
+						long stopConditionEndTime = System.currentTimeMillis();
+						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
+						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
+						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
+							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
+							return false;
+						} else {
+							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
+						}
+					}
+					return true;
+				} catch (SAXException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
+				} catch (TransformerException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+				} catch (IOException e) {
+					throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+				}
+			} finally {
+				if (!isParallel() && childThreadSemaphore!=null) {
+					// only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
+					childThreadSemaphore.release();
+				}
 			}
 		}
 		private void addResult(int count, Message message, String itemResult) throws IOException {
@@ -413,7 +431,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						count++;
 						String itemResult;
 						if (pse.getThrowable() == null) {
-							itemResult = pse.getReply().toString();
+							itemResult = pse.getReply().asString();
 						} else {
 							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}
@@ -435,19 +453,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
 	}
 
+	@Override
+	public boolean canStreamToNextPipe() {
+		return !isCollectResults() && super.canStreamToNextPipe(); // when collectResults is false, streaming is not necessary or useful
+	}
 
 	@Override
 	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		try {
-			IForwardTarget forwardTarget = getNextPipe();
-			try (MessageOutputStream target=isCollectResults()?MessageOutputStream.getTargetStream(this, session, forwardTarget):new MessageOutputStreamCap(this, forwardTarget)) { 
-				try (Writer resultWriter = target.asWriter()) {
-					ItemCallback callback = createItemCallBack(session,sender, resultWriter);
-					iterateOverInput(input,session,threadContext, callback);
-				}
-				return target.getPipeRunResult();
+		try (MessageOutputStream target=getTargetStream(session)) { 
+			try (Writer resultWriter = target.asWriter()) {
+				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+				iterateOverInput(input,session,threadContext, callback);
 			}
+			return target.getPipeRunResult();
 		} catch (SenderException | TimeOutException | IOException e) {
 			throw e;
 		} catch (Exception e) {
@@ -613,8 +632,16 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return parallel;
 	}
 
+	@IbisDoc({"14", "maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe)", "0 (unlimited)"})
+	public void setMaxChildThreads(int maxChildThreads) {
+		this.maxChildThreads = maxChildThreads;
+	}
+	public int getMaxChildThreads() {
+		return maxChildThreads;
+	}
 
-	@IbisDoc({"14", "Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
+
+	@IbisDoc({"15", "Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}

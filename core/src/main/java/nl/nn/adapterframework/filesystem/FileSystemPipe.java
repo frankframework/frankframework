@@ -38,7 +38,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  * 
- * <table align="top">
+ * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
@@ -112,11 +112,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(session, getNextPipe());
-		if (result!=null && result.getForward()==null) {
-			result.setForward(getForward());
-		}
- 		return result;
+		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 

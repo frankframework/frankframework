@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -55,6 +56,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -294,7 +296,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						log.debug("No Adapter to set Configuration from");
 					}
 				}
-				getSender().configure();
+				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
+				if(sender instanceof DirectQuerySender) {
+					String dynamicallyGeneratedKey = "warnings.suppress.sqlInjections."+getAdapter().getName();
+					boolean suppressSqlWarning = AppConstants.getInstance().getBoolean(dynamicallyGeneratedKey, false);
+					((DirectQuerySender) getSender()).configure(suppressSqlWarning);
+				} else {
+					getSender().configure();
+				}
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
 			}
@@ -467,10 +476,21 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && 
+				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFileName()) && getMessageLog()==null && getListener()==null;
+	}
 
-		if (getInputValidator()!=null || getInputWrapper()!=null || getOutputValidator()!=null || getOutputWrapper()!=null ||
-			isStreamResultToServlet() || StringUtils.isNotEmpty(getStubFileName()) || getMessageLog()!=null || getListener()!=null ) {
+	@Override
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
+				!isStreamResultToServlet();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
 			return null;
 		}
 		MessageOutputStream result=null;
@@ -713,11 +733,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
 						resultmsg =getResultOnTimeOut();
 					} else {
-						try {
-							resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input.asString(),session.getMessageId(),0);
-						} catch (IOException e) {
-							throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-						}
+						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input,session.getMessageId(),0);
 					}
 					return new PipeRunResult(timeoutForward,resultmsg);
 				}
@@ -729,11 +745,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
 					String resultmsg;
-					try {
-						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input.asString(),session.getMessageId(),0);
-					} catch (IOException e) {
-						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-					}
+					resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0);
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
@@ -994,7 +1006,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				messageLog.setSlotId(getName());
 			}
 			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(ITransactionalStorage.TYPE_MESSAGELOG_PIPE);
+				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
 			}
 		}
 	}

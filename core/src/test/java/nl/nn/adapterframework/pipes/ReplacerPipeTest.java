@@ -3,11 +3,11 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * ReplacerPipe Tester.
@@ -28,8 +28,8 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         exception.expectMessage("cannot have a null replace-attribute");
         pipe.setFind("laa");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "", session);
-        assertFalse(res.getPipeForward().getName().isEmpty());
+        doPipe(pipe, "", session);
+        fail("this is expected to fail");
 
     }
 
@@ -53,28 +53,27 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
         doPipe(pipe, pipe.getFind(), session);
-        assertEquals("sina\nmurat\nniels", pipe.getFind());
+        assertFalse( pipe.getFind().isEmpty());
     }
 
     @Test
     public void replaceNonXMLChar() throws Exception{
         pipe.setFind("test");
         pipe.setReplace("head");
-        pipe.setReplaceNonXmlChar("k");
+        pipe.setReplaceNonXmlChar("l");
         pipe.setReplaceNonXmlChars(true);
+        pipe.setAllowUnicodeSupplementaryCharacters(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
+        PipeRunResult res = doPipe(pipe, "<test>\bolo</test>/jacjac:)", session);
+        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
     }
 
     @Test
     public void replaceStringSuccess() throws Exception{
-        pipe.setFind("test");
-        pipe.setReplace("head");
-        pipe.setReplaceNonXmlChars(true);
+        pipe.setReplaceNonXmlChars(false);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
+        PipeRunResult res = doPipe(pipe, "\b", session);
+        assertEquals("\b", res.getResult().asString());
     }
 
     @Test
@@ -86,8 +85,8 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe>{
         pipe.setReplaceNonXmlChar("klkl");
         pipe.setReplaceNonXmlChars(true);
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
-        assertEquals("<head>lolo</head>/jacjac:)", res.getResult().toString());
+        doPipe(pipe, "<test>lolo</test>/jacjac:)", session);
+        fail("this is expected to fail");
     }
 
 

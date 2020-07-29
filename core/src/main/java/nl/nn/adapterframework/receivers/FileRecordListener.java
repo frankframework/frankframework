@@ -29,6 +29,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -50,6 +51,8 @@ import nl.nn.adapterframework.util.WildCardFilter;
  * 
  * @author  Johan Verrips
  */
+@Deprecated
+@ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener, INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -71,12 +74,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		if (sender != null) {
 			if (processResult.getState().equalsIgnoreCase("success")) {
 				try {
-					sender.sendMessage(new Message(processResult.getResult()), null);
+					sender.sendMessage(processResult.getResult(), null);
 				} catch (Exception e) {
-					throw new ListenerException(
-						"error sending message with technical correlationId [" + tcid
-							+ " msg [" + processResult.getResult() + "]",
-						e);
+					throw new ListenerException("error sending message with technical correlationId [" + tcid + " msg [" + processResult.getResult() + "]", e);
 				}
 			}
 		}
@@ -95,69 +95,32 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		try {
 			fullFilePath = file.getCanonicalPath();
 		} catch (IOException e) {
-			log.warn(
-				getName()
-					+ " error retrieving canonical path of file ["
-					+ file.getName()
-					+ "]");
+			log.warn(getName() + " error retrieving canonical path of file [" + file.getName() + "]");
 			fullFilePath = file.getName();
 		}
 
 		if (!dir.isDirectory()) {
-			throw new ListenerException(
-				getName()
-					+ " error renaming directory: The directory ["
-					+ directoryTo
-					+ "] to move the file ["
-					+ fullFilePath
-					+ "] is not a directory!");
+			throw new ListenerException(getName() + " error renaming directory: The directory [" + directoryTo + "] to move the file [" + fullFilePath + "] is not a directory!");
 		}
 		// Move file to new directory
 		String newFileName = Misc.createSimpleUUID() + "-" + file.getName();
 
 		int dotPosition = file.getName().lastIndexOf(".");
 		if (dotPosition > 0)
-			newFileName =
-				file.getName().substring(0, dotPosition)
-					+ "-"
-					+ Misc.createSimpleUUID()
-					+ file.getName().substring(
-						dotPosition,
-						file.getName().length());
+			newFileName = file.getName().substring(0, dotPosition) + "-" + Misc.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
 
 		success = file.renameTo(new File(dir, newFileName));
 		if (!success) {
-			log.error(
-				getName()
-					+ " was unable to move file ["
-					+ fullFilePath
-					+ "] to ["
-					+ directoryTo
-					+ "]");
-			throw new ListenerException(
-				"unable to move file ["
-					+ fullFilePath
-					+ "] to ["
-					+ directoryTo
-					+ "]");
+			log.error(getName() + " was unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
+			throw new ListenerException("unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
 		} else
-			log.info(
-				getName()
-					+ " moved file ["
-					+ fullFilePath
-					+ "] to ["
-					+ directoryTo
-					+ "]");
+			log.info(getName() + " moved file [" + fullFilePath + "] to [" + directoryTo + "]");
 
 		String result = null;
 		try {
 			result = new File(dir, newFileName).getCanonicalPath();
 		} catch (IOException e) {
-			throw new ListenerException(
-				"error retrieving canonical path of renamed file ["
-					+ file.getName()
-					+ "]",
-				e);
+			throw new ListenerException("error retrieving canonical path of renamed file [" + file.getName() + "]", e);
 		}
 		return result;
 
@@ -169,9 +132,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 			if (sender != null)
 				sender.close();
 		} catch (SenderException e) {
-			throw new ListenerException(
-				"Error closing sender [" + sender.getName() + "]",
-				e);
+			throw new ListenerException("Error closing sender [" + sender.getName() + "]", e);
 		}
 	}
 	@Override
@@ -193,26 +154,17 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 			throw new ConfigurationException("no value specified for [directoryProcessedFiles]");
 		File dir = new File(getDirectoryProcessedFiles());
 		if (!dir.isDirectory()) {
-			throw new ConfigurationException(
-				"The value for [directoryProcessedFiles] :[ "
-					+ getDirectoryProcessedFiles()
-					+ "] is invalid. It is not a directory ");
+			throw new ConfigurationException("The value for [directoryProcessedFiles] :[ " + getDirectoryProcessedFiles() + "] is invalid. It is not a directory ");
 		}
 		File inp = new File(getInputDirectory());
 		if (!inp.isDirectory()) {
-			throw new ConfigurationException(
-				"The value for [inputDirectory] :[ "
-					+ getInputDirectory()
-					+ "] is invalid. It is not a directory ");
-
+			throw new ConfigurationException("The value for [inputDirectory] :[ " + getInputDirectory() + "] is invalid. It is not a directory ");
 		}
 		try {
 			if (sender != null)
 				sender.configure();
 		} catch (ConfigurationException e) {
-			throw new ConfigurationException(
-				"error opening sender [" + sender.getName() + "]",
-				e);
+			throw new ConfigurationException("error opening sender [" + sender.getName() + "]", e);
 		}
 
 	}
@@ -263,11 +215,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		if (getFileToProcess() != null) {
 			File inputFile = getFileToProcess();
 			log.info(
-				" processing file ["
-					+ inputFile.getName()
-					+ "] size ["
-					+ inputFile.length()
-					+ "]");
+				" processing file [" + inputFile.getName() + "] size [" + inputFile.length() + "]");
 
 			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
 				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
@@ -280,9 +228,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {
-				throw new ListenerException(
-					" got exception opening " + inputFile.getName(),
-					e);
+				throw new ListenerException(" got exception opening " + inputFile.getName(), e);
 			} finally {
 				recordNo = 0;
 			}
@@ -304,12 +250,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return null;
 	}
 	
-	/**
-	 * Returns a string of the rawMessage
-	 */
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return rawMessage.toString();
+	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
+		return Message.asMessage(rawMessage);
 	}
 
 	@Override
@@ -318,9 +261,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 			if (sender != null)
 				sender.open();
 		} catch (SenderException e) {
-			throw new ListenerException(
-				"error opening sender [" + sender.getName() + "]",
-				e);
+			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
 		}
 		return;
 	}

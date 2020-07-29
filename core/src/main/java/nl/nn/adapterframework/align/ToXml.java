@@ -52,6 +52,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.xml.XmlWriter;
+
 /**
  * Base class for XML Schema guided Object to XML conversion;
  * 
@@ -651,6 +653,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return result;
 	}
 
+	public String translate(C data) throws SAXException {
+		XmlWriter xmlWriter = new XmlWriter();
+		setContentHandler(xmlWriter);
+		startParse(data);
+		return xmlWriter.toString();
+	}
+	
 	public String getRootElement() {
 		return rootElement;
 	}

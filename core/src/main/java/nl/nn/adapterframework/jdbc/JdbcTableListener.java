@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-
+import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
@@ -25,17 +26,19 @@ import org.apache.commons.lang.StringUtils;
  *
  * @since   4.7
  */
-public class JdbcTableListener extends JdbcListener {
+public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers {
 	
 	private String tableName;
 	private String statusField;
 	private String orderField;
 	private String timestampField;
+	private String selectCondition;
 	
 	private String statusValueAvailable;
 	private String statusValueProcessed;
 	private String statusValueError;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy tableName");
@@ -62,6 +65,7 @@ public class JdbcTableListener extends JdbcListener {
 						(StringUtils.isNotEmpty(getStatusValueAvailable())?
 						 "='"+getStatusValueAvailable()+"'":
 						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueProcessed()+"')")+
+						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
 						 (StringUtils.isNotEmpty(getOrderField())?
 						 " ORDER BY "+getOrderField():""));
 		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
@@ -76,13 +80,32 @@ public class JdbcTableListener extends JdbcListener {
 				" WHERE "+getKeyField()+"=?";
 	}
 
+	@Override
+	public IMessageBrowser getMessageLogBrowser() {
+		if (StringUtils.isEmpty(getStatusValueProcessed())) {
+			return null;
+		}
+		return new JdbcTableMessageBrowser(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
+	}
+
+	@Override
+	public IMessageBrowser getErrorStoreBrowser() {
+		if (StringUtils.isEmpty(getStatusValueError())) {
+			return null;
+		}
+		return new JdbcTableMessageBrowser(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
+	}
+
+
+	
+	@Override
 	public String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" "+getTableName();
 	}
 
 
 
-	@IbisDoc({"name of the table to be used", ""})
+	@IbisDoc({"1", "Name of the table to be used", ""})
 	public void setTableName(String string) {
 		tableName = string;
 	}
@@ -90,17 +113,17 @@ public class JdbcTableListener extends JdbcListener {
 		return tableName;
 	}
 
-	@IbisDoc({"primary key field of the table, used to identify messages", ""})
+	@Override
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
-	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
+	@Override
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
-	@IbisDoc({"field containing the status of the message", ""})
+	@IbisDoc({"4", "Field containing the status of the message", ""})
 	public void setStatusField(String fieldname) {
 		statusField = fieldname;
 	}
@@ -108,7 +131,7 @@ public class JdbcTableListener extends JdbcListener {
 		return statusField;
 	}
 
-	@IbisDoc({"(optional) field determining the order in which messages are processed", ""})
+	@IbisDoc({"5", "(optional) Field determining the order in which messages are processed", ""})
 	public void setOrderField(String string) {
 		orderField = string;
 	}
@@ -116,7 +139,7 @@ public class JdbcTableListener extends JdbcListener {
 		return orderField;
 	}
 
-	@IbisDoc({"(optional) field used to store the date and time of the last change of the status field", ""})
+	@IbisDoc({"6", "(optional) Field used to store the date and time of the last change of the statusField", ""})
 	public void setTimestampField(String fieldname) {
 		timestampField = fieldname;
 	}
@@ -124,7 +147,7 @@ public class JdbcTableListener extends JdbcListener {
 		return timestampField;
 	}
 
-	@IbisDoc({"(optional) value of status field indicating row is available to be processed. if not specified, any row not having any of the other status values is considered available.", ""})
+	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})
 	public void setStatusValueAvailable(String string) {
 		statusValueAvailable = string;
 	}
@@ -132,7 +155,7 @@ public class JdbcTableListener extends JdbcListener {
 		return statusValueAvailable;
 	}
 
-	@IbisDoc({"value of status field indicating the processing of the row resulted in an error", ""})
+	@IbisDoc({"8", "Value of statusField indicating the processing of the row resulted in an error", ""})
 	public void setStatusValueError(String string) {
 		statusValueError = string;
 	}
@@ -140,12 +163,20 @@ public class JdbcTableListener extends JdbcListener {
 		return statusValueError;
 	}
 
-	@IbisDoc({"value of status field indicating row is processed ok", ""})
+	@IbisDoc({"9", "Value of status field indicating row is processed ok", ""})
 	public void setStatusValueProcessed(String string) {
 		statusValueProcessed = string;
 	}
 	public String getStatusValueProcessed() {
 		return statusValueProcessed;
+	}
+
+	@IbisDoc({"10", "Additional condition for a row to belong to this TableListener", ""})
+	public void setSelectCondition(String string) {
+		selectCondition = string;
+	}
+	public String getSelectCondition() {
+		return selectCondition;
 	}
 
 }

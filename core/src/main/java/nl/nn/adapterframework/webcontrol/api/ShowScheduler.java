@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019, 2020 WeAreFrank!
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,8 +44,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -180,14 +179,14 @@ public final class ShowScheduler extends Base {
 			List<String> jobGroupNames = scheduler.getJobGroupNames();
 
 			for(String jobGroupName : jobGroupNames) {
-				Map<String, Object> jobsInGroup = new HashMap<String, Object>();
+				List<Map<String, Object>> jobsInGroupList = new ArrayList<>();
 
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
-					jobsInGroup.put(jobKey.getName(), getJobData(jobKey, false));
+					jobsInGroupList.add(getJobData(jobKey, false));
 				}
-				jobGroups.put(jobGroupName, jobsInGroup);
+				jobGroups.put(jobGroupName, jobsInGroupList);
 			}
 		} catch (Exception e) {
 			log.error("error retrieving job from jobgroup", e);
@@ -448,8 +447,9 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSchedule(MultipartFormDataInput input) throws ApiException {
-		return createSchedule(null, input);
+	public Response createSchedule(MultipartBody input) throws ApiException {
+		String jobGroupName = resolveStringFromMap(input, "group");
+		return createSchedule(jobGroupName, input);
 	}
 
 	@PUT
@@ -457,7 +457,7 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job/{jobName}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartFormDataInput input) throws ApiException {
+	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, jobName, input, true);
 	}
 
@@ -466,18 +466,17 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartFormDataInput input) throws ApiException {
+	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, input);
 	}
 
 
-	private Response createSchedule(String groupName, MultipartFormDataInput input) {
+	private Response createSchedule(String groupName, MultipartBody input) {
 		return createSchedule(groupName, null, input, false);
 	}
 
-	private Response createSchedule(String groupName, String jobName, MultipartFormDataInput input, boolean overwrite) {
+	private Response createSchedule(String groupName, String jobName, MultipartBody inputDataMap, boolean overwrite) {
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -530,6 +529,8 @@ public final class ShowScheduler extends Base {
 
 		String message = resolveStringFromMap(inputDataMap, "message");
 
+		String description = resolveStringFromMap(inputDataMap, "description");
+		
 		SchedulerHelper sh = manager.getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
@@ -540,6 +541,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setReceiverName(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
+		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
 		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -592,8 +594,8 @@ public final class ShowScheduler extends Base {
 						}
 					}
 	
-					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-							+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
+							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
 					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 						stmt.setString(1, name);
 						stmt.setString(2, jobGroup);
@@ -602,9 +604,10 @@ public final class ShowScheduler extends Base {
 						stmt.setString(5, cronExpression);
 						stmt.setInt(6, interval);
 						stmt.setClob(7, new StringReader(message));
-						stmt.setBoolean(8, hasLocker);
-						stmt.setString(9, lockKey);
-						stmt.setString(10, user);
+						stmt.setString(8, description);
+						stmt.setBoolean(9, hasLocker);
+						stmt.setString(10, lockKey);
+						stmt.setString(11, user);
 		
 						success = stmt.executeUpdate() > 0;
 					}

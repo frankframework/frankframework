@@ -172,7 +172,7 @@ public class Browse extends ActionBase {
 				mb=pipe.getMessageLog();
 			} else {
 				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
-				mb = receiver.getMessageLog();
+				mb = receiver.getMessageLogBrowser();
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
@@ -184,7 +184,7 @@ public class Browse extends ActionBase {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;
 			}
-			mb = receiver.getErrorStorage();
+			mb = receiver.getErrorStorageBrowser();
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();
@@ -202,9 +202,9 @@ public class Browse extends ActionBase {
 				String msg=null;
 				if(rawmsg instanceof MessageWrapper) {
 					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-					msg = msgsgs.getText();
+					msg = msgsgs.getMessage().asString();
 				} else if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg, null);
+					msg = listener.extractMessage(rawmsg, null).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}
@@ -278,7 +278,7 @@ public class Browse extends ActionBase {
 								Object rawmsg = mb.browseMessage(cId);
 								String msg=null;
 								if (listener!=null) {
-									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
+									msg = listener.extractMessage(rawmsg,new HashMap()).asString();
 								} else {
 									msg = Message.asString(rawmsg);
 								}
@@ -298,7 +298,9 @@ public class Browse extends ActionBase {
 								message.addAttribute("correlationId",cCorrelationId);
 								message.addAttribute("type",cType);
 								message.addAttribute("host",cHost);
-								message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								if (insertDate!=null) {
+									message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								}
 								if (iterItem.getExpiryDate()!=null) {
 									message.addAttribute("expiryDate",DateUtils.format(iterItem.getExpiryDate(), DateUtils.FORMAT_FULL_GENERIC));
 								}

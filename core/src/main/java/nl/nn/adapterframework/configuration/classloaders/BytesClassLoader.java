@@ -70,6 +70,12 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 		}
 	}
 
+	@Override
+	public final void destroy() {
+		clearResources();
+		super.destroy();
+	}
+
 	/**
 	 * Called during a reload for a green/blue deployment, and after the classloader has been configured to load new resources
 	 */
@@ -78,8 +84,8 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	/**
 	 * Clears all resources
 	 */
-	public final void clearResources() throws ConfigurationException {
-		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
+	public final void clearResources() {
 		resources.clear();
+		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
 	}
 }

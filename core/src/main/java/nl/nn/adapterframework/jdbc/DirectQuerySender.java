@@ -94,7 +94,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public Message sendMessage(Connection blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return new Message(sendMessageOnConnection(blockHandle, message, session));
+		return sendMessageOnConnection(blockHandle, message, session);
 	}
 
 }

@@ -5,15 +5,15 @@
 alter session set "_ORACLE_SCRIPT"=true;
 
 
-Drop user testiaf_user cascade;
+--Drop user testiaf_user cascade;
 
-Create user testiaf_user identified by testiaf_user default tablespace users; 
+Create user testiaf_user identified by testiaf_user00 default tablespace users; 
 
 Grant dba to testiaf_user;
 Grant resource to testiaf_user;
 Grant connect to testiaf_user;
 
-DROP ROLE ROLE_WEBSPHERE_XA;
+--DROP ROLE ROLE_WEBSPHERE_XA;
 CREATE ROLE ROLE_WEBSPHERE_XA;
 GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO ROLE_WEBSPHERE_XA;
 GRANT SELECT ON SYS.DBA_2PC_PENDING TO ROLE_WEBSPHERE_XA;

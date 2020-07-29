@@ -92,11 +92,24 @@ angular.module('iaf.beheerconsole')
 		this.Delete = function () { // uri, callback, error || uri, object, callback, error
 			var args = Array.prototype.slice.call(arguments);
 			var uri = args.shift();
-			var request = {url:buildURI(uri), method: "delete" };
-			if(args.length == 4) { //if 3 args are left, we have an object!
-				request.data = args.shift();
+			var request = {url:buildURI(uri), method: "delete", headers:{} };
+			var callback;
+
+			var object = args.shift(); // this can be a function or an object.
+			if(object instanceof Function) { //we have a callback function, that means no object is present!
+				callback = object; // set the callback method accordingly
+			} else {
+				if(object instanceof FormData) {
+					request.data = object;
+					request.headers["Content-Type"] = undefined;
+				} else {
+					request.data = JSON.stringify(object);
+					request.headers["Content-Type"] = "application/json";
+				}
+
+				callback = args.shift(); // the previous argument was an object, that means the next object is the callback!
 			}
-			var callback = args.shift();
+
 			var error = args.shift();
 			request.intercept = args.shift();
 
@@ -302,8 +315,11 @@ angular.module('iaf.beheerconsole')
 				},
 				remove: function() {
 					Debug.info("removing all Pollers");
-					for(x in data)
-						data[x].remove();
+					for(x in data) {
+						data[x].stop();
+						delete data[x];
+					}
+					data = {};
 				},
 				list: function () {
 					this.list = [];
@@ -768,7 +784,7 @@ angular.module('iaf.beheerconsole')
 				delete $rootScope.hooks[name][id];
 		};
 	}).filter('ucfirst', function() {
-		return function(input) {
+		return function(s) {
 			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
 		};
 	}).filter('truncate', function() {
@@ -795,8 +811,25 @@ angular.module('iaf.beheerconsole')
 			if(input || input === 0) return input+"%";
 			else return "-";
 		};
-	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
-		function($rootScope, $http, Base64, $location, appConstants) {
+	}).filter('formatStatistics', function() {
+		return function(input, format) {
+			if(!input || !format) return; //skip when no input
+			var formatted = {};
+			for(key in format) {
+				var value = input[key];
+				if(!value && value !== 0) { // if no value, return a dash
+					value = "-";
+				}
+				if((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
+					value += "%";
+				}
+				formatted[key] = value;
+			}
+			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
+			return formatted;
+		};
+	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 'Misc',
+		function($rootScope, $http, Base64, $location, appConstants, Misc) {
 		var authToken;
 		return {
 			login: function(username, password) {
@@ -808,8 +841,7 @@ angular.module('iaf.beheerconsole')
 				var location = sessionStorage.getItem('location') || "status";
 				var absUrl = window.location.href.split("login")[0];
 				window.location.href = (absUrl + location);
-				//window.location.reload();
-				//$location.path(location);
+				window.location.reload();
 			},
 			loggedin: function() {
 				var token = sessionStorage.getItem('authToken');
@@ -828,7 +860,8 @@ angular.module('iaf.beheerconsole')
 			},
 			logout: function() {
 				sessionStorage.clear();
-				$location.path("login");
+				$http.defaults.headers.common['Authorization'] = null;
+				$http.get(Misc.getServerPath() + "iaf/api/logout");
 			}
 		};
 	}]).factory('Base64', function () {
@@ -1063,7 +1096,7 @@ angular.module('iaf.beheerconsole')
 			toaster.pop({type: 'success', title: title, body: text});
 		};
 	}]).config(['$httpProvider', function($httpProvider) {
-		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', function(appConstants, $q, Misc, Toastr) {
+		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function(appConstants, $q, Misc, Toastr, $location) {
 			return {
 				request: function(config) {
 					if (config.url.indexOf('views') !== -1 && ff_version != null) {
@@ -1087,7 +1120,8 @@ angular.module('iaf.beheerconsole')
 								}
 								break;
 							case 401:
-								Toastr.error("Unauthorized", "Please authenticate");
+								sessionStorage.clear();
+								$location.path("login");
 								break;
 							case 403:
 								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");

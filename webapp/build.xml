@@ -1,0 +1,7 @@
+<project default="restart-iaf-webapp">
+	<target name="restart-iaf-webapp">
+		<exec executable="../../frank-runner/restart.bat" vmlauncher="false" failonerror="true">
+			<arg value="-Dproject.dir=iaf/webapp"/>
+		</exec>
+	</target>
+</project>

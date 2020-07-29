@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2014, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -28,7 +27,8 @@ import org.apache.logging.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	protected static Logger log = LogUtil.getLogger(StringResolver.class);
+	// Not allowed to use a static reference to the logger in this class.
+	// Log4j2 uses StringResolver during instantiation.
 
 	private static final String DELIM_START = "${";
 	private static final char DELIM_STOP = '}';
@@ -54,7 +54,7 @@ public class StringResolver {
 		try {
 			return System.getProperty(key, def);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			log.warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
+			LogUtil.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
 			return def;
 		}
 	}
@@ -89,19 +89,22 @@ public class StringResolver {
 				// no more variables
 				if (i == 0) { // this is a simple string
 					return val;
-				} else { // add the tail string which contails no variables and return the result.
+				} else { // add the tail string which contains no variables and return the result.
 					sbuf.append(val.substring(i, val.length()));
 					return sbuf.toString();
 				}
 			} else {
 				sbuf.append(val.substring(i, j));
-				k = val.indexOf(DELIM_STOP, j);
+				k = indexOfDelimStop(val, j);
 				if (k == -1) {
 					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
 				} else {
 					String expression = val.substring(j, k + DELIM_STOP_LEN);
 					j += DELIM_START_LEN;
 					String key = val.substring(j, k);
+					if (key.contains(DELIM_START)) {
+						key = substVars(key, props1, props2);
+					}
 					// first try in System properties
 					String replacement = getSystemProperty(key, null);
 					// then try props parameter
@@ -168,5 +171,22 @@ public class StringResolver {
 				return true;
 			}
 		}
+	}
+
+	private static int indexOfDelimStop(String val, int startPos) {
+		// if variable in variable then find the correct stop delimiter
+		int stopPos = startPos - DELIM_STOP_LEN;
+		int numEmbeddedStart = 0;
+		int numEmbeddedStop = 0;
+		do {
+			startPos += DELIM_START_LEN;
+			stopPos = val.indexOf(DELIM_STOP, stopPos + DELIM_STOP_LEN);
+			if (stopPos > 0) {
+				String key = val.substring(startPos, stopPos);
+				numEmbeddedStart = StringUtils.countMatches(key, DELIM_START);
+				numEmbeddedStop = StringUtils.countMatches(key, "" + DELIM_STOP);
+			}
+		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
+		return stopPos;
 	}
 }

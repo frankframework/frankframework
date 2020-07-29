@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -104,10 +106,10 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	private IPipeLineSession session = new PipeLineSessionBase();
 
-    @Override
-    public ForEachChildElementPipe createPipe() {
-        return new ForEachChildElementPipe();
-    }
+	@Override
+	public ForEachChildElementPipe createPipe() {
+		return new ForEachChildElementPipe();
+	}
 
 	protected ISender getElementRenderer() {
 		return getElementRenderer(null, null);
@@ -129,6 +131,17 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 				if (sc!=null) sc.mark("out");
 				try {
 					if (message.asString().contains("error")) {
+						if (e!=null) {
+							if (e instanceof SenderException) {
+								throw (SenderException)e;
+							}
+							if (e instanceof TimeOutException) {
+								throw (TimeOutException)e;
+							}
+							if (e instanceof RuntimeException) {
+								throw (RuntimeException)e;
+							}
+						}
 						throw new SenderException("Exception triggered", e);
 					}
 				} catch (IOException e) {
@@ -182,11 +195,12 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.start();
 
 		try {
-		PipeRunResult prr = doPipe(pipe, messageError, session);
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
-	}
+		}
 	}
 
 	@Test
@@ -198,11 +212,45 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.start();
 
 		try {
-		PipeRunResult prr = doPipe(pipe, messageError, session);
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
 			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
 	}
+
+	@Test
+	public void testTimeout() throws Exception {
+		Exception targetException = new TimeOutException("FakeTimeout");
+		pipe.setSender(getElementRenderer(targetException));
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
+	}
+
+	@Test
+	public void testTimeoutXpath() throws Exception {
+		Exception targetException = new TimeOutException("FakeTimeout");
+		pipe.setSender(getElementRenderer(targetException));
+		pipe.setElementXPathExpression("/root/sub");
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+		}
 	}
 
 	private void assertCauseChainEndsAtOriginalException(Exception expectedCause,Exception actual) {
@@ -752,6 +800,27 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Test
+	public void testBulk2Parallel() throws Exception, IOException {
+		pipe.setSender(getElementRenderer());
+		pipe.setTargetElement("XDOC");
+		pipe.setBlockSize(4);
+		pipe.setParallel(true);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setMaxChildThreads(2);
+		pipe.setRemoveNamespaces(false);
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+	}
+
+
+	@Test
 	public void testRemoveNamespacesInAttributes() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
@@ -807,7 +876,8 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		private String prefix;
 		private SwitchCounter sc;
 		
-		SaxLogger(String prefix, SwitchCounter sc) {
+		SaxLogger(String prefix, SwitchCounter sc, ContentHandler handler) {
+			super(handler);
 			this.prefix=prefix;
 			this.sc=sc;
 		}

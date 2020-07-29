@@ -26,6 +26,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -99,7 +100,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
@@ -116,10 +117,14 @@ public class WebServiceSender extends HttpSender {
 		}
 
 		String soapmsg;
-		if (isSoap()) {
-			soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
-		} else {
-			soapmsg = message;
+		try {
+			if (isSoap()) {
+				soapmsg = soapWrapper.putInEnvelope(message.asString(), getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
+			} else {
+				soapmsg = message.asString();
+			}
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix()+"error reading message", e);
 		}
 
 		if (wsscf!=null) {
@@ -127,17 +132,17 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
+		HttpRequestBase method = super.getMethod(uri, new Message(soapmsg), parameters, session);
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		String httpResult = null;
 		try {
-			httpResult = super.extractResult(responseHandler, session);
+			httpResult = super.extractResult(responseHandler, session).asString();
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
 			throw e;
@@ -148,9 +153,9 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			if (isSoap()) {
-				return soapWrapper.getBody(httpResult);
+				return new Message(soapWrapper.getBody(httpResult));
 			} else {
-				return httpResult;
+				return new Message(httpResult);
 			}
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);

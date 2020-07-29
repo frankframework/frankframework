@@ -1,0 +1,18 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>TYPE</name>
+			</column>
+			<column>
+				<name>SLOTID</name>
+			</column>
+			<column>
+				<name>MESSAGEID</name>
+			</column>
+		</columns>
+		<where>SLOTID IN ('ApiListenerDuplicateCheck', 'ApiListenerDuplicateCheck-Errors')</where>
+		<order>TYPE</order>
+	</select>
+</manageDatabaseREQ>

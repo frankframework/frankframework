@@ -42,17 +42,37 @@
 							<thead>
 								<tr>
 									<th>Type</th>
+									<th title="number of messages in this type" >#</th>
 									<th>SlotID</th>
+									<th>Adapter</th>
+									<th>Receiver</th>
+									<th title="number of messages in this slot">#</th>
 									<th>Date</th>
-									<th>#</th>
+									<th title="number of messages in this slot on this date">#</th>
 								</tr>
 							</thead>
-							<tbody>
-								<tr ng-repeat="t in result">
-									<td>{{t.TYPE}}</td>
-									<td>{{t.SLOTID}}</td>
-									<td>{{t.MSGDATE}}</td>
-									<td>{{t.MSGCOUNT}}</td>
+							<tbody ng-repeat="t in result">
+								<tr ng-repeat="s in t.slots">
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}" title="{{t.name}}">{{t.type}}</td>
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}">{{t.msgcount}}</td>
+									<td>{{s.id}}</td>
+									<td>{{s.adapter}}</td>
+									<td>{{s.receiver}}</td><!-- TODO: should have a link here to show browser of this storage -->
+									<td>{{s.msgcount}}</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.id}}</td>
+											</tr>
+										</table>
+									</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.count}}</td><!-- TODO: should have a link here to show browser of this storage pointing to this date -->
+											</tr>
+										</table>
+									</td>
 								</tr>
 							</tbody>
 						</table>

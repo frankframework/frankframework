@@ -88,10 +88,15 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 					substitutions.put(key, value);
 				}
 			}
-			ThreadContext.putAll(substitutions); //Only add the substituted variables to the ThreadContext
+			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
 
-			//We have to 'reset' the source as the old stream has been read.
-			return new XmlConfiguration(loggerContext, source.resetInputStream());
+			return new XmlConfiguration(loggerContext, source.resetInputStream()) { //We have to 'reset' the source as the old stream has been read.
+
+				@Override // Add hashcode to toString() so we can differentiate the XmlConfigurations in the startup log
+				public String toString() {
+					return this.getClass().getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
+				}
+			};
 		} catch (IOException e) {
 			System.err.println(LOG_PREFIX + "unable to configure Log4J2");
 			throw new IllegalStateException(LOG_PREFIX + "unable to configure Log4J2", e);
@@ -212,7 +217,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	/**
 	 * Finds the first directory in the given hierarchy.
-	 * @param hierarchy is an array of Strings.
+	 * logDirectoryHierarchy is an array of Strings.
 	 *                  Strings will be split by "/" and before split will be assumed to be property,
 	 *                  and after split will be the subdirectory.
 	 * @return File object that is a directory. Or null, if no directories were found.

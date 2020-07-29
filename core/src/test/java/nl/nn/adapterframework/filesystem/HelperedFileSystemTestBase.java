@@ -10,11 +10,6 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
 	
-	/**
-	 * Returns the file system 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
 	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
 	/**
@@ -78,8 +73,6 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	
 	/**
 	 * Creates a folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	@Override
 	protected void _createFolder(String foldername) throws Exception {
@@ -88,8 +81,6 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	/**
 	 * Deletes the folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {

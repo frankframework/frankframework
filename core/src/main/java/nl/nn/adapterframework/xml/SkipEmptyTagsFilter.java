@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -36,6 +37,10 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	private boolean nonWhitespaceCharactersSeen=false;
 	
 	private StringBuffer pendingWhitespace = new StringBuffer();
+
+	public SkipEmptyTagsFilter(ContentHandler handler) {
+		super(handler);
+	}
 
 	public void handlePendingStartElements() throws SAXException {
 		for(Element e:pendingElements) {

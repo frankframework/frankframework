@@ -1,1 +1,1 @@
-<request mode="chain">c:/temp/testdata/xfeip/GPOA.xml</request>
+<request mode="chain">${testdata.dir}/xfeip/GPOA.xml</request>

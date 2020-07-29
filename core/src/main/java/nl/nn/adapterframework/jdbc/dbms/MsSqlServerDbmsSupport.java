@@ -1,5 +1,6 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +18,13 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -40,13 +42,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_MSSQLSERVER;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return "MS SQL";
+	public Dbms getDbms() {
+		return Dbms.MSSQL;
 	}
 
 	@Override
@@ -78,6 +75,18 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
+	
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "CONVERT(VARCHAR(10), "+columnName+", 120)";
+	}
+
 
 	@Override
 	public String getBlobFieldType() {
@@ -85,37 +94,10 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return false;
-	}
-
-	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
 	
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-				StringBuilder sb = new StringBuilder();
-				for (String singleQuery : multipleQueries) {
-					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
-					if (convertedQuery != null) {
-						sb.append(convertedQuery);
-						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
-						}
-					}
-				}
-				queryExecutionContext.setQuery(sb.toString());
-			} else {
-				warnConvertQuery(sqlDialectFrom);
-			}
-		}
-	}
 	
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
@@ -135,10 +117,41 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		// see http://www.mssqltips.com/tip.asp?tip=1257
+		String result=selectQuery.substring(0,KEYWORD_SELECT.length())+(batchSize>0?" TOP "+batchSize:"")+selectQuery.substring(KEYWORD_SELECT.length());
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (readpast)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (readpast) "+result.substring(wherePos);
+		}
+		return result;
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select top(1) * from "+tableName;
 		return query;
 	} 
+
+	@Override
+	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		String result=selectQuery;
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (nolock)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (nolock) "+result.substring(wherePos);
+		}
+		return result;
+	}
 
 	@Override
 	public String provideTrailingFirstRowsHint(int rowCount) {
@@ -173,11 +186,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
-	}
-
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}
 
 	@Override
