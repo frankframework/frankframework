@@ -258,7 +258,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 	}
 
-
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */

@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
