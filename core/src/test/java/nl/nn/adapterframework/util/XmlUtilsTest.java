@@ -15,7 +15,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testXslt(XmlUtils.makeRemoveNamespacesXslt(omitXmlDeclaration, indent),input,expected);
 		testTransformerPool(XmlUtils.getRemoveNamespacesTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
-	
+
 	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeGetRootNamespaceXslt(),input,expected);
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(),input,expected);
@@ -50,7 +50,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",true,true);
 	}
-
+	
 	@Test
 	public void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator=System.getProperty("line.separator");
