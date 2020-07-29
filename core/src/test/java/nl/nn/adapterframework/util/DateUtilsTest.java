@@ -9,9 +9,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * DateUtils Tester.
  *
- * @author <Authors name>
- * @version 1.0
- * @since <pre>Jul 29, 2020</pre>
+ * @author <Sina Sen>
  */
 public class DateUtilsTest {
 
