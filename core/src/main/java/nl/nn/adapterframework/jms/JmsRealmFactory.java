@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -38,13 +39,15 @@ public class JmsRealmFactory {
 	private Logger log = LogUtil.getLogger(this);
 
 	private static JmsRealmFactory self = null;
-	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<String, JmsRealm>();
+	private Map<String, JmsRealm> jmsRealms = null;
 
 	/**
 	 * Private constructor to prevent breaking of the singleton pattern
 	 */
 	private JmsRealmFactory() {
 		super();
+
+		clear();
 	}
 
 	/**
@@ -58,10 +61,16 @@ public class JmsRealmFactory {
 
 	}
 
-	
 	public void clear() {
-		jmsRealms=new LinkedHashMap<String, JmsRealm>();
+		jmsRealms = new LinkedHashMap<String, JmsRealm>();
+
+		JmsRealm defaultJmsRealm = new JmsRealm();
+		defaultJmsRealm.setRealmName("jdbc");
+		defaultJmsRealm.setDatasourceName("jdbc/" + AppConstants.getInstance().get("instance.name.lc"));
+
+		registerJmsRealm(defaultJmsRealm);
 	}
+
 	/**
 	 * Get a requested JmsRealm with the given name, null is returned if no realm
 	 * under given name

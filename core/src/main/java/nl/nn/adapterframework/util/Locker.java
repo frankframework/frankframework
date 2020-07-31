@@ -63,7 +63,6 @@ import org.apache.commons.lang.StringUtils;
 public class Locker extends JdbcFacade {
 	private static final String LOCK_IGNORED="%null%";
 
-	private String name;
 	private String objectId;
 	private String type = "T";
 	private String dateFormatSuffix;
@@ -201,13 +200,6 @@ public class Locker extends JdbcFacade {
 
 	protected String getLogPrefix() {
 		return getName()+" "; 
-	}	
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getName() {
-		return name;
 	}
 
 	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
