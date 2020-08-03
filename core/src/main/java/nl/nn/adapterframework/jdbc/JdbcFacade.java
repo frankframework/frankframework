@@ -301,7 +301,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	}
 
 
-	@IbisDoc({"1", "Name of the realm", ""})
+	@IbisDoc({"1", "Name of the sender", ""})
 	@Override
 	public void setName(String name) {
 		this.name = name;
