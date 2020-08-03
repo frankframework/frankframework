@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
@@ -63,6 +64,14 @@ public class JmsRealm {
 
 	public JmsRealm() {
 		super();
+	}
+
+	public static JmsRealm defaultRealm() {
+		JmsRealm defaultJmsRealm = new JmsRealm();
+		defaultJmsRealm.setRealmName("jdbc");
+		String defaultDatasource = AppConstants.getInstance().getResolvedProperty("jdbc.datasource.default");
+		defaultJmsRealm.setDatasourceName(defaultDatasource);
+		return defaultJmsRealm;
 	}
 
 	/**

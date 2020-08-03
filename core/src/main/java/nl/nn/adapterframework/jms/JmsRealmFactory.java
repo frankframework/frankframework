@@ -39,15 +39,13 @@ public class JmsRealmFactory {
 	private Logger log = LogUtil.getLogger(this);
 
 	private static JmsRealmFactory self = null;
-	private Map<String, JmsRealm> jmsRealms = null;
+	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<String, JmsRealm>();
 
 	/**
 	 * Private constructor to prevent breaking of the singleton pattern
 	 */
 	private JmsRealmFactory() {
 		super();
-
-		clear();
 	}
 
 	/**
@@ -61,14 +59,11 @@ public class JmsRealmFactory {
 
 	}
 
+	/**
+	 * Test method to cleanup the static references
+	 */
 	public void clear() {
 		jmsRealms = new LinkedHashMap<String, JmsRealm>();
-
-		JmsRealm defaultJmsRealm = new JmsRealm();
-		defaultJmsRealm.setRealmName("jdbc");
-		defaultJmsRealm.setDatasourceName("jdbc/" + AppConstants.getInstance().get("instance.name.lc"));
-
-		registerJmsRealm(defaultJmsRealm);
 	}
 
 	/**
