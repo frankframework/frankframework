@@ -1013,13 +1013,13 @@ public class JdbcUtil {
 
 	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
 		if (jdbcProperties == null) {
-			String jmsRealm = JmsRealmFactory.getInstance()
-					.getFirstDatasourceJmsRealm();
+			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (jmsRealm != null) {
 				jdbcProperties = new Properties();
 				JdbcFacade ibisProp = new JdbcFacade();
-				ibisProp.setJmsRealm(jmsRealm);
-				
+				ibisProp.setJmsRealm(jmsRealm); //Use a realm here so it copies over proxied datasources
+				ibisProp.setName("retrieveJdbcPropertiesFromDatabase");
+
 				Connection conn = null;
 				try {
 					conn = ibisProp.getConnection();
