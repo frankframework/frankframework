@@ -28,8 +28,6 @@ import org.springframework.mock.web.MockServletContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -144,10 +142,6 @@ public class IbisTester {
 		System.setProperty("flow.create.url", "");
 		debug("***start***");
 		ibisContext = null;
-
-		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
-		realmFactory.clear();
-		realmFactory.registerJmsRealm(JmsRealm.defaultRealm());
 	}
 
 	public void closeTest() {

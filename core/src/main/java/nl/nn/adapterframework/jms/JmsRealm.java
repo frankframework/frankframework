@@ -66,14 +66,6 @@ public class JmsRealm {
 		super();
 	}
 
-	public static JmsRealm defaultRealm() {
-		JmsRealm defaultJmsRealm = new JmsRealm();
-		defaultJmsRealm.setRealmName("jdbc");
-		String defaultDatasource = AppConstants.getInstance().getResolvedProperty("jdbc.datasource.default");
-		defaultJmsRealm.setDatasourceName(defaultDatasource);
-		return defaultJmsRealm;
-	}
-
 	/**
 	 * Includes another realm into this one
 	 */
