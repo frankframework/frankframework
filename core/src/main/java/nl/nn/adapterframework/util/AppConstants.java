@@ -65,9 +65,11 @@ public final class AppConstants extends Properties implements Serializable {
 
 		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
 		//TODO JdbcUtil has static references to AppConstants causing it to load twice!
-		Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
-		if (databaseProperties!=null) {
-			putAll(databaseProperties);
+		if(classLoader instanceof IConfigurationClassLoader) {
+			Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
+			if (databaseProperties!=null) {
+				putAll(databaseProperties);
+			}
 		}
 
 		//Add all ibis properties

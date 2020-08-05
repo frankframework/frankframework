@@ -158,7 +158,7 @@
   </pattern>
 
   <pattern value="*/locker">
-    <object-create-rule classname="nl.nn.adapterframework.util.Locker"/>
+    <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory" />
     <set-properties-rule/>
     <set-next-rule methodname="setLocker"/>
   </pattern>

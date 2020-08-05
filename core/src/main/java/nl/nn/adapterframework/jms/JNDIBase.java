@@ -217,17 +217,17 @@ public class JNDIBase {
 	 */ 
 	public void setJmsRealm(String jmsRealmName) {
 		try {
-			JmsRealm.copyRealm(this,jmsRealmName);
-            this.jmsRealmName = jmsRealmName;
+			JmsRealm.copyRealm(this, jmsRealmName);
+			this.jmsRealmName = jmsRealmName;
 		} catch (ConfigurationException e) {
-			log.warn("cannot copy data from realm",e);
+			log.error("cannot copy data from realm", e);
 		}
 	}
-    
-    public String getJmsRealName() {
-        return this.jmsRealmName;
-    }
-    
+
+	public String getJmsRealmName() {
+		return this.jmsRealmName;
+	}
+
 	public String getAuthentication() {
 		return authentication;
 	}
