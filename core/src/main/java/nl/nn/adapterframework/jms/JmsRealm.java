@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
@@ -127,6 +126,7 @@ public class JmsRealm {
 	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
+	@Override
 	public String toString() {
 		try {
 			return ToStringBuilder.reflectionToString(this);
