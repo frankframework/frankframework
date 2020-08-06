@@ -90,7 +90,11 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
+- Return to the Java EE perspective.
+- In the main menu, choose File | Import...
+- The Import wizard appears which allows you to import many different kinds of projects. Open "Maven" and select "Existing Maven Projects". Click "Next".
+- Browse to the directory in which you cloned the iaf Git repository. A list of `pom.xml` files appears, one for each subproject.
+- **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
