@@ -283,6 +283,7 @@
               <placement>X</placement>
             </tag>
           </tags>
+          <overview>${basedir}/src/overview.html</overview>
         </configuration>
         <executions>
           <execution>
