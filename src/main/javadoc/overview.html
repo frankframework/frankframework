@@ -1,3 +1,65 @@
 <body>
-An overview will be written here of the architecture of the Java source code.
+
+<h1>Introduction</h1>
+
+The Frank!Framework offers services to integrate other software packages.
+The typical end user owns many software packages that need to communicate in
+a standardized way. This is done by connecting the individual software
+packages to an instance of the Frank!Framework.
+<p>
+When some existing software package A wants to reach another existing
+software package B, then A typically accesses the integration solution
+instead. The integration solution receives the incoming message and
+transforms it to a format that B can understand. The transformed
+message is sent to B. This is a very simplified view, but it allows
+us to introduce the basic building blocks offered by the Frank!Framework.
+<p>
+The most important building blocks are listeners, pipes, senders and receivers.
+Listeners are the building blocks that accept incoming messages. Messages can
+originate from HTTP requests, the file system, the database and more, which
+explains that there are many types of listeners. Listeners are wrapped in
+receivers that add additional services about logging and transaction
+management. Pipes are used to transform messages. Each possible
+transformation of a message has its own type of pipe. Finally, senders
+write messages to the database, send them as HTTP requests, write
+them to files or send them elsewhere. Each of these possibilities
+has its own type of sender.
+<p>
+Integration solutions are typically developed by Frank developers, who
+decide how the building blocks have to be combined and configured.
+Frank developers provide this information through XML files and properties
+files. The Frank!Framework parses these XML files into networks of
+Java objects that can provide the actual integration solution. The
+Frank!Framework also allows developers to work with a graphical
+user interface. To understand this from a user perspective, please
+read the <a href="http://frank-manual.readthedocs.io">Frank!Manual</a>.
+<p>
+The Frank!Framework is a Java application that provides a web interface.
+It runs on an application server. WeAreFrank! supports running the
+Frank!Framework on Apache Tomcat, JBoss Application Server (recently renamed to WildFly)
+or WebSphere Application Server. The web interface is typically
+used by operators who are responsible for the proper operation
+of the integration solution, or as WeAreFrank! says: the Frank.
+The Frank!Console is described in the <a href="http://frank-manual.readthedocs.io">Frank!Manual</a>.
+
+<h1>Building blocks</h1>
+
+The building blocks are defined by Java interfaces in the package
+{@link nl.nn.adapterframework.core}. All pipes implement
+interface {@link nl.nn.adapterframework.core.IPipe}. All
+listeners implement {@link nl.nn.adapterframework.core.IListener}.
+All receivers implement {@link nl.nn.adapterframework.core.IReceiver}.
+And all senders implement {@link nl.nn.adapterframework.core.ISender}.
+The implementation of {@link nl.nn.adapterframework.core.IReceiver}
+appears in class {@link nl.nn.adapterframework.receivers.GenericReceiver}.
+Some implementations of {@link nl.nn.adapterframework.core.IListener}
+also appear in that package. Many pipes are implemented in
+package {@link nl.nn.adapterframework.pipes} and many
+senders are implemented in {@link nl.nn.adapterframework.senders}.
+
+<h1>Life cycle</h1>
+<h1>Web based</h1>
+<h1>Database</h1>
+<h1>Management</h1>
+<h1>Utilities</h1>
 </body>
