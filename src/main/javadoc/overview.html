@@ -2,13 +2,13 @@
 
 <h1>Introduction</h1>
 
-The Frank!Framework offers services to integrate other software packages.
-The typical end user owns many software packages that need to communicate in
+The Frank!Framework offers services to integrate other software applications.
+The typical end user owns many software applications that need to communicate in
 a standardized way. This is done by connecting the individual software
-packages to an instance of the Frank!Framework.
+applications to an instance of the Frank!Framework.
 <p>
-When some existing software package A wants to reach another existing
-software package B, then A typically accesses the integration solution
+When some existing software application A wants to reach another existing
+application B, then A typically accesses the integration solution
 instead. The integration solution receives the incoming message and
 transforms it to a format that B can understand. The transformed
 message is sent to B. This is a very simplified view, but it allows
@@ -31,7 +31,7 @@ Frank developers provide this information through XML files and properties
 files. The Frank!Framework parses these XML files into networks of
 Java objects that can provide the actual integration solution. The
 Frank!Framework also allows developers to work with a graphical
-user interface. To understand this from a user perspective, please
+user interface, the Frank!Flow. To understand this from a user perspective, please
 read the <a href="http://frank-manual.readthedocs.io">Frank!Manual</a>.
 <p>
 The Frank!Framework is a Java application that provides a web interface.
@@ -56,8 +56,69 @@ Some implementations of {@link nl.nn.adapterframework.core.IListener}
 also appear in that package. Many pipes are implemented in
 package {@link nl.nn.adapterframework.pipes} and many
 senders are implemented in {@link nl.nn.adapterframework.senders}.
+<p>
+There are two additional building blocks to hold groups of other
+building blocks, namely adapters and configurations. An adapter,
+implemented by {@link nl.nn.adapterframework.core.IAdapter},
+plays the role of a function. It holds one or more receivers that listen to input
+messages. Each adapter holds a network of pipes to transform
+incoming messages. Pipe type
+{@link nl.nn.adapterframework.pipes.GenericMessageSendingPipe}
+wraps a sender and routes its incoming messages to the sender.
+This way, adapters can produce output messages.
+<p>
+A configuration is a group of adapters that can be deployed
+independently. A complex integration solution, or Frank,
+consists of multiple configuration that each have their own
+life cycle. Configurations help developers and their customers to
+coordinate the release process.
 
 <h1>Life cycle</h1>
+
+When the Frank!Framework starts, it has to load all configurations.
+The application server calls {@link nl.nn.adapterframework.lifecycle.IbisApplicationServlet#init},
+which in turn calls
+{@link nl.nn.adapterframework.configuration.IbisContext#init}.
+Starting all configurations is the responsibility of
+{@link nl.nn.adapterframework.configuration.IbisContext}.
+
+Class {@link nl.nn.adapterframework.configuration.IbisContext} ensures
+that configurations are independent. Properties set in one configuration
+should not be visible to other configurations. The same holds for custom
+Java classes that are part of a configuration.
+Class {@link nl.nn.adapterframework.configuration.IbisContext} achieves
+this by creating new {@link ClassLoader} instances. Each
+configuration is loaded using its own {@link ClassLoader}.
+<p>
+Properties are then read using class {@link nl.nn.adapterframework.util.AppConstants}.
+To understand what {@link nl.nn.adapterframework.util.AppConstants} is
+supposed to do, please read the <a href="https://frank-manual.readthedocs.io/en/latest/advancedDevelopment/properties/properties.html">
+appropriate section of the Frank!Manual</a>. You can read there that many property
+files are read in a specific order. That order itself is read from
+a properties file named "AppConstants.properties". A default version of this
+file is included within the Frank!Framework.
+<p>
+Configurations are parsed using the
+<a href="https://commons.apache.org/proper/commons-digester/">Apache library commons-digester</a>.
+This library needs configuration files that reference building blocks by their
+qualified Java class name, for example:
+<pre>{@code
+<listener className="nl.nn.adapterframework.receivers.JavaListener"
+    name="TestMessageStoreSender"/>
+}</pre>
+Frank config that references Java classes as shown is said to have old-style syntax.
+WeAreFrank! has introduced a more friendly syntax that references building blocks
+by human-readable names, for example:
+<pre>{@code
+<JavaListener name="TestMessageStoreSender"/>
+}
+</pre>
+This is new-style syntax. The Frank!Framework applies an XSLT transformation
+to transform new-style syntax to old-style syntax before parsing with
+Apache commons-digester. The XSLT transformation is read from resource
+"/xml/xsl/canonicalize.xsl" on the classpath of the class loader of
+the configuration being read.
+
 <h1>Web based</h1>
 <h1>Database</h1>
 <h1>Management</h1>
