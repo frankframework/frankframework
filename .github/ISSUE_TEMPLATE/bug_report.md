@@ -1,6 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
+title: ''
+labels: bug
+assignees: ''
 
 ---
 
@@ -10,10 +13,11 @@ A clear and concise description of what the bug is.
 **Reporter**
 Please state your name. If we don't know who is reporting, a solution of the issue might be delayed.
 
-**Category**
+**Category** 
+Use following Tags to categorize your bug report
  - Frank Console
  - Frank Framework
- - Ladybug (debugging tool)
+* - Ladybug (debugging tool) --> also is a separate project with own issues*
  - Larva (unit test tool)
  - Performance
 
@@ -36,4 +40,4 @@ If applicable, add screenshots to help explain your problem.
  - IAF Version [e.g. 7.5 RC3, 7.6]
 
 **Additional context**
-Add any other context about the problem here. (f.e. ladybug report / test adapter with larva test) 
+Add any other context about the problem here. (f.e. ladybug report / test adapter with larva test)
