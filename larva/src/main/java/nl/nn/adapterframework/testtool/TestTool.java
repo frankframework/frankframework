@@ -4331,10 +4331,12 @@ public class TestTool {
 						if(key.endsWith("." + attribute)){
 							idMap.put(attribute, properties.getProperty(key));
 						}
+						else if(attribute.equals("")){
+							// in case of an empty string as attribute, assume it should read the value
+							// ie: ignoreKey.identifier=value
+							idMap.put("value", properties.getProperty(key));
+						}
 					}
-				}
-				else { // assume value should be read and returned under attribute key 'value' (in case of ignoreKey, removeKey, replaceKey)
-					idMap.put("value", properties.getProperty(key));
 				}
 			}
 		}
@@ -4378,7 +4380,9 @@ public class TestTool {
 				break;
 			case "ignoreKey":
 			case "removeKey":
-				attributes = new ArrayList<String>();
+				// in case of an empty string as attribute, assume it should read the value
+				// ie: ignoreKey.identifier=value
+				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""));
 				break;
 		}
 

@@ -359,5 +359,93 @@ public class TestToolTest {
         assertEquals(identifier.get("margin"), margin);
         assertEquals(identifier.get("errorMessageOnRemainingString"), errorMessageOnRemainingString);
     }
+
+    @Test
+    public void removeKeyFromIgnoreMap() {
+        String propertyName = "removeKey";
+        
+        Properties scenario = new Properties();
+        String key = "<field name='zip'>";
+        scenario.setProperty(propertyName + ".identifier.key", key);
+
+        HashMap<String, HashMap<String, HashMap<String, String>>> result = TestTool.mapPropertiesToIgnores(scenario);
+        assertNotNull(result);
+        assertEquals(result.size(), 1);
+
+        HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+        assertNotNull(ignore);
+        assertEquals(ignore.size(), 1);
+
+        HashMap<String, String> identifier = ignore.get("identifier");
+        assertNotNull(identifier);
+
+        assertEquals(identifier.get("key"), key);
+    }
+
+    @Test
+    public void removeKeyWithoutKeyFromIgnoreMap() {
+        String propertyName = "removeKey";
+        
+        Properties scenario = new Properties();
+        String value = "<field name='zip'>";
+        scenario.setProperty(propertyName + ".identifier", value);
+
+        HashMap<String, HashMap<String, HashMap<String, String>>> result = TestTool.mapPropertiesToIgnores(scenario);
+        assertNotNull(result);
+        assertEquals(result.size(), 1);
+
+        HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+        assertNotNull(ignore);
+        assertEquals(ignore.size(), 1);
+
+        HashMap<String, String> identifier = ignore.get("identifier");
+        assertNotNull(identifier);
+
+        assertEquals(identifier.get("value"), value);
+    }
+
+    @Test
+    public void ignoreKeyFromIgnoreMap() {
+        String propertyName = "ignoreKey";
+        
+        Properties scenario = new Properties();
+        String key = "<field name='zip'>";
+        scenario.setProperty(propertyName + ".identifier.key", key);
+
+        HashMap<String, HashMap<String, HashMap<String, String>>> result = TestTool.mapPropertiesToIgnores(scenario);
+        assertNotNull(result);
+        assertEquals(result.size(), 1);
+
+        HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+        assertNotNull(ignore);
+        assertEquals(ignore.size(), 1);
+
+        HashMap<String, String> identifier = ignore.get("identifier");
+        assertNotNull(identifier);
+
+        assertEquals(identifier.get("key"), key);
+    }
+
+    @Test
+    public void ignoreKeyWithoutKeyFromIgnoreMap() {
+        String propertyName = "ignoreKey";
+        
+        Properties scenario = new Properties();
+        String value = "<field name='zip'>";
+        scenario.setProperty(propertyName + ".identifier", value);
+
+        HashMap<String, HashMap<String, HashMap<String, String>>> result = TestTool.mapPropertiesToIgnores(scenario);
+        assertNotNull(result);
+        assertEquals(result.size(), 1);
+
+        HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+        assertNotNull(ignore);
+        assertEquals(ignore.size(), 1);
+
+        HashMap<String, String> identifier = ignore.get("identifier");
+        assertNotNull(identifier);
+
+        assertEquals(identifier.get("value"), value);
+    }
     
 }
