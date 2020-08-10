@@ -54,10 +54,14 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 			throw new PipeRunException(this,
 						getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e1);
 		}
-		
-        Document doc = new Document(binaryInputStream);
-        result = doc.getPages().size();
-		
+
+		try {
+			Document doc = new Document(binaryInputStream);
+			result = doc.getPages().size();
+		} catch (InvalidPasswordException ip) {
+			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
+		}
+      
 		return new PipeRunResult(getForward(), Integer.toString(result) );
 	}
 
