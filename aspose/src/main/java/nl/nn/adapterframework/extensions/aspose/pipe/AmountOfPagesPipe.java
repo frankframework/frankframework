@@ -35,7 +35,7 @@ import com.aspose.pdf.Document;
  *
  */
 public class AmountOfPagesPipe extends FixedForwardPipe {
-	String charset = "ISO-8859-1";
+	private String charset = "ISO-8859-1";
 
 	@Override
 	public void configure() throws ConfigurationException {
