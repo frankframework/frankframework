@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -239,5 +240,18 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		PipeRunResult prr = doPipe(new Message(""));
 		MatchUtils.assertXmlEquals("null iterator", expected, prr.getResult().asString(), true);
 	}
-	
+
+	@Test
+	public void testParallel() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		configurePipe();
+		pipe.start();
+		testTenLines();
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
 }

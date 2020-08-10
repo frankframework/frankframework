@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.text.StrTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -67,6 +67,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 	private List<String> sessionKeysList;
 	private boolean moveToMessageLog = true;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (sessionKeys != null) {
 			sessionKeysList = new ArrayList<String>();
@@ -76,13 +77,13 @@ public class MessageStoreListener extends JdbcQueryListener {
 			}
 		}
 		setSelectQuery("SELECT MESSAGEKEY, MESSAGE FROM IBISSTORE "
-				+ "WHERE TYPE = '" + ITransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
+				+ "WHERE TYPE = '" + IMessageBrowser.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID = '" + slotId + "' ");
 				// This class was initially developed as DelayStoreListener with
 				// the following condition added. We could still add an
 				// optional delay attribute but this functionality wasn't used
 				// anymore and the condition is Oracle specific.
 				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
-		String query = "UPDATE IBISSTORE SET TYPE = '" + ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
+		String query = "UPDATE IBISSTORE SET TYPE = '" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode() + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
 		if (!isMoveToMessageLog()) {
 			query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
 		}

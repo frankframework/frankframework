@@ -1,6 +1,6 @@
 <!DOCTYPE configuration [
-	<!ENTITY JdbcQueryListener SYSTEM "./ConfigurationJdbcQueryListener.xml">
+	<!ENTITY JdbcListener SYSTEM "./ConfigurationJdbcListener.xml">
 ]>
 <configuration name="JDBC">
-	&JdbcQueryListener;
+	&JdbcListener;
 </configuration>

@@ -58,10 +58,13 @@ public class JmsRealmFactory {
 
 	}
 
-	
+	/**
+	 * Test method to cleanup the static references
+	 */
 	public void clear() {
-		jmsRealms=new LinkedHashMap<String, JmsRealm>();
+		jmsRealms = new LinkedHashMap<String, JmsRealm>();
 	}
+
 	/**
 	 * Get a requested JmsRealm with the given name, null is returned if no realm
 	 * under given name
