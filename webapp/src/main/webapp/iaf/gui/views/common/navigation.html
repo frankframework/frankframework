@@ -21,9 +21,9 @@
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
 			<li ng-class="{active: $state.includes('configuration')}" class="nav-group">
-				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span> <span class="fa arrow"></span></a>
+				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
-					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configuration</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configurations</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
 				</ul>
 			</li>
@@ -35,8 +35,8 @@
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('testing')}">
 					<li ui-sref-active="active"><a ui-sref="pages.larva">Larva</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.ladybug">Ladybug</a></li>
-					<li ui-sref-active="active"><a ui-sref="pages.test_pipeline">Test Pipeline</a></li>
-					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test serviceListener</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_pipeline">Test a Pipeline</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test a ServiceListener</a></li>
 				</ul>
 			</li>
 			<li ng-class="{active: $state.includes('jdbc')}" class="nav-group">

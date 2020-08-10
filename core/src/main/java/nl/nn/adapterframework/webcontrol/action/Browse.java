@@ -298,7 +298,9 @@ public class Browse extends ActionBase {
 								message.addAttribute("correlationId",cCorrelationId);
 								message.addAttribute("type",cType);
 								message.addAttribute("host",cHost);
-								message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								if (insertDate!=null) {
+									message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								}
 								if (iterItem.getExpiryDate()!=null) {
 									message.addAttribute("expiryDate",DateUtils.format(iterItem.getExpiryDate(), DateUtils.FORMAT_FULL_GENERIC));
 								}

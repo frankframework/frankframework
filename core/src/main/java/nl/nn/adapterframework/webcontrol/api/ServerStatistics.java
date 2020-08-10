@@ -300,19 +300,21 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
 
-		Level loglevel = null;
-		Boolean logIntermediaryResults = true;
-		int maxMessageLength = -1;
+		Boolean logIntermediaryResults = null;
+		int maxMessageLength = IbisMaskingLayout.getMaxLength();
 		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
-
-		Logger rootLogger = LogUtil.getRootLogger();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("loglevel")) {
-				loglevel = Level.toLevel(""+value);
+				Level loglevel = Level.toLevel(""+value, null);
+				Logger rootLogger = LogUtil.getRootLogger();
+				if(loglevel != null && rootLogger.getLevel() != loglevel) {
+					Configurator.setLevel(rootLogger.getName(), loglevel);
+					msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+				}
 			}
 			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
 				logIntermediaryResults = Boolean.parseBoolean(""+value);
@@ -325,19 +327,16 @@ public class ServerStatistics extends Base {
 			}
 		}
 
-		if(loglevel != null && rootLogger.getLevel() != loglevel) {
-			Configurator.setLevel(rootLogger.getName(), loglevel);
-			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
-		}
-
-		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-		if(logIntermediary != logIntermediaryResults) {
-			AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-
-			if(msg.length() > 0)
-				msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			else
-				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+		if(logIntermediaryResults != null) {
+			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
+			if(logIntermediary != logIntermediaryResults) {
+				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
+	
+				if(msg.length() > 0)
+					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+				else
+					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+			}
 		}
 
 		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
@@ -348,7 +347,7 @@ public class ServerStatistics extends Base {
 			IbisMaskingLayout.setMaxLength(maxMessageLength);
 		}
 
-		if (enableDebugger!=null) {
+		if (enableDebugger != null) {
 			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
@@ -358,12 +357,11 @@ public class ServerStatistics extends Base {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
 				}
 			}
  		}
-		
-		
+
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());

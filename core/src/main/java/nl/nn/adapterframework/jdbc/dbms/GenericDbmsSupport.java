@@ -22,7 +22,9 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +54,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String getDbmsName() {
-		return "generic";
+		return getDbms().getKey();
 	}
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_GENERIC;
+	public Dbms getDbms() {
+		return Dbms.GENERIC;
 	}
 
 	@Override
@@ -101,8 +103,26 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String getIbisStoreSummaryQuery() {
+		// include a where clause, to make MsSqlServerDbmsSupport.prepareQueryTextForDirtyRead() work
+		return "select type, slotid, " + getTimestampAsDate("MESSAGEDATE")+ " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + getTimestampAsDate("MESSAGEDATE")+ " order by type, slotid, " + getTimestampAsDate("MESSAGEDATE");
+	}
+
+
+	@Override
 	public String getTimestampFieldType() {
 		return "TIMESTAMP";
+	}
+	// method is used in JobDef.cleanupDatabase
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "TO_CHAR("+columnName+",'YYYY-MM-DD')";
 	}
 
 	@Override
@@ -260,6 +280,16 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	} 
 
 	@Override
+	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+		return selectQuery;
+	}
+	@Override
+	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+		return null;
+	}
+
+
+	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
 		return "";
 	}
@@ -287,7 +317,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
 		try (ResultSet rs = conn.getMetaData().getTables(null, schemaName, tableName, null)) {
-			return !rs.isAfterLast();
+			return rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
 		} catch (SQLException e) {
 			throw new JdbcException("exception checking for existence of table [" + tableName + "]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
 		}
@@ -301,7 +331,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
 		try (ResultSet rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName)) {
-			return !rs.isAfterLast();
+			return rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
 		} catch(SQLException e) {
 			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
 		}
@@ -412,11 +442,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount from ibisstore group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD') order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')";
-	}
-
-	@Override
 	public String getBooleanFieldType() {
 		return "BOOLEAN";
 	}
@@ -511,4 +536,5 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 		return splittedQueries;
 	}
+
 }

@@ -152,6 +152,10 @@ public class IbisConsoleTest {
 		String expected = Misc.resourceToString(expectedUrl);
 		XMLUnit.setIgnoreAttributeOrder(true);
 		Diff diff = XMLUnit.compareXML(expected, result);
+		if (!diff.identical()) {
+			System.out.println("Expected: "+expected);
+			System.out.println("Actual: "+result);
+		}
 		assertTrue(diff.toString(), diff.identical());
 	}
 

@@ -193,7 +193,7 @@ public class GraphvizEngine {
 			try {
 				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new GraphvizException(e);
 			}
 		}

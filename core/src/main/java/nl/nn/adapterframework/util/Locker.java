@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Locker of scheduler jobs and pipes.
@@ -63,7 +62,6 @@ import org.apache.commons.lang.StringUtils;
 public class Locker extends JdbcFacade {
 	private static final String LOCK_IGNORED="%null%";
 
-	private String name;
 	private String objectId;
 	private String type = "T";
 	private String dateFormatSuffix;
@@ -76,7 +74,10 @@ public class Locker extends JdbcFacade {
 	private int retryDelay = 10000;
 	private boolean ignoreTableNotExist = false;
 
+	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
+
 		if (StringUtils.isEmpty(getObjectId())) {
 			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
@@ -100,8 +101,7 @@ public class Locker extends JdbcFacade {
 	}
 
 	public String lock() throws JdbcException, SQLException, InterruptedException {
-		Connection conn = getConnection();
-		try {
+		try (Connection conn = getConnection()) {
 			if (!getDbmsSupport().isTablePresent(conn, "ibisLock")) {
 				if (isIgnoreTableNotExist()) {
 					log.info("table [ibisLock] does not exist, ignoring lock");
@@ -110,14 +110,8 @@ public class Locker extends JdbcFacade {
 					throw new JdbcException("table [ibisLock] does not exist");
 				}
 			}
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
 		}
-		
+
 		String objectIdWithSuffix = null;
 		int r = -1;
 		while (objectIdWithSuffix == null && (numRetries == -1 || r < numRetries)) {
@@ -135,24 +129,24 @@ public class Locker extends JdbcFacade {
 				objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 			}
 			log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
-			conn = getConnection();
-			try {
-				PreparedStatement stmt = conn.prepareStatement(insertQuery);			
-				stmt.clearParameters();
-				stmt.setString(1,objectIdWithSuffix);
-				stmt.setString(2,getType());
-				stmt.setString(3,Misc.getHostname());
-				stmt.setTimestamp(4, new Timestamp(date.getTime()));
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(date);
-				if (getType().equalsIgnoreCase("T")) {
-					cal.add(Calendar.HOUR_OF_DAY, getRetention());
-				} else {
-					cal.add(Calendar.DAY_OF_MONTH, getRetention());
+			try (Connection conn = getConnection()) {
+				try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+					stmt.clearParameters();
+					stmt.setString(1,objectIdWithSuffix);
+					stmt.setString(2,getType());
+					stmt.setString(3,Misc.getHostname());
+					stmt.setTimestamp(4, new Timestamp(date.getTime()));
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(date);
+					if (getType().equalsIgnoreCase("T")) {
+						cal.add(Calendar.HOUR_OF_DAY, getRetention());
+					} else {
+						cal.add(Calendar.DAY_OF_MONTH, getRetention());
+					}
+					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
+					stmt.executeUpdate();
+					log.debug("lock ["+objectIdWithSuffix+"] set");
 				}
-				stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
-				stmt.executeUpdate();
-				log.debug("lock ["+objectIdWithSuffix+"] set");
 			} catch (SQLException e) {
 				log.debug(getLogPrefix()+"error executing insert query (as part of locker): " + e.getMessage());
 				if (numRetries == -1 || r < numRetries) {
@@ -161,12 +155,6 @@ public class Locker extends JdbcFacade {
 				} else {
 					log.debug(getLogPrefix()+"will not try again");
 					throw e;
-				}
-			} finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.error("error closing JdbcConnection", e);
 				}
 			}
 		}
@@ -180,34 +168,21 @@ public class Locker extends JdbcFacade {
 			if (getType().equalsIgnoreCase("T")) {
 				log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
 
-				Connection conn;
-				conn = getConnection();
-				try {
-					PreparedStatement stmt = conn.prepareStatement(deleteQuery);			
-					stmt.clearParameters();
-					stmt.setString(1,objectIdWithSuffix);
-					stmt.executeUpdate();
-					log.debug("lock ["+objectIdWithSuffix+"] removed");
-				} finally {
-					try {
-						conn.close();
-					} catch (SQLException e) {
-						log.error("error closing JdbcConnection", e);
+				try (Connection conn = getConnection()) {
+					try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+						stmt.clearParameters();
+						stmt.setString(1,objectIdWithSuffix);
+						stmt.executeUpdate();
+						log.debug("lock ["+objectIdWithSuffix+"] removed");
 					}
 				}
 			}
 		}
 	}
 
+	@Override
 	protected String getLogPrefix() {
 		return getName()+" "; 
-	}	
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getName() {
-		return name;
 	}
 
 	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,15 +30,21 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
 
@@ -58,7 +64,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
+public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled, HasStatistics {
 	
 	private String name;
 	private String authAlias = null;
@@ -77,13 +83,16 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private IDbmsSupport dbmsSupport=null;
 	private boolean credentialsConfigured=false;
 	private CredentialFactory cf=null;
+	private StatisticsKeeper connectionStatistics;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		configureCredentials();
+		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
 
 	public void configureCredentials() {
@@ -145,7 +154,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
@@ -163,12 +172,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	
-	public int getDatabaseType() {
+	public Dbms getDatabaseType() {
 		IDbmsSupport dbms=getDbmsSupport();
-		if (dbms==null) {
-			return -1;
-		}
-		return dbms.getDatabaseType();
+		return dbms != null ? dbms.getDbms() : Dbms.NONE; 
 	}
 
 	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
@@ -230,17 +236,25 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
-		if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
-			configureCredentials(); 
-		}
-		DataSource ds=getDatasource();
+		long t0 = System.currentTimeMillis();
 		try {
-			if (cf!=null) {
-				return ds.getConnection(cf.getUsername(), cf.getPassword());
+			if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
+				configureCredentials(); 
 			}
-			return ds.getConnection();
-		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+			DataSource ds=getDatasource();
+			try {
+				if (cf!=null) {
+					return ds.getConnection(cf.getUsername(), cf.getPassword());
+				}
+				return ds.getConnection();
+			} catch (SQLException e) {
+				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+			}
+		} finally {
+			if (connectionStatistics!=null) {
+				long t1= System.currentTimeMillis();
+				connectionStatistics.addValue(t1-t0);
+			}
 		}
 	}
 
@@ -257,6 +271,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				throw new TimeOutException(getLogPrefix()+"thread has been interrupted");
 			} 
 		}
+	}
+
+
+	@Override
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+		hski.handleStatisticsKeeper(data, connectionStatistics);
 	}
 
 	/**

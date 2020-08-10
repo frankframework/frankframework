@@ -315,8 +315,11 @@ angular.module('iaf.beheerconsole')
 				},
 				remove: function() {
 					Debug.info("removing all Pollers");
-					for(x in data)
-						data[x].remove();
+					for(x in data) {
+						data[x].stop();
+						delete data[x];
+					}
+					data = {};
 				},
 				list: function () {
 					this.list = [];
@@ -781,7 +784,7 @@ angular.module('iaf.beheerconsole')
 				delete $rootScope.hooks[name][id];
 		};
 	}).filter('ucfirst', function() {
-		return function(input) {
+		return function(s) {
 			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
 		};
 	}).filter('truncate', function() {
@@ -808,8 +811,25 @@ angular.module('iaf.beheerconsole')
 			if(input || input === 0) return input+"%";
 			else return "-";
 		};
-	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
-		function($rootScope, $http, Base64, $location, appConstants) {
+	}).filter('formatStatistics', function() {
+		return function(input, format) {
+			if(!input || !format) return; //skip when no input
+			var formatted = {};
+			for(key in format) {
+				var value = input[key];
+				if(!value && value !== 0) { // if no value, return a dash
+					value = "-";
+				}
+				if((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
+					value += "%";
+				}
+				formatted[key] = value;
+			}
+			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
+			return formatted;
+		};
+	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 'Misc',
+		function($rootScope, $http, Base64, $location, appConstants, Misc) {
 		var authToken;
 		return {
 			login: function(username, password) {
@@ -840,7 +860,8 @@ angular.module('iaf.beheerconsole')
 			},
 			logout: function() {
 				sessionStorage.clear();
-				$location.path("login");
+				$http.defaults.headers.common['Authorization'] = null;
+				$http.get(Misc.getServerPath() + "iaf/api/logout");
 			}
 		};
 	}]).factory('Base64', function () {

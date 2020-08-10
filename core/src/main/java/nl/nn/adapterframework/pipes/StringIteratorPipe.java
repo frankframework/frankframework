@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * IteratingPipe that has Strings as items.
@@ -46,6 +47,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 
 	private boolean processInBlocksBySize=false;
 	private boolean processInBlocksByKey=false;
+	private boolean escapeXml=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -124,7 +126,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 						previousKey=key;
 					}
 				}
-				String itemInEnvelope = getLinePrefix()+item+getLineSuffix();
+				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
 				boolean result = true;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
@@ -221,5 +223,13 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	public String getLineSuffix() {
 		return lineSuffix;
 	}
-	
+
+	@IbisDoc({"9", "Escape XML characters in each item", "false"})
+	public void setEscapeXml(boolean escapeXml) {
+		this.escapeXml = escapeXml;
+	}
+	public boolean isEscapeXml() {
+		return escapeXml;
+	}
+
 }

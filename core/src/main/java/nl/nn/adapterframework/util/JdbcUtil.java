@@ -906,9 +906,7 @@ public class JdbcUtil {
 	public static boolean isQueryResultEmpty(Connection connection, String query) throws JdbcException {
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.isAfterLast();
-			} catch (SQLException e) {
-				throw new JdbcException("could not obtain value using query [" + query + "]", e);
+				return !rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
 			}
 		} catch (SQLException e) {
 			throw new JdbcException("could not obtain value using query [" + query + "]", e);
@@ -1015,13 +1013,13 @@ public class JdbcUtil {
 
 	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
 		if (jdbcProperties == null) {
-			String jmsRealm = JmsRealmFactory.getInstance()
-					.getFirstDatasourceJmsRealm();
+			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (jmsRealm != null) {
 				jdbcProperties = new Properties();
 				JdbcFacade ibisProp = new JdbcFacade();
-				ibisProp.setJmsRealm(jmsRealm);
-				
+				ibisProp.setJmsRealm(jmsRealm); //Use a realm here so it copies over proxied datasources
+				ibisProp.setName("retrieveJdbcPropertiesFromDatabase");
+
 				Connection conn = null;
 				try {
 					conn = ibisProp.getConnection();

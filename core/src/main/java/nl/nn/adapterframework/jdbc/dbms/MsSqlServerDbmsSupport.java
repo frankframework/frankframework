@@ -18,6 +18,8 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,13 +42,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_MSSQLSERVER;
-	}
-
-	@Override
-	public String getDbmsName() {
-		return "MS SQL";
+	public Dbms getDbms() {
+		return Dbms.MSSQL;
 	}
 
 	@Override
@@ -78,15 +75,22 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
+	
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "CONVERT(VARCHAR(10), "+columnName+", 120)";
+	}
+
 
 	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
-	}
-
-	@Override
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return false;
 	}
 
 	@Override
@@ -135,6 +139,21 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
+	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		String result=selectQuery;
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (nolock)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (nolock) "+result.substring(wherePos);
+		}
+		return result;
+	}
+
+	@Override
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
 	}
@@ -167,11 +186,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
-	}
-
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}
 
 	@Override

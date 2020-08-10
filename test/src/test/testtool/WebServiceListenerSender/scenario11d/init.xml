@@ -1,6 +1,6 @@
 <project default="copy.files">
 	<target name="copy.files">
-		<property name="root.dir" value="c:/temp/testdata/webservices" />
+		<property name="root.dir" value="${testdata.dir}/webservices" />
 		<delete dir="${root.dir}" />
 		<mkdir dir="${root.dir}" />
 		<copy file="filetext.txt" todir="${root.dir}" />

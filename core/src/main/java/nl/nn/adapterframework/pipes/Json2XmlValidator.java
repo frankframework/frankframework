@@ -351,8 +351,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public String getPhysicalDestinationName() {
 		String result=null;
 		if (StringUtils.isNotEmpty(getRoot())) {
-			JsonStructure schema = createJsonSchema(getRoot());
-			result="request message ["+getRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+			result="request message ["+getRoot()+"]";
 		}
 		if (StringUtils.isNotEmpty(getResponseRoot())) {
 			if (result==null) {
@@ -360,8 +359,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			} else {
 				result += "; ";
 			}
-			JsonStructure schema = createJsonSchema(getResponseRoot());
-			result+="response message ["+getResponseRoot()+"] JsonSchema ["+(schema==null?null:schema.toString())+"]";
+			result+="response message ["+getResponseRoot()+"]";
 		}
 		return result;
 	}

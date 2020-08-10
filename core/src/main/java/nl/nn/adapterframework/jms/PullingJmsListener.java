@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -225,7 +226,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(plr.getResult(), null);
+					PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
+					pipeLineSession.put(IPipeLineSession.messageIdKey,cid);
+					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
 

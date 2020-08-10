@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,6 +47,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -59,7 +59,7 @@ import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -391,14 +391,14 @@ public class JobDef {
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
 	private class MessageLogObject {
-		private String jmsRealmName;
+		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
 		private String keyField;
 		private String typeField;
 
-		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField, String keyField, String typeField) {
-			this.jmsRealmName = jmsRealmName;
+		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
+			this.datasourceName = datasourceName;
 			this.tableName = tableName;
 			this.expiryDateField = expiryDateField;
 			this.keyField = keyField;
@@ -407,8 +407,10 @@ public class JobDef {
 
 		@Override
 		public boolean equals(Object o) {
+			if(o == null || !(o instanceof MessageLogObject)) return false;
+
 			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
+			if (mlo.getDatasourceName().equals(datasourceName) &&
 				mlo.getTableName().equals(tableName) &&
 				mlo.expiryDateField.equals(expiryDateField)) {
 				return true;
@@ -417,8 +419,8 @@ public class JobDef {
 			}
 		}
 
-		public String getJmsRealmName() {
-			return jmsRealmName;
+		public String getDatasourceName() {
+			return datasourceName;
 		}
 
 		public String getTableName() {
@@ -623,19 +625,19 @@ public class JobDef {
 		statsKeeper.addValue(endTime - startTime);
 	}
 
-	private void cleanupDatabase(IbisManager ibisManager) {
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-
-		List<String> jmsRealmNames = new ArrayList<String>();
+	/**
+	 * Locate all Lockers, and find out which datasources are used.
+	 * @return distinct list of all datasourceNames used by lockers
+	 */
+	private List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			for (JobDef jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
-					String jmsRealmName = jobdef.getLocker().getJmsRealName();
-					if (!jmsRealmNames.contains(jmsRealmName)) {
-						jmsRealmNames.add(jmsRealmName);
+					String datasourceName = jobdef.getLocker().getDatasourceName();
+					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+						datasourceNames.add(datasourceName);
 					}
 				}
 			}
@@ -649,9 +651,9 @@ public class JobDef {
 						if (pipe instanceof IExtendedPipe) {
 							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
 							if (extendedPipe.getLocker() != null) {
-								String jmsRealmName = extendedPipe.getLocker().getJmsRealName();
-								if (!jmsRealmNames.contains(jmsRealmName)) {
-									jmsRealmNames.add(jmsRealmName);
+								String datasourceName = extendedPipe.getLocker().getDatasourceName();
+								if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+									datasourceNames.add(datasourceName);
 								}
 							}
 						}
@@ -660,24 +662,11 @@ public class JobDef {
 			}
 		}
 
-		for (Iterator<String> iter = jmsRealmNames.iterator(); iter.hasNext();) {
-			String jmsRealmName = iter.next();
-			setJmsRealm(jmsRealmName);
-			DirectQuerySender qs;
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(jmsRealmName);
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
-			} else {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
-			setQuery(deleteQuery);
-			qs = null;
-			executeQueryJob(ibisManager);
-		}
+		return datasourceNames;
+	}
 
-		List<MessageLogObject> messageLogs = new ArrayList<MessageLogObject>();
+	private List<MessageLogObject> getAllMessageLogsAndErrorstorages(IbisManager ibisManager) {
+		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
 			PipeLine pipeline = adapter.getPipeLine();
@@ -689,12 +678,12 @@ public class JobDef {
 						ITransactionalStorage transactionStorage = msp.getMessageLog();
 						if (transactionStorage instanceof JdbcTransactionalStorage) {
 							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
-							String jmsRealmName = messageLog.getJmsRealName();
+							String datasourceName = messageLog.getDatasourceName();
 							String expiryDateField = messageLog.getExpiryDateField();
 							String tableName = messageLog.getTableName();
 							String keyField = messageLog.getKeyField();
 							String typeField = messageLog.getTypeField();
-							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField, keyField, typeField);
+							MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
 							if (!messageLogs.contains(mlo)) {
 								messageLogs.add(mlo);
 							}
@@ -703,37 +692,75 @@ public class JobDef {
 				}
 			}
 		}
+		return messageLogs;
+	}
+
+	private void cleanupDatabase(IbisManager ibisManager) {
+		Date date = new Date();
+
+		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
+
+		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
+			String datasourceName = iter.next();
+			DirectQuerySender qs = null;
+			String deleteQuery = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setDatasourceName(datasourceName);
+				qs.setName("executeQueryJob");
+				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
+				qs.configure(true);
+				qs.open();
+
+				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < "+qs.getDbmsSupport().getDatetimeLiteral(date);
+				Message result = qs.sendMessage(new Message(deleteQuery), null);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while executing query ["+deleteQuery+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			} finally {
+				if(qs != null) {
+					qs.close();
+				}
+			}
+		}
+
+		List<MessageLogObject> messageLogs = getAllMessageLogsAndErrorstorages(ibisManager);
 
 		for (MessageLogObject mlo: messageLogs) {
-			setJmsRealm(mlo.getJmsRealmName());
-			DirectQuerySender qs;
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(mlo.getJmsRealmName());
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-					+ mlo.getKeyField() + " IN (SELECT "
-						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (rowlock,updlock,readpast) WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			DirectQuerySender qs = null;
+			String deleteQuery = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setDatasourceName(mlo.getDatasourceName());
+				qs.setName("executeQueryJob");
+				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
+				qs.configure(true);
+				qs.open();
+
+				if (qs.getDatabaseType() == Dbms.MSSQL) {
+					deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+							+ "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date)+")";
+				}
+				else {
+					deleteQuery = "DELETE FROM " + mlo.getTableName()  + " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode() + "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date);
+				}
+
+				Message result = qs.sendMessage(new Message(deleteQuery), null);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while executing query ["+deleteQuery+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			} finally {
+				if(qs != null) {
+					qs.close();
+				}
 			}
-			else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < TO_TIMESTAMP('" + formattedDate
-						+ "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
-			qs = null;
-			setQuery(deleteQuery);
-			setQueryTimeout(900);
-			executeQueryJob(ibisManager);
 		}
 	}
 

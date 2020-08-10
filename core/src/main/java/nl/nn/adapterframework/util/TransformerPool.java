@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -138,15 +138,10 @@ public class TransformerPool {
 			}
 		}
 	}
-	
+
 	private static Map<TransformerPoolKey, TransformerPool> transformerPools = new ConcurrentHashMap<TransformerPoolKey, TransformerPool>();
-	
-	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
-		@Override
-		public Object makeObject() throws Exception {
-			return createTransformer();
-		}
-	}); 
+
+	private ObjectPool pool;
 
 
 	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, ClassLoader classLoader) throws TransformerConfigurationException {
@@ -176,6 +171,7 @@ public class TransformerPool {
 		}
 		initTransformerPool(source, sysId);
 
+		open();
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
 		
@@ -221,7 +217,12 @@ public class TransformerPool {
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
 	 */
 	public static TransformerPool getUtilityInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
-		return new TransformerPool(xsltString, null, xsltVersion, null);
+		return new TransformerPool(xsltString, null, xsltVersion, null) {
+			@Override
+			public void close() {
+				// Not closing UtilityInstance, there are no ClassLoader references, and as it's shared between adapters it should never be closed.
+			}
+		};
 	}
 
 	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
@@ -367,7 +368,15 @@ public class TransformerPool {
 		return result;
 	}
 
-	public void open() throws Exception {
+	public void open() {
+		if (pool==null) {
+			pool=new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
+				@Override
+				public Object makeObject() throws Exception {
+					return createTransformer();
+				}
+			}); 
+		}
 	}
 
 	/**
@@ -376,14 +385,21 @@ public class TransformerPool {
 	 */
 	public void close() {
 		try {
-			pool.clear();
-			pool.close();
+			if (pool!=null) {
+				pool.clear();
+				pool.close();
+				pool=null;
+			}
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
 	}
 
 	protected Transformer getTransformer() throws TransformerConfigurationException {
+		if(pool == null) {
+			throw new IllegalStateException("TransformerPool does not exist, did you forget to call open()?");
+		}
+
 		try {
 			reloadTransformerPool();
 			return (Transformer)pool.borrowObject();

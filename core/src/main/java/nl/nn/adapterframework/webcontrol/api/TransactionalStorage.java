@@ -1,5 +1,5 @@
 /*
-Copyright 2018, 2019 Integration Partners B.V.
+Copyright 2018-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -451,13 +451,6 @@ public class TransactionalStorage extends Base {
 	}
 
 	private void deleteMessage(IMessageBrowser storage, String messageId) {
-		try {
-			storage.browseMessage(messageId);
-		}
-		catch(ListenerException e) {
-			throw new ApiException(e, 404);
-		}
-
 		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
@@ -570,53 +563,43 @@ public class TransactionalStorage extends Base {
 
 		Date startDate = null;
 		Date endDate = null;
-		try {
-			IMessageBrowsingIterator iterator = null;
-			try {
-				iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder());
-	
-				int count;
-				List<Object> messages = new LinkedList<Object>();
-				
-				for (count=0; iterator.hasNext(); ) {
-					IMessageBrowsingIteratorItem iterItem = iterator.next();
-					try {
-						if(!filter.matchAny(iterItem))
-							continue;
+		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
+			int count;
+			List<Object> messages = new LinkedList<Object>();
+			
+			for (count=0; iterator.hasNext(); ) {
+				IMessageBrowsingIteratorItem iterItem = iterator.next();
+				try {
+					if(!filter.matchAny(iterItem))
+						continue;
 
-						count++;
-						if (count > filter.skipMessages()) { 
-							Map<String, Object> message = new HashMap<String, Object>(3);
+					count++;
+					if (count > filter.skipMessages()) { 
+						Map<String, Object> message = new HashMap<String, Object>(3);
 
-							message.put("id", iterItem.getId());
-							message.put("pos", count);
-							message.put("originalId", iterItem.getOriginalId());
-							message.put("correlationId", iterItem.getCorrelationId());
-							message.put("type", iterItem.getType());
-							message.put("host", iterItem.getHost());
-							message.put("insertDate", iterItem.getInsertDate());
-							message.put("expiryDate", iterItem.getExpiryDate());
-							message.put("comment", iterItem.getCommentString());
-							message.put("label", iterItem.getLabel());
-							messages.add(message);
-						}
-		
-						if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
-							log.warn("stopped iterating messages after ["+count+"]: limit reached");
-							break;
-						}
-					} finally {
-						iterItem.release();
+						message.put("id", iterItem.getId());
+						message.put("pos", count);
+						message.put("originalId", iterItem.getOriginalId());
+						message.put("correlationId", iterItem.getCorrelationId());
+						message.put("type", iterItem.getType());
+						message.put("host", iterItem.getHost());
+						message.put("insertDate", iterItem.getInsertDate());
+						message.put("expiryDate", iterItem.getExpiryDate());
+						message.put("comment", iterItem.getCommentString());
+						message.put("label", iterItem.getLabel());
+						messages.add(message);
 					}
+	
+					if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
+						log.warn("stopped iterating messages after ["+count+"]: limit reached");
+						break;
+					}
+				} finally {
+					iterItem.release();
 				}
-				returnObj.put("messages", messages);
 			}
-			finally {
-				if(iterator != null)
-					iterator.close();
-			}
-		}
-		catch (ListenerException|IOException e) {
+			returnObj.put("messages", messages);
+		} catch (ListenerException|IOException e) {
 			throw new ApiException(e);
 		}
 
