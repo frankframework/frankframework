@@ -4382,7 +4382,7 @@ public class TestTool {
 			case "removeKey":
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""));
+				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""}));
 				break;
 		}
 
