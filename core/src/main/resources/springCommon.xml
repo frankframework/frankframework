@@ -50,6 +50,15 @@
 	</bean>
 
 	<bean
+		name="proto-locker"
+		class="nl.nn.adapterframework.util.Locker"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+	</bean>
+
+	<bean
 		name="jdbcMigrator"
 		class="nl.nn.adapterframework.jdbc.migration.Migrator"
 		autowire="byName"

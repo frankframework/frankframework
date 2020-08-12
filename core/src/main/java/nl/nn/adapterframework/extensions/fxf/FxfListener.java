@@ -59,7 +59,7 @@ public class FxfListener extends EsbJmsListener {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getJmsRealName())) {
+		if (StringUtils.isEmpty(getJmsRealmName())) {
 			setJmsRealm("qcf_tibco_p2p_ff");
 		}
 		if (StringUtils.isEmpty(getMessageProtocol())) {
