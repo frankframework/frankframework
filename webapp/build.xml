@@ -1,5 +1,21 @@
-<project default="restart-iaf-webapp">
+<project default="restart-iaf-webapp" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<target name="restart-iaf-webapp">
+		<property file="../../frank-runner/build.properties"/>
+		<property file="frank-runner.properties"/>
+		<!-- Update some or all iaf artifacts in local repo (set maven.projects to a comma seperated list or leave empty for all) -->
+		<property name="maven.projects" value=""/>
+		<exec executable="../frank-runner/mvn.bat" dir=".." vmlauncher="false" failonerror="true">
+			<arg value="clean" if:true="${maven.clean}"/>
+			<arg value="install"/>
+			<arg value="--projects" unless:blank="${maven.projects}"/>
+			<arg value="${maven.projects}" unless:blank="${maven.projects}"/>
+			<arg value="-DskipTests" if:true="${maven.skip.tests}"/>
+			<arg value="-Dmaven.javadoc.skip=true" if:true="${maven.skip.javadoc}"/>
+			<arg value="-X" if:true="${maven.verbose}"/>
+			<arg value="--settings" if:set="maven.settings.xml"/>
+			<arg value="${maven.settings.xml}" if:set="maven.settings.xml"/>
+		</exec>
+		<!-- Update iaf-webapp with artifacts from local repo and restart Tomcat -->
 		<exec executable="../../frank-runner/restart.bat" vmlauncher="false" failonerror="true">
 			<arg value="-Dproject.dir=iaf/webapp"/>
 		</exec>
