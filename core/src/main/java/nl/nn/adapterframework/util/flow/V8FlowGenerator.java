@@ -31,13 +31,13 @@ import nl.nn.adapterframework.util.LogUtil;
 public class V8FlowGenerator implements IFlowGenerator {
 	private static Logger log = LogUtil.getLogger(V8FlowGenerator.class);
 
-	private GraphvizEngine engine;
+	private ThreadLocal<GraphvizEngine> engines = new ThreadLocal<>();
 	private Options options = Options.create();
 	private String jsFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		engine = new GraphvizEngine();
+	public void afterPropertiesSet() throws IOException {
+		getGraphvizEngine(); //Test to see if a V8 instance can be created
 
 		Format format;
 		try {
@@ -55,7 +55,7 @@ public class V8FlowGenerator implements IFlowGenerator {
 	@Override
 	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException {
 		try {
-			String flow = engine.execute(dot, options);
+			String flow = getGraphvizEngine().execute(dot, options);
 
 			outputStream.write(flow.getBytes());
 		} catch (GraphvizException e) {
@@ -77,6 +77,15 @@ public class V8FlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() throws Exception {
-		engine.close();
+		engines.remove();
+	}
+
+	private GraphvizEngine getGraphvizEngine() throws IOException {
+		GraphvizEngine engine = engines.get();
+		if(engine == null) {
+			engine = new GraphvizEngine();
+			engines.set(engine);
+		}
+		return engine;
 	}
 }
