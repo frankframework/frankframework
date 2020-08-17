@@ -846,7 +846,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
-	public boolean getIgnoreUnknownNamespaces() {
+	public Boolean getIgnoreUnknownNamespaces() {
 		return validator.getIgnoreUnknownNamespaces();
 	}
 

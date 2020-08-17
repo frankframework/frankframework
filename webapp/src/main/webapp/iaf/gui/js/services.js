@@ -315,8 +315,11 @@ angular.module('iaf.beheerconsole')
 				},
 				remove: function() {
 					Debug.info("removing all Pollers");
-					for(x in data)
-						data[x].remove();
+					for(x in data) {
+						data[x].stop();
+						delete data[x];
+					}
+					data = {};
 				},
 				list: function () {
 					this.list = [];
@@ -825,8 +828,8 @@ angular.module('iaf.beheerconsole')
 			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
 			return formatted;
 		};
-	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
-		function($rootScope, $http, Base64, $location, appConstants) {
+	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 'Misc',
+		function($rootScope, $http, Base64, $location, appConstants, Misc) {
 		var authToken;
 		return {
 			login: function(username, password) {
@@ -857,7 +860,8 @@ angular.module('iaf.beheerconsole')
 			},
 			logout: function() {
 				sessionStorage.clear();
-				$location.path("login");
+				$http.defaults.headers.common['Authorization'] = null;
+				$http.get(Misc.getServerPath() + "iaf/api/logout");
 			}
 		};
 	}]).factory('Base64', function () {

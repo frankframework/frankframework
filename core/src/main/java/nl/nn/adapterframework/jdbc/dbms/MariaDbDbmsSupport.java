@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+Copyright 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,46 +15,24 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.Connection;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
-* Support for MySql/MariaDB.
+* Support for MariaDB.
 * 
 */
-public class MariaDbDbmsSupport extends GenericDbmsSupport {
+public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	@Override
 	public Dbms getDbms() {
 		return Dbms.MARIADB;
-	}
-
-	@Override
-	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DATABASE()");
-	}
-
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		String messageDateConverter = "date_format(MESSAGEDATE,'%Y-%m-%d')";
-		return "select type, slotid, " + messageDateConverter + " msgdate, count(*) msgcount from IBISSTORE group by slotid, type, " + messageDateConverter + " order by type, slotid, " + messageDateConverter;
-	}
-
-
-	@Override
-	public String getClobFieldType() {
-		return "LONGTEXT";
-	}
-
-	@Override
-	public String getBlobFieldType() {
-		return "LONGBLOB";
 	}
 
 	@Override
@@ -63,9 +41,9 @@ public class MariaDbDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 5"; // Mariadb has no 'skip locked'
 		} else {
-			throw new IllegalArgumentException("MariaDB does not support setting lock wait timeout in query");
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait; 
 		}
 	}
 
@@ -75,43 +53,34 @@ public class MariaDbDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED";
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:""); // Mariadb has no 'skip locked'
 		} else {
-			throw new IllegalArgumentException("MariaDB does not support setting lock wait timeout in query");
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
 	@Override
-	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "TIMESTAMP('" + formattedDate + "')";
-	}
-
-
-	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws JdbcException {
-		String query = "ALTER TABLE " + tableName + " AUTO_INCREMENT=" + startWith;
-		return JdbcUtil.executeIntQuery(connection, query);
+	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Clob clob=rs.getStatement().getConnection().createClob();
+		return clob;
 	}
 
 	@Override
-	public String getAutoIncrementKeyFieldType() {
-		return "AUTOINCREMENT";
+	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Clob clob=rs.getStatement().getConnection().createClob();
+		return clob;
 	}
 
+	
 	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
+	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Blob blob=rs.getStatement().getConnection().createBlob();
+		return blob;
 	}
-
-
 	@Override
-	public String emptyClobValue() {
-		return "";
+	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Blob blob=rs.getStatement().getConnection().createBlob();
+		return blob;
 	}
 
-	@Override
-	public String emptyBlobValue() {
-		return "";
-	}
 }

@@ -44,6 +44,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -67,7 +68,7 @@ import nl.nn.adapterframework.util.DateUtils;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled {
 
 	public static final String MODE_PERSISTENT     = "PERSISTENT";
 	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";
@@ -453,11 +454,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			result+=" selector ["+getMessageSelector()+"]";
 		}
 		JmsRealm jmsRealm=null;
-		if (getJmsRealName()!=null) {
-			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealName());
+		if (getJmsRealmName()!=null) {
+			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealmName());
 		}
 	    if (jmsRealm==null) {
-	    	log.warn("Could not find jmsRealm ["+getJmsRealName()+"]");
+	    	log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
 	    } else {
 			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
 		}
