@@ -1,5 +1,5 @@
 <file>
-	<fullName>TESTDATA_B64_DIR_SEPfile_out.txt</fullName>
+	<fullName>TESTDATA_B64_DIR/file_out.txt</fullName>
 	<directory>TESTDATA_B64_DIR</directory>
 	<name>file_out.txt</name>
 	<baseName>file_out</baseName>
