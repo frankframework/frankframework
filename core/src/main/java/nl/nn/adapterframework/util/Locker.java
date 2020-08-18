@@ -66,8 +66,8 @@ public class Locker extends JdbcFacade {
 	private String type = "T";
 	private String dateFormatSuffix;
 	private int retention = -1;
-	private String insertQuery = "INSERT INTO ibisLock (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
-	private String deleteQuery = "DELETE FROM ibisLock WHERE objectId=?";
+	private String insertQuery = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
+	private String deleteQuery = "DELETE FROM IBISLOCK WHERE objectId=?";
 	private SimpleDateFormat formatter;
 	private int numRetries = 0;
 	private int firstDelay = 10000;
@@ -102,12 +102,12 @@ public class Locker extends JdbcFacade {
 
 	public String lock() throws JdbcException, SQLException, InterruptedException {
 		try (Connection conn = getConnection()) {
-			if (!getDbmsSupport().isTablePresent(conn, "ibisLock")) {
+			if (!getDbmsSupport().isTablePresent(conn, "IBISLOCK")) {
 				if (isIgnoreTableNotExist()) {
-					log.info("table [ibisLock] does not exist, ignoring lock");
+					log.info("table [IBISLOCK] does not exist, ignoring lock");
 					return LOCK_IGNORED;
 				} else {
-					throw new JdbcException("table [ibisLock] does not exist");
+					throw new JdbcException("table [IBISLOCK] does not exist");
 				}
 			}
 		}

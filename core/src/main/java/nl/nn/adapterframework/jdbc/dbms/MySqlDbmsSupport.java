@@ -87,19 +87,20 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	@Override
-	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-		JdbcUtil.executeStatement(conn, "START TRANSACTION");
-		return new JdbcSession() {
-
-			@Override
-			public void close() throws Exception {
-				JdbcUtil.executeStatement(conn, "COMMIT");
-			}
-			
-		};
-	}
+	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
+//	@Override
+//	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
+//		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//		JdbcUtil.executeStatement(conn, "START TRANSACTION");
+//		return new JdbcSession() {
+//
+//			@Override
+//			public void close() throws Exception {
+//				JdbcUtil.executeStatement(conn, "COMMIT");
+//			}
+//			
+//		};
+//	}
 
 
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws JdbcException {
