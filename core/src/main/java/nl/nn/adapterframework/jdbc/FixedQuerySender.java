@@ -72,7 +72,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		try {
 			Connection connection = getConnectionForSendMessage(null);
 			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
-			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
+			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
 			result.setJdbcSession(jdbcSession);
 			return result;
 		} catch (JdbcException e) {

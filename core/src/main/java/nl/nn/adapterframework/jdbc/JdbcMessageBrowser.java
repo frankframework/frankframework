@@ -307,7 +307,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	@Override
 	public int getMessageCount() throws ListenerException {
 		try (Connection conn = getConnection()) {
-			try (JdbcSession session = getDbmsSupport().prepareSessionForDirtyRead(conn)) {
+			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {
 				try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
 					applyStandardParameters(stmt, false, false);
 					try (ResultSet rs =  stmt.executeQuery()) {

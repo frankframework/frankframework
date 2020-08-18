@@ -287,7 +287,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null) {
+		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session);

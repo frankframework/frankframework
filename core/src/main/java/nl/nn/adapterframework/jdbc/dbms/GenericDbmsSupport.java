@@ -284,7 +284,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return selectQuery;
 	}
 	@Override
-	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
 		return null;
 	}
 
