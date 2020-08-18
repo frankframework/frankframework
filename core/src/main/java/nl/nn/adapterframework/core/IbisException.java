@@ -28,8 +28,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.exception.NestableException;
 import org.xml.sax.SAXParseException;
 
-import oracle.jdbc.xa.OracleXAException;
-
 /**
  * Base Exception with compact but informative getMessage().
  * 
@@ -134,10 +132,10 @@ public class IbisException extends NestableException {
 			}
 		} 
 		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
-			OracleXAException oxae = (OracleXAException)t;
+			oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
 			int xaError = oxae.getXAError();
 			if (xaError != 0) {
-				result =  addPart("xaError ["+xaError +"] xaErrorMessage ["+OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
+				result =  addPart("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
 			}
 		} 
 		return result;
