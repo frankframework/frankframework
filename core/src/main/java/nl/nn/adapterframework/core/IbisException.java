@@ -28,6 +28,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.exception.NestableException;
 import org.xml.sax.SAXParseException;
 
+import oracle.jdbc.xa.OracleXAException;
+
 /**
  * Base Exception with compact but informative getMessage().
  * 
@@ -131,11 +133,19 @@ public class IbisException extends NestableException {
 				result =  addPart("SQLState ["+sqlState+"]", ", ", result);
 			}
 		} 
+		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
+			OracleXAException oxae = (OracleXAException)t;
+			int xaError = oxae.getXAError();
+			if (xaError != 0) {
+				result =  addPart("xaError ["+xaError +"] xaErrorMessage ["+OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
+			}
+		} 
 		return result;
 	}
-	
-    public String getMessage() {
-	    Throwable throwables[]=getThrowables();
+
+	@Override
+	public String getMessage() {
+		Throwable throwables[]=getThrowables();
 		String result=null;
 		String prev_message=null;
 		Throwable prevThrowable=null;
@@ -178,13 +188,13 @@ public class IbisException extends NestableException {
 			prevThrowable=throwables[i];
 		}
 		
-	    if (result==null) {
-//	    	log.debug("no message found, returning fields by inspection");
-	    	// do not replace the following with toString(), this causes an endless loop. GvB
-		    result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
-	    }
-	    return result;
-    }
+		if (result==null) {
+//			log.debug("no message found, returning fields by inspection");
+			// do not replace the following with toString(), this causes an endless loop. GvB
+			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
+		}
+		return result;
+	}
 
 /*
 	public String toString() {
