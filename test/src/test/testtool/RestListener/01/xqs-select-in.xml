@@ -1,20 +1,14 @@
 <root>
 	<select>
-		<tableName>IBISSTORE</tableName>
+		<tableName>IBISTEMP</tableName>
 		<columns>
 			<column>
-				<name>SLOTID</name>
+				<name>TVARCHAR</name>
 			</column>
 			<column>
-				<name>COMMENTS</name>
-			</column>
-			<column>
-				<name>LENGTH(MESSAGE)</name>
-			</column>
-			<column>
-				<name>LABEL</name>
+				<name>LENGTH(TBLOB1) as LENGTH</name>
 			</column>
 		</columns>
-		<order>MESSAGEKEY</order>
+		<order>TKEY</order>
 	</select>
 </root>
