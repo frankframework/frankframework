@@ -44,6 +44,7 @@ public interface IDbmsSupport {
 	 * SQL String returning current date and time of dbms.
 	 */
 	String getSysDate();
+	String getDateAndOffset(String dateValue, int daysOffset);
 
 	String getNumericKeyFieldType();
 

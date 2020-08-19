@@ -66,6 +66,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getSysDate() {
 		return "NOW()";
 	}
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return dateValue+ " + "+daysOffset;
+	}
 
 	@Override
 	public String getNumericKeyFieldType() {

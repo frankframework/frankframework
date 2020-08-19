@@ -52,6 +52,10 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "date_format("+columnName+",'%Y-%m-%d')";
 	}
 
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATE_ADD("+dateValue+ ", INTERVAL " + daysOffset + " DAY)";
+	}
 
 	@Override
 	public String getClobFieldType() {

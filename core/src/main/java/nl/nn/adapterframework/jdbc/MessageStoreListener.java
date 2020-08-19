@@ -98,7 +98,7 @@ public class MessageStoreListener extends JdbcTableListener {
 			}
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ("+getDbmsSupport().getSysDate()+" + 30)";
+			String setClause = "COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),setClause));
 			setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
 		} else {
