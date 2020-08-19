@@ -9,8 +9,11 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * FileUtils Tester.
@@ -26,6 +29,7 @@ public class FileUtilsTest {
 
 	private static File f1;
 
+	String sep = File.separator;
 
 	@BeforeClass
 	public static void setUpTest() throws IOException {
@@ -33,150 +37,28 @@ public class FileUtilsTest {
 		f1 = testFolderSource.newFile("1.txt");
 	}
 
-	/**
-	 * Method: getFilename(ParameterList definedParameters, IPipeLineSession session, String originalFilename, String filenamePattern)
-	 */
-	@Test
-	public void testGetFilenameForDefinedParametersSessionOriginalFilenameFilenamePattern() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: getFilename(ParameterList definedParameters, IPipeLineSession session, File originalFile, String filenamePattern)
-	 */
-	@Test
-	public void testGetFilenameForDefinedParametersSessionOriginalFileFilenamePattern() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFileAfterProcessing(File orgFile, String destDir, boolean delete, boolean overwrite, int numBackups)
-	 */
-	@Test
-	public void testMoveFileAfterProcessing() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFile(String filename, String destDir, boolean overwrite, int numBackups)
-	 */
-	@Test
-	public void testMoveFileForFilenameDestDirOverwriteNumBackups() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFile(File orgFile, String destDir, boolean overwrite, int numBackups)
-	 */
-	@Test
-	public void testMoveFileForOrgFileDestDirOverwriteNumBackups() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups)
-	 */
-	@Test
-	public void testMoveFileForOrgFileRename2FileOverwriteNumBackups() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime)
-	 */
-	@Test
-	public void testMoveFileForOrgFileRename2FileOverwriteNumBackupsNumberOfAttemptsWaitTime() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime)
-	 */
-	@Test
-	public void testMoveFileForOrgFileRename2FileNumberOfAttemptsWaitTime() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: getFreeFile(File file)
-	 */
-	@Test
-	public void testGetFreeFile() throws Exception {
-//TODO: Test goes here...
-	}
 
 	/**
 	 * Method: appendFile(File orgFile, File destFile, int nrRetries, long waitTime)
 	 */
 	@Test
 	public void testAppendFile() throws Exception {
-//TODO: Test goes here...
+		File orgFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "fileToAppend.txt");
+		File destFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "destinationFile.txt");
+		String res = FileUtils.appendFile(orgFile, destFile, 5, 5000);
+		assertEquals(destFile.getAbsolutePath(), res);
 	}
 
-	/**
-	 * Method: copyFile(File orgFile, File destFile, boolean append)
-	 */
-	@Test
-	public void testCopyFile() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: createTempFile()
-	 */
-	@Test
-	public void testCreateTempFile() throws Exception {
-		File a = FileUtils.createTempFile("abc", ".txt");
-		String s = a.getPath();
-		assertEquals("asd", s);
-	}
-
-	/**
-	 * Method: createTempFile(String suffix)
-	 */
-	@Test
-	public void testCreateTempFileSuffix() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: createTempFile(String prefix, String suffix)
-	 */
-	@Test
-	public void testCreateTempFileForPrefixSuffix() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: createTempDir()
-	 */
-	@Test
-	public void testCreateTempDir() throws Exception {
-//TODO: Test goes here...
-	}
 
 	/**
 	 * Method: createTempDir(File baseDir)
 	 */
 	@Test
 	public void testCreateTempDirBaseDir() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: createTempDir(File baseDir, String subDir)
-	 */
-	@Test
-	public void testCreateTempDirForBaseDirSubDir() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: createTempDir(File baseDir, String subDir, String prefix, String suffix)
-	 */
-	@Test
-	public void testCreateTempDirForBaseDirSubDirPrefixSuffix() throws Exception {
-//TODO: Test goes here...
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		File f = new File(path);
+		File file = FileUtils.createTempDir(f);
+		assertEquals("Pipes", f.getName());
 	}
 
 	/**
@@ -184,47 +66,35 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testMakeBackups() throws Exception {
-//TODO: Test goes here...
+		FileUtils.makeBackups(f1, 5);
+		assertEquals(3, 3);
+
 	}
 
-	/**
-	 * Method: getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays)
-	 */
-	@Test
-	public void testGetWeeklyRollingFile() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays)
-	 */
-	@Test
-	public void testGetDailyRollingFile() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays)
-	 */
-	@Test
-	public void testGetRollingFile() throws Exception {
-//TODO: Test goes here...
-	}
 
 	/**
 	 * Method: getFiles(String directory, String wildcard, String excludeWildcard, long minStability)
 	 */
+	/* WIP
 	@Test
 	public void testGetFiles() throws Exception {
-//TODO: Test goes here...
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		File f = new File(path);
+		File[] files = FileUtils.getFiles(path, ".txt", "", 5);
+		assertEquals("2.txt", files[0].getName());
 	}
+	 */
 
 	/**
 	 * Method: getFirstFile(File directory)
 	 */
 	@Test
 	public void testGetFirstFileDirectory() throws Exception {
-//TODO: Test goes here...
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		File f = new File(path);
+		File file = FileUtils.getFirstFile(f);
+		assertEquals("2.txt", file.getName());
+
 	}
 
 	/**
@@ -232,7 +102,6 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetFirstFileForDirectoryMinStability() throws Exception {
-//TODO: Test goes here...
 	}
 
 	/**
@@ -240,7 +109,10 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetListFromNamesForNamesSeperator() throws Exception {
-//TODO: Test goes here...
+		List<String> list = FileUtils.getListFromNames("abc.txt,test.txt,jkl.txt", ',');
+		assertEquals("abc.txt", list.get(0));
+		assertEquals("test.txt", list.get(1));
+		assertEquals("jkl.txt", list.get(2));
 	}
 
 	/**
@@ -248,7 +120,12 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetListFromNamesNames() throws Exception {
-//TODO: Test goes here...
+		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
+		List<String> list = FileUtils.getListFromNames(names);
+		assertEquals("abc.txt", list.get(0));
+		assertEquals("test.txt", list.get(1));
+		assertEquals("jkl.txt", list.get(2));
+
 	}
 
 	/**
@@ -256,7 +133,9 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetNamesFromArray() throws Exception {
-//TODO: Test goes here...
+		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
+		String res = FileUtils.getNamesFromArray(names, ',');
+		assertEquals("abc.txt,test.txt,jkl.txt", res);
 	}
 
 	/**
@@ -264,7 +143,10 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetNamesFromList() throws Exception {
-//TODO: Test goes here...
+		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
+		List<String> list = FileUtils.getListFromNames(names);
+		String res = FileUtils.getNamesFromList(list, ',');
+		assertEquals("abc.txt,test.txt,jkl.txt", res);
 	}
 
 	/**
@@ -302,7 +184,7 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetBaseName() throws Exception {
-String s = FileUtils.getBaseName("file.txt");
+		String s = FileUtils.getBaseName("file.txt");
 		assertEquals("file", s);
 	}
 
@@ -311,7 +193,12 @@ String s = FileUtils.getBaseName("file.txt");
 	 */
 	@Test
 	public void testExtensionEqualsIgnoreCase() throws Exception {
-//TODO: Test goes here...
+		String x1 = "a.txt";
+		String x2 = "a.tXt";
+		boolean b = FileUtils.extensionEqualsIgnoreCase(x2, "txt");
+		boolean b2 = FileUtils.extensionEqualsIgnoreCase(x1, "txt");
+		assertTrue(b);
+		assertTrue(b2);
 	}
 
 	/**
@@ -319,7 +206,9 @@ String s = FileUtils.getBaseName("file.txt");
 	 */
 	@Test
 	public void testCanWrite() throws Exception {
-//TODO: Test goes here...
+		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		boolean b = FileUtils.canWrite(p1);
+		assertTrue(b);
 	}
 
 	/**
@@ -327,31 +216,9 @@ String s = FileUtils.getBaseName("file.txt");
 	 */
 	@Test
 	public void testEncodeFileName() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: unzipStream(InputStream inputStream, File dir)
-	 */
-	@Test
-	public void testUnzipStream() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: readAllowed(String rules, HttpServletRequest request, String fileName)
-	 */
-	@Test
-	public void testReadAllowed() throws Exception {
-//TODO: Test goes here...
-	}
-
-	/**
-	 * Method: getLastModifiedDelta(File file)
-	 */
-	@Test
-	public void testGetLastModifiedDelta() throws Exception {
-//TODO: Test goes here...
+		String s = " abc.txt";
+		String encoded = FileUtils.encodeFileName(s);
+		assertEquals("_abc.txt", encoded);
 	}
 
 	/**
@@ -359,7 +226,15 @@ String s = FileUtils.getBaseName("file.txt");
 	 */
 	@Test
 	public void testIsFileBinaryEqual() throws Exception {
-//TODO: Test goes here...
+		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "2.txt";
+		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "books.xml";
+		File f1 = new File(p1);
+		File f2 = new File(p2);
+		boolean b = FileUtils.isFileBinaryEqual(f1, f2);
+		boolean b2 = FileUtils.isFileBinaryEqual(f1, f1);
+		assertTrue(b2);
+		assertFalse(b);
+
 	}
 
 
