@@ -336,7 +336,7 @@ public class TestTool {
 					if (scenarioPassed==RESULT_OK) {
 						scenariosPassed++;
 						scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent) {
+						if (silent && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 							try {
 								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
 							} catch (IOException e) {
