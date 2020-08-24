@@ -96,7 +96,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
 		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
 		try {
-			getMessageCountQuery = dbmsSupport.prepareQueryTextForDirtyRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
 		} catch (JdbcException e) {
 			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
 		}
