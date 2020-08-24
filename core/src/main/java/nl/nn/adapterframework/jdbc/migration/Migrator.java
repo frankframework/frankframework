@@ -53,6 +53,7 @@ public class Migrator extends JdbcFacade {
 	}
 
 	public synchronized void configure(String configurationName, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
+		setName("JdbcMigrator for configuration["+configurationName+"]");
 
 		AppConstants appConstants = AppConstants.getInstance(classLoader);
 

@@ -1,5 +1,5 @@
 <ibis>
-	<adapter name="JdbcQueryListener" description="Test the functioning of the JdbcQueryListener">
+	<adapter name="JdbcListener" description="Test the functioning of the JdbcQueryListener and JdbcTableListener">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 				name="JdbcQueryListener"
 				maxRetries="4"
@@ -19,7 +19,24 @@
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
-		<pipeline firstPipe="Insert" transactionAttribute="Required">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+				name="JdbcTableListener"
+				maxRetries="4"
+				transactionAttribute="Required"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="JdbcTableListener for ibis4test"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						jmsRealm="jdbc"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						selectCondition="TNUMBER=${jdbc.querylistener.key}"
+						statusValueAvailable="5"
+						statusValueProcessed="6"
+						statusValueError="7"
+						keyField="tkey"/>
+		</receiver>
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -49,19 +66,19 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="JdbcQueryListenerDatabaseMiddleware" 
-		description="Used as a middleware in JdbcQueryListener scenario to prevent other nodes processing the message">
+	<adapter name="JdbcListenerDatabaseMiddleware" 
+		description="Used as a middleware in JdbcListener scenarios to prevent other nodes processing the message">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JdbcQueryListenerDatabaseMiddleware">
+			name="JdbcListenerDatabaseMiddleware">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-JdbcQueryListenerDatabaseMiddleware" />
+				serviceName="ibis4test-JdbcListenerDatabaseMiddleware" />
 		</receiver>
-		<pipeline firstPipe="SwitchAction">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" 
-				xpathExpression="request"></pipe>
+				xpathExpression="request/@action"></pipe>
 			<pipe name="DeleteIbistemp" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}" 
@@ -72,25 +89,30 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISSTORE WHERE SLOTID = ?" 
 				/>
-					<param name="slotid" value="IFSA://NLIBIS4TEST/JdbcQueryListener"/>
+					<param name="slotid" xpathExpression="request/@slotId"/>
 				<forward name="success" path="do_success" />
 			</pipe>
-			<pipe name="InsertIbistempError" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="InsertIbistemp" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
-					query="INSERT INTO IBISTEMP (tkey, tchar, tvarchar, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, 1, 'error', ${jdbc.querylistener.key}, SYSDATE)" 
-				/>
-				<forward name="success" path="do_success" />
-			</pipe>
-			<pipe name="InsertIbistempSuccess" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
-					query="INSERT INTO IBISTEMP (tkey, tchar, tvarchar, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, 1, 'success', ${jdbc.querylistener.key}, SYSDATE)" 
-				/>
+					query="INSERT INTO IBISTEMP (tkey, tchar, tvarchar, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)" 
+				>
+					<param name="status" xpathExpression="request/@status"/>
+					<param name="string" xpathExpression="request/@string"/>
+				</sender>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="SelectData" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="xsl/md2-in-select-data.xsl" xslt2="true"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
+				<param name="slotid" value="${applicationId}/JdbcQueryListener"/>
+				<forward name="success" path="Exec_Query"/>
+			</pipe>
+			<pipe name="SelectDataTable" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="xsl/md2-in-select-data.xsl" xslt2="true"
+			>
+				<param name="tnumber" value="${jdbc.querylistener.key}"/>
+				<param name="slotid" value="${applicationId}/JdbcTableListener"/>
 				<forward name="success" path="Exec_Query"/>
 			</pipe>
 			<pipe name="Exec_Query" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"

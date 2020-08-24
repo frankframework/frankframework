@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jms;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
@@ -37,19 +38,19 @@ public class JmsRealmFactoryTest {
 	
 	@Test
 	public void registerAndRead() {
-		
+	
 		JmsRealm a = jmsRealmFactory.getJmsRealm("a");
 		JmsRealm b = jmsRealmFactory.getJmsRealm("b");
 		JmsRealm c = jmsRealmFactory.getJmsRealm("c");
 		JmsRealm d = jmsRealmFactory.getJmsRealm("d");
 		JmsRealm e = jmsRealmFactory.getJmsRealm("e");
-		
+
 		assertNotNull(a);
 		assertNotNull(b);
 		assertNotNull(c);
 		assertNotNull(d);
-		assertEquals(null,e);
-		
+		assertNull(e);
+
 		assertTrue(StringUtils.isNotEmpty(a.getDatasourceName()));
 		assertTrue(StringUtils.isNotEmpty(b.getDatasourceName()));
 		assertFalse(StringUtils.isNotEmpty(c.getDatasourceName()));

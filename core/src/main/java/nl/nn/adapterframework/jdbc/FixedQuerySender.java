@@ -45,6 +45,7 @@ import nl.nn.adapterframework.stream.Message;
 public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
 	private String query=null;
+	private int batchSize;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -72,7 +73,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		try {
 			Connection connection = getConnectionForSendMessage(null);
 			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
-			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null;
+			JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
 			result.setJdbcSession(jdbcSession);
 			return result;
 		} catch (JdbcException e) {
@@ -132,6 +133,15 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 	public String getQuery() {
 		return query;
+	}
+
+	@IbisDoc({"2", "When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.", "0"})
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+	@Override
+	public int getBatchSize() {
+		return batchSize;
 	}
 
 }

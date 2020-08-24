@@ -1,5 +1,5 @@
 /*
-Copyright 2018, 2019 Integration Partners B.V.
+Copyright 2018-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -451,13 +451,6 @@ public class TransactionalStorage extends Base {
 	}
 
 	private void deleteMessage(IMessageBrowser storage, String messageId) {
-		try {
-			storage.browseMessage(messageId);
-		}
-		catch(ListenerException e) {
-			throw new ApiException(e, 404);
-		}
-
 		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {

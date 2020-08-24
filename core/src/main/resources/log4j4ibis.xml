@@ -68,12 +68,11 @@
 	</Appenders>
 
 	<Loggers>
+		<Logger name="nl.nn.adapterframework" level="${ctx:log.level}" />
+		<Logger name="liquibase" level="${ctx:log.level}" />
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
-		<Logger name="org.springframework" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
-		<Logger name="org.aspectj" level="WARN" />
-
 		<Logger name="GALM" additivity="false" level="INFO">
 			<AppenderRef ref="galm"/>
 		</Logger>
@@ -92,7 +91,7 @@
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 
-		<Root level="${ctx:log.level}">
+		<Root level="WARN">
 			<AppenderRef ref="file"/>
 			<AppenderRef ref="XML"/>
 		</Root>

@@ -41,18 +41,21 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getIbisStoreSummaryQuery() {
-		String messageDateConverter = "date_format(MESSAGEDATE,'%Y-%m-%d')";
-		return "select type, slotid, " + messageDateConverter + " msgdate, count(*) msgcount from IBISSTORE group by slotid, type, " + messageDateConverter + " order by type, slotid, " + messageDateConverter;
-	}
-
-	@Override
 	public String getDatetimeLiteral(Date date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String formattedDate = formatter.format(date);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}
 
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "date_format("+columnName+",'%Y-%m-%d')";
+	}
+
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATE_ADD("+dateValue+ ", INTERVAL " + daysOffset + " DAY)";
+	}
 
 	@Override
 	public String getClobFieldType() {
@@ -72,7 +75,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE SKIP LOCKED";
 		} else {
-			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
@@ -82,25 +85,26 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED";
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED"; // take shared lock, to be able to use 'skip locked'
 		} else {
-			throw new IllegalArgumentException("MySQL does not support setting lock wait timeout in query");
+			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
-	@Override
-	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
-		JdbcUtil.executeStatement(conn, "START TRANSACTION");
-		return new JdbcSession() {
-
-			@Override
-			public void close() throws Exception {
-				JdbcUtil.executeStatement(conn, "COMMIT");
-			}
-			
-		};
-	}
+	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
+//	@Override
+//	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
+//		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//		JdbcUtil.executeStatement(conn, "START TRANSACTION");
+//		return new JdbcSession() {
+//
+//			@Override
+//			public void close() throws Exception {
+//				JdbcUtil.executeStatement(conn, "COMMIT");
+//			}
+//			
+//		};
+//	}
 
 
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws JdbcException {
@@ -110,7 +114,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getAutoIncrementKeyFieldType() {
-		return "AUTOINCREMENT";
+		return "INT AUTO_INCREMENT";
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017, 2020 Nationale-Nederlanden
+   Copyright 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.text.StrTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -61,13 +61,35 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreListener extends JdbcQueryListener {
+public class MessageStoreListener extends JdbcTableListener {
 	private String slotId;
 	private String sessionKeys = null;
-	private List<String> sessionKeysList;
 	private boolean moveToMessageLog = true;
 
+	private List<String> sessionKeysList;
+
+	{
+		setTableName("IBISSTORE");
+		setKeyField("MESSAGEKEY");
+		setMessageField("MESSAGE");
+		setMessageFieldType("blob");
+		setBlobSmartGet(true);
+		setStatusField("TYPE");
+		setTimestampField("MESSAGEDATE");
+		setStatusValueAvailable(IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
+		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
+		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
+	}
+	
+	@Override
 	public void configure() throws ConfigurationException {
+		// This class was initially developed as DelayStoreListener with
+		// the following condition added. We could still add an
+		// optional delay attribute but this functionality wasn't used
+		// anymore and the condition is Oracle specific.
+		// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
+		setSelectCondition("SLOTID = '" + slotId + "'");
+		super.configure();
 		if (sessionKeys != null) {
 			sessionKeysList = new ArrayList<String>();
 			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
@@ -75,28 +97,19 @@ public class MessageStoreListener extends JdbcQueryListener {
 				sessionKeysList.add((String)stringTokenizer.nextElement());
 			}
 		}
-		setSelectQuery("SELECT MESSAGEKEY, MESSAGE FROM IBISSTORE "
-				+ "WHERE TYPE = '" + ITransactionalStorage.TYPE_MESSAGESTORAGE + "' AND SLOTID = '" + slotId + "' ");
-				// This class was initially developed as DelayStoreListener with
-				// the following condition added. We could still add an
-				// optional delay attribute but this functionality wasn't used
-				// anymore and the condition is Oracle specific.
-				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
-		String query = "UPDATE IBISSTORE SET TYPE = '" + ITransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
-		if (!isMoveToMessageLog()) {
-			query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
+		if (isMoveToMessageLog()) {
+			String setClause = "COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
+			setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),setClause));
+			setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
+		} else {
+			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
+			setUpdateStatusToProcessedQuery(query);
+			setUpdateStatusToErrorQuery(query);
 		}
-		setUpdateStatusToProcessedQuery(query);
-		setUpdateStatusToErrorQuery(query);
-		setKeyField("MESSAGEKEY");
-		setMessageField("MESSAGE");
-		setMessageFieldType("blob");
-		setBlobSmartGet(true);
-		super.configure();
 	}
 
 	@Override
-	public Object getRawMessage(Map threadContext) throws ListenerException {
+	public Object getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		Object rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper messageWrapper = (MessageWrapper)rawMessage;
@@ -115,11 +128,35 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return rawMessage;
 	}
 
+	@Override
+	public IMessageBrowser<Object> getMessageLogBrowser() {
+		IMessageBrowser<Object> result = super.getMessageLogBrowser();
+		if (result!=null && result instanceof JdbcTableMessageBrowser) {
+			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
+			jtmb.setCommentField("COMMENTS");
+			jtmb.setExpiryDateField("EXPIRYDATE");
+			jtmb.hostField="HOST";
+		}
+		return result;
+	}
+
+	@Override
+	public IMessageBrowser<Object> getErrorStoreBrowser() {
+		IMessageBrowser<Object> result = super.getErrorStoreBrowser();
+		if (result!=null && result instanceof JdbcTableMessageBrowser) {
+			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
+			jtmb.setCommentField("COMMENTS");
+			jtmb.setExpiryDateField("EXPIRYDATE");
+			jtmb.hostField="HOST";
+		}
+		return result;
+	}
+
+
 	@IbisDoc({"identifier for this service", ""})
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
-
 	public String getSlotId() {
 		return slotId;
 	}
@@ -128,7 +165,6 @@ public class MessageStoreListener extends JdbcQueryListener {
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
-
 	public String getSessionKeys() {
 		return sessionKeys;
 	}
@@ -137,7 +173,6 @@ public class MessageStoreListener extends JdbcQueryListener {
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
 	}
-
 	public boolean isMoveToMessageLog() {
 		return moveToMessageLog;
 	}

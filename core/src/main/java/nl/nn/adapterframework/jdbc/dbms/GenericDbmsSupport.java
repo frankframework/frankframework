@@ -66,6 +66,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getSysDate() {
 		return "NOW()";
 	}
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return dateValue+ " + "+daysOffset;
+	}
 
 	@Override
 	public String getNumericKeyFieldType() {
@@ -103,6 +107,13 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String getIbisStoreSummaryQuery() {
+		// include a where clause, to make MsSqlServerDbmsSupport.prepareQueryTextForDirtyRead() work
+		return "select type, slotid, " + getTimestampAsDate("MESSAGEDATE")+ " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + getTimestampAsDate("MESSAGEDATE")+ " order by type, slotid, " + getTimestampAsDate("MESSAGEDATE");
+	}
+
+
+	@Override
 	public String getTimestampFieldType() {
 		return "TIMESTAMP";
 	}
@@ -112,6 +123,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String formattedDate = formatter.format(date);
 		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "TO_CHAR("+columnName+",'YYYY-MM-DD')";
 	}
 
 	@Override
@@ -273,7 +288,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return selectQuery;
 	}
 	@Override
-	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
 		return null;
 	}
 
@@ -428,11 +443,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getLength(String column) {
 		return "LENGTH("+column+")";
-	}
-
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount from IBISSTORE group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD') order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')";
 	}
 
 	@Override

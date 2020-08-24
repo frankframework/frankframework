@@ -23,7 +23,8 @@ public enum Dbms {
 	MSSQL("MS_SQL", "Microsoft SQL Server"),
 	DB2("DB2"),
 	H2("H2"),
-	MYSQL("MySQL");
+	MYSQL("MySQL"),
+	MARIADB("MariaDB");
 	
 	private String key;
 	private String productName;
