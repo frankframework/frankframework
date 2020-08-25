@@ -406,11 +406,13 @@ public final class ShowScheduler extends Base {
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
 		Scheduler scheduler = getScheduler();
 
-		String commandIssuedBy = servletConfig.getInitParameter("remoteHost");
-		commandIssuedBy += servletConfig.getInitParameter("remoteAddress");
-		commandIssuedBy += servletConfig.getInitParameter("remoteUser");
-
-		if(log.isInfoEnabled()) log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		if(log.isInfoEnabled()) {
+			String commandIssuedBy = request.getRemoteHost();
+			commandIssuedBy += "-"+request.getRemoteAddr();
+			commandIssuedBy += "-"+request.getRemoteUser();
+	
+			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		}
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		String action = ""; //PAUSE,RESUME,TRIGGER
