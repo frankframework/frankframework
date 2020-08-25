@@ -3072,11 +3072,15 @@ public class TestTool {
 	}
 
 	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
+		if(properties.getProperty(queueName + ".ignoreRead") != null && properties.getProperty(queueName + ".ignoreRead").equalsIgnoreCase("true") ){
+			return RESULT_OK;
+		}
 		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
+
 
 		// Map all identifier based properties once
 		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
