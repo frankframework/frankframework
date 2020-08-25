@@ -157,6 +157,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				columnsReturnedList[i] = tempList.get(i);
 			}
 		}
+		if (getBatchSize()>0 && !"other".equals(getQueryType())) {
+			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
+		}
 	}
 
 	/**
@@ -267,14 +270,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
 		try {
-			return getQueryExecutionContext(connection, message, session);
+			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
+			if (getBatchSize()>0) {
+				result.getStatement().clearBatch();
+			}
+			return result;
 		} catch (JdbcException|ParameterException|SQLException e) {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
 	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, IPipeLineSession session) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
-			// only close statement
+			if (getBatchSize()>0) {
+				statement.executeBatch();
+			}
 		} catch (SQLException e) {
 			log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 		}
@@ -287,7 +296,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForDirtyRead(connection):null) {
+		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session);
@@ -339,7 +348,18 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return executePackageQuery(queryExecutionContext);
 			}
-			return executeOtherQuery(queryExecutionContext, message, session);
+			Message result = executeOtherQuery(queryExecutionContext, message, session);
+			if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
+				int results[]=statement.executeBatch();
+				int numRowsAffected=0;
+				for (int i:results) {
+					numRowsAffected+=i;
+				}
+				result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
+				statement.clearBatch();
+				queryExecutionContext.iteration=0;
+			}
+			return result;
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -798,7 +818,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (session!=null) session.put(getRowIdSessionKey(), rowId);
 			} else {
 				log.debug(getLogPrefix() + "executing a SQL command");
-				numRowsAffected = statement.executeUpdate();
+				if (getBatchSize()>0) {
+					statement.addBatch();
+				} else {
+					numRowsAffected = statement.executeUpdate();
+				}
 			}
 			if (resStmt!=null) {
 				if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
@@ -812,7 +836,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (isScalar()) {
 				return new Message(Integer.toString(numRowsAffected));
 			}
-			return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
+			return new Message("<result>"+(getBatchSize()>0?"addedToBatch":"<rowsupdated>" + numRowsAffected + "</rowsupdated>")+"</result>");
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing query ["+query+"]",e );
 		} catch (JdbcException|IOException|JMSException e) {
@@ -1192,12 +1216,17 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return streamCharset;
 	}
 
-	@IbisDoc({"43", "If true, then select queries are executed with isolation mode 'read uncommitted'.", "false"})
+	@IbisDoc({"43", "If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed'.", "false"})
 	public void setDirtyRead(boolean dirtyRead) {
 		this.dirtyRead = dirtyRead;
 	}
 	public boolean isDirtyRead() {
 		return dirtyRead;
 	}
+	
+	public int getBatchSize() {
+		return 0;
+	}
+
 
 }

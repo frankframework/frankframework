@@ -1,11 +1,6 @@
 <Error>
-  <errorCode>FAILURE</errorCode>
-  <errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd' failed:
-/: at (1,73): cvc-elt.1.a: Cannot find the declaration of element 'GetDataREQ'.
-/GetDataREQ: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/GetDataREQ/Organisation: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/GetDataREQ/Organisation/organisationalId: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/GetDataREQ/AccountAttribute: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/GetDataREQ/AccountAttribute/id: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/GetDataREQ/AccountAttribute/value: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance' (maximum number of namespace warnings reached)</errorMessage>
+	<errorCode>FAILURE</errorCode>
+	<errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd' failed:
+/: at (1,63): cvc-elt.1.a: Cannot find the declaration of element 'GetDataREQ'.
+/GetDataREQ: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'</errorMessage>
 </Error>

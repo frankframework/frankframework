@@ -75,15 +75,11 @@
 	
 	<Resource 
 		name="jdbc/ibis4test-postgres" 
-		auth="Container"
-		type="javax.sql.DataSource" 
-		driverClassName="org.postgresql.Driver"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.postgresql.xa.PGXADataSource" 
 		url="jdbc:postgresql://localhost:5432/testiaf"
-		username="testiaf_user" 
+		user="testiaf_user" 
 		password="testiaf_user00" 
-		maxActive="20" 
-		maxIdle="10" 
-		maxWait="-1"
 	/>
 	
 	<Resource

@@ -1,11 +1,6 @@
 <Error>
-  <errorCode>FAILURE</errorCode>
-  <errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd' failed:
+	<errorCode>FAILURE</errorCode>
+	<errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd' failed:
 /: at (1,65): cvc-elt.1.a: Cannot find the declaration of element 'FindPartyREQ'.
-/FindPartyREQ: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/FindPartyREQ/Selection24: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/FindPartyREQ/Selection24/PartyType: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/FindPartyREQ/Selection24/Use: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/FindPartyREQ/Selection24/LastName: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'
-/FindPartyREQ/Selection24/LastNamePrefix: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance' (maximum number of namespace warnings reached)</errorMessage>
+/FindPartyREQ: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'</errorMessage>
 </Error>

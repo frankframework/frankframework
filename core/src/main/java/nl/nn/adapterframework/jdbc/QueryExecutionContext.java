@@ -30,6 +30,7 @@ public class QueryExecutionContext {
 	private PreparedStatement statement;
 	private PreparedStatement resultQueryStatement;
 	private JdbcSession jdbcSession;
+	protected int iteration;
 
 	public QueryExecutionContext(String query, String queryType, ParameterList parameterList) {
 		this.query = query;

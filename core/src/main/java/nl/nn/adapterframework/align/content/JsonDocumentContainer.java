@@ -120,6 +120,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
+		} else if (item instanceof JsonElementContainer) {
+			toString(sb,((JsonElementContainer)item).getContent(), indentLevel);
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}
