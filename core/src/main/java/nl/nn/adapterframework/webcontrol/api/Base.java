@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 public abstract class Base implements ApplicationContextAware {
 	@Context ServletConfig servletConfig;
+	@Context HttpServletRequest request;
 
 	private IbisContext ibisContext = null;
 	private JAXRSServiceFactoryBean serviceFactory = null;

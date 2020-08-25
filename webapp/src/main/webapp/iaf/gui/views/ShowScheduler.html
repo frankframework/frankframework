@@ -108,11 +108,11 @@
 				<div class="ibox-content" ng-repeat="job in jobs | orderBy:'name' | filter:searchFilter:name" ng-if="showContent">
 					<div class="col-md-12">
 						<div class="pull-right">
-							<button ng-if="::job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
-							<button ng-if="::job.type=='DATABASE'" title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
-							<button ng-if="job.state=='PAUSED'" title="Resume Job" class="btn btn-warning btn-xs" type="button" ng-click="resume(jobGroupName, job.name)"><i class="fa fa-play"></i> Resume</button>
-							<button ng-if="job.state!='PAUSED'" title="Pause Job" class="btn btn-warning btn-xs" type="button" ng-click="pause(jobGroupName, job.name)"><i class="fa fa-pause"></i> Pause</button>
-							<button title="Trigger Job" class="btn btn-info btn-xs" type="button" ng-click="trigger(jobGroupName, job.name)"><i class="fa fa-arrow-circle-o-right"></i> Trigger</button>
+							<button ng-if="::job.type=='DATABASE'" title="Edit Job {{::job.name}}" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
+							<button ng-if="::job.type=='DATABASE'" title="Delete Job {{::job.name}}" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
+							<button ng-if="job.state=='PAUSED'" title="Resume Job {{::job.name}}" class="btn btn-warning btn-xs" type="button" ng-click="resume(jobGroupName, job.name)"><i class="fa fa-play"></i> Resume</button>
+							<button ng-if="job.state!='PAUSED'" title="Pause Job {{::job.name}}" class="btn btn-warning btn-xs" type="button" ng-click="pause(jobGroupName, job.name)"><i class="fa fa-pause"></i> Pause</button>
+							<button title="Trigger Job {{::job.name}}" class="btn btn-info btn-xs" type="button" ng-click="trigger(jobGroupName, job.name)"><i class="fa fa-arrow-circle-o-right"></i> Trigger</button>
 						</div>
 						<h4>Job: {{::job.name}} <small ng-if="::job.description != '-'">{{::job.description}}</small></h4>
 					</div>

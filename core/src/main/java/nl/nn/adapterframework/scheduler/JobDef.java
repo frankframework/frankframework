@@ -61,6 +61,7 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
@@ -71,6 +72,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -499,74 +501,74 @@ public class JobDef {
 	}
 
 	protected void executeJob(IbisManager ibisManager) {
-		if (incrementCountThreads()) { 
-			try {
-				IbisTransaction itx = null;
-				TransactionStatus txStatus = null;
-				if (getTxManager()!=null) {
-					//txStatus = getTxManager().getTransaction(txDef);
-					itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
-					txStatus = itx.getStatus();
-				}
-				try {
-					if (getLocker()!=null) {
-						String objectId = null;
-						try {
-							try {
-								objectId = getLocker().lock();
-							} catch (Exception e) {
-								boolean isUniqueConstraintViolation = false;
-								if (e instanceof SQLException) {
-									SQLException sqle = (SQLException) e;
-									isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
-								}
-								String msg = "error while setting lock: " + e.getMessage();
-								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-									log.info(getLogPrefix()+msg);
-								} else {
-									getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-									log.error(getLogPrefix()+msg);
-								}
-							}
-							if (objectId!=null) {
-								TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-								try {
-									tg.activateGuard(getTransactionTimeout());
-									runJob(ibisManager);
-								} finally {
-									if (tg.cancel()) {
-										log.error(getLogPrefix()+"thread has been interrupted");
-									} 
-								}
-							}
-						} finally {
-							if (objectId!=null) {
-								try {
-									getLocker().unlock(objectId);
-								} catch (Exception e) {
-									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-									log.warn(getLogPrefix()+msg);
-								}
-							}
-						}
-					} else {
-						runJob(ibisManager);
-					}
-				} finally {
-					if (txStatus!=null) {
-						//getTxManager().commit(txStatus);
-						itx.commit();
-					}
-				}
-			} finally {
-				decrementCountThreads();
-			}
-		} else {
-			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
+		if (!incrementCountThreads()) { 
+			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
+			return;
+		}
+		try {
+			IbisTransaction itx = null;
+			TransactionStatus txStatus = null;
+			if (getTxManager()!=null) {
+				//txStatus = getTxManager().getTransaction(txDef);
+				itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
+				txStatus = itx.getStatus();
+			}
+			try {
+				if (getLocker()!=null) {
+					String objectId = null;
+					try {
+						try {
+							objectId = getLocker().lock();
+						} catch (Exception e) {
+							boolean isUniqueConstraintViolation = false;
+							if (e instanceof SQLException) {
+								SQLException sqle = (SQLException) e;
+								isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
+							}
+							String msg = "error while setting lock: " + e.getMessage();
+							if (isUniqueConstraintViolation) {
+								getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
+								log.info(getLogPrefix()+msg);
+							} else {
+								getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+								log.error(getLogPrefix()+msg);
+							}
+						}
+						if (objectId!=null) {
+							TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+							try {
+								tg.activateGuard(getTransactionTimeout());
+								runJob(ibisManager);
+							} finally {
+								if (tg.cancel()) {
+									log.error(getLogPrefix()+"thread has been interrupted");
+								} 
+							}
+						}
+					} finally {
+						if (objectId!=null) {
+							try {
+								getLocker().unlock(objectId);
+							} catch (Exception e) {
+								String msg = "error while removing lock: " + e.getMessage();
+								getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+								log.warn(getLogPrefix()+msg);
+							}
+						}
+					}
+				} else {
+					runJob(ibisManager);
+				}
+			} finally {
+				if (txStatus!=null) {
+					//getTxManager().commit(txStatus);
+					itx.commit();
+				}
+			}
+		} finally {
+			decrementCountThreads();
 		}
 	}
 
@@ -665,30 +667,35 @@ public class JobDef {
 		return datasourceNames;
 	}
 
-	private List<MessageLogObject> getAllMessageLogsAndErrorstorages(IbisManager ibisManager) {
+	
+	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage transactionalStorage) {
+		if (transactionalStorage!=null && transactionalStorage instanceof JdbcTransactionalStorage) {
+			JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionalStorage;
+			String datasourceName = messageLog.getDatasourceName();
+			String expiryDateField = messageLog.getExpiryDateField();
+			String tableName = messageLog.getTableName();
+			String keyField = messageLog.getKeyField();
+			String typeField = messageLog.getTypeField();
+			MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
+			if (!messageLogs.contains(mlo)) {
+				messageLogs.add(mlo);
+			}
+		}
+	}
+	
+	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
+			for (Iterator<IReceiver> it=adapter.getReceiverIterator(); it.hasNext();) {
+				collectMessageLogs(messageLogs, ((ReceiverBase)it.next()).getMessageLog());
+			}
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
 				IPipe pipe = pipeline.getPipe(i);
 				if (pipe instanceof MessageSendingPipe) {
 					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					if (msp.getMessageLog()!=null) {
-						ITransactionalStorage transactionStorage = msp.getMessageLog();
-						if (transactionStorage instanceof JdbcTransactionalStorage) {
-							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
-							String datasourceName = messageLog.getDatasourceName();
-							String expiryDateField = messageLog.getExpiryDateField();
-							String tableName = messageLog.getTableName();
-							String keyField = messageLog.getKeyField();
-							String typeField = messageLog.getTypeField();
-							MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
-							if (!messageLogs.contains(mlo)) {
-								messageLogs.add(mlo);
-							}
-						}
-					}
+					collectMessageLogs(messageLogs, msp.getMessageLog());
 				}
 			}
 		}
@@ -698,26 +705,33 @@ public class JobDef {
 	private void cleanupDatabase(IbisManager ibisManager) {
 		Date date = new Date();
 
+		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
+		
 		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
 
 		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
 			String datasourceName = iter.next();
-			DirectQuerySender qs = null;
-			String deleteQuery = null;
+			FixedQuerySender qs = null;
 			try {
-				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 				qs.setDatasourceName(datasourceName);
-				qs.setName("executeQueryJob");
+				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
-				qs.configure(true);
+				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
+				qs.setQuery(query);
+				Parameter param = new Parameter();
+				param.setName("now");
+				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setValue(DateUtils.format(date));
+				qs.addParameter(param);
+				qs.configure();
 				qs.open();
 
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < "+qs.getDbmsSupport().getDatetimeLiteral(date);
-				Message result = qs.sendMessage(new Message(deleteQuery), null);
+				Message result = qs.sendMessage(Message.nullMessage(), null);
 				log.info("result [" + result + "]");
 			} catch (Exception e) {
-				String msg = "error while executing query ["+deleteQuery+"] (as part of scheduled job execution): " + e.getMessage();
+				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 				log.error(getLogPrefix()+msg);
 			} finally {
@@ -727,33 +741,43 @@ public class JobDef {
 			}
 		}
 
-		List<MessageLogObject> messageLogs = getAllMessageLogsAndErrorstorages(ibisManager);
+		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
 
 		for (MessageLogObject mlo: messageLogs) {
 			DirectQuerySender qs = null;
-			String deleteQuery = null;
 			try {
 				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
-				qs.setName("executeQueryJob");
+				qs.setName("cleanupDatabase-"+mlo.getTableName());
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+
+				Parameter param = new Parameter();
+				param.setName("now");
+				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setValue(DateUtils.format(date));
+				qs.addParameter(param);
 				qs.configure(true);
 				qs.open();
-
+				
+				String query;
 				if (qs.getDatabaseType() == Dbms.MSSQL) {
-					deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
 							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-							+ "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date)+")";
+							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
+					qs.setSqlDialect(Dbms.MSSQL.getKey());
 				}
 				else {
-					deleteQuery = "DELETE FROM " + mlo.getTableName()  + " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode() + "') AND " + mlo.getExpiryDateField() + " < "+qs.getDbmsSupport().getDatetimeLiteral(date);
+					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
+					qs.setSqlDialect(Dbms.ORACLE.getKey());
 				}
 
-				Message result = qs.sendMessage(new Message(deleteQuery), null);
+				Message result = qs.sendMessage(new Message(query), null);
 				log.info("result [" + result + "]");
 			} catch (Exception e) {
-				String msg = "error while executing query ["+deleteQuery+"] (as part of scheduled job execution): " + e.getMessage();
+				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 				log.error(getLogPrefix()+msg);
 			} finally {
