@@ -2,7 +2,7 @@
 	<adapter name="ManageDatabase" description="Manage the database" active="${manageDatabase.active}">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessage" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ManageDatabase">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ManageDatabase" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ManageDatabase" serviceName="${manageDatabase.ServiceName}" />
 		</receiver>
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ManageDatabase-ws" active="${manageDatabase.webServiceListener.active}">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="ManageDatabase-ws" serviceNamespaceURI="http://managedatabase.ibissource.org/" />
