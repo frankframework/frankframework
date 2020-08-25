@@ -52,8 +52,8 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  */
 
 public abstract class Base implements ApplicationContextAware {
-	@Context ServletConfig servletConfig;
-	@Context HttpServletRequest request;
+	@Context protected ServletConfig servletConfig;
+	@Context protected HttpServletRequest request;
 
 	private IbisContext ibisContext = null;
 	private JAXRSServiceFactoryBean serviceFactory = null;
