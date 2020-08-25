@@ -187,7 +187,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 	
 	/**
-	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
+	 * Alternative way to provide iteration, for classes that cannot provide an Iterator.
 	 * For each item in the input callback.handleItem(item) is called.
 	 */
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
