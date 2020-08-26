@@ -1012,7 +1012,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
-				Thread.sleep(1000);
+				wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
 	}
