@@ -2,6 +2,7 @@
 	<target name="restart-iaf-example">
 		<property file="../../frank-runner/build.properties"/>
 		<property file="frank-runner.properties"/>
+		<property name="maven.clean" value="true"/>
 		<!-- Update some or all iaf artifacts in local repo (set maven.projects to a comma seperated list or leave empty for all) -->
 		<property name="maven.projects" value=""/>
 		<exec executable="../frank-runner/mvn.bat" dir=".." vmlauncher="false" failonerror="true">
