@@ -129,11 +129,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
+				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
 				ConfigurationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
-			cache.open();
 		}
 	}
 

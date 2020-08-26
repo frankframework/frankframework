@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -29,9 +27,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	//Tests will be executed for the Rhino engine and the J2V8 engine
 	@Parameterized.Parameter(0)
 	public String engine;
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Override
 	public JavascriptSender createSender() {
