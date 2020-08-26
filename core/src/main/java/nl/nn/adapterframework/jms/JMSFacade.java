@@ -237,6 +237,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, INamedObject, 
 		}
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getDestinationName())) {
 			throw new ConfigurationException("destinationName must be specified");

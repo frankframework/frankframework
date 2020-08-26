@@ -45,6 +45,7 @@ public class ClobWriter extends FilterWriter {
 		this.dbmsSupport=dbmsSupport;
 		this.clobUpdateHandle=clobUpdateHandle;
 		this.clobColumn=clobColumn;
+		this.connection=connection;
 		this.resultSet=resultSet;
 		this.warnings=warnings;
 	}

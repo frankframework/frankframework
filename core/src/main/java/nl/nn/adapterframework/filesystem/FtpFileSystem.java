@@ -29,12 +29,10 @@ import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * 
@@ -42,8 +40,6 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
-
-	protected Logger log = LogUtil.getLogger(this);
 
 	private String remoteDirectory = "";
 
