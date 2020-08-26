@@ -542,7 +542,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		rs.next();
 		Object blobUpdateHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
 		OutputStream dbmsOutputStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobUpdateHandle, rs, blobColumn, compressBlob);
-		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, statement.getConnection(), rs, result);
+		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
 
 	protected Message executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
@@ -590,7 +590,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		rs.next();
 		Object clobUpdateHandle=getDbmsSupport().getClobUpdateHandle(rs, clobColumn);
 		Writer dbmsWriter = getDbmsSupport().getClobWriter(rs, clobColumn, clobUpdateHandle);
-		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, statement.getConnection(), rs, result);
+		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
 
 	protected Message executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
