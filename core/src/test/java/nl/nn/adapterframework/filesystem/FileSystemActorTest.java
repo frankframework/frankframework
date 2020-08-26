@@ -16,9 +16,7 @@ import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
@@ -41,9 +39,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FS fileSystem;
 	protected INamedObject owner;
 	private IPipeLineSession session;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 
 	protected abstract FS createFileSystem();

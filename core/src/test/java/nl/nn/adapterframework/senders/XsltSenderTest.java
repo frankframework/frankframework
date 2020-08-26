@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -20,9 +18,6 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
 	@Override
 	public XsltSender createSender() {
 		return new XsltSender();

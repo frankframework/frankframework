@@ -45,6 +45,7 @@ public class BlobOutputStream extends FilterOutputStream {
 		this.dbmsSupport=dbmsSupport;
 		this.blobUpdateHandle=blobUpdateHandle;
 		this.blobColumn=blobColumn;
+		this.connection=connection;
 		this.resultSet=resultSet;
 		this.warnings=warnings;
 	}

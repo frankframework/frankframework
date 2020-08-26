@@ -110,7 +110,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				openClient(remoteDirectory);
 				List<String> names = ls(remoteDirectory, true, true);
 				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
-				if (names != null && names.size() > 0) {
+				if (names.size() > 0) {
 					remoteFilenames.addAll(names);
 				}
 			}
