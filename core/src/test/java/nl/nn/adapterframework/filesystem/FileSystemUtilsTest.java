@@ -1,16 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FS fileSystem;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	protected abstract FS createFileSystem();
 

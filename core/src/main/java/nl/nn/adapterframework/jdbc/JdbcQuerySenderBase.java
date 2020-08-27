@@ -132,7 +132,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private boolean lockRows=false;
 	private int lockWait=-1;
-	private boolean dirtyRead=false;
+	private boolean avoidLocking=false;
 	
 	private String convertedResultQuery;
 
@@ -206,8 +206,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (isLockRows()) {
 			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
 		}
-		if (isDirtyRead()) {
-			query = getDbmsSupport().prepareQueryTextForDirtyRead(query);
+		if (isAvoidLocking()) {
+			query = getDbmsSupport().prepareQueryTextForNonLockingRead(query);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
@@ -296,7 +296,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 
 	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		try (JdbcSession jdbcSession = isDirtyRead()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
+		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session);
@@ -540,7 +540,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		rs.next();
 		Object blobUpdateHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
 		OutputStream dbmsOutputStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobUpdateHandle, rs, blobColumn, compressBlob);
-		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, statement.getConnection(), rs, result);
+		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
 
 	protected Message executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
@@ -588,7 +588,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		rs.next();
 		Object clobUpdateHandle=getDbmsSupport().getClobUpdateHandle(rs, clobColumn);
 		Writer dbmsWriter = getDbmsSupport().getClobWriter(rs, clobColumn, clobUpdateHandle);
-		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, statement.getConnection(), rs, result);
+		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
 
 	protected Message executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
@@ -1214,12 +1214,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return streamCharset;
 	}
 
-	@IbisDoc({"43", "If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed'.", "false"})
-	public void setDirtyRead(boolean dirtyRead) {
-		this.dirtyRead = dirtyRead;
+	@IbisDoc({"43", "If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'.", "false"})
+	public void setAvoidLocking(boolean avoidLocking) {
+		this.avoidLocking = avoidLocking;
 	}
-	public boolean isDirtyRead() {
-		return dirtyRead;
+	public boolean isAvoidLocking() {
+		return avoidLocking;
 	}
 	
 	public int getBatchSize() {

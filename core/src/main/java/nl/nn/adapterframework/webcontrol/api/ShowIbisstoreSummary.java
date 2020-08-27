@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setDatasourceName(datasource);
 				qs.setQueryType("select");
 				qs.setBlobSmartGet(true);
-				qs.setDirtyRead(true);
+				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
 				result = qs.sendMessage(new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();

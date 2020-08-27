@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
+		boolean avoidLocking = false;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -108,6 +109,9 @@ public final class ExecuteJdbcQuery extends Base {
 				if(resultType.equalsIgnoreCase("json")) {
 					returnType = MediaType.APPLICATION_JSON;
 				}
+			}
+			if(key.equalsIgnoreCase("avoidLocking")) {
+				avoidLocking = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
@@ -145,6 +149,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
+			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();

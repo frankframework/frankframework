@@ -136,8 +136,8 @@ public final class Webservices extends Base {
 				Map<String, Object> endpoint = new HashMap<>();
 				endpoint.put("uriPattern", config.getUriPattern());
 				endpoint.put("method", method);
-				endpoint.put("adapter", adapter.getName());
-				endpoint.put("receiver", receiver.getName());
+				if (adapter!=null) endpoint.put("adapter", adapter.getName());
+				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 				PipeLine pipeline = adapter.getPipeLine();
 				if (pipeline.getInputValidator()==null && pipeline.getOutputValidator()==null) {
 					endpoint.put("error","pipeline has no validator");

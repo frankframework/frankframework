@@ -144,7 +144,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
-	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}

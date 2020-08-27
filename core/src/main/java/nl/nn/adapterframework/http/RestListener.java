@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 		//Check if valid path
 		String requestRestPath = (String) requestContext.get("restPath");
 		if (!getRestPath().equals(requestRestPath)) {
-			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be '" + getRestPath() + "'");
+			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be [" + getRestPath() + "]");
 		}
 
 		//Check if consumes has been set or contentType is set to JSON
@@ -175,66 +175,6 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 	}
 
 	@Override
-	public String getPhysicalDestinationName() {
-		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
-	}
-
-	public String getRestUriPattern() {
-		return getRestPath().substring(1) + "/" + getUriPattern();
-	}
-	
-	public String getUriPattern() {
-		return uriPattern;
-	}
-
-	@IbisDoc({"uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
-	public void setUriPattern(String uriPattern) {
-		this.uriPattern = uriPattern;
-	}
-
-	public String getMethod() {
-		return method;
-	}
-
-	@IbisDoc({"method (e.g. get or post) to match", ""})
-	public void setMethod(String method) {
-		this.method = method;
-	}
-
-	public String getEtagSessionKey() {
-		return etagSessionKey;
-	}
-
-	@IbisDoc({"key of session variable to store etag", ""})
-	public void setEtagSessionKey(String etagSessionKey) {
-		this.etagSessionKey = etagSessionKey;
-	}
-
-	public String getContentTypeSessionKey() {
-		return contentTypeSessionKey;
-	}
-
-	@IbisDoc({"key of Session variable to requested content type, overwrites {@link #setProduces(String) produces}", ""})
-	public void setContentTypeSessionKey(String contentTypeSessionKey) {
-		this.contentTypeSessionKey = contentTypeSessionKey;
-	}
-
-	public String getRestPath() {
-		return restPath;
-	}
-	public void setRestPath(String restPath) {
-		this.restPath = restPath;
-	}
-
-	@IbisDoc({"indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
-	public void setView(boolean b) {
-		view = b;
-	}
-	public Boolean isView() {
-		return view;
-	}
-
-	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("view".equals(attributeName)) {
 			if (attributes.get("method").equalsIgnoreCase("GET")) {
@@ -246,7 +186,64 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 		return defaultValue;
 	}
 
-	@IbisDoc({"comma separated list of authorization roles which are granted for this rest service", "ibisadmin,ibisdataadmin,ibistester,ibisobserver,ibiswebservice"})
+	@Override
+	public String getPhysicalDestinationName() {
+		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
+	}
+
+	public String getRestUriPattern() {
+		return getRestPath().substring(1) + "/" + getUriPattern();
+	}
+	
+
+	@IbisDoc({"Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
+	public void setUriPattern(String uriPattern) {
+		this.uriPattern = uriPattern;
+	}
+	public String getUriPattern() {
+		return uriPattern;
+	}
+
+	@IbisDoc({"Method (e.g. GET or POST) to match", ""})
+	public void setMethod(String method) {
+		this.method = method;
+	}
+	public String getMethod() {
+		return method;
+	}
+
+	@IbisDoc({"Key of session variable to store etag", ""})
+	public void setEtagSessionKey(String etagSessionKey) {
+		this.etagSessionKey = etagSessionKey;
+	}
+	public String getEtagSessionKey() {
+		return etagSessionKey;
+	}
+
+	@IbisDoc({"Key of Session variable that determines requested content type, overrides {@link #setProduces(String) produces}", ""})
+	public void setContentTypeSessionKey(String contentTypeSessionKey) {
+		this.contentTypeSessionKey = contentTypeSessionKey;
+	}
+	public String getContentTypeSessionKey() {
+		return contentTypeSessionKey;
+	}
+
+	public void setRestPath(String restPath) {
+		this.restPath = restPath;
+	}
+	public String getRestPath() {
+		return restPath;
+	}
+
+	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
+	public void setView(boolean b) {
+		view = b;
+	}
+	public Boolean isView() {
+		return view;
+	}
+
+	@IbisDoc({"Comma separated list of authorization roles which are granted for this rest service", "IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService"})
 	public void setAuthRoles(String string) {
 		authRoles = string;
 	}
@@ -268,7 +265,7 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 		return writeSecLogMessage;
 	}
 
-	@IbisDoc({"indicates whether the parts of a multipart entity should be retrieved and put in session keys. this can only be done once!", "true"})
+	@IbisDoc({"Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!", "true"})
 	public void setRetrieveMultipart(boolean b) {
 		retrieveMultipart = b;
 	}
@@ -276,44 +273,40 @@ public class RestListener extends PushingListenerAdapter<String> implements HasP
 		return retrieveMultipart;
 	}
 
-	@IbisDoc({"mediatype (e.g. xml, json, text) the {@link nl.nn.adapterframework.http.restservicedispatcher restservicedispatcher} receives as input", "xml"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} receives as input", "XML"})
 	public void setConsumes(String consumes) throws ConfigurationException {
-		if(mediaTypes.contains(consumes))
-			this.consumes = consumes;
-		else
+		if(!mediaTypes.contains(consumes)) {
 			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
+		}
+		this.consumes = consumes;
 	}
-
 	public String getConsumes() {
 		return consumes;
 	}
 
-	@IbisDoc({"mediatype (e.g. xml, json, text) the {@link nl.nn.adapterframework.http.restservicedispatcher restservicedispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "xml"})
+	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
 	public void setProduces(String produces) throws ConfigurationException {
-		if(mediaTypes.contains(produces))
-			this.produces = produces;
-		else
+		if(!mediaTypes.contains(produces)) {
 			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
+		}
+		this.produces = produces;
 	}
-
 	public String getProduces() {
 		return produces;
 	}
 
-	@IbisDoc({"when set to true the ibis will automatically validate and process etags", "false"})
+	@IbisDoc({"If set to true the ibis will automatically validate and process etags", "false"})
 	public void setValidateEtag(boolean b) {
 		this.validateEtag = b;
 	}
-
 	public boolean getValidateEtag() {
 		return validateEtag;
 	}
 
-	@IbisDoc({"when set to true the ibis will automatically create an etag", "false"})
+	@IbisDoc({"If set to true the ibis will automatically create an etag", "false"})
 	public void setGenerateEtag(boolean b) {
 		this.generateEtag = b;
 	}
-
 	public boolean getGenerateEtag() {
 		return generateEtag;
 	}

@@ -94,9 +94,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		
 		Map<String,Object> paramMap=null;
 		try {
-			if (getParameterList()!=null) {
-				paramMap = getParameterList().getValues(msg, pls).getValueMap();
-			}
+			paramMap = getParameterList().getValues(msg, pls).getValueMap();
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {

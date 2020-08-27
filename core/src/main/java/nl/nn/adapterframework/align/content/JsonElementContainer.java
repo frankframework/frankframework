@@ -113,20 +113,25 @@ public class JsonElementContainer implements ElementContainer {
 	 * Sets the Text content of the current object
 	 */
 	public void setContent(String content) {
-		if (log.isTraceEnabled()) log.trace("setContent name ["+getName()+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("setContent() name ["+getName()+"] content ["+content+"]");
 		if (content!=null) {
 			boolean whitespace=content.trim().isEmpty();
 			if (whitespace && stringContent==null) {
-				if (log.isTraceEnabled()) log.trace("setContent ignoring empty content for name ["+getName()+"]");
+				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name ["+getName()+"]");
 				return;
 			}
 		}
 		if (contentMap!=null) {
 			if (StringUtils.isNotEmpty(mixedContentLabel)) {
-				JsonElementContainer textContainer = new JsonElementContainer(mixedContentLabel, false, false, false, attributePrefix, mixedContentLabel, null);
-				textContainer.setType(getType());
-				textContainer.setContent(content);
-				contentMap.put(mixedContentLabel, textContainer.getContent());
+				JsonElementContainer textContainer = (JsonElementContainer)contentMap.get(mixedContentLabel);
+				if (textContainer==null) {
+					textContainer = new JsonElementContainer(mixedContentLabel, false, false, false, attributePrefix, mixedContentLabel, null);
+					textContainer.setType(getType());
+					contentMap.put(mixedContentLabel, textContainer);
+					textContainer.stringContent = content;
+				} else {
+					textContainer.stringContent += content;
+				}
 				return;
 			} 
 			throw new IllegalStateException("already created map for element ["+name+"] and no mixexContentLabel set");

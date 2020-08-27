@@ -32,8 +32,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
-	protected IPipeLineSession session;
-
 	protected abstract void setXpathExpression(String xpathExpression);
 	protected abstract void setStyleSheetName(String styleSheetName);
 	protected abstract void setStyleSheetNameSessionKey(String styleSheetNameSessionKey);

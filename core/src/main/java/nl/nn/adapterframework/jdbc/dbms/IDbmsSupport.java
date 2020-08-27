@@ -96,14 +96,15 @@ public interface IDbmsSupport {
 	/**
 	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will avoid placing locks itself as much as possible.
 	 * Will always be executed together with {@link #prepareSessionForNonLockingRead(Connection)}.
+	 * Preferably, the effective isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * Should return the query unmodified if no special action is required.
-	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForDirtyRead(String)}
+	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForNonLockingRead(String)}
 	 */
-	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
+	String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException;
 	/**
-	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForDirtyRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
+	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForNonLockingRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
 	 * are executed, they will not be blocked by locks, and will avoid placing locks itself as much as possible.
-	 * Preferably isolation is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
+	 * Preferably isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state (which is expected to be REPEATABLE_READ).
 	 * Should return null if no preparation of the connection is required.
 	 * For an example, see {@link MySqlDbmsSupport#prepareSessionForNonLockingRead(Connection)}
