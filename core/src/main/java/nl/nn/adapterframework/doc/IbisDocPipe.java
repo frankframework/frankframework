@@ -280,6 +280,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 				scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
 				success = true;
 			} catch(BeanDefinitionStoreException e) {
+				// Exclude errors like class java.lang.NoClassDefFoundError: com/tibco/tibjms/admin/TibjmsAdminException
+				// for SendTibcoMessage. See menu item Errors in GUI.
 				String excludeFilter = e.getMessage();
 				excludeFilter = excludeFilter.substring(excludeFilter.indexOf(".jar!/") + 6);
 				excludeFilter = excludeFilter.substring(0, excludeFilter.indexOf(".class"));
@@ -794,7 +796,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 				result.append("  <Element>\n");
 				result.append("    <Name>" + name + "</Name>\n");
 				result.append("    <Type>" + type + "</Type>\n");
-				result.append("    <ClassName>" + className + "</ClassName>\n");
+				if (StringUtils.isNotEmpty(className)) {
+					result.append("    <ClassName>" + className + "</ClassName>\n");
+				} else {
+					result.append("    <ClassName/>\n");
+				}
 				result.append("  </Element>\n");
 			}
 		}
