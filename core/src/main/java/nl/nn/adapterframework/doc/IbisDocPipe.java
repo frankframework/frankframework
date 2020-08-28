@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -665,10 +666,29 @@ public class IbisDocPipe extends FixedForwardPipe {
 					}
 					if (ibisDoc != null) {
 						String[] ibisDocValues = ibisDoc.value();
-						if (beanComplexType != null) {
-							String ibisDocValue = ibisDocValues[0];
+						// TODO order output based on class inheritance and order value
+						int order = Integer.MAX_VALUE;
+						String description;
+						String defaultValue = "";
+						try {
+							order = Integer.parseInt(ibisDocValues[0]);
+						} catch (NumberFormatException e) {
+						}
+						if (order == Integer.MAX_VALUE) {
+							description = ibisDocValues[0];
 							if (ibisDocValues.length > 1) {
-								ibisDocValue = ibisDocValue + " (default: " + ibisDocValues[1] + ")";
+								defaultValue = ibisDocValues[1];
+							}
+						} else {
+							description = ibisDocValues[1];
+							if (ibisDocValues.length > 2) {
+								defaultValue = ibisDocValues[2];
+							}
+						}
+						if (beanComplexType != null) {
+							String ibisDocValue = description;
+							if (StringUtils.isNotEmpty(defaultValue)) {
+								ibisDocValue = ibisDocValue + " (default: " + defaultValue + ")";
 							}
 							XmlBuilder annotation = new XmlBuilder("annotation");
 							XmlBuilder documentation = new XmlBuilder("documentation");
@@ -677,14 +697,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 							documentation.setValue(ibisDocValue);
 						}
 						if (beanHtml != null) {
-							String ibisDocValue = ibisDocValues[0];
-							beanHtml.append("<td>" + ibisDocValue + "</td>");
-							if (ibisDocValues.length > 1) {
-								ibisDocValue = ibisDocValues[1];
-							} else {
-								ibisDocValue = "";
-							}
-							beanHtml.append("<td>" + ibisDocValue + "</td>");
+							beanHtml.append("<td>" + description + "</td>");
+							beanHtml.append("<td>" + defaultValue + "</td>");
 						}
 					} else {
 						if (beanHtml != null) {
