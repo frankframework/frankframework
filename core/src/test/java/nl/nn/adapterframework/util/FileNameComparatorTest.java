@@ -3,6 +3,10 @@ package nl.nn.adapterframework.util;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,6 +17,20 @@ import static org.junit.Assert.assertEquals;
  */
 public class FileNameComparatorTest {
 
+
+	@Test
+	public void testComparator() throws Exception {
+		List<File> list = new ArrayList<>();
+		list.add(new File("test.txt"));list.add(new File( "teSt.txt"));
+		list.add(new File("0123.py")); list.add(new File("test.xml")); list.add(new File("document.txt"));
+		Collections.sort(list, new FileNameComparator());
+		assertEquals("0123.py", list.get(0).getName());
+		assertEquals("document.txt", list.get(1).getName());
+		assertEquals("teSt.txt", list.get(2).getName());
+		assertEquals("test.txt", list.get(3).getName());
+		assertEquals("test.xml", list.get(4).getName());
+
+	}
 
 	/**
 	 * Method: getNextIndex(String s, int start, boolean numericPart)
