@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -158,13 +157,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
 		}
 		if (context==null) {
-			context = new HashMap();
+			context = new HashMap<>();
 		}
 		String serviceIndication;
 		if (StringUtils.isNotEmpty(getServiceName())) {
@@ -241,7 +240,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
-		Object exitState = context.remove(ReceiverBase.EXIT_STATE_CONTEXT_KEY);
+		Object exitState = context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		if (exitState!=null && !exitState.equals("success")) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"]");

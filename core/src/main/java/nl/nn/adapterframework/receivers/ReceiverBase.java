@@ -185,8 +185,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public static final String ONERROR_RECOVER = "recover";
 	public static final String ONERROR_CLOSE = "close";
 	
-	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
-
 	private String returnedSessionKeys=null;
 	private String hideRegex = null;
 	private String hideMethod = "all";
@@ -1325,7 +1323,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	private void setExitState(Map<String,Object> threadContext, String state, int code) {
 		if (threadContext!=null) {
-			threadContext.put(EXIT_STATE_CONTEXT_KEY, state);
+			threadContext.put(IPipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
 		}
 	}
 	
