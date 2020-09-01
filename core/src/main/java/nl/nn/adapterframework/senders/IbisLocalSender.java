@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -157,35 +157,36 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
-		} else {
-			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				context = new HashMap();
-			}
 		}
+		if (context==null) {
+			context = new HashMap<>();
+		}
+		String serviceIndication;
 		if (StringUtils.isNotEmpty(getServiceName())) {
+			serviceIndication="service ["+getServiceName()+"]";
 			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -201,6 +202,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} else {
 				javaListener = getJavaListener();
 			}
+			serviceIndication="JavaListener ["+javaListener+"]";
 			try {
 				JavaListener listener= JavaListener.getListener(javaListener);
 				if (listener==null) {
@@ -213,22 +215,22 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -237,6 +239,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					Misc.copyContext(getReturnedSessionKeys(),context, session);
 				}
 			}
+		}
+		Object exitState = context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		if (exitState!=null && !exitState.equals("success")) {
+			context.put("originalResult", result);
+			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
 		return result;
 	}
