@@ -61,8 +61,11 @@
 		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
+		pinGlobalTxToPhysicalConnection="true"
 		socketTimeout="100000"
 	/>
+	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
 
 	<Resource
 		name="jdbc/ibis4test-mariadb"
