@@ -21,6 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.transform.TransformerException;
 
@@ -31,6 +35,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
@@ -54,9 +59,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class FlowDiagramManager implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
+	private ApplicationContext applicationContext;
 
 	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
@@ -64,6 +70,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
 	private Resource noImageAvailable;
+	private ScheduledExecutorService flowEngineTimer = Executors.newSingleThreadScheduledExecutor();
+	private String fileExtension = null;
 
 	/**
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
@@ -71,18 +79,25 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	 */
 	private IFlowGenerator generator;
 
+	private ScheduledFuture<?> cleanupTimer;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext has not been autowired");
+		}
+
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
 
-		if(generator == null) {
+		if(getFlowGenerator() == null) {
 			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
+			fileExtension = generator.getFileExtension();
 		}
 
 		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
@@ -91,23 +106,44 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
-	/**
-	 * Cannot use Spring Autowired as it's an optional!
-	 */
-	public void setFlowGenerator(IFlowGenerator generator) {
-		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
-
-		this.generator = generator;
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	private void createFlowGenerator() {
 		try {
-			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
-			setFlowGenerator(generator);
+			this.generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
+			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			//Failed to initialise.
+			//Failed to initialize.
 			log.warn("failed to initalize IFlowGenerator", e);
+		}
+	}
+
+	private IFlowGenerator getFlowGenerator() {
+		try {
+			if(generator == null) {
+				createFlowGenerator();
+			}
+			return generator;
+		} finally {
+			if(cleanupTimer != null) {
+				cleanupTimer.cancel(true);
+			}
+
+			if(log.isTraceEnabled()) log.trace("starting flowGenerator cleanup timer");
+			cleanupTimer = flowEngineTimer.schedule(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						((DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory()).destroySingleton("flowGenerator");
+						generator = null;
+					} catch (Throwable t) { //Since we're dealing with Spring, were catching all possible exceptions..
+						log.warn("failed to remove flowGenerator instance");
+					}
+				}
+			}, 30, TimeUnit.SECONDS);
 		}
 	}
 
@@ -226,7 +262,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
-		if(generator == null) {
+		if(fileExtension == null) {
 			return null;
 		}
 
@@ -236,7 +272,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			}
 		}
 
-		String name = FileUtils.encodeFileName(fileName) + "." + generator.getFileExtension();
+		String name = FileUtils.encodeFileName(fileName) + "." + fileExtension;
 		log.debug("retrieve flow file for name["+fileName+"] in folder["+parent.getPath()+"]");
 
 		return new File(parent, name);
@@ -248,7 +284,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		long start = System.currentTimeMillis();
 
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
-			generator.generateFlow(name, dot, outputStream);
+			System.out.println(Thread.currentThread().getName());
+			getFlowGenerator().generateFlow(name, dot, outputStream);
 		} catch (IOException e) {
 			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
 

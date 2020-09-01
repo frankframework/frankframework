@@ -31,13 +31,14 @@ import nl.nn.adapterframework.util.LogUtil;
 public class V8FlowGenerator implements IFlowGenerator {
 	private static Logger log = LogUtil.getLogger(V8FlowGenerator.class);
 
-	private ThreadLocal<GraphvizEngine> engines = new ThreadLocal<>();
+	private GraphvizEngine engine;
 	private Options options = Options.create();
 	private String jsFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	@Override
-	public void afterPropertiesSet() throws IOException {
-		getGraphvizEngine(); //Test to see if a V8 instance can be created
+	public void afterPropertiesSet() throws Exception {
+		if(log.isTraceEnabled()) log.trace("creating V8FlowEngine");
+		engine = new GraphvizEngine();
 
 		Format format;
 		try {
@@ -55,7 +56,7 @@ public class V8FlowGenerator implements IFlowGenerator {
 	@Override
 	public void generateFlow(String name, String dot, OutputStream outputStream) throws IOException {
 		try {
-			String flow = getGraphvizEngine().execute(dot, options);
+			String flow = engine.execute(dot, options);
 
 			outputStream.write(flow.getBytes());
 		} catch (GraphvizException e) {
@@ -76,16 +77,8 @@ public class V8FlowGenerator implements IFlowGenerator {
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		engines.remove();
-	}
-
-	private GraphvizEngine getGraphvizEngine() throws IOException {
-		GraphvizEngine engine = engines.get();
-		if(engine == null) {
-			engine = new GraphvizEngine();
-			engines.set(engine);
-		}
-		return engine;
+	public void destroy() {
+		engine.close();
+		if(log.isTraceEnabled()) log.trace("destroyed V8FlowEngine");
 	}
 }
