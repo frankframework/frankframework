@@ -1324,6 +1324,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private void setExitState(Map<String,Object> threadContext, String state, int code) {
 		if (threadContext!=null) {
 			threadContext.put(IPipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
+			threadContext.put(IPipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
 		}
 	}
 	

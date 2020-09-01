@@ -241,9 +241,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			}
 		}
 		Object exitState = context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
 		if (exitState!=null && !exitState.equals("success")) {
 			context.put("originalResult", result);
-			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"]");
+			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
 		return result;
 	}

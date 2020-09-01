@@ -48,6 +48,7 @@ public interface IPipeLineSession extends Map<String,Object> {
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code> which
