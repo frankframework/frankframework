@@ -184,7 +184,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_RECOVER = "recover";
 	public static final String ONERROR_CLOSE = "close";
-	
+
 	private String returnedSessionKeys=null;
 	private String hideRegex = null;
 	private String hideMethod = "all";
