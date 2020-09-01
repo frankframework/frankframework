@@ -83,8 +83,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(applicationContext == null) {
-			throw new IllegalStateException("ApplicationContext has not been autowired");
+		if(applicationContext == null && generator == null) {
+			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
 		}
 
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
@@ -106,6 +106,16 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
+	/**
+	 * Cannot use Spring Autowired as it's an optional!
+	 * Used for Junit Tests
+	 */
+	public void setFlowGenerator(IFlowGenerator generator) {
+		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
+
+		this.generator = generator;
+	}
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
@@ -114,6 +124,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private void createFlowGenerator() {
 		try {
 			this.generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
+
 			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			//Failed to initialize.
