@@ -80,6 +80,25 @@ Before creating a pull request with your changes, please run the iaf-test module
 
 We have yet to test the compatibility of the iaf-test module with Jetty. Until then, the only verified way to run the module is on a Tomcat server in Eclipse. However, feel free to try and run it on Jetty yourself! If it works for you, we'd love to hear about it. :)
 
+### Checking differences within Larva
+
+The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/helloLarva.html. Larva tests
+execute some system-under-test, for example a Frank configuration. The
+output of the system-under-test is often compared to some expected value.
+The Graphical User Interface of Larva shows these differences, but sometimes
+it works better to use a third-party tool like WinMerge.
+
+If you are developing under Windows, you can do the following to set this up:
+
+- Follow the instructions of section "Developing with Eclipse", see below.
+- Download the WinMerge installer from https://winmerge.org/. After accepting cookies, you may have to refresh your browser before the download starts.
+- Run the installer you downloaded. Make sure that WinMerge is added to the system path.
+- Lookup the path to the WinMerge executable. You may do this by viewing the system path.
+- In the Eclipse Project Explorer, you have a folder "Servers". Your Tomcat installation appears as a subfolder. Under that subfolder, open file `catalina.properties`.
+- In `catalina.properties`, add: `larva.windiff.command=c:/Program Files (x86)/WinMerge/winmergeu`, but replace the value after the `=` by the path to WinMerge on your laptop.
+- Start module iaf-test.
+- If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
+- If all your tests succeed, you do not have "Differences:" panels and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
 
 ## Developing with Eclipse
 
