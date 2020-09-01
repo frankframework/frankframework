@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@ public interface IPipeLineSession extends Map<String,Object> {
 	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
+	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code> which

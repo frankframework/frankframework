@@ -1151,10 +1151,12 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
 				numRejected.increase();
+				setExitState(threadContext, "rejected", 500);
 				return Message.nullMessage();
 			}
 			if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
 				numRejected.increase();
+				setExitState(threadContext, "success", 304);
 				return Message.nullMessage();
 			}
 			if (getCachedProcessResult(messageId)!=null) {
@@ -1212,6 +1214,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
+					setExitState(threadContext, pipeLineResult.getState(), pipeLineResult.getExitCode());
 					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult().asString();
 					if(result != null && result.length() > ITransactionalStorage.MAXCOMMENTLEN) {
@@ -1219,10 +1222,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					}else {
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
 					}
-					if(pipelineSession.containsKey("exitcode")) {
-						int status = Integer.parseInt( ""+ pipelineSession.get("exitcode"));
-						if(status > 0)
-							errorMessage += ", exitcode ["+status+"]";
+					int status = pipeLineResult.getExitCode();
+					if(status > 0) {
+						errorMessage += ", exitcode ["+status+"]";
 					}
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
 					messageInError=txStatus.isRollbackOnly();
@@ -1319,6 +1321,13 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return new Message(result);
 	}
 
+	private void setExitState(Map<String,Object> threadContext, String state, int code) {
+		if (threadContext!=null) {
+			threadContext.put(IPipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
+			threadContext.put(IPipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
+		}
+	}
+	
 	@SuppressWarnings("synthetic-access")
 	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
@@ -2261,7 +2270,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
-
 	public String getHideRegex() {
 		return hideRegex;
 	}
@@ -2270,8 +2278,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}
-
 	public String getHideMethod() {
 		return hideMethod;
 	}
+
 }

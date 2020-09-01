@@ -312,8 +312,9 @@ public class ServerStatistics extends Base {
 				Level loglevel = Level.toLevel(""+value, null);
 				Logger rootLogger = LogUtil.getRootLogger();
 				if(loglevel != null && rootLogger.getLevel() != loglevel) {
+					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
 					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+					msg.append(changmsg);
 				}
 			}
 			else if(key.equalsIgnoreCase("logIntermediaryResults")) {

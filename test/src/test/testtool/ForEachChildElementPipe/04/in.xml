@@ -1,5 +1,5 @@
 <requests>
 	<request>hello</request>
-	<request>errorState</request>
 	<request>hi</request>
+	<request>notFound</request>
 </requests>
