@@ -750,8 +750,8 @@ angular.module('iaf.beheerconsole')
 	authService.logout();
 }])
 
-.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'appConstants', 'Alert', '$interval', 'Toastr', 
-	function($scope, authService, $timeout, appConstants, Alert, $interval, Toastr) {
+.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'Alert', 
+	function($scope, authService, $timeout, Alert) {
 	$timeout(function() {
 		$scope.notifications = Alert.get();
 		angular.element(".main").show();

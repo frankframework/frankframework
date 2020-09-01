@@ -60,6 +60,10 @@ function foist(callback) {
 function setLogLevel(level) {
 	angular.element(document.body).scope().setLogLevel(level);
 }
+//Detect if using any (older) version of Internet Explorer
+if(navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > -1) {
+	$("body").prepend("<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>");
+}
 
 // Automatically minimalize menu when screen is less than 768px
 $(function() {
