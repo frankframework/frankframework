@@ -540,11 +540,6 @@
     <ClassName>nl.nn.adapterframework.pipes.CounterSwitchPipe</ClassName>
   </Element>
   <Element>
-    <Name>CreateRestViewPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.CreateRestViewPipe</ClassName>
-  </Element>
-  <Element>
     <Name>CredentialCheckingPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.CredentialCheckingPipe</ClassName>
@@ -603,11 +598,6 @@
     <Name>ExceptionPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.ExceptionPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>ExecuteJdbcPropertiesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ExecuteJdbcProperties</ClassName>
   </Element>
   <Element>
     <Name>FileLineIteratorPipe</Name>
@@ -680,9 +670,9 @@
     <ClassName>nl.nn.adapterframework.pipes.HashPipe</ClassName>
   </Element>
   <Element>
-    <Name>IbisDocPipe</Name>
+    <Name>IbisMetricsPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.doc.IbisDocPipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.IbisMetricsPipe</ClassName>
   </Element>
   <Element>
     <Name>IfMultipartPipe</Name>
@@ -860,36 +850,6 @@
     <ClassName>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</ClassName>
   </Element>
   <Element>
-    <Name>ShowConfigExePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfigExe</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowConfigPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfig</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowConfigurationPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfiguration</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowConfigurationStatusPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfigurationStatus</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowEnvironmentVariablesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowEnvironmentVariables</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowFlowDiagramPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowFlowDiagram</ClassName>
-  </Element>
-  <Element>
     <Name>SizePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.SizePipe</ClassName>
@@ -935,24 +895,9 @@
     <ClassName>nl.nn.adapterframework.pipes.StringIteratorPipe</ClassName>
   </Element>
   <Element>
-    <Name>TestIfsaServicePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.TestIfsaService</ClassName>
-  </Element>
-  <Element>
-    <Name>TestPipeLinePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.TestPipeLine</ClassName>
-  </Element>
-  <Element>
     <Name>Text2XmlPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.Text2XmlPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>TimeoutGuardPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.TimeoutGuardPipe</ClassName>
   </Element>
   <Element>
     <Name>UUIDGeneratorPipe</Name>
@@ -965,24 +910,9 @@
     <ClassName>nl.nn.adapterframework.pipes.UnzipPipe</ClassName>
   </Element>
   <Element>
-    <Name>UploadConfigPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.UploadConfig</ClassName>
-  </Element>
-  <Element>
-    <Name>UploadConfigServicePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.UploadConfigService</ClassName>
-  </Element>
-  <Element>
     <Name>UploadFilePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.UploadFilePipe</ClassName>
-  </Element>
-  <Element>
-    <Name>WebservicesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.Webservices</ClassName>
   </Element>
   <Element>
     <Name>WsdlGeneratorPipe</Name>
