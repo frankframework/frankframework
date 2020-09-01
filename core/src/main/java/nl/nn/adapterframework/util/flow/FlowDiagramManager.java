@@ -284,7 +284,6 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		long start = System.currentTimeMillis();
 
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
-			System.out.println(Thread.currentThread().getName());
 			getFlowGenerator().generateFlow(name, dot, outputStream);
 		} catch (IOException e) {
 			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
