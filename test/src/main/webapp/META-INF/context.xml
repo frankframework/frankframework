@@ -61,8 +61,11 @@
 		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
+		pinGlobalTxToPhysicalConnection="true"
 		socketTimeout="100000"
 	/>
+	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
 
 	<Resource
 		name="jdbc/ibis4test-mariadb"
@@ -70,8 +73,9 @@
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mariadb://localhost:3306/testiaf"
+		url="jdbc:mariadb://localhost:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
+	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
 	<Resource 
 		name="jdbc/ibis4test-postgres" 
