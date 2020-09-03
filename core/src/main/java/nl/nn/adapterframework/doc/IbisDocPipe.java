@@ -56,6 +56,7 @@ import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
 import nl.nn.adapterframework.doc.objects.IbisMethod;
+import nl.nn.adapterframework.doc.objects.MethodExtra;
 import nl.nn.adapterframework.doc.objects.SchemaInfo;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -524,8 +525,53 @@ public class IbisDocPipe extends FixedForwardPipe {
 					return (m1.getName().compareTo(m2.getName()));
 				}
 			});
-			ibisBeanExtra.setSortedClassMethods(classMethods);
+			MethodExtra[] methodsExtra = new MethodExtra[classMethods.length];
+			for(int i = 0; i < classMethods.length; i++) {
+				MethodExtra m = new MethodExtra();
+				m.setMethod(classMethods[i]);
+				methodsExtra[i] = m;
+			}
+			ibisBeanExtra.setSortedClassMethods(methodsExtra);
 		}
+		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
+			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
+				methodExtra.setIbisMethod(
+						getIbisBeanParameter(methodExtra.getMethod().getName(), schemaInfo.getIbisMethods()));
+				if (methodExtra.getIbisMethod() != null) {
+					methodExtra.setChildIbisBeanName(
+							toUpperCamelCase(methodExtra.getIbisMethod().getParameterName()));
+					methodExtra.setChildIbisBeans(schemaInfo.getGroups().get(
+							methodExtra.getChildIbisBeanName() + "s"));
+					if (methodExtra.getChildIbisBeans() != null) {
+						// Pipes, Senders, ...
+						int maxOccursX = methodExtra.getIbisMethod().getMaxOccurs();
+						if (overwriteMaxOccursToUnbounded.contains(ibisBeanExtra.getIbisBean().getName())) {
+							maxOccursX = -1;
+						}
+						methodExtra.setMaxOccurs(maxOccursX);
+					} else {
+						// Param, Forward, ...
+						if (methodExtra.getChildIbisBeanName() != null) {
+							boolean isExistingIbisBean = false;
+							for (IbisBean existingIbisBean : schemaInfo.getIbisBeans()) {
+								if (existingIbisBean.getName().equals(methodExtra.getChildIbisBeanName())) {
+									isExistingIbisBean = true;
+								}
+							}
+							methodExtra.setExistingIbisBean(isExistingIbisBean);
+							if (isExistingIbisBean) {
+								int maxOccurs = methodExtra.getIbisMethod().getMaxOccurs();
+								if (overwriteMaxOccursToOne.contains(methodExtra.getIbisMethod().getMethodName())) {
+									maxOccurs = 1;
+								}
+								methodExtra.setMaxOccurs(maxOccurs);
+							}
+						}
+					}
+				}
+			}
+		}
+		schemaInfo.getIbisBeansExtra().add(ibisBeanExtra);
 	}
 
 	private static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
@@ -557,42 +603,26 @@ public class IbisDocPipe extends FixedForwardPipe {
 		complexType.addAttribute("name", ibisBeanExtra.getIbisBean().getName() + "Type");
 		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
-			for (Method method : ibisBeanExtra.getSortedClassMethods()) {
-				IbisMethod ibisMethod = getIbisBeanParameter(method.getName(), schemaInfo.getIbisMethods());
-				if (ibisMethod != null) {
-					String childIbisBeanName = toUpperCamelCase(ibisMethod.getParameterName());
-					TreeSet<IbisBean> childIbisBeans = schemaInfo.getGroups().get(childIbisBeanName + "s");
-					if (childIbisBeans != null) {
+			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
+				if (methodExtra.getIbisMethod() != null) {
+					if (methodExtra.getChildIbisBeans() != null) {
 						// Pipes, Senders, ...
-						if (!ignore(ibisBeanExtra.getIbisBean(), childIbisBeanName)) {
+						if (!ignore(ibisBeanExtra.getIbisBean(), methodExtra.getChildIbisBeanName())) {
 							XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
 							choice.addAttribute("minOccurs", "0");
-							int maxOccursX = ibisMethod.getMaxOccurs();
-							if (overwriteMaxOccursToUnbounded.contains(ibisBeanExtra.getIbisBean().getName())) {
-								maxOccursX = -1;
-							}
-							addMaxOccurs(choice, maxOccursX);
+							addMaxOccurs(choice, methodExtra.getMaxOccurs());
 
-							for (IbisBean childIbisBean : childIbisBeans) {
+							for (IbisBean childIbisBean : methodExtra.getChildIbisBeans()) {
 								choice.addSubElement(getChildIbisBeanSchemaElement(childIbisBean.getName(), 1));
 							}
 							choices.add(choice);
 						}
 					} else {
 						// Param, Forward, ...
-						if (childIbisBeanName != null) {
-							boolean isExistingIbisBean = false;
-							for (IbisBean existingIbisBean : schemaInfo.getIbisBeans()) {
-								if (existingIbisBean.getName().equals(childIbisBeanName)) {
-									isExistingIbisBean = true;
-								}
-							}
-							if (isExistingIbisBean) {
-								int maxOccurs = ibisMethod.getMaxOccurs();
-								if (overwriteMaxOccursToOne.contains(ibisMethod.getMethodName())) {
-									maxOccurs = 1;
-								}
-								choices.add(getChildIbisBeanSchemaElement(childIbisBeanName, maxOccurs));
+						if (methodExtra.getChildIbisBeanName() != null) {
+							if (methodExtra.isExistingIbisBean()) {
+								choices.add(getChildIbisBeanSchemaElement(
+										methodExtra.getChildIbisBeanName(), methodExtra.getMaxOccurs()));
 							}
 						}
 					}
