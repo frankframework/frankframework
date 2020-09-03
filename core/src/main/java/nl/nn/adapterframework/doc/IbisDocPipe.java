@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
@@ -332,6 +334,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		SchemaInfo schemaInfo = createSchemaInfo();
 		String uri = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
@@ -348,7 +351,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		String result = "Not found";
 		String contentType = "text/html";
 		if ("/ibisdoc/ibisdoc.xsd".equals(uri)) {
-			result = getSchema();
+			result = getSchema(schemaInfo);
 			contentType = "application/xml";
 		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
 			result = getUglifyLookup();
@@ -412,7 +415,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 						getMenuHtml(null, null, groupsHtml);
 						result = groupsHtml.get(page);
 					} else {
-						String beanHtml = getBeanHtml(page);
+						String beanHtml = getBeanHtml(page, schemaInfo);
 						if (beanHtml != null) {
 							result = beanHtml;
 						}
@@ -424,9 +427,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	private String getSchema() throws PipeRunException {
-		SchemaInfo schemaInfo = createSchemaInfo();
-
+	private String getSchema(SchemaInfo schemaInfo) throws PipeRunException {
 		XmlBuilder schema;
 		XmlBuilder element;
 		XmlBuilder complexType;
@@ -571,7 +572,86 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			}
 		}
+		addPropertiesToIbisBeanExtra(ibisBeanExtra, schemaInfo);
 		schemaInfo.getIbisBeansExtra().add(ibisBeanExtra);
+	}
+
+	private void addPropertiesToIbisBeanExtra(final IbisBeanExtra ibisBeanExtra, final SchemaInfo schemaInfo) {
+		Map<String, Method> beanProperties = getBeanProperties(ibisBeanExtra.getIbisBean().getClazz());
+		String name = ibisBeanExtra.getIbisBean().getName();
+		if (copyPropterties.containsKey(name)) {
+			for (IbisBean ibisBean2 : schemaInfo.getIbisBeans()) {
+				if (copyPropterties.get(name).equals(ibisBean2.getName())) {
+					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
+				}
+			}
+		}
+		if (beanProperties != null) {
+			ibisBeanExtra.setProperties(new TreeMap<>());
+			for(String property: beanProperties.keySet()) {
+				BeanProperty bp = new BeanProperty();
+				bp.setName(property);
+				bp.setMethod(beanProperties.get(property));
+				ibisBeanExtra.getProperties().put(property, bp);
+			}
+			Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+			while (iterator.hasNext()) {
+				String property = (String)iterator.next();
+				BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
+				boolean exclude = false;
+				if (property.equals("name")) {
+					for (String filter : excludeNameAttribute) {
+						if (name.endsWith(filter)) {
+							exclude = true;
+						}
+					}
+				}
+				beanProperty.setExcluded(exclude);
+				if (!exclude) {
+					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDoc.class);
+					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDocRef.class);
+					if (ibisDocRef != null) {
+						AMethod aMethod = new AMethod(property);
+						if (ibisDoc == null) {
+							String[] orderAndPackageName = ibisDocRef.value();
+							String packageName = null;
+							if(orderAndPackageName.length == 1) {
+								packageName = ibisDocRef.value()[0];
+							} else if(orderAndPackageName.length == 2) {
+								packageName = ibisDocRef.value()[1];
+							}
+							ibisDoc = aMethod.getIbisDocRef(packageName, beanProperty.getMethod());
+						}
+					}
+					beanProperty.setHasDocumentation(ibisDoc != null);
+					if (ibisDoc != null) {
+						String[] ibisDocValues = ibisDoc.value();
+						// TODO order output based on class inheritance and order value
+						int order = Integer.MAX_VALUE;
+						String description;
+						String defaultValue = "";
+						try {
+							order = Integer.parseInt(ibisDocValues[0]);
+						} catch (NumberFormatException e) {
+						}
+						if (order == Integer.MAX_VALUE) {
+							description = ibisDocValues[0];
+							if (ibisDocValues.length > 1) {
+								defaultValue = ibisDocValues[1];
+							}
+						} else {
+							description = ibisDocValues[1];
+							if (ibisDocValues.length > 2) {
+								defaultValue = ibisDocValues[2];
+							}
+						}
+						beanProperty.setOrder(order);
+						beanProperty.setDescription(description);
+						beanProperty.setDefaultValue(defaultValue);
+					}
+				}
+			}
+		}		
 	}
 
 	private static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
@@ -636,7 +716,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				complexType.addSubElement(sequence);
 			}
 		}
-		addPropertiesToSchemaOrHtml(ibisBeanExtra.getIbisBean(), complexType, null);
+		addPropertiesToSchemaOrHtml(ibisBeanExtra, complexType, null);
 		schema.addSubElement(complexType);
 	}
 
@@ -660,30 +740,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
-	private static void addPropertiesToSchemaOrHtml(IbisBean ibisBean, XmlBuilder beanComplexType,
+	private static void addPropertiesToSchemaOrHtml(IbisBeanExtra ibisBeanExtra, XmlBuilder beanComplexType,
 			StringBuffer beanHtml) {
-		Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-		String name = ibisBean.getName();
-		if (copyPropterties.containsKey(name)) {
-			for (IbisBean ibisBean2 : getIbisBeans()) {
-				if (copyPropterties.get(name).equals(ibisBean2.getName())) {
-					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
-				}
-			}
-		}
-		if (beanProperties != null) {
-			Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+		String name = ibisBeanExtra.getIbisBean().getName();
+		if (ibisBeanExtra.getProperties() != null) {
+			Iterator<String> iterator = new TreeSet<String>(ibisBeanExtra.getProperties().keySet()).iterator();
 			while (iterator.hasNext()) {
 				String property = (String)iterator.next();
-				boolean exclude = false;
-				if (property.equals("name")) {
-					for (String filter : excludeNameAttribute) {
-						if (name.endsWith(filter)) {
-							exclude = true;
-						}
-					}
-				}
-				if (!exclude) {
+				BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
+				if (!beanProperty.isExcluded()) {
 					XmlBuilder attribute = null;
 					if (beanComplexType != null) {
 						attribute = new XmlBuilder("attribute");
@@ -694,52 +759,17 @@ public class IbisDocPipe extends FixedForwardPipe {
 						}
 						beanComplexType.addSubElement(attribute);
 					}
-					Method method = beanProperties.get(property);
+					Method method = beanProperty.getMethod();
 					if (beanHtml != null) {
 						beanHtml.append("<tr>");
 						beanHtml.append("<td>" + method.getDeclaringClass().getSimpleName() + "</td>");
 						beanHtml.append("<td>" + property + "</td>");
 					}
-					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
-					if (ibisDocRef != null) {
-						AMethod aMethod = new AMethod(property);
-						if (ibisDoc == null) {
-							String[] orderAndPackageName = ibisDocRef.value();
-							String packageName = null;
-							if(orderAndPackageName.length == 1) {
-								packageName = ibisDocRef.value()[0];
-							} else if(orderAndPackageName.length == 2) {
-								packageName = ibisDocRef.value()[1];
-							}
-							ibisDoc = aMethod.getIbisDocRef(packageName, method);
-						}
-					}
-					if (ibisDoc != null) {
-						String[] ibisDocValues = ibisDoc.value();
-						// TODO order output based on class inheritance and order value
-						int order = Integer.MAX_VALUE;
-						String description;
-						String defaultValue = "";
-						try {
-							order = Integer.parseInt(ibisDocValues[0]);
-						} catch (NumberFormatException e) {
-						}
-						if (order == Integer.MAX_VALUE) {
-							description = ibisDocValues[0];
-							if (ibisDocValues.length > 1) {
-								defaultValue = ibisDocValues[1];
-							}
-						} else {
-							description = ibisDocValues[1];
-							if (ibisDocValues.length > 2) {
-								defaultValue = ibisDocValues[2];
-							}
-						}
+					if (beanProperty.isHasDocumentation()) {
 						if (beanComplexType != null) {
-							String ibisDocValue = description;
-							if (StringUtils.isNotEmpty(defaultValue)) {
-								ibisDocValue = ibisDocValue + " (default: " + defaultValue + ")";
+							String ibisDocValue = beanProperty.getDescription();
+							if (StringUtils.isNotEmpty(beanProperty.getDefaultValue())) {
+								ibisDocValue = ibisDocValue + " (default: " + beanProperty.getDefaultValue() + ")";
 							}
 							XmlBuilder annotation = new XmlBuilder("annotation");
 							XmlBuilder documentation = new XmlBuilder("documentation");
@@ -748,8 +778,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 							documentation.setValue(ibisDocValue);
 						}
 						if (beanHtml != null) {
-							beanHtml.append("<td>" + description + "</td>");
-							beanHtml.append("<td>" + defaultValue + "</td>");
+							beanHtml.append("<td>" + beanProperty.getDescription() + "</td>");
+							beanHtml.append("<td>" + beanProperty.getDefaultValue() + "</td>");
 						}
 					} else {
 						if (beanHtml != null) {
@@ -886,15 +916,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
-	private static String getBeanHtml(String beanName) {
-		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		for (IbisBean ibisBean : getIbisBeans()) {
-			if (beanName.equals(ibisBean.getName())) {
+	private static String getBeanHtml(String beanName, SchemaInfo schemaInfo) {
+		Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
+		for (IbisBeanExtra ibisBeanExtra : schemaInfo.getIbisBeansExtra()) {
+			if (beanName.equals(ibisBeanExtra.getIbisBean().getName())) {
 				StringBuffer result = new StringBuffer();
 				result.append(beanName);
 				result.append("<table border='1'>");
 				result.append("<tr><th>class</th><th>attribute</th><th>description</th><th>default</th></tr>");
-				addPropertiesToSchemaOrHtml(ibisBean, null, result);
+				addPropertiesToSchemaOrHtml(ibisBeanExtra, null, result);
 				result.append("</table>");
 				return result.toString();
 			}
