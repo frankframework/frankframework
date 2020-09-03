@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -49,7 +48,6 @@ public class FileNameComparatorTest {
 	public void testCompareStringsNaturalOrder() throws Exception {
 		String s1 = "file1.txt";
 		String s2 = "File2.txt";
-		String s3 = "File1.txt";
 		String s4 = "file2.txt";
 		int a = FileNameComparator.compareStringsNaturalOrder(s1, s2, true);
 		int d = FileNameComparator.compareStringsNaturalOrder(s2, s4, false);
