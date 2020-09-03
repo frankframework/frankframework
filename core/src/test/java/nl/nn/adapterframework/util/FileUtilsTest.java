@@ -7,8 +7,10 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -206,9 +208,12 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testCanWrite() throws Exception {
-		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Utils";
+		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "2.txt";
 		boolean b = FileUtils.canWrite(p1);
+		boolean b2 = FileUtils.canWrite(p2);
 		assertTrue(b);
+		assertFalse(b2);
 	}
 
 	/**
@@ -234,8 +239,15 @@ public class FileUtilsTest {
 		boolean b2 = FileUtils.isFileBinaryEqual(f1, f1);
 		assertTrue(b2);
 		assertFalse(b);
-
 	}
 
+	@Test
+	public void testUnzipStream() throws Exception {
+		String initialString = "text";
+		InputStream targetStream = new ByteArrayInputStream(initialString.getBytes());
+		String s = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Utils" + "FileUtils" + "text.txt";
+		File f = new File(s);
+		FileUtils.unzipStream(targetStream, f);
+}
 
 }
