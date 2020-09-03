@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * FileNameComparator Tester.
@@ -33,24 +34,12 @@ public class FileNameComparatorTest {
 	}
 
 	/**
-	 * Method: getNextIndex(String s, int start, boolean numericPart)
-	 */
-	@Test
-	public void testGetNextIndex() throws Exception {
-		int i = FileNameComparator.getNextIndex("test.txt", 0, true);
-		int j = FileNameComparator.getNextIndex("test.txt", 0, false);
-		assertEquals(0, i);
-		assertEquals(8, j);
-	}
-
-	/**
 	 * Method: skipWhitespace(String s, int start)
 	 */
 	@Test
 	public void testSkipWhitespace() throws Exception {
 		int i = FileNameComparator.skipWhitespace("   file.txt", 0);
 		assertEquals(3, i);
-
 	}
 
 	/**
@@ -60,16 +49,12 @@ public class FileNameComparatorTest {
 	public void testCompareStringsNaturalOrder() throws Exception {
 		String s1 = "file1.txt";
 		String s2 = "File2.txt";
-		String s3 = "file1.txt";
-		String s4 = "File2.txt";
+		String s3 = "File1.txt";
+		String s4 = "file2.txt";
 		int a = FileNameComparator.compareStringsNaturalOrder(s1, s2, true);
-		int b = FileNameComparator.compareStringsNaturalOrder(s1, s3, true);
-		int c = FileNameComparator.compareStringsNaturalOrder(s2, s3, true);
-		int d = FileNameComparator.compareStringsNaturalOrder(s2, s4, true);
-		assertEquals(32, a);
-		assertEquals(0, b);
-		assertEquals(-32, c);
-		assertEquals(0, d);
+		int d = FileNameComparator.compareStringsNaturalOrder(s2, s4, false);
+		assertTrue(a > 0);
+		assertTrue(d == 0);
 	}
 
 	/**
@@ -85,10 +70,10 @@ public class FileNameComparatorTest {
 		int j = FileNameComparator.compareFilenames(f1, f3);
 		int k = FileNameComparator.compareFilenames(f1, f4);
 		int l = FileNameComparator.compareFilenames(f2, f1);
-		assertEquals(-13, i);
-		assertEquals(0, j);
-		assertEquals(32, k);
-		assertEquals(13, l);
+		assertTrue(i < 0);
+		assertTrue(j == 0);
+		assertTrue(k > 0);
+		assertTrue(l > 0);
 	}
 
 } 
