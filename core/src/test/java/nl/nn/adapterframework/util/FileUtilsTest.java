@@ -216,6 +216,13 @@ public class FileUtilsTest {
 		assertFalse(b2);
 	}
 
+	@Test
+	public void testGetFirstFile() {
+		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		File f = new File(p2);
+		File res = FileUtils.getFirstFile(f);
+		assertEquals("2.txt", res.getName());
+	}
 	/**
 	 * Method: encodeFileName(String fileName)
 	 */
