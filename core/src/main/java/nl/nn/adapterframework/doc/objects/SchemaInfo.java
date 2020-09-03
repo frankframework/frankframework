@@ -14,4 +14,5 @@ public class SchemaInfo {
 	private Map<String, TreeSet<IbisBean>> groups;
 	private Set<IbisBean> ibisBeans;
 	private List<IbisMethod> ibisMethods;
+	private Set<IbisBeanExtra> ibisBeansExtra;
 }

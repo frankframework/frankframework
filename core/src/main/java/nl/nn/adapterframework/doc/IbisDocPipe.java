@@ -54,6 +54,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
+import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
 import nl.nn.adapterframework.doc.objects.IbisMethod;
 import nl.nn.adapterframework.doc.objects.SchemaInfo;
 import nl.nn.adapterframework.doc.objects.SpringBean;
@@ -423,6 +424,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 
 	private String getSchema() throws PipeRunException {
+		SchemaInfo schemaInfo = createSchemaInfo();
+
 		XmlBuilder schema;
 		XmlBuilder element;
 		XmlBuilder complexType;
@@ -468,46 +471,28 @@ public class IbisDocPipe extends FixedForwardPipe {
 		element.addAttribute("minOccurs", "0");
 		choice.addSubElement(element);
 
-		SchemaInfo schemaInfo = new SchemaInfo();
-		schemaInfo.setGroups(getGroups());
-		schemaInfo.setIbisBeans(getIbisBeans(schemaInfo.getGroups()));
-		schemaInfo.setIbisMethods(getIbisMethods(this));
-
-		for (IbisBean ibisBean : schemaInfo.getIbisBeans()) {
-			addIbisBeanToSchema(ibisBean, schema, schemaInfo);
+		for (IbisBeanExtra ibisBeanExtra : schemaInfo.getIbisBeansExtra()) {
+			addIbisBeanToSchema(ibisBeanExtra, schema, schemaInfo);
 		}
 		return schema.toXML(true);
 	}
 
-	private static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
-		Set<IbisBean> ibisBeans = new TreeSet<IbisBean>();
-		for (String group : groups.keySet()) {
-			ibisBeans.addAll(groups.get(group));
+	public SchemaInfo createSchemaInfo() throws PipeRunException {
+		SchemaInfo schemaInfo = new SchemaInfo();
+		schemaInfo.setGroups(getGroups());
+		schemaInfo.setIbisBeans(getIbisBeans(schemaInfo.getGroups()));
+		schemaInfo.setIbisMethods(getIbisMethods(this));
+		schemaInfo.setIbisBeansExtra(new TreeSet<>());
+		for (IbisBean ibisBean : schemaInfo.getIbisBeans()) {
+			addIbisBeanExtra(ibisBean, schemaInfo);
 		}
-		return ibisBeans;
+		return schemaInfo;
 	}
 
-	private static Set<IbisBean> getIbisBeans() {
-		return getIbisBeans(getGroups());
-	}
-
-	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
-		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
-		try {
-			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
-		} catch (IOException e) {
-			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
-		} catch (SAXException e) {
-			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
-		}
-		return digesterXmlHandler.getIbisMethods();
-	}
-
-	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, SchemaInfo schemaInfo) {
-		XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
-		complexType.addAttribute("name", ibisBean.getName() + "Type");
+	private void addIbisBeanExtra(IbisBean ibisBean, SchemaInfo schemaInfo) {
+		IbisBeanExtra ibisBeanExtra = new IbisBeanExtra();
+		ibisBeanExtra.setIbisBean(ibisBean);
 		if (ibisBean.getClazz() != null) {
-			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
 			final Map<String, Integer> sortWeight;
 			if (ibisBean.getName().equals("Adapter")) {
 				sortWeight = IbisDocPipe.sortWeightAdapter;
@@ -539,18 +524,51 @@ public class IbisDocPipe extends FixedForwardPipe {
 					return (m1.getName().compareTo(m2.getName()));
 				}
 			});
-			for (Method method : classMethods) {
+			ibisBeanExtra.setSortedClassMethods(classMethods);
+		}
+	}
+
+	private static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
+		Set<IbisBean> ibisBeans = new TreeSet<IbisBean>();
+		for (String group : groups.keySet()) {
+			ibisBeans.addAll(groups.get(group));
+		}
+		return ibisBeans;
+	}
+
+	private static Set<IbisBean> getIbisBeans() {
+		return getIbisBeans(getGroups());
+	}
+
+	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
+		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
+		try {
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
+		} catch (IOException e) {
+			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
+		} catch (SAXException e) {
+			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
+		}
+		return digesterXmlHandler.getIbisMethods();
+	}
+
+	private static void addIbisBeanToSchema(IbisBeanExtra ibisBeanExtra, XmlBuilder schema, SchemaInfo schemaInfo) {
+		XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
+		complexType.addAttribute("name", ibisBeanExtra.getIbisBean().getName() + "Type");
+		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
+			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
+			for (Method method : ibisBeanExtra.getSortedClassMethods()) {
 				IbisMethod ibisMethod = getIbisBeanParameter(method.getName(), schemaInfo.getIbisMethods());
 				if (ibisMethod != null) {
 					String childIbisBeanName = toUpperCamelCase(ibisMethod.getParameterName());
 					TreeSet<IbisBean> childIbisBeans = schemaInfo.getGroups().get(childIbisBeanName + "s");
 					if (childIbisBeans != null) {
 						// Pipes, Senders, ...
-						if (!ignore(ibisBean, childIbisBeanName)) {
+						if (!ignore(ibisBeanExtra.getIbisBean(), childIbisBeanName)) {
 							XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
 							choice.addAttribute("minOccurs", "0");
 							int maxOccursX = ibisMethod.getMaxOccurs();
-							if (overwriteMaxOccursToUnbounded.contains(ibisBean.getName())) {
+							if (overwriteMaxOccursToUnbounded.contains(ibisBeanExtra.getIbisBean().getName())) {
 								maxOccursX = -1;
 							}
 							addMaxOccurs(choice, maxOccursX);
@@ -588,7 +606,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				complexType.addSubElement(sequence);
 			}
 		}
-		addPropertiesToSchemaOrHtml(ibisBean, complexType, null);
+		addPropertiesToSchemaOrHtml(ibisBeanExtra.getIbisBean(), complexType, null);
 		schema.addSubElement(complexType);
 	}
 
