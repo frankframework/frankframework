@@ -48,6 +48,7 @@ import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
@@ -421,8 +422,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 	}
 
-	public static void setEnabled(boolean enable) {
+	public void setEnabled(boolean enable) {
 		enabled = enable;
+		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
 		return enabled;

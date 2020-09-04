@@ -16,6 +16,7 @@
 package nl.nn.ibistesttool;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
@@ -25,17 +26,24 @@ import org.apache.log4j.helpers.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * @author Jaco de Groot
  */
-public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
+public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, ApplicationEventPublisherAware {
 	private AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
-			TestTool testTool = (TestTool)bean;
+			// Contract for testtool state:
+			// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
+			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
+
 			boolean testToolEnabled=true;
 			AppConstants appConstants = AppConstants.getInstance();
 			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
@@ -48,9 +56,12 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 				}
 				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
-			// enable/disable testtool via two switches, until one of the switches has become deprecated
-			testTool.setReportGeneratorEnabled(testToolEnabled); 
-			IbisDebuggerAdvice.setEnabled(testToolEnabled);
+
+			// notify other components of status of debugger
+			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
+			if (applicationEventPublisher != null) {
+				applicationEventPublisher.publishEvent(event);
+			}
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
@@ -97,4 +108,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher = applicationEventPublisher;
+	}
 }
