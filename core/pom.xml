@@ -486,6 +486,10 @@
 			<version>${j2v8.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 
 		<!-- CXF -->
 		<dependency>

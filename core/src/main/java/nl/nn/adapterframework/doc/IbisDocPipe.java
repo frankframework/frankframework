@@ -55,6 +55,7 @@ import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.IbisMethod;
+import nl.nn.adapterframework.doc.objects.SchemaInfo;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -467,12 +468,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 		element.addAttribute("minOccurs", "0");
 		choice.addSubElement(element);
 
-		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		Set<IbisBean> ibisBeans = getIbisBeans(groups);
-		List<IbisMethod> ibisMethods = getIbisMethods(this);
+		SchemaInfo schemaInfo = new SchemaInfo();
+		schemaInfo.setGroups(getGroups());
+		schemaInfo.setIbisBeans(getIbisBeans(schemaInfo.getGroups()));
+		schemaInfo.setIbisMethods(getIbisMethods(this));
 
-		for (IbisBean ibisBean : ibisBeans) {
-			addIbisBeanToSchema(ibisBean, schema, ibisBeans, ibisMethods, groups);
+		for (IbisBean ibisBean : schemaInfo.getIbisBeans()) {
+			addIbisBeanToSchema(ibisBean, schema, schemaInfo);
 		}
 		return schema.toXML(true);
 	}
@@ -501,8 +503,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return digesterXmlHandler.getIbisMethods();
 	}
 
-	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema,
-			Set<IbisBean> ibisBeans, List<IbisMethod> ibisMethods, Map<String, TreeSet<IbisBean>> groups) {
+	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, SchemaInfo schemaInfo) {
 		XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
 		complexType.addAttribute("name", ibisBean.getName() + "Type");
 		if (ibisBean.getClazz() != null) {
@@ -539,10 +540,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			});
 			for (Method method : classMethods) {
-				IbisMethod ibisMethod = getIbisBeanParameter(method.getName(), ibisMethods);
+				IbisMethod ibisMethod = getIbisBeanParameter(method.getName(), schemaInfo.getIbisMethods());
 				if (ibisMethod != null) {
 					String childIbisBeanName = toUpperCamelCase(ibisMethod.getParameterName());
-					TreeSet<IbisBean> childIbisBeans = groups.get(childIbisBeanName + "s");
+					TreeSet<IbisBean> childIbisBeans = schemaInfo.getGroups().get(childIbisBeanName + "s");
 					if (childIbisBeans != null) {
 						// Pipes, Senders, ...
 						if (!ignore(ibisBean, childIbisBeanName)) {
@@ -563,7 +564,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 						// Param, Forward, ...
 						if (childIbisBeanName != null) {
 							boolean isExistingIbisBean = false;
-							for (IbisBean existingIbisBean : ibisBeans) {
+							for (IbisBean existingIbisBean : schemaInfo.getIbisBeans()) {
 								if (existingIbisBean.getName().equals(childIbisBeanName)) {
 									isExistingIbisBean = true;
 								}

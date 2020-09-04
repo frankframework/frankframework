@@ -212,6 +212,13 @@
         <artifactId>mail</artifactId>
         <version>1.4.5</version>
       </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <!-- If you update this version number, please update it in CONTRIBUTING.md as well! -->
+        <version>1.18.12</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
