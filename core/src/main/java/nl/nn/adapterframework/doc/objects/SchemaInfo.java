@@ -15,4 +15,5 @@ public class SchemaInfo {
 	private Set<IbisBean> ibisBeans;
 	private List<IbisMethod> ibisMethods;
 	private Set<IbisBeanExtra> ibisBeansExtra;
+	private List<AFolder> folders;
 }

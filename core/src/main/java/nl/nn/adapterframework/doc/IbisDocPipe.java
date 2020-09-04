@@ -34,6 +34,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -52,6 +55,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.objects.AClass;
+import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
@@ -354,10 +359,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getSchema(schemaInfo);
 			contentType = "application/xml";
 		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
-			result = getUglifyLookup();
+			result = getUglifyLookup(schemaInfo);
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = new IbisDocExtractor().getJson();
+			result = getJson(schemaInfo);
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -488,6 +493,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		for (IbisBean ibisBean : schemaInfo.getIbisBeans()) {
 			addIbisBeanExtra(ibisBean, schemaInfo);
 		}
+		addFolders(schemaInfo);
 		return schemaInfo;
 	}
 
@@ -654,6 +660,18 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}		
 	}
 
+    public void addFolders(SchemaInfo schemaInfo) {
+    	Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
+    	schemaInfo.setFolders(new ArrayList<>());
+        AFolder allFolder = new AFolder("All");
+        for (String folder : groups.keySet()) {
+            AFolder newFolder = new AFolder(folder);
+            newFolder.setClasses(groups, newFolder);
+            schemaInfo.getFolders().add(newFolder);
+        }
+        schemaInfo.getFolders().add(allFolder);
+    }
+
 	private static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
 		Set<IbisBean> ibisBeans = new TreeSet<IbisBean>();
 		for (String group : groups.keySet()) {
@@ -807,6 +825,48 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return beanName.substring(0,  1).toUpperCase() + beanName.substring(1);
 	}
 
+    private String getJson(SchemaInfo schemaInfo) {
+        JSONArray newFolders = new JSONArray();
+        JSONArray newClasses;
+        JSONArray newMethods;
+
+        try {
+            for (AFolder folder : schemaInfo.getFolders()) {
+                JSONObject folderObject = new JSONObject();
+                folderObject.put("name", folder.getName());
+
+                newClasses = new JSONArray();
+                for (AClass aClass : folder.getClasses()) {
+                    JSONObject classObject = new JSONObject();
+                    classObject.put("name", aClass.getClazz().getSimpleName());
+                    classObject.put("packageName", aClass.getClazz().getName());
+                    classObject.put("javadocLink", aClass.getJavadocLink());
+                    classObject.put("superClasses", aClass.getSuperClasses());
+
+                    newMethods = new JSONArray();
+                    for (AMethod method : aClass.getMethods()) {
+                        JSONObject methodObject = new JSONObject();
+                        methodObject.put("name", method.getName());
+                        methodObject.put("originalClassName", method.getOriginalClassName());
+                        methodObject.put("description", method.getDescription());
+                        methodObject.put("defaultValue", method.getDefaultValue());
+                        methodObject.put("order", method.getOrder());
+                        methodObject.put("deprecated", method.isDeprecated());
+                        newMethods.put(methodObject);
+                    }
+                    classObject.put("methods", newMethods);
+                    newClasses.put(classObject);
+                }
+                folderObject.put("classes", newClasses);
+                newFolders.put(folderObject);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return newFolders.toString();
+    }
+
 	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName) {
 		boolean ignore = false;
 		for (String namePart : ignores.keySet()) {
@@ -855,11 +915,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 	}
 
-	private static String getUglifyLookup() {
+	private static String getUglifyLookup(SchemaInfo schemaInfo) {
 		StringBuffer result = new StringBuffer();
 		result.append("<Elements>\n");
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		for (String group : groups.keySet()) {
+		for (String group : schemaInfo.getGroups().keySet()) {
 			for (IbisBean ibisBean : groups.get(group)) {
 				String type = "";
 				String className = ibisBean.getClazz().getName();
