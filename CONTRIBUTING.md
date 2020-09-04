@@ -105,8 +105,8 @@ If you are developing under Windows, you can do the following to set this up:
 ### Install Eclipse with Lombok
 
 - Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
-- Browse to https://projectlombok.org/.
-- On the top menu, choose "Download". Download version 1.18.12. You may need the link "older versions".
+- Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
+- Download version 1.18.12. You may need the link "older versions".
 - Run the .jar you downloaded. Under Windows you can double-click it.
 - You see a GUI. If you used Eclipse 2020-06, the GUI will automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the 
 eclipse.exe file.
