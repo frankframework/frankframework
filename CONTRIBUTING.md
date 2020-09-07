@@ -73,6 +73,10 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
     - For each configurable attribute, IbisDoc must not be larger then 2 lines
     - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
 
+WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
+
+  * With Lombok, you do not have to code getters and setters anymore. You can generate them by by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes less lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+  * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 ## Testing
 
@@ -105,8 +109,8 @@ If you are developing under Windows, you can do the following to set this up:
 ### Install Eclipse with Lombok
 
 - Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
-- Browse to https://projectlombok.org/.
-- On the top menu, choose "Download". Download version 1.18.12. You may need the link "older versions".
+- Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
+- Download version 1.18.12. You may need the link "older versions".
 - Run the .jar you downloaded. Under Windows you can double-click it.
 - You see a GUI. If you used Eclipse 2020-06, the GUI will automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the 
 eclipse.exe file.
