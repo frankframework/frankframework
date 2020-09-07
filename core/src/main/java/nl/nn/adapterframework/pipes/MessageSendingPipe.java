@@ -365,7 +365,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (checkMessageLog) {
 			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) {
 				if (messageLog==null) {
-					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible");
+					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. " + 
+								"Integrity check (matching messages received by the adapter to messages sent by this pipe) will not be possible. " + 
+								"This warning can be suppressed by setting property messageLog.check=false");
 				}
 			}
 		}
