@@ -8,10 +8,16 @@ import java.util.TreeSet;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class SchemaInfo {
+	@Getter
+	@Setter
 	private Map<String, TreeSet<IbisBean>> groups;
+	
+	@Getter
+	@Setter
 	private Set<IbisBean> ibisBeans;
+	
+	@Getter
+	@Setter
 	private List<IbisMethod> ibisMethods;
 }
