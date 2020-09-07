@@ -23,6 +23,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Used by the FlowDiagramManager to turn a dot file into an image.
+ * This class is a prototype bean, the destroy will never be called by Spring.
  */
 public interface IFlowGenerator extends InitializingBean, DisposableBean {
 

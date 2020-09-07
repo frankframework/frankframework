@@ -81,4 +81,10 @@ public class V8FlowGenerator implements IFlowGenerator {
 		engine.close();
 		if(log.isTraceEnabled()) log.trace("destroyed V8FlowEngine");
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		destroy();
+		super.finalize();
+	}
 }

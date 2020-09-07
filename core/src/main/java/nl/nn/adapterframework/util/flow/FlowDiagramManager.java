@@ -20,11 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.xml.transform.TransformerException;
 
@@ -35,7 +32,6 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
@@ -70,30 +66,24 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
 	private Resource noImageAvailable;
-	private ScheduledExecutorService flowEngineTimer = Executors.newSingleThreadScheduledExecutor();
 	private String fileExtension = null;
 
 	/**
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
-	private IFlowGenerator generator;
-
-	private ScheduledFuture<?> cleanupTimer;
+	private ThreadLocal<SoftReference<IFlowGenerator>> generators = new ThreadLocal<SoftReference<IFlowGenerator>>();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(applicationContext == null && generator == null) {
-			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
-		}
-
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
 
-		if(getFlowGenerator() == null) {
+		IFlowGenerator generator = getFlowGenerator();
+		if(generator == null) {
 			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
@@ -106,56 +96,51 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
-	/**
-	 * Cannot use Spring Autowired as it's an optional!
-	 * Used for Junit Tests
-	 */
-	public void setFlowGenerator(IFlowGenerator generator) {
-		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
-
-		this.generator = generator;
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
-	private void createFlowGenerator() {
+	/**
+	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
+	 * able to generate dot files and return the `noImageAvailable` image.
+	 */
+	protected IFlowGenerator createFlowGenerator() {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
+		}
+
 		try {
-			this.generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
+			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
 
 			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
+			return generator;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			//Failed to initialize.
 			log.warn("failed to initalize IFlowGenerator", e);
 		}
+		return null;
 	}
 
-	private IFlowGenerator getFlowGenerator() {
-		try {
+	/**
+	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 
+	 * When the thread is cleaned up, it will remove the instance. Or when the GC is 
+	 * running our of heapspace it will remove the IFlowGenerator. This method makes sure,
+	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
+	 */
+	public IFlowGenerator getFlowGenerator() {
+		SoftReference<IFlowGenerator> reference = generators.get();
+		if(reference == null || reference.get() == null) {
+			IFlowGenerator generator = createFlowGenerator();
 			if(generator == null) {
-				createFlowGenerator();
-			}
-			return generator;
-		} finally {
-			if(cleanupTimer != null) {
-				cleanupTimer.cancel(true);
+				return null;
 			}
 
-			if(log.isTraceEnabled()) log.trace("starting flowGenerator cleanup timer");
-			cleanupTimer = flowEngineTimer.schedule(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						((DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory()).destroySingleton("flowGenerator");
-						generator = null;
-					} catch (Throwable t) { //Since we're dealing with Spring, were catching all possible exceptions..
-						log.warn("failed to remove flowGenerator instance");
-					}
-				}
-			}, 30, TimeUnit.SECONDS);
+			reference = new SoftReference<>(generator);
+			generators.set(reference);
 		}
+
+		return reference.get();
 	}
 
 	public InputStream get(IAdapter adapter) throws IOException {
