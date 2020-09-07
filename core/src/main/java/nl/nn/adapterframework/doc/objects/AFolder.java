@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import nl.nn.adapterframework.doc.IbisDocPipe;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeSet;
+
+import nl.nn.adapterframework.doc.InfoBuilder;
 
 /**
  * Represents the Folder object for the IbisDoc application
@@ -45,7 +45,7 @@ public class AFolder {
      */
     public void setClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
         for (IbisBean ibisBean : groups.get(folder.getName())) {
-            Map<String, Method> beanProperties = IbisDocPipe.getBeanProperties(ibisBean.getClazz());
+            Map<String, Method> beanProperties = InfoBuilder.getBeanProperties(ibisBean.getClazz());
             if (!beanProperties.isEmpty()) {
                 AClass aClass = new AClass(ibisBean.getClazz());
 

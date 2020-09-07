@@ -14,4 +14,6 @@ public class SchemaInfo {
 	private @Getter @Setter List<IbisMethod> ibisMethods;
 	private @Getter @Setter Set<IbisBeanExtra> ibisBeansExtra;
 	private @Getter @Setter List<AFolder> folders;
+	private @Getter @Setter Map<String, String> ignores;
+	private @Getter @Setter Set<String> excludeFilters;
 }
