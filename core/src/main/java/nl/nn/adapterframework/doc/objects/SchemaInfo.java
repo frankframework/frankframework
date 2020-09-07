@@ -9,15 +9,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class SchemaInfo {
-	@Getter
-	@Setter
+	@Getter @Setter
 	private Map<String, TreeSet<IbisBean>> groups;
 	
-	@Getter
-	@Setter
+	@Getter @Setter
 	private Set<IbisBean> ibisBeans;
 	
-	@Getter
-	@Setter
+	@Getter @Setter
 	private List<IbisMethod> ibisMethods;
 }
