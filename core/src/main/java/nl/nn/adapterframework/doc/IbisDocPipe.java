@@ -317,6 +317,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			// These sub-projects have classes that depend on third-party classes. If such a third-party
 			// class is not found, then this exception handler is entered. We ignore the error because
 			// we do have the class in the proprietary FF! subproject.
+			log.warn("Ignoring NoClassDefFoundError, assuming it is about a third party class", e);
 			return null;
 		} catch(ClassNotFoundException e) {
 			// This handler is entered when we really do not have the class.
