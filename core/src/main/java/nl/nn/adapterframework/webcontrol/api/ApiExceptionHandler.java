@@ -50,7 +50,7 @@ public class ApiExceptionHandler implements ExceptionMapper<Exception> {
 			return ((ApiException) exception).getResponse();
 		}
 
-		log.error(exception.getLocalizedMessage(), exception);
+		log.error("Caught exception in handling FF!API call", exception);
 
 		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
 		String message = exception.getMessage();
