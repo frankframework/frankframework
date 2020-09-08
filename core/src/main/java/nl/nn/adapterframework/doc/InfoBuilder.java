@@ -31,6 +31,7 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.doc.objects.AClass;
 import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
@@ -565,9 +566,117 @@ public class InfoBuilder {
         AFolder allFolder = new AFolder("All");
         for (String folder : groups.keySet()) {
             AFolder newFolder = new AFolder(folder);
-            newFolder.setClasses(groups, newFolder);
+            setClassesOfFolder(groups, newFolder);
             schemaInfo.getFolders().add(newFolder);
         }
         schemaInfo.getFolders().add(allFolder);
+    }
+
+    /**
+     * Add classes to the folder object.
+     *
+     * @param groups - Contains all information
+     * @param folder - The folder object we have to add the classes to
+     */
+    private static void setClassesOfFolder(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
+        for (IbisBean ibisBean : groups.get(folder.getName())) {
+            Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+            if (!beanProperties.isEmpty()) {
+                AClass aClass = new AClass();
+                aClass.setClazz(ibisBean.getClazz());
+
+                // Get the javadoc link for the class
+                String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+                aClass.setJavadocLink(javadocLink);
+                setMethods(beanProperties, aClass);
+                folder.addClass(aClass);
+            }
+        }
+    }
+
+    /**
+     * Add the methods to the class object.
+     *
+     * @param beanProperties - The properties of a class
+     * @param newClass       - The class object we have to add the methods to
+     */
+    private static void setMethods(Map<String, Method> beanProperties, AClass newClass) {
+        Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+        newClass.setReferredClassName("");
+        while (iterator.hasNext()) {
+
+            // Get the method
+            String property = iterator.next();
+            Method method = beanProperties.get(property);
+            AMethod aMethod = new AMethod(property);
+
+            // Get the IbisDocRef
+            IbisDocRef reference = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+
+            // Get the IbisDoc values from the annotations above the method
+            IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+
+            // Check for whether the method (attribute) is deprecated
+            Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
+            boolean isDeprecated = deprecated != null;
+
+            String order = "";
+            String originalClassName = "";
+
+            // If there is an IbisDocRef for the method, get the IbisDoc of the referred method
+            if (reference != null) {
+				String[] orderAndPackageName = reference.value();
+				String packageName = null;
+				if(orderAndPackageName.length == 1) {
+					packageName = reference.value()[0];
+				} else if(orderAndPackageName.length == 2) {
+					order = reference.value()[0];
+					packageName = reference.value()[1];
+				}
+                ibisDoc = aMethod.getIbisDocRef(packageName, method);
+                newClass.setReferredClassName(aMethod.getReferredClassName());
+                originalClassName = aMethod.getReferredClassName();
+            }
+
+            // If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
+            if (ibisDoc != null) {
+                String[] ibisdocValues = ibisDoc.value();
+                String[] values = aMethod.getValues(ibisdocValues);
+
+                // This is done for @IbisDoc use instead of @IbisDocRef
+                if (order.isEmpty()) order = values[2];
+
+                // This is done for @IbisDoc use instead of @IbisDocRef
+                if (originalClassName.isEmpty()) originalClassName = method.getDeclaringClass().getSimpleName();
+
+                aMethod.setOriginalClassName(originalClassName);
+                aMethod.setDescription(values[0]);
+                aMethod.setDefaultValue(values[1]);
+                aMethod.setOrder(Integer.parseInt(order));
+                aMethod.setDeprecated(isDeprecated);
+                aMethod.setReferredClassName(newClass.getReferredClassName());
+
+                newClass.addMethod(aMethod);
+            }
+        }
+        setSuperclasses(newClass);
+    }
+
+    /**
+     * Get the superclasses of a certain class.
+     *
+     * @param referredClassName - The class we have to derive the superclasses from
+     */
+    private static void setSuperclasses(AClass newClass) {
+        List<String> superClasses = new ArrayList<>();
+    	if (!newClass.getReferredClassName().isEmpty()) {
+            superClasses.add(newClass.getReferredClassName());
+        }
+        Class<?> superClass = newClass.getClazz();
+        while (superClass.getSuperclass() != null) {
+            // Assign a string to the array of superclasses
+            superClasses.add(superClass.getSuperclass().getSimpleName());
+            superClass = superClass.getSuperclass();
+        }
     }
 }
