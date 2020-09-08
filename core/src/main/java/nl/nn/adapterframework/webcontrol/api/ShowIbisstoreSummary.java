@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonStructure;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -45,8 +48,6 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
@@ -98,16 +99,7 @@ public final class ShowIbisstoreSummary extends Base {
 			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
-		List<Map<String, String>> resultMap = null;
-		if(XmlUtils.isWellFormed(result)) {
-			resultMap = XmlQueryResult2Map(result);
-		}
-		if(resultMap == null)
-			throw new ApiException("Invalid query result.");
-
-		Map<String, Object> resultObject = new HashMap<String, Object>();
-		resultObject.put("query", query);
-		resultObject.put("result", resultMap);
+		String resultObject = "{ \"result\":"+result+"}";
 
 		return Response.status(Response.Status.CREATED).entity(resultObject).build();
 	}
@@ -171,11 +163,13 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 
 	@Override
 	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
-		XmlBuilder result = new XmlBuilder("result");
+		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
-		XmlBuilder typeXml=null;
+		JsonObjectBuilder typeBuilder=null;
+		JsonArrayBuilder slotsBuilder=null;
 		String previousSlot=null;
-		XmlBuilder slotXml=null;
+		JsonObjectBuilder slotBuilder=null;
+		JsonArrayBuilder datesBuilder=null;
 		int typeslotcount=0;
 		int typedatecount=0;
 		int typemsgcount=0;
@@ -195,47 +189,58 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			}
 		
 			if (!type.equals(previousType)) {
-				if (typeXml!=null) {
-					typeXml.addAttribute("slotcount",typeslotcount);
-					typeXml.addAttribute("datecount",typedatecount);
-					typeXml.addAttribute("msgcount",typemsgcount);
+				if (typeBuilder!=null) {
+					slotBuilder.add("datecount",slotdatecount);
+					slotBuilder.add("msgcount",slotmsgcount);
+					slotBuilder.add("dates", datesBuilder.build());
+					slotsBuilder.add(slotBuilder.build());
+					slotdatecount=0;
+					slotmsgcount=0;
+					typeBuilder.add("slotcount",typeslotcount);
+					typeBuilder.add("datecount",typedatecount);
+					typeBuilder.add("msgcount",typemsgcount);
+					typeBuilder.add("slots", slotsBuilder.build());
+					types.add(typeBuilder.build());
 					typeslotcount=0;
 					typedatecount=0;
 					typemsgcount=0;
 					previousSlot=null;
+					slotBuilder=null;
 				}
-				typeXml=new XmlBuilder("type");
-				typeXml.addAttribute("id",type);
+				typeBuilder = Json.createObjectBuilder();
+				typeBuilder.add("type", type);
 				if (type.equalsIgnoreCase("E")) {
-					typeXml.addAttribute("name","errorlog");
+					typeBuilder.add("name","errorlog");
 				} else {
-					typeXml.addAttribute("name","messagelog");
+					typeBuilder.add("name","messagelog");
 				}
-				result.addSubElement(typeXml);
+				slotsBuilder = Json.createArrayBuilder();
 				previousType=type;
 			}
 			if (!slotid.equals(previousSlot)) {
-				if (slotXml!=null) {
-					slotXml.addAttribute("datecount",slotdatecount);
-					slotXml.addAttribute("msgcount",slotmsgcount);
+				if (slotBuilder!=null) {
+					slotBuilder.add("datecount",slotdatecount);
+					slotBuilder.add("msgcount",slotmsgcount);
+					slotBuilder.add("dates", datesBuilder.build());
+					slotsBuilder.add(slotBuilder.build());
 					slotdatecount=0;
 					slotmsgcount=0;
-				}
-				slotXml=new XmlBuilder("slot");
-				slotXml.addAttribute("id",slotid);
+				} 
+				slotBuilder=Json.createObjectBuilder();
+				datesBuilder = Json.createArrayBuilder();
+				slotBuilder.add("id",slotid);
 				if (StringUtils.isNotEmpty(slotid)) {
 					SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
-						slotXml.addAttribute("adapter",sir.adapterName);
+						slotBuilder.add("adapter",sir.adapterName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
-							slotXml.addAttribute("receiver",sir.receiverName);
+							slotBuilder.add("receiver",sir.receiverName);
 						}
 						if (StringUtils.isNotEmpty(sir.pipeName) ) {
-							slotXml.addAttribute("pipe",sir.pipeName);
+							slotBuilder.add("pipe",sir.pipeName);
 						}
 					}
 				}
-				typeXml.addSubElement(slotXml);
 				previousSlot=slotid;
 				typeslotcount++;
 			}
@@ -244,23 +249,26 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 			slotmsgcount+=count;
 			slotdatecount++;
 			
-			XmlBuilder dateXml=new XmlBuilder("date");
-			dateXml.addAttribute("id",date);
-			dateXml.addAttribute("count",count);
-			slotXml.addSubElement(dateXml);
+			datesBuilder.add(Json.createObjectBuilder().add("id",date).add("count",count).build());
 		}
-		if (typeXml!=null) {
-			typeXml.addAttribute("slotcount",typeslotcount);
-			typeXml.addAttribute("datecount",typedatecount);
-			typeXml.addAttribute("msgcount",typemsgcount);
+
+		if (slotBuilder!=null) {
+			slotBuilder.add("datecount",slotdatecount);
+			slotBuilder.add("msgcount",slotmsgcount);
+			slotBuilder.add("dates", datesBuilder.build());
+			slotsBuilder.add(slotBuilder.build());
 		}
-		if (slotXml!=null) {
-			slotXml.addAttribute("datecount",slotdatecount);
-			slotXml.addAttribute("msgcount",slotmsgcount);
-			slotdatecount=0;
-			slotmsgcount=0;
+		
+		if (typeBuilder!=null) {
+			typeBuilder.add("slotcount",typeslotcount);
+			typeBuilder.add("datecount",typedatecount);
+			typeBuilder.add("msgcount",typemsgcount);
+			typeBuilder.add("slots", slotsBuilder.build());
+			types.add(typeBuilder.build());
 		}
-		return result.toXML();
+		
+		JsonStructure result = types.build();
+		return result.toString();
 	}
 }
 
