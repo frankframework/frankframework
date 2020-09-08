@@ -77,14 +77,12 @@ public abstract class FileSystemTestBase {
 	
 	/**
 	 * Creates a folder 
-	 * @param filename
 	 * @throws Exception
 	 */
 	protected abstract void _createFolder(String foldername) throws Exception;
 	
 	/**
 	 * Deletes the folder 
-	 * @param filename
 	 * @throws Exception
 	 */
 	protected abstract void _deleteFolder(String folderName) throws Exception;

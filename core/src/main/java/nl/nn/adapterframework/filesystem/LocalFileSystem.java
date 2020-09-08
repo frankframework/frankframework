@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.WildCardFilter;
 
+/**
+ * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
+ *  
+ * @author Gerrit van Brakel
+ *
+ */
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	private String root;
@@ -88,6 +94,9 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public File toFile(String folder, String filename) {
 		if (StringUtils.isEmpty(folder)) {
+			if (StringUtils.isEmpty(getRoot())) {
+				return new File(filename);
+			}
 			return new File(getRoot(), filename);
 		}
 		if (StringUtils.isEmpty(getRoot())) {
@@ -178,12 +187,12 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
 		File dest;
 
-		dest = new File(newName);
+		dest = new File(f.getParentFile(), newName);
 		if (dest.exists()) {
 			if (force)
 				dest.delete();
 			else {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
+				throw new FileSystemException("Cannot rename file to ["+newName+"]. Destination file already exists.");
 			}
 		}
 		f.renameTo(dest);
@@ -194,13 +203,13 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		File toFolder = toFile(destinationFolder);
 		if (toFolder.exists()) {
 			if (!toFolder.isDirectory()) {
-				throw new FileSystemException("Cannot move file. Destination file ["+toFolder.getName()+"] is not a folder.");
+				throw new FileSystemException("Cannot move file. Destination file ["+toFolder.getPath()+"] is not a folder.");
 			}
 		} else {
 			if (createFolder)
 				createFolder(destinationFolder);
 			else {
-				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getName()+"] does not exist.");
+				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getPath()+"] does not exist.");
 			}
 		}
 		File target=new File(toFolder,f.getName());
@@ -247,7 +256,8 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 
-	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
+			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
 		this.root = root;
 	}
