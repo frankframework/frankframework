@@ -513,46 +513,12 @@ public class InfoBuilder {
 			}
 			beanProperty.setExcluded(exclude);
 			if (!exclude) {
-				IbisDoc ibisDoc = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDoc.class);
-				IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDocRef.class);
-				if (ibisDocRef != null) {
-					AMethod aMethod = new AMethod(property);
-					if (ibisDoc == null) {
-						String[] orderAndPackageName = ibisDocRef.value();
-						String packageName = null;
-						if(orderAndPackageName.length == 1) {
-							packageName = ibisDocRef.value()[0];
-						} else if(orderAndPackageName.length == 2) {
-							packageName = ibisDocRef.value()[1];
-						}
-						ibisDoc = aMethod.getIbisDocRef(packageName, beanProperty.getMethod());
-					}
-				}
-				beanProperty.setHasDocumentation(ibisDoc != null);
-				if (ibisDoc != null) {
-					String[] ibisDocValues = ibisDoc.value();
-					// TODO order output based on class inheritance and order value
-					int order = Integer.MAX_VALUE;
-					String description;
-					String defaultValue = "";
-					try {
-						order = Integer.parseInt(ibisDocValues[0]);
-					} catch (NumberFormatException e) {
-					}
-					if (order == Integer.MAX_VALUE) {
-						description = ibisDocValues[0];
-						if (ibisDocValues.length > 1) {
-							defaultValue = ibisDocValues[1];
-						}
-					} else {
-						description = ibisDocValues[1];
-						if (ibisDocValues.length > 2) {
-							defaultValue = ibisDocValues[2];
-						}
-					}
-					beanProperty.setOrder(order);
-					beanProperty.setDescription(description);
-					beanProperty.setDefaultValue(defaultValue);
+				FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(beanProperty.getMethod());
+				if (fromAnnotations != null) {
+					beanProperty.setHasDocumentation(true);
+					beanProperty.setOrder(fromAnnotations.order);
+					beanProperty.setDescription(fromAnnotations.description);
+					beanProperty.setDefaultValue(fromAnnotations.defaultValue);
 				}
 			}
 		}
@@ -586,7 +552,7 @@ public class InfoBuilder {
                 // Get the javadoc link for the class
                 String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
                 aClass.setJavadocLink(javadocLink);
-                setMethods(beanProperties, aClass);
+                setMethodsOfFolderClass(beanProperties, aClass);
                 folder.addClass(aClass);
             }
         }
@@ -598,7 +564,7 @@ public class InfoBuilder {
      * @param beanProperties - The properties of a class
      * @param newClass       - The class object we have to add the methods to
      */
-    private static void setMethods(Map<String, Method> beanProperties, AClass newClass) {
+    private static void setMethodsOfFolderClass(Map<String, Method> beanProperties, AClass newClass) {
         Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
         newClass.setReferredClassName("");
         while (iterator.hasNext()) {
@@ -606,53 +572,20 @@ public class InfoBuilder {
             // Get the method
             String property = iterator.next();
             Method method = beanProperties.get(property);
-            AMethod aMethod = new AMethod(property);
+            FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method);
+            if(fromAnnotations != null) {
+            	AMethod aMethod = new AMethod(property);
 
-            // Get the IbisDocRef
-            IbisDocRef reference = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+            	// Check for whether the method (attribute) is deprecated
+            	Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
+            	boolean isDeprecated = deprecated != null;
 
-            // Get the IbisDoc values from the annotations above the method
-            IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-
-            // Check for whether the method (attribute) is deprecated
-            Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
-            boolean isDeprecated = deprecated != null;
-
-            String order = "";
-            String originalClassName = "";
-
-            // If there is an IbisDocRef for the method, get the IbisDoc of the referred method
-            if (reference != null) {
-				String[] orderAndPackageName = reference.value();
-				String packageName = null;
-				if(orderAndPackageName.length == 1) {
-					packageName = reference.value()[0];
-				} else if(orderAndPackageName.length == 2) {
-					order = reference.value()[0];
-					packageName = reference.value()[1];
-				}
-                ibisDoc = aMethod.getIbisDocRef(packageName, method);
-                newClass.setReferredClassName(aMethod.getReferredClassName());
-                originalClassName = aMethod.getReferredClassName();
-            }
-
-            // If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
-            if (ibisDoc != null) {
-                String[] ibisdocValues = ibisDoc.value();
-                String[] values = aMethod.getValues(ibisdocValues);
-
-                // This is done for @IbisDoc use instead of @IbisDocRef
-                if (order.isEmpty()) order = values[2];
-
-                // This is done for @IbisDoc use instead of @IbisDocRef
-                if (originalClassName.isEmpty()) originalClassName = method.getDeclaringClass().getSimpleName();
-
-                aMethod.setOriginalClassName(originalClassName);
-                aMethod.setDescription(values[0]);
-                aMethod.setDefaultValue(values[1]);
-                aMethod.setOrder(Integer.parseInt(order));
+                aMethod.setOriginalClassName(newClass.getClazz().getSimpleName());
+                aMethod.setDescription(fromAnnotations.description);
+                aMethod.setDefaultValue(fromAnnotations.defaultValue);
+                aMethod.setOrder(fromAnnotations.order);
                 aMethod.setDeprecated(isDeprecated);
-                aMethod.setReferredClassName(newClass.getReferredClassName());
+                aMethod.setReferredClassName(fromAnnotations.referredClass);
 
                 newClass.addMethod(aMethod);
             }
@@ -677,5 +610,110 @@ public class InfoBuilder {
             superClass = superClass.getSuperclass();
         }
         newClass.setSuperClassesSimpleNames(superClassesSimpleNames);
+    }
+
+    private static class FromAnnotations {
+    	String referredClass;
+    	int order;
+    	String description;
+    	String defaultValue;
+    }
+
+    private static FromAnnotations parseIbisDocAndIbisDocRef(Method method) {
+    	String referredClassName = "";
+    	IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+		if (ibisDocRef != null) {
+			AMethod aMethod = new AMethod("dummy");
+			if (ibisDoc == null) {
+				String[] orderAndPackageName = ibisDocRef.value();
+				String packageName = null;
+				if(orderAndPackageName.length == 1) {
+					packageName = ibisDocRef.value()[0];
+				} else if(orderAndPackageName.length == 2) {
+					packageName = ibisDocRef.value()[1];
+				}
+				
+		        // Get the last element of the full package, to check if it is a class or a method
+		        String classOrMethod = packageName.substring(packageName.lastIndexOf(".") + 1).trim();
+		        char[] firstLetter = classOrMethod.toCharArray();
+
+		        // Check the first letter of the last element (if lower case => method, else class)
+		        if (Character.isLowerCase(firstLetter[0])) {
+
+		            // Get the full class name
+		            int lastIndexOf = packageName.lastIndexOf(".");
+		            String fullClassName = packageName.substring(0, lastIndexOf);
+
+		            // Get the reference values of the specified method
+		            ibisDoc = getRefValues(fullClassName, classOrMethod);
+		            referredClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1).trim();
+		        } else {
+		            // Get the reference values of this method
+		            ibisDoc = getRefValues(packageName, method.getName());
+		            referredClassName = classOrMethod;
+		        }
+			}
+		}
+		if (ibisDoc != null) {
+			String[] ibisDocValues = ibisDoc.value();
+			// TODO order output based on class inheritance and order value
+			int order = Integer.MAX_VALUE;
+			String description;
+			String defaultValue = "";
+			try {
+				order = Integer.parseInt(ibisDocValues[0]);
+			} catch (NumberFormatException e) {
+				log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
+			}
+			if (order == Integer.MAX_VALUE) {
+				description = ibisDocValues[0];
+				if (ibisDocValues.length > 1) {
+					defaultValue = ibisDocValues[1];
+				}
+			} else {
+				description = ibisDocValues[1];
+				if (ibisDocValues.length > 2) {
+					defaultValue = ibisDocValues[2];
+				}
+			}
+			FromAnnotations result = new FromAnnotations();
+			result.defaultValue = defaultValue;
+			result.description = description;
+			result.order = order;
+			result.referredClass = referredClassName;
+			return result;
+		}
+		else {
+			return null;
+		}
+    }
+
+    /**
+     * Get the IbisDoc values of the referred method in IbisDocRef
+     *
+     * @param className - The full name of the class
+     * @param methodName - The method name
+     * @return the IbisDoc of the method
+     */
+    private static IbisDoc getRefValues(String className, String methodName) {
+
+        IbisDoc ibisDoc = null;
+        try {
+            Class<?> parentClass = Class.forName(className);
+            for (Method parentMethod : parentClass.getDeclaredMethods()) {
+                if (parentMethod.getName().equals(methodName)) {
+
+                    // Get the IbisDoc values of that method
+                    ibisDoc = AnnotationUtils.findAnnotation(parentMethod, IbisDoc.class);
+                    break;
+                }
+            }
+
+        } catch (ClassNotFoundException e) {
+            log.warn("Super class [" + e +  "] was not found!");
+        }
+
+        return ibisDoc;
     }
 }

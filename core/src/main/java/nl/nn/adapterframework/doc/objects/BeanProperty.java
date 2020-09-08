@@ -5,14 +5,12 @@ import java.lang.reflect.Method;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class BeanProperty {
-	String name;
-	Method method;
-	boolean isExcluded;
-	boolean hasDocumentation;
-	String description;
-	String defaultValue;
-	int order;
+	private @Getter @Setter String name;
+	private @Getter @Setter Method method;
+	private @Getter @Setter boolean isExcluded;
+	private @Getter @Setter boolean hasDocumentation;
+	private @Getter @Setter String description;
+	private @Getter @Setter String defaultValue;
+	private @Getter @Setter int order;
 }
