@@ -11,7 +11,7 @@ import lombok.Setter;
 public class SchemaInfo {
 	private @Getter @Setter Map<String, TreeSet<IbisBean>> groups;
 	private @Getter @Setter Set<IbisBean> ibisBeans;
-	private @Getter @Setter List<IbisMethod> ibisMethods;
+	private @Getter @Setter List<MethodNameToChildIbisBeanNameMapping> ibisMethods;
 	private @Getter @Setter Set<IbisBeanExtra> ibisBeansExtra;
 	private @Getter @Setter List<AFolder> folders;
 	private @Getter @Setter Map<String, String> ignores;

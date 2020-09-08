@@ -5,12 +5,10 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class IbisBeanExtra implements Comparable<IbisBeanExtra>{
-	private IbisBean ibisBean;
-	private MethodExtra[] sortedClassMethods;
-	private Map<String, BeanProperty> properties;
+	private @Getter @Setter IbisBean ibisBean;
+	private @Getter @Setter MethodExtra[] sortedClassMethods;
+	private @Getter @Setter Map<String, BeanProperty> properties;
 
 	@Override
 	public int compareTo(final IbisBeanExtra other) {

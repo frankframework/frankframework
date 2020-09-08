@@ -83,26 +83,23 @@ public class DocWriter {
 		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
 			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
-				if (methodExtra.getIbisMethod() != null) {
-					if (methodExtra.getChildIbisBeans() != null) {
-						// Pipes, Senders, ...
-						if (!ignore(ibisBeanExtra.getIbisBean(), methodExtra.getChildIbisBeanName(), schemaInfo)) {
-							XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
-							choice.addAttribute("minOccurs", "0");
-							addMaxOccurs(choice, methodExtra.getMaxOccurs());
-
+				if (methodExtra.getChildIbisBeans() != null) {
+					// Pipes, Senders, ...
+					if (!ignore(ibisBeanExtra.getIbisBean(), methodExtra.getChildIbisBeanName(), schemaInfo)) {
+						XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
+						choice.addAttribute("minOccurs", "0");
+						addMaxOccurs(choice, methodExtra.getMaxOccurs());
 							for (IbisBean childIbisBean : methodExtra.getChildIbisBeans()) {
-								choice.addSubElement(getChildIbisBeanSchemaElement(childIbisBean.getName(), 1));
-							}
-							choices.add(choice);
+							choice.addSubElement(getChildIbisBeanSchemaElement(childIbisBean.getName(), 1));
 						}
-					} else {
-						// Param, Forward, ...
-						if (methodExtra.getChildIbisBeanName() != null) {
-							if (methodExtra.isExistingIbisBean()) {
-								choices.add(getChildIbisBeanSchemaElement(
-										methodExtra.getChildIbisBeanName(), methodExtra.getMaxOccurs()));
-							}
+						choices.add(choice);
+					}
+				} else {
+					// Param, Forward, ...
+					if (methodExtra.getChildIbisBeanName() != null) {
+						if (methodExtra.isExistingIbisBean()) {
+							choices.add(getChildIbisBeanSchemaElement(
+									methodExtra.getChildIbisBeanName(), methodExtra.getMaxOccurs()));
 						}
 					}
 				}

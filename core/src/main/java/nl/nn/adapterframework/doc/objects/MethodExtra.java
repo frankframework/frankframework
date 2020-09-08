@@ -6,13 +6,10 @@ import java.util.TreeSet;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 public class MethodExtra {
-	private Method method;
-	private IbisMethod ibisMethod;
-	private String childIbisBeanName;
-	private TreeSet<IbisBean> childIbisBeans;
-	private boolean isExistingIbisBean;
-	private int maxOccurs;
+	private @Getter @Setter Method method;
+	private @Getter @Setter String childIbisBeanName;
+	private @Getter @Setter TreeSet<IbisBean> childIbisBeans;
+	private @Getter @Setter boolean isExistingIbisBean;
+	private @Getter @Setter int maxOccurs;
 }

@@ -16,22 +16,10 @@
 package nl.nn.adapterframework.doc.objects;
 
 import lombok.Getter;
+import lombok.Setter;
 
-public class IbisBean implements Comparable<IbisBean> {
-    private @Getter String name;
-    private @Getter Class<?> clazz;
-
-    public IbisBean(String name, Class<?> clazz) {
-        this.name = name;
-        this.clazz = clazz;
-    }
-
-    public int compareTo(IbisBean ibisBean) {
-        return name.compareTo((ibisBean).name);
-    }
-
-    @Override
-    public String toString() {
-        return name +  "[" + clazz.getName() + "]";
-    }
+public class MethodNameToChildIbisBeanNameMapping {
+    private @Getter @Setter String methodName; // E.g. registerAdapter
+    private @Getter @Setter String childIbisBeanName; // E.g. adapter
+    private @Getter @Setter int maxOccurs;
 }

@@ -35,10 +35,9 @@ import nl.nn.adapterframework.doc.objects.AClass;
 import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
-import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
-import nl.nn.adapterframework.doc.objects.IbisMethod;
+import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
 import nl.nn.adapterframework.doc.objects.MethodExtra;
 import nl.nn.adapterframework.doc.objects.SchemaInfo;
 import nl.nn.adapterframework.doc.objects.SpringBean;
@@ -324,7 +323,7 @@ public class InfoBuilder {
 		return ibisBeans;
 	}
 
-	private static List<IbisMethod> getIbisMethods() throws IOException, SAXException {
+	private static List<MethodNameToChildIbisBeanNameMapping> getIbisMethods() throws IOException, SAXException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
@@ -433,16 +432,16 @@ public class InfoBuilder {
 		}
 		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
 			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
-				methodExtra.setIbisMethod(
-						getIbisBeanParameter(methodExtra.getMethod().getName(), schemaInfo.getIbisMethods()));
-				if (methodExtra.getIbisMethod() != null) {
+                MethodNameToChildIbisBeanNameMapping methodNameMapping =
+                		getMethodNameMapping(methodExtra.getMethod().getName(), schemaInfo.getIbisMethods());
+				if (methodNameMapping != null) {
 					methodExtra.setChildIbisBeanName(
-							toUpperCamelCase(methodExtra.getIbisMethod().getParameterName()));
+							toUpperCamelCase(methodNameMapping.getChildIbisBeanName()));
 					methodExtra.setChildIbisBeans(schemaInfo.getGroups().get(
 							methodExtra.getChildIbisBeanName() + "s"));
 					if (methodExtra.getChildIbisBeans() != null) {
 						// Pipes, Senders, ...
-						int maxOccursX = methodExtra.getIbisMethod().getMaxOccurs();
+						int maxOccursX = methodNameMapping.getMaxOccurs();
 						if (overwriteMaxOccursToUnbounded.contains(ibisBeanExtra.getIbisBean().getName())) {
 							maxOccursX = -1;
 						}
@@ -458,8 +457,8 @@ public class InfoBuilder {
 							}
 							methodExtra.setExistingIbisBean(isExistingIbisBean);
 							if (isExistingIbisBean) {
-								int maxOccurs = methodExtra.getIbisMethod().getMaxOccurs();
-								if (overwriteMaxOccursToOne.contains(methodExtra.getIbisMethod().getMethodName())) {
+								int maxOccurs = methodNameMapping.getMaxOccurs();
+								if (overwriteMaxOccursToOne.contains(methodNameMapping.getMethodName())) {
 									maxOccurs = 1;
 								}
 								methodExtra.setMaxOccurs(maxOccurs);
@@ -473,10 +472,10 @@ public class InfoBuilder {
 		schemaInfo.getIbisBeansExtra().add(ibisBeanExtra);
 	}
 
-	private static IbisMethod getIbisBeanParameter(String ibisMethodName, List<IbisMethod> ibisMethods) {
-		for (IbisMethod ibisMethod : ibisMethods) {
-			if (ibisMethod.getMethodName().equals(ibisMethodName)) {
-				return ibisMethod;
+	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
+		for (MethodNameToChildIbisBeanNameMapping mapping : mappings) {
+			if (mapping.getMethodName().equals(ibisMethodName)) {
+				return mapping;
 			}
 		}
 		return null;
