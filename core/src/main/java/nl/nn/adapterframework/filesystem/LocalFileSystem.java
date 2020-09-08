@@ -34,6 +34,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.WildCardFilter;
 
+/**
+ * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
+ * All files and folders are relative to the specified root. It is not possible to use absolute paths, other than for the root attribute.
+ *  
+ * @author Gerrit van Brakel
+ *
+ */
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	private String root;
@@ -263,7 +270,8 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 
-	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. This is the only place an absolute path can be used. "+
+			" all other specifications of folders or files are relative to this root", "" })
 	public void setRoot(String root) {
 		this.root = root;
 	}

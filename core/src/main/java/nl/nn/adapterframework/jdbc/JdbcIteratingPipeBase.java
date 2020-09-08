@@ -163,17 +163,35 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
-	public String getDatasourceName() {
-		return querySender.getDatasourceName();
-	}
 
 	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	public void setUseNamedParams(boolean b) {
+		querySender.setUseNamedParams(b);
+	}
+
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	public void setTrimSpaces(boolean b) {
+		querySender.setTrimSpaces(b);
+	}
+
+	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	public void setSqlDialect(String string) {
+		querySender.setSqlDialect(string);
+	}
+	
+	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	@IbisDocRef({"7", FIXEDQUERYSENDER})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
+
+	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	public void setAvoidLocking(boolean avoidLocking) {
+		querySender.setAvoidLocking(avoidLocking);
+	}
+
 }
