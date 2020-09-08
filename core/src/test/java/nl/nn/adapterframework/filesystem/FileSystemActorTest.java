@@ -602,10 +602,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		}
 
-		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+(numOfWrites<numOfBackups?numOfWrites:numOfBackups))));
+		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
+		assertTrue("last backup with no "+lastSavedBackup+" does not exist",fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)));
 		for (int i=1;i<=numOfBackups;i++) {
 			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+			assertEquals("contents of backup no "+i+" is not correct",(contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
 		}
 	}
 	
