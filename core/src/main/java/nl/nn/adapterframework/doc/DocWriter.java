@@ -219,7 +219,7 @@ public class DocWriter {
                     classObject.put("name", aClass.getClazz().getSimpleName());
                     classObject.put("packageName", aClass.getClazz().getName());
                     classObject.put("javadocLink", aClass.getJavadocLink());
-                    classObject.put("superClasses", aClass.getSuperClasses());
+                    classObject.put("superClasses", aClass.getSuperClassesSimpleNames());
 
                     newMethods = new JSONArray();
                     for (AMethod method : aClass.getMethods()) {

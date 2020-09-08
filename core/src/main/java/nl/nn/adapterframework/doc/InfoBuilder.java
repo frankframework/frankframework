@@ -492,73 +492,71 @@ public class InfoBuilder {
 				}
 			}
 		}
-		if (beanProperties != null) {
-			ibisBeanExtra.setProperties(new TreeMap<>());
-			for(String property: beanProperties.keySet()) {
-				BeanProperty bp = new BeanProperty();
-				bp.setName(property);
-				bp.setMethod(beanProperties.get(property));
-				ibisBeanExtra.getProperties().put(property, bp);
-			}
-			Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
-			while (iterator.hasNext()) {
-				String property = (String)iterator.next();
-				BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
-				boolean exclude = false;
-				if (property.equals("name")) {
-					for (String filter : excludeNameAttribute) {
-						if (name.endsWith(filter)) {
-							exclude = true;
-						}
-					}
-				}
-				beanProperty.setExcluded(exclude);
-				if (!exclude) {
-					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDoc.class);
-					IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDocRef.class);
-					if (ibisDocRef != null) {
-						AMethod aMethod = new AMethod(property);
-						if (ibisDoc == null) {
-							String[] orderAndPackageName = ibisDocRef.value();
-							String packageName = null;
-							if(orderAndPackageName.length == 1) {
-								packageName = ibisDocRef.value()[0];
-							} else if(orderAndPackageName.length == 2) {
-								packageName = ibisDocRef.value()[1];
-							}
-							ibisDoc = aMethod.getIbisDocRef(packageName, beanProperty.getMethod());
-						}
-					}
-					beanProperty.setHasDocumentation(ibisDoc != null);
-					if (ibisDoc != null) {
-						String[] ibisDocValues = ibisDoc.value();
-						// TODO order output based on class inheritance and order value
-						int order = Integer.MAX_VALUE;
-						String description;
-						String defaultValue = "";
-						try {
-							order = Integer.parseInt(ibisDocValues[0]);
-						} catch (NumberFormatException e) {
-						}
-						if (order == Integer.MAX_VALUE) {
-							description = ibisDocValues[0];
-							if (ibisDocValues.length > 1) {
-								defaultValue = ibisDocValues[1];
-							}
-						} else {
-							description = ibisDocValues[1];
-							if (ibisDocValues.length > 2) {
-								defaultValue = ibisDocValues[2];
-							}
-						}
-						beanProperty.setOrder(order);
-						beanProperty.setDescription(description);
-						beanProperty.setDefaultValue(defaultValue);
+		ibisBeanExtra.setProperties(new TreeMap<>());
+		for(String property: beanProperties.keySet()) {
+			BeanProperty bp = new BeanProperty();
+			bp.setName(property);
+			bp.setMethod(beanProperties.get(property));
+			ibisBeanExtra.getProperties().put(property, bp);
+		}
+		Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+		while (iterator.hasNext()) {
+			String property = (String)iterator.next();
+			BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
+			boolean exclude = false;
+			if (property.equals("name")) {
+				for (String filter : excludeNameAttribute) {
+					if (name.endsWith(filter)) {
+						exclude = true;
 					}
 				}
 			}
-		}		
-	}
+			beanProperty.setExcluded(exclude);
+			if (!exclude) {
+				IbisDoc ibisDoc = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDoc.class);
+				IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(beanProperty.getMethod(), IbisDocRef.class);
+				if (ibisDocRef != null) {
+					AMethod aMethod = new AMethod(property);
+					if (ibisDoc == null) {
+						String[] orderAndPackageName = ibisDocRef.value();
+						String packageName = null;
+						if(orderAndPackageName.length == 1) {
+							packageName = ibisDocRef.value()[0];
+						} else if(orderAndPackageName.length == 2) {
+							packageName = ibisDocRef.value()[1];
+						}
+						ibisDoc = aMethod.getIbisDocRef(packageName, beanProperty.getMethod());
+					}
+				}
+				beanProperty.setHasDocumentation(ibisDoc != null);
+				if (ibisDoc != null) {
+					String[] ibisDocValues = ibisDoc.value();
+					// TODO order output based on class inheritance and order value
+					int order = Integer.MAX_VALUE;
+					String description;
+					String defaultValue = "";
+					try {
+						order = Integer.parseInt(ibisDocValues[0]);
+					} catch (NumberFormatException e) {
+					}
+					if (order == Integer.MAX_VALUE) {
+						description = ibisDocValues[0];
+						if (ibisDocValues.length > 1) {
+							defaultValue = ibisDocValues[1];
+						}
+					} else {
+						description = ibisDocValues[1];
+						if (ibisDocValues.length > 2) {
+							defaultValue = ibisDocValues[2];
+						}
+					}
+					beanProperty.setOrder(order);
+					beanProperty.setDescription(description);
+					beanProperty.setDefaultValue(defaultValue);
+				}
+			}
+		}
+	}		
 
     private static void addFolders(SchemaInfo schemaInfo) {
     	Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
@@ -668,15 +666,16 @@ public class InfoBuilder {
      * @param referredClassName - The class we have to derive the superclasses from
      */
     private static void setSuperclasses(AClass newClass) {
-        List<String> superClasses = new ArrayList<>();
+        List<String> superClassesSimpleNames = new ArrayList<>();
     	if (!newClass.getReferredClassName().isEmpty()) {
-            superClasses.add(newClass.getReferredClassName());
+            superClassesSimpleNames.add(newClass.getReferredClassName());
         }
         Class<?> superClass = newClass.getClazz();
         while (superClass.getSuperclass() != null) {
             // Assign a string to the array of superclasses
-            superClasses.add(superClass.getSuperclass().getSimpleName());
+            superClassesSimpleNames.add(superClass.getSuperclass().getSimpleName());
             superClass = superClass.getSuperclass();
         }
+        newClass.setSuperClassesSimpleNames(superClassesSimpleNames);
     }
 }

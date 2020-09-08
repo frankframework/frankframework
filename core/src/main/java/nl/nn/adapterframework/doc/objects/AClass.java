@@ -30,7 +30,7 @@ public class AClass {
 
     private @Getter @Setter Class<?> clazz;
     private @Getter @Setter String javadocLink;
-    private @Getter @Setter ArrayList<String> superClasses;
+    private @Getter @Setter List<String> superClassesSimpleNames;
     private ArrayList<AMethod> methods;
     private @Getter @Setter String referredClassName = "";
 
