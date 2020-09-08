@@ -574,7 +574,8 @@ public class InfoBuilder {
             Method method = beanProperties.get(property);
             FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method);
             if(fromAnnotations != null) {
-            	AMethod aMethod = new AMethod(property);
+            	AMethod aMethod = new AMethod();
+            	aMethod.setName(property);
 
             	// Check for whether the method (attribute) is deprecated
             	Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
@@ -624,7 +625,6 @@ public class InfoBuilder {
     	IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if (ibisDocRef != null) {
-			AMethod aMethod = new AMethod("dummy");
 			if (ibisDoc == null) {
 				String[] orderAndPackageName = ibisDocRef.value();
 				String packageName = null;
