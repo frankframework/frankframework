@@ -26,7 +26,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	/**
 	 * Returns the file system 
 	 * @return fileSystem
-	 * @throws ConfigurationException
 	 */
 	protected abstract FS createFileSystem();
 
