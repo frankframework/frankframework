@@ -119,6 +119,17 @@ public class DocWriter {
 		schema.addSubElement(complexType);
 	}
 
+	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName, SchemaInfo schemaInfo) {
+		boolean ignore = false;
+		for (String namePart : schemaInfo.getIgnores().keySet()) {
+			if (ibisBean.getName().indexOf(namePart) != -1 && childIbisBeanName.equals(
+					schemaInfo.getIgnores().get(namePart))) {
+				ignore = true;
+			}
+		}
+		return ignore;
+	}
+
 	private static XmlBuilder getChildIbisBeanSchemaElement(String childIbisBeanName, int maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
 		element.addAttribute("name", childIbisBeanName);
@@ -234,17 +245,6 @@ public class DocWriter {
         return newFolders.toString();
     }
 
-	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName, SchemaInfo schemaInfo) {
-		boolean ignore = false;
-		for (String namePart : schemaInfo.getIgnores().keySet()) {
-			if (ibisBean.getName().indexOf(namePart) != -1 && childIbisBeanName.equals(
-					schemaInfo.getIgnores().get(namePart))) {
-				ignore = true;
-			}
-		}
-		return ignore;
-	}
-
 	public static String getUglifyLookup(SchemaInfo schemaInfo) {
 		StringBuffer result = new StringBuffer();
 		result.append("<Elements>\n");
@@ -277,6 +277,12 @@ public class DocWriter {
 		return result.toString();
 	}
 
+	public static String getHtmlFrankDocAll(SchemaInfo schemaInfo) {
+		StringBuffer allHtml = new StringBuffer();
+		getMenuHtml(null, allHtml, null, schemaInfo);
+		return allHtml.toString();
+	}
+
 	private static void getMenuHtml(
 			StringBuffer topmenuHtml,
 			StringBuffer allHtml,
@@ -307,13 +313,7 @@ public class DocWriter {
 		topmenuHtml.append("<a href='excludes.html' target='contentFrame'>Excludes</a><br/>\n");
 	}
 
-	public static String getHtmlFrankDocAll(SchemaInfo schemaInfo) {
-		StringBuffer allHtml = new StringBuffer();
-		getMenuHtml(null, allHtml, null, schemaInfo);
-		return allHtml.toString();
-	}
-
-	public static String getHtmlFrankDocGroup(String page, SchemaInfo schemaInfo) {
+	public static String getHtmlFrankDocGroupOrBean(String page, SchemaInfo schemaInfo) {
 		String result = null;
 		if (schemaInfo.getGroups().get(page) != null) {
 			Map<String, String> groupsHtml = new HashMap<String, String>();
@@ -367,5 +367,13 @@ public class DocWriter {
 		StringBuffer topmenuHtml = new StringBuffer();
 		getMenuHtml(topmenuHtml, null, null, schemaInfo);
 		return topmenuHtml.toString();
+	}
+
+	public static String getHtmlFrankDocExcludes(SchemaInfo schemaInfo) {
+		StringBuffer excludesHtml = new StringBuffer();
+		for (String exclude : schemaInfo.getExcludeFilters()) {
+			excludesHtml.append("<p> " + exclude + "</p>\n");
+		}
+		return excludesHtml.toString();
 	}
 }

@@ -79,15 +79,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 			} else if ("/ibisdoc/all.html".equals(uri)) {
 				result = DocWriter.getHtmlFrankDocAll(schemaInfo);
 			} else if ("/ibisdoc/excludes.html".equals(uri)) {
-				StringBuffer excludesHtml = new StringBuffer();
-				for (String exclude : schemaInfo.getExcludeFilters()) {
-					excludesHtml.append("<p> " + exclude + "</p>\n");
-				}
-				result = excludesHtml.toString();
+				result = DocWriter.getHtmlFrankDocExcludes(schemaInfo);
 			} else {
 				if (uri.length() > "/ibisdoc/".length() && uri.indexOf(".") != -1) {
 					String page = uri.substring("/ibisdoc/".length(), uri.lastIndexOf("."));
-					result = DocWriter.getHtmlFrankDocGroup(page, schemaInfo);
+					result = DocWriter.getHtmlFrankDocGroupOrBean(page, schemaInfo);
 				}
 			}
 		}
