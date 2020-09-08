@@ -36,7 +36,6 @@ import nl.nn.adapterframework.util.WildCardFilter;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
- * All files and folders are relative to the specified root. It is not possible to use absolute paths, other than for the root attribute.
  *  
  * @author Gerrit van Brakel
  *
