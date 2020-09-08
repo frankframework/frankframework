@@ -78,7 +78,7 @@
 	<bean
 		name="flowGenerator"
 		class="nl.nn.adapterframework.util.flow.V8FlowGenerator"
-		scope="singleton"
+		scope="prototype"
 		lazy-init="true"
 		>
 	</bean>

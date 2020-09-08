@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Register custom errorHandler for the API.
  * 
@@ -36,6 +40,8 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class ApiExceptionHandler implements ExceptionMapper<Exception> {
 
+	private Logger log = LogUtil.getLogger(this);
+
 	@Override
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response toResponse(Exception exception) {
@@ -43,6 +49,8 @@ public class ApiExceptionHandler implements ExceptionMapper<Exception> {
 		if(exception instanceof ApiException) {
 			return ((ApiException) exception).getResponse();
 		}
+
+		log.error("Caught exception in handling FF!API call", exception);
 
 		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
 		String message = exception.getMessage();
