@@ -47,6 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class InfoBuilder {
 	private static Logger log = LogUtil.getLogger(InfoBuilder.class);
+	private static final int MAX_ORDER = 999;
 
 	private static Map<String, String> ignores = new HashMap<String, String>();
 	static {
@@ -522,13 +523,21 @@ public class InfoBuilder {
     private static void addFolders(SchemaInfo schemaInfo) {
     	Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
     	schemaInfo.setFolders(new ArrayList<>());
-        AFolder allFolder = new AFolder("All");
+        // Folder "All" is expected to be empty.
+    	AFolder allFolder = new AFolder("All");
         for (String folder : groups.keySet()) {
             AFolder newFolder = new AFolder(folder);
             setClassesOfFolder(groups, newFolder);
             schemaInfo.getFolders().add(newFolder);
         }
         schemaInfo.getFolders().add(allFolder);
+        Map<String, AClass> aClassLookup = new TreeMap<>();
+        for(AFolder folder : schemaInfo.getFolders()) {
+        	for(AClass aClass: folder.getClasses()) {
+        		aClassLookup.put(aClass.getClazz().getName(), aClass);
+        	}
+        }
+        setSuperclasses(aClassLookup);
     }
 
     /**
@@ -538,7 +547,7 @@ public class InfoBuilder {
      * @param folder - The folder object we have to add the classes to
      */
     private static void setClassesOfFolder(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
-        for (IbisBean ibisBean : groups.get(folder.getName())) {
+		for (IbisBean ibisBean : groups.get(folder.getName())) {
             Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
             if (!beanProperties.isEmpty()) {
                 AClass aClass = new AClass();
@@ -576,7 +585,7 @@ public class InfoBuilder {
             	Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
             	boolean isDeprecated = deprecated != null;
 
-                aMethod.setOriginalClassName(newClass.getClazz().getSimpleName());
+                aMethod.setOriginalClassName(fromAnnotations.originalClass);
                 aMethod.setDescription(fromAnnotations.description);
                 aMethod.setDefaultValue(fromAnnotations.defaultValue);
                 aMethod.setOrder(fromAnnotations.order);
@@ -586,7 +595,6 @@ public class InfoBuilder {
                 newClass.addMethod(aMethod);
             }
         }
-        setSuperclasses(newClass);
     }
 
     /**
@@ -594,6 +602,7 @@ public class InfoBuilder {
      *
      * @param referredClassName - The class we have to derive the superclasses from
      */
+    /*
     private static void setSuperclasses(AClass newClass) {
         List<String> superClassesSimpleNames = new ArrayList<>();
     	if (!newClass.getReferredClassName().isEmpty()) {
@@ -607,9 +616,52 @@ public class InfoBuilder {
         }
         newClass.setSuperClassesSimpleNames(superClassesSimpleNames);
     }
+    */
+
+    private static void setSuperclasses(Map<String, AClass> aClassLookup) {
+    	new SuperClassesAdder().run(aClassLookup);
+    }
+
+    private static class SuperClassesAdder {
+    	List<AClass> classesToIterate = new ArrayList<>();
+    	Map<String, AClass> aClassLookup = null;
+
+    	void run(Map<String, AClass> aClassLookup) {
+    		this.aClassLookup = aClassLookup;
+    		classesToIterate.addAll(aClassLookup.values());
+    		for(AClass currentIterate: classesToIterate) {
+  				handle(currentIterate);
+    		}
+    	}
+
+    	void handle(AClass toHandle) {
+    		if(toHandle.getSuperClassesSimpleNames() != null) {
+    			return;
+    		}
+    		toHandle.setSuperClassesSimpleNames(new ArrayList<>());
+    		Class<?> superClazz = toHandle.getClazz().getSuperclass();
+    		AClass superClass = null;
+    		if((superClazz != null) && aClassLookup.containsKey(superClazz.getName())) {
+    			superClass = aClassLookup.get(superClazz.getName());
+    			handle(superClass);
+    			if(!superClass.getReferredClassName().isEmpty()) {
+    				toHandle.getSuperClassesSimpleNames().add(superClass.getReferredClassName());
+    			}
+    			toHandle.getSuperClassesSimpleNames().add(superClass.getClazz().getSimpleName());
+    			toHandle.getSuperClassesSimpleNames().addAll(superClass.getSuperClassesSimpleNames());
+    		}
+    		else {
+    			while(superClazz != null) {
+    				toHandle.getSuperClassesSimpleNames().add(superClazz.getSimpleName());
+    				superClazz = superClazz.getSuperclass();
+    			}
+    		}
+    	}
+    }
 
     private static class FromAnnotations {
     	String referredClass;
+    	String originalClass;
     	int order;
     	String description;
     	String defaultValue;
@@ -619,6 +671,9 @@ public class InfoBuilder {
     	String referredClassName = "";
     	IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+		String originalClass = method.getDeclaringClass().getSimpleName();
+		boolean hasIbisDocRefWithOrder = false;
+		int orderOfIbisDocRef = 0;
 		if (ibisDocRef != null) {
 			if (ibisDoc == null) {
 				String[] orderAndPackageName = ibisDocRef.value();
@@ -627,6 +682,12 @@ public class InfoBuilder {
 					packageName = ibisDocRef.value()[0];
 				} else if(orderAndPackageName.length == 2) {
 					packageName = ibisDocRef.value()[1];
+					hasIbisDocRefWithOrder = true;
+					try {
+						orderOfIbisDocRef = Integer.parseInt(ibisDocRef.value()[0]);
+					} catch(Throwable t) {
+						log.warn("Could not parse order in @IbisDocRef annotation: " + Integer.parseInt(ibisDocRef.value()[0]));
+					}
 				}
 				
 		        // Get the last element of the full package, to check if it is a class or a method
@@ -648,12 +709,13 @@ public class InfoBuilder {
 		            ibisDoc = getRefValues(packageName, method.getName());
 		            referredClassName = classOrMethod;
 		        }
+		        originalClass = referredClassName;
 			}
 		}
 		if (ibisDoc != null) {
 			String[] ibisDocValues = ibisDoc.value();
 			// TODO order output based on class inheritance and order value
-			int order = Integer.MAX_VALUE;
+			int order = MAX_ORDER;
 			String description;
 			String defaultValue = "";
 			try {
@@ -661,7 +723,7 @@ public class InfoBuilder {
 			} catch (NumberFormatException e) {
 				log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
 			}
-			if (order == Integer.MAX_VALUE) {
+			if (order == MAX_ORDER) {
 				description = ibisDocValues[0];
 				if (ibisDocValues.length > 1) {
 					defaultValue = ibisDocValues[1];
@@ -672,11 +734,15 @@ public class InfoBuilder {
 					defaultValue = ibisDocValues[2];
 				}
 			}
+			if(hasIbisDocRefWithOrder) {
+				order = orderOfIbisDocRef;
+			}
 			FromAnnotations result = new FromAnnotations();
 			result.defaultValue = defaultValue;
 			result.description = description;
 			result.order = order;
 			result.referredClass = referredClassName;
+			result.originalClass = originalClass;
 			return result;
 		}
 		else {
