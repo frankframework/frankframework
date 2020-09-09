@@ -390,6 +390,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
+				if (!fileSystem.exists(file)) {
+					throw new FileNotFoundException("file to move ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
+				}
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
@@ -398,6 +401,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
+				if (!fileSystem.exists(file)) {
+					throw new FileNotFoundException("file to copy ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
+				}
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
