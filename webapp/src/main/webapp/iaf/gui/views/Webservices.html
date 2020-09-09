@@ -14,7 +14,7 @@
 							<tbody>
 								<tr ng-repeat="service in services">
 									<td>{{::$index}}</td>
-									<td><a target="_blank" href="{{::rootURL}}{{::service.uriPattern}}">{{::service.name}}</a></td>
+									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.name}}</a></td>
 								</tr>
 							</tbody>
 						</table>
@@ -64,9 +64,9 @@
 									<td>{{::wsdl.name}}</td>
 									<td ng-if="::wsdl.error">{{::wsdl.error}}</td>
 									<td ng-if="::wsdl.extension" class="hideBtn1170">
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></a>
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}?useIncludes=true" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-code-o aria-hidden="true"></i> <span>Using Includes</span></a>
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}.zip" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-archive-o aria-hidden="true"></i> <span>Zip</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}.zip" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-archive-o aria-hidden="true"></i> <span>WSDL including dependencies</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}?useIncludes=true" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-code-o aria-hidden="true"></i> <span>WSDL</span></a>
 									</td>
 								</tr>
 							</tbody>
