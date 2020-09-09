@@ -4761,6 +4761,11 @@
         <xs:documentation>xpath expression to extract audit trail from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="avoidLocking" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="blobCharset" type="xs:string">
       <xs:annotation>
         <xs:documentation>charset used to read and write blobs (default: utf-8)</xs:documentation>
@@ -4912,8 +4917,16 @@
         <xs:documentation>either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. (default: correlationid)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="lockRows" type="xs:string" />
-    <xs:attribute name="lockWait" type="xs:string" />
+    <xs:attribute name="lockRows" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="lockWait" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' (default: -1)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxChildThreads" type="xs:string">
       <xs:annotation>
@@ -5031,6 +5044,11 @@
         <xs:documentation>when set, the processing continues directly at the forward of this pipe, without executing the pipe itself (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="stopConditionXPathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Expression evaluated on each result if set. Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used. This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
@@ -5081,9 +5099,19 @@
         <xs:documentation>timeout (in seconds) of transaction started to process a message. (default: &lt;code&gt;0&lt;/code&gt; (use system default))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="trimSpaces" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Remove trailing blanks from all result values. (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="useInputForExtract" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="useNamedParams" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, every string in the message which equals &lt;code&gt;?{paramname+UNP_END+&lt;/code&gt; will be replaced by the setter method for the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped. (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="xs:string" />
@@ -5779,6 +5807,11 @@
         <xs:documentation>xpath expression to extract audit trail from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="avoidLocking" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="blockSize" type="xs:string">
       <xs:annotation>
         <xs:documentation>Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender. (default: 0 (one line at a time, no prefix of suffix))</xs:documentation>
@@ -5920,8 +5953,16 @@
         <xs:documentation>either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. (default: correlationid)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="lockRows" type="xs:string" />
-    <xs:attribute name="lockWait" type="xs:string" />
+    <xs:attribute name="lockRows" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="lockWait" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' (default: -1)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxChildThreads" type="xs:string">
       <xs:annotation>
@@ -6039,6 +6080,11 @@
         <xs:documentation>when set, the processing continues directly at the forward of this pipe, without executing the pipe itself (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="stopConditionXPathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Expression evaluated on each result if set. Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used. This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
@@ -6089,9 +6135,19 @@
         <xs:documentation>timeout (in seconds) of transaction started to process a message. (default: &lt;code&gt;0&lt;/code&gt; (use system default))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="trimSpaces" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Remove trailing blanks from all result values. (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="useInputForExtract" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="useNamedParams" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, every string in the message which equals &lt;code&gt;?{paramname+UNP_END+&lt;/code&gt; will be replaced by the setter method for the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped. (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="xs:string" />
@@ -34865,6 +34921,11 @@
         <xs:documentation>xpath expression to extract audit trail from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="avoidLocking" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="blockSize" type="xs:string">
       <xs:annotation>
         <xs:documentation>Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender. (default: 0 (one line at a time, no prefix of suffix))</xs:documentation>
@@ -35006,8 +35067,16 @@
         <xs:documentation>either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. (default: correlationid)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="lockRows" type="xs:string" />
-    <xs:attribute name="lockWait" type="xs:string" />
+    <xs:attribute name="lockRows" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) (default: false)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="lockWait" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' (default: -1)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxChildThreads" type="xs:string">
       <xs:annotation>
@@ -35125,6 +35194,11 @@
         <xs:documentation>when set, the processing continues directly at the forward of this pipe, without executing the pipe itself (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="stopConditionXPathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Expression evaluated on each result if set. Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used. This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
@@ -35175,9 +35249,19 @@
         <xs:documentation>timeout (in seconds) of transaction started to process a message. (default: &lt;code&gt;0&lt;/code&gt; (use system default))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="trimSpaces" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Remove trailing blanks from all result values. (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="useInputForExtract" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="useNamedParams" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, every string in the message which equals &lt;code&gt;?{paramname+UNP_END+&lt;/code&gt; will be replaced by the setter method for the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped. (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="xs:string" />
