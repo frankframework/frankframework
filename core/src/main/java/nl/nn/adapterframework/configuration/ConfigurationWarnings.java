@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
 package nl.nn.adapterframework.configuration;
 
 
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 
 /**
@@ -115,5 +118,11 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 
 	public void setActiveConfiguration (Configuration configuration) {
 		activeConfiguration = configuration;
+	}
+	
+	public static boolean isSuppressed(String key, IAdapter adapter, ClassLoader cl) {
+		AppConstants appConstants = AppConstants.getInstance(cl);
+		return appConstants.getBoolean(key, false) // warning is suppressed globally, for all adapters
+				|| adapter!=null && appConstants.getBoolean(key+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }
