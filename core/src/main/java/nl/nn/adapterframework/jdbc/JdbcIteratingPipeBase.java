@@ -47,7 +47,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
-	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
+	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.JdbcQuerySenderBase";
 
 	protected class MixedQuerySender extends DirectQuerySender {
 		
