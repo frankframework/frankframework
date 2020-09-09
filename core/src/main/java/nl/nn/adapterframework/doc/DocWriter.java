@@ -19,7 +19,6 @@ import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
 import nl.nn.adapterframework.doc.objects.MethodExtra;
 import nl.nn.adapterframework.doc.objects.SchemaInfo;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -71,21 +70,21 @@ public class DocWriter {
 		element.addAttribute("minOccurs", "0");
 		choice.addSubElement(element);
 
-		for (IbisBeanExtra ibisBeanExtra : schemaInfo.getIbisBeansExtra()) {
-			addIbisBeanToSchema(ibisBeanExtra, schema, schemaInfo);
+		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
+			addIbisBeanToSchema(ibisBean, schema, schemaInfo);
 		}
 		return schema.toXML(true);
 	}
 
-	private static void addIbisBeanToSchema(IbisBeanExtra ibisBeanExtra, XmlBuilder schema, SchemaInfo schemaInfo) {
-		XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
-		complexType.addAttribute("name", ibisBeanExtra.getIbisBean().getName() + "Type");
-		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
+	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, SchemaInfo schemaInfo) {
+		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedClassMethods() != null)) {
+			XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
+			complexType.addAttribute("name", ibisBean.getName() + "Type");
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
-			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
+			for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
 				if (methodExtra.getChildIbisBeans() != null) {
 					// Pipes, Senders, ...
-					if (!ignore(ibisBeanExtra.getIbisBean(), methodExtra.getChildIbisBeanName(), schemaInfo)) {
+					if (!ignore(ibisBean, methodExtra.getChildIbisBeanName(), schemaInfo)) {
 						XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
 						choice.addAttribute("minOccurs", "0");
 						addMaxOccurs(choice, methodExtra.getMaxOccurs());
@@ -111,9 +110,9 @@ public class DocWriter {
 				}
 				complexType.addSubElement(sequence);
 			}
+			addPropertiesToSchemaOrHtml(ibisBean, complexType, null);
+			schema.addSubElement(complexType);
 		}
-		addPropertiesToSchemaOrHtml(ibisBeanExtra, complexType, null);
-		schema.addSubElement(complexType);
 	}
 
 	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName, SchemaInfo schemaInfo) {
@@ -147,13 +146,13 @@ public class DocWriter {
 		}
 	}
 
-	private static void addPropertiesToSchemaOrHtml(IbisBeanExtra ibisBeanExtra, XmlBuilder beanComplexType,
+	private static void addPropertiesToSchemaOrHtml(IbisBean ibisBean, XmlBuilder beanComplexType,
 			StringBuffer beanHtml) {
-		if (ibisBeanExtra.getProperties() != null) {
-			Iterator<String> iterator = new TreeSet<String>(ibisBeanExtra.getProperties().keySet()).iterator();
+		if (ibisBean.getProperties() != null) {
+			Iterator<String> iterator = new TreeSet<String>(ibisBean.getProperties().keySet()).iterator();
 			while (iterator.hasNext()) {
 				String property = (String)iterator.next();
-				BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
+				BeanProperty beanProperty = ibisBean.getProperties().get(property);
 				if (!beanProperty.isExcluded()) {
 					XmlBuilder attribute = null;
 					if (beanComplexType != null) {
@@ -326,13 +325,13 @@ public class DocWriter {
 	}
 
 	private static String getBeanHtml(String beanName, SchemaInfo schemaInfo) {
-		for (IbisBeanExtra ibisBeanExtra : schemaInfo.getIbisBeansExtra()) {
-			if (beanName.equals(ibisBeanExtra.getIbisBean().getName())) {
+		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
+			if (beanName.equals(ibisBean.getName())) {
 				StringBuffer result = new StringBuffer();
 				result.append(beanName);
 				result.append("<table border='1'>");
 				result.append("<tr><th>class</th><th>attribute</th><th>description</th><th>default</th></tr>");
-				addPropertiesToSchemaOrHtml(ibisBeanExtra, null, result);
+				addPropertiesToSchemaOrHtml(ibisBean, null, result);
 				result.append("</table>");
 				return result.toString();
 			}

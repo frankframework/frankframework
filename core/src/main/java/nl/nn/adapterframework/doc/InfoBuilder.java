@@ -36,7 +36,6 @@ import nl.nn.adapterframework.doc.objects.AFolder;
 import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.IbisBeanExtra;
 import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
 import nl.nn.adapterframework.doc.objects.MethodExtra;
 import nl.nn.adapterframework.doc.objects.SchemaInfo;
@@ -377,19 +376,16 @@ public class InfoBuilder {
 		schemaInfo.setExcludeFilters(excludeFilters);
 		schemaInfo.setIgnores(ignores);
 		schemaInfo.setGroups(getGroups());
-		schemaInfo.setIbisBeans(getIbisBeans(schemaInfo.getGroups()));
+		schemaInfo.setIbisBeansExtra(getIbisBeans(schemaInfo.getGroups()));
 		schemaInfo.setIbisMethods(getIbisMethods());
-		schemaInfo.setIbisBeansExtra(new TreeSet<>());
-		for (IbisBean ibisBean : schemaInfo.getIbisBeans()) {
-			addIbisBeanExtra(ibisBean, schemaInfo);
+		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
+			enrichIbisBean(ibisBean, schemaInfo);
 		}
 		addFolders(schemaInfo);
 		return schemaInfo;
 	}
 
-	private static void addIbisBeanExtra(IbisBean ibisBean, SchemaInfo schemaInfo) {
-		IbisBeanExtra ibisBeanExtra = new IbisBeanExtra();
-		ibisBeanExtra.setIbisBean(ibisBean);
+	private static void enrichIbisBean(IbisBean ibisBean, SchemaInfo schemaInfo) {
 		if (ibisBean.getClazz() != null) {
 			final Map<String, Integer> sortWeight;
 			if (ibisBean.getName().equals("Adapter")) {
@@ -428,10 +424,10 @@ public class InfoBuilder {
 				m.setMethod(classMethods[i]);
 				methodsExtra[i] = m;
 			}
-			ibisBeanExtra.setSortedClassMethods(methodsExtra);
+			ibisBean.setSortedClassMethods(methodsExtra);
 		}
-		if (ibisBeanExtra.getIbisBean().getClazz() != null) {
-			for (MethodExtra methodExtra : ibisBeanExtra.getSortedClassMethods()) {
+		if (ibisBean.getClazz() != null) {
+			for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
                 MethodNameToChildIbisBeanNameMapping methodNameMapping =
                 		getMethodNameMapping(methodExtra.getMethod().getName(), schemaInfo.getIbisMethods());
 				if (methodNameMapping != null) {
@@ -442,7 +438,7 @@ public class InfoBuilder {
 					if (methodExtra.getChildIbisBeans() != null) {
 						// Pipes, Senders, ...
 						int maxOccursX = methodNameMapping.getMaxOccurs();
-						if (overwriteMaxOccursToUnbounded.contains(ibisBeanExtra.getIbisBean().getName())) {
+						if (overwriteMaxOccursToUnbounded.contains(ibisBean.getName())) {
 							maxOccursX = -1;
 						}
 						methodExtra.setMaxOccurs(maxOccursX);
@@ -450,7 +446,7 @@ public class InfoBuilder {
 						// Param, Forward, ...
 						if (methodExtra.getChildIbisBeanName() != null) {
 							boolean isExistingIbisBean = false;
-							for (IbisBean existingIbisBean : schemaInfo.getIbisBeans()) {
+							for (IbisBean existingIbisBean : schemaInfo.getIbisBeansExtra()) {
 								if (existingIbisBean.getName().equals(methodExtra.getChildIbisBeanName())) {
 									isExistingIbisBean = true;
 								}
@@ -468,8 +464,8 @@ public class InfoBuilder {
 				}
 			}
 		}
-		addPropertiesToIbisBeanExtra(ibisBeanExtra, schemaInfo);
-		schemaInfo.getIbisBeansExtra().add(ibisBeanExtra);
+		addPropertiesToIbisBean(ibisBean, schemaInfo);
+		schemaInfo.getIbisBeansExtra().add(ibisBean);
 	}
 
 	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
@@ -481,27 +477,27 @@ public class InfoBuilder {
 		return null;
 	}
 
-	private static void addPropertiesToIbisBeanExtra(final IbisBeanExtra ibisBeanExtra, final SchemaInfo schemaInfo) {
-		Map<String, Method> beanProperties = getBeanProperties(ibisBeanExtra.getIbisBean().getClazz());
-		String name = ibisBeanExtra.getIbisBean().getName();
+	private static void addPropertiesToIbisBean(final IbisBean ibisBean, final SchemaInfo schemaInfo) {
+		Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+		String name = ibisBean.getName();
 		if (copyPropterties.containsKey(name)) {
-			for (IbisBean ibisBean2 : schemaInfo.getIbisBeans()) {
+			for (IbisBean ibisBean2 : schemaInfo.getIbisBeansExtra()) {
 				if (copyPropterties.get(name).equals(ibisBean2.getName())) {
 					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
 				}
 			}
 		}
-		ibisBeanExtra.setProperties(new TreeMap<>());
+		ibisBean.setProperties(new TreeMap<>());
 		for(String property: beanProperties.keySet()) {
 			BeanProperty bp = new BeanProperty();
 			bp.setName(property);
 			bp.setMethod(beanProperties.get(property));
-			ibisBeanExtra.getProperties().put(property, bp);
+			ibisBean.getProperties().put(property, bp);
 		}
 		Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
 		while (iterator.hasNext()) {
 			String property = (String)iterator.next();
-			BeanProperty beanProperty = ibisBeanExtra.getProperties().get(property);
+			BeanProperty beanProperty = ibisBean.getProperties().get(property);
 			boolean exclude = false;
 			if (property.equals("name")) {
 				for (String filter : excludeNameAttribute) {
