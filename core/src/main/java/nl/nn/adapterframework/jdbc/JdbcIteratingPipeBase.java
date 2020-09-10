@@ -47,7 +47,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
-	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.JdbcQuerySenderBase";
+	private final String JDBCQUERYSENDERBASE = "nl.nn.adapterframework.jdbc.JdbcQuerySenderBase";
 
 	protected class MixedQuerySender extends DirectQuerySender {
 		
@@ -159,37 +159,37 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.setQuery(query);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	@IbisDocRef({"2", JDBCQUERYSENDERBASE})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	@IbisDocRef({"3", JDBCQUERYSENDERBASE})
 	public void setUseNamedParams(boolean b) {
 		querySender.setUseNamedParams(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	@IbisDocRef({"4", JDBCQUERYSENDERBASE})
 	public void setTrimSpaces(boolean b) {
 		querySender.setTrimSpaces(b);
 	}
 
-	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	@IbisDocRef({"5", JDBCQUERYSENDERBASE})
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
 	
-	@IbisDocRef({"6", FIXEDQUERYSENDER})
+	@IbisDocRef({"6", JDBCQUERYSENDERBASE})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"7", FIXEDQUERYSENDER})
+	@IbisDocRef({"7", JDBCQUERYSENDERBASE})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
 
-	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	@IbisDocRef({"8", JDBCQUERYSENDERBASE})
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
 	}
