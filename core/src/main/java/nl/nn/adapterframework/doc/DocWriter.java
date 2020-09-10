@@ -77,7 +77,7 @@ public class DocWriter {
 	}
 
 	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, DocInfo docInfo) {
-		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedClassMethods() != null)) {
+		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedClassMethods().length >= 1)) {
 			XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
 			complexType.addAttribute("name", ibisBean.getName() + "Type");
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();

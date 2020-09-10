@@ -35,7 +35,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		DocInfo docInfo;
 		try {
-			docInfo = InfoBuilder.build();
+			docInfo = new InfoBuilder().build();
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Could not gather the necessary information", e);
 		}
