@@ -509,7 +509,8 @@ public class InfoBuilder {
 			}
 			beanProperty.setExcluded(exclude);
 			if (!exclude) {
-				FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(beanProperty.getMethod());
+				FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(
+						beanProperty.getMethod(), false);
 				if (fromAnnotations != null) {
 					beanProperty.setHasDocumentation(true);
 					beanProperty.setOrder(fromAnnotations.order);
@@ -579,7 +580,7 @@ public class InfoBuilder {
             // Get the method
             String property = iterator.next();
             Method method = beanProperties.get(property);
-            FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method);
+            FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method, true);
             if(fromAnnotations != null) {
             	AMethod aMethod = new AMethod();
             	aMethod.setName(property);
@@ -677,7 +678,7 @@ public class InfoBuilder {
     	String defaultValue;
     }
 
-    private static FromAnnotations parseIbisDocAndIbisDocRef(Method method) {
+    private static FromAnnotations parseIbisDocAndIbisDocRef(Method method, boolean isJson) {
     	String referredClassName = "";
     	IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
@@ -685,7 +686,7 @@ public class InfoBuilder {
 		boolean hasIbisDocRefWithOrder = false;
 		int orderOfIbisDocRef = 0;
 		if (ibisDocRef != null) {
-			if (ibisDoc == null) {
+			if(isJson || (ibisDoc == null)) {
 				String[] orderAndPackageName = ibisDocRef.value();
 				String packageName = null;
 				if(orderAndPackageName.length == 1) {
@@ -700,26 +701,26 @@ public class InfoBuilder {
 					}
 				}
 				
-		        // Get the last element of the full package, to check if it is a class or a method
-		        String classOrMethod = packageName.substring(packageName.lastIndexOf(".") + 1).trim();
-		        char[] firstLetter = classOrMethod.toCharArray();
+				// Get the last element of the full package, to check if it is a class or a method
+				String classOrMethod = packageName.substring(packageName.lastIndexOf(".") + 1).trim();
+				char[] firstLetter = classOrMethod.toCharArray();
 
-		        // Check the first letter of the last element (if lower case => method, else class)
-		        if (Character.isLowerCase(firstLetter[0])) {
+				// Check the first letter of the last element (if lower case => method, else class)
+				if (Character.isLowerCase(firstLetter[0])) {
 
-		            // Get the full class name
-		            int lastIndexOf = packageName.lastIndexOf(".");
-		            String fullClassName = packageName.substring(0, lastIndexOf);
+					// Get the full class name
+					int lastIndexOf = packageName.lastIndexOf(".");
+					String fullClassName = packageName.substring(0, lastIndexOf);
 
-		            // Get the reference values of the specified method
-		            ibisDoc = getRefValues(fullClassName, classOrMethod);
-		            referredClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1).trim();
-		        } else {
-		            // Get the reference values of this method
-		            ibisDoc = getRefValues(packageName, method.getName());
-		            referredClassName = classOrMethod;
-		        }
-		        originalClass = referredClassName;
+					// Get the reference values of the specified method
+					ibisDoc = getRefValues(fullClassName, classOrMethod);
+					referredClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1).trim();
+				} else {
+					// Get the reference values of this method
+					ibisDoc = getRefValues(packageName, method.getName());
+					referredClassName = classOrMethod;
+				}
+				originalClass = referredClassName;
 			}
 		}
 		if (ibisDoc != null) {
