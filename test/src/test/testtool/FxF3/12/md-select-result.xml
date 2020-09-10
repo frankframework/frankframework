@@ -41,16 +41,16 @@
       <field name="CORRELATIONID">Test Tool correlation id</field>
       <field name="MESSAGEDATE">2018-07-13 13:38:46</field>
       <field name="COMMENTS">too many retries; Cannot align JSON: Validation using FxfXmlValidator with 'xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl' failed:
-/: javax.json.stream.JsonParsingException: Unexpected char 78 at (line no=1, column no=2, offset=1)&#13;
-	at org.glassfish.json.JsonTokenizer.unexpectedChar(JsonTokenizer.java:532)&#13;
-	at org.glassfish.json.JsonTokenizer.nextToken(JsonTokenizer.java:415)&#13;
-	at org.glassfish.json.JsonParserImpl$ArrayContext.getNextEvent(JsonParserImpl.java:303)&#13;
-	at org.glassfish.json.JsonParserImpl$StateIterator.next(JsonParserImpl.java:172)&#13;
-	at org.glassfish.json.JsonParserImpl.next(JsonParserImpl.java:149)&#13;
-	at org.glassfish.json.JsonReaderImpl.readArray(JsonReaderImpl.java:136)&#13;
-	at org.glassfish.json.JsonReaderImpl.read(JsonReaderImpl.java:86)&#13;
-	at nl.nn.adapterframework.pipes.Json2XmlValidator.alignJson(Json2XmlValidator.java:250)&#13;
-	at nl.nn.adapterframework.pipes.Json2XmlValidator.doPipe(Json2XmlValidator.java:199)&#13;
+/: javax.json.stream.JsonParsingException: Unexpected char 78 at (line no=1, column no=2, offset=1)
+	at org.glassfish.json.JsonTokenizer.unexpectedChar(JsonTokenizer.java:532)
+	at org.glassfish.json.JsonTokenizer.nextToken(JsonTokenizer.java:415)
+	at org.glassfish.json.JsonParserImpl$ArrayContext.getNextEvent(JsonParserImpl.java:303)
+	at org.glassfish.json.JsonParserImpl$StateIterator.next(JsonParserImpl.java:172)
+	at org.glassfish.json.JsonParserImpl.next(JsonParserImpl.java:149)
+	at org.glassfish.json.JsonReaderImpl.readArray(JsonReaderImpl.java:136)
+	at org.glassfish.json.JsonReaderImpl.read(JsonReaderImpl.java:86)
+	at nl.nn.adapterframework.pipes.Json2XmlValidator.alignJson(Json2XmlValidator.java:250)
+	at nl.nn.adapterframework.pipes.Json2XmlValidator.doPipe(Json2XmlValidator.java:199)
 	at nl.nn.adapterframework.pipes.XmlValidato</field>
       <field name="MESSAGE">[NO_XML]</field>
       <field name="EXPIRYDATE" null="true"/>
