@@ -523,20 +523,15 @@ public class InfoBuilder {
     private static void addFolders(SchemaInfo schemaInfo) {
     	Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
     	schemaInfo.setFolders(new ArrayList<>());
+    	Map<String, AClass> aClassLookup = new TreeMap<>();
         // Folder "All" is expected to be empty.
     	AFolder allFolder = new AFolder("All");
         for (String folder : groups.keySet()) {
             AFolder newFolder = new AFolder(folder);
-            setClassesOfFolder(groups, newFolder);
+            setClassesOfFolder(groups, newFolder, aClassLookup);
             schemaInfo.getFolders().add(newFolder);
         }
         schemaInfo.getFolders().add(allFolder);
-        Map<String, AClass> aClassLookup = new TreeMap<>();
-        for(AFolder folder : schemaInfo.getFolders()) {
-        	for(AClass aClass: folder.getClasses()) {
-        		aClassLookup.put(aClass.getClazz().getName(), aClass);
-        	}
-        }
         setSuperclasses(aClassLookup);
     }
 
@@ -546,17 +541,24 @@ public class InfoBuilder {
      * @param groups - Contains all information
      * @param folder - The folder object we have to add the classes to
      */
-    private static void setClassesOfFolder(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
+    private static void setClassesOfFolder(Map<String, TreeSet<IbisBean>> groups, AFolder folder, Map<String, AClass> aClassLookup) {
 		for (IbisBean ibisBean : groups.get(folder.getName())) {
             Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
             if (!beanProperties.isEmpty()) {
-                AClass aClass = new AClass();
-                aClass.setClazz(ibisBean.getClazz());
+            	Class<?> clazz = ibisBean.getClazz();
+            	AClass aClass;
+            	if(!aClassLookup.containsKey(clazz.getName())) {
+            		aClass = new AClass();
+            		aClass.setClazz(clazz);
+            		aClassLookup.put(clazz.getName(), aClass);
 
-                // Get the javadoc link for the class
-                String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-                aClass.setJavadocLink(javadocLink);
-                setMethodsOfFolderClass(beanProperties, aClass);
+            		// Get the javadoc link for the class
+            		String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+            		aClass.setJavadocLink(javadocLink);
+            		setMethodsOfFolderClass(beanProperties, aClass);
+            	} else {
+            		aClass = aClassLookup.get(clazz.getName());
+            	}
                 folder.addClass(aClass);
             }
         }
@@ -593,6 +595,9 @@ public class InfoBuilder {
                 aMethod.setReferredClassName(fromAnnotations.referredClass);
 
                 newClass.addMethod(aMethod);
+                if(!aMethod.getReferredClassName().isEmpty()) {
+                	newClass.setReferredClassName(aMethod.getReferredClassName());
+                }
             }
         }
     }
