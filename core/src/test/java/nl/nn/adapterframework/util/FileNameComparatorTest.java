@@ -17,12 +17,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class FileNameComparatorTest {
 
-
 	@Test
 	public void testComparator() throws Exception {
 		List<File> list = new ArrayList<>();
-		list.add(new File("test.txt"));list.add(new File( "teSt.txt"));
-		list.add(new File("0123.py")); list.add(new File("test.xml")); list.add(new File("document.txt"));
+		list.add(new File("test.txt"));
+		list.add(new File("teSt.txt"));
+		list.add(new File("0123.py"));
+		list.add(new File("test.xml"));
+		list.add(new File("document.txt"));
 		Collections.sort(list, new FileNameComparator());
 		assertEquals("0123.py", list.get(0).getName());
 		assertEquals("document.txt", list.get(1).getName());
@@ -74,7 +76,8 @@ public class FileNameComparatorTest {
 	@Test
 	public void testEndingWithNumber() throws Exception {
 		List<File> list = new ArrayList<>();
-		list.add(new File("ibis_xml.log.1"));list.add(new File( "ibis_xml.log.2"));
+		list.add(new File("ibis_xml.log.1"));
+		list.add(new File("ibis_xml.log.2"));
 		list.add(new File("ibis_xml.log.-2"));
 		Collections.sort(list, new FileNameComparator());
 		assertEquals("ibis_xml.log.1", list.get(0).getName());
