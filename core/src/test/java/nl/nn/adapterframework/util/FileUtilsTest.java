@@ -3,8 +3,6 @@ package nl.nn.adapterframework.util;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
