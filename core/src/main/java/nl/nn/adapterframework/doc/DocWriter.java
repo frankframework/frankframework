@@ -20,11 +20,11 @@ import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.MethodExtra;
-import nl.nn.adapterframework.doc.objects.SchemaInfo;
+import nl.nn.adapterframework.doc.objects.DocInfo;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class DocWriter {
-	public static String getSchema(SchemaInfo schemaInfo) throws PipeRunException {
+	public static String getSchema(DocInfo docInfo) throws PipeRunException {
 		XmlBuilder schema;
 		XmlBuilder element;
 		XmlBuilder complexType;
@@ -70,13 +70,13 @@ public class DocWriter {
 		element.addAttribute("minOccurs", "0");
 		choice.addSubElement(element);
 
-		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
-			addIbisBeanToSchema(ibisBean, schema, schemaInfo);
+		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
+			addIbisBeanToSchema(ibisBean, schema, docInfo);
 		}
 		return schema.toXML(true);
 	}
 
-	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, SchemaInfo schemaInfo) {
+	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, DocInfo docInfo) {
 		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedClassMethods() != null)) {
 			XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
 			complexType.addAttribute("name", ibisBean.getName() + "Type");
@@ -84,7 +84,7 @@ public class DocWriter {
 			for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
 				if (methodExtra.getChildIbisBeans() != null) {
 					// Pipes, Senders, ...
-					if (!ignore(ibisBean, methodExtra.getChildIbisBeanName(), schemaInfo)) {
+					if (!ignore(ibisBean, methodExtra.getChildIbisBeanName(), docInfo)) {
 						XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
 						choice.addAttribute("minOccurs", "0");
 						addMaxOccurs(choice, methodExtra.getMaxOccurs());
@@ -115,11 +115,11 @@ public class DocWriter {
 		}
 	}
 
-	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName, SchemaInfo schemaInfo) {
+	private static boolean ignore(IbisBean ibisBean, String childIbisBeanName, DocInfo docInfo) {
 		boolean ignore = false;
-		for (String namePart : schemaInfo.getIgnores().keySet()) {
+		for (String namePart : docInfo.getIgnores().keySet()) {
 			if (ibisBean.getName().indexOf(namePart) != -1 && childIbisBeanName.equals(
-					schemaInfo.getIgnores().get(namePart))) {
+					docInfo.getIgnores().get(namePart))) {
 				ignore = true;
 			}
 		}
@@ -199,13 +199,13 @@ public class DocWriter {
 		}
 	}
 
-    public static String getJson(SchemaInfo schemaInfo) {
+    public static String getJson(DocInfo docInfo) {
         JSONArray newFolders = new JSONArray();
         JSONArray newClasses;
         JSONArray newMethods;
 
         try {
-            for (AFolder folder : schemaInfo.getFolders()) {
+            for (AFolder folder : docInfo.getFolders()) {
                 JSONObject folderObject = new JSONObject();
                 folderObject.put("name", folder.getName());
 
@@ -241,11 +241,11 @@ public class DocWriter {
         return newFolders.toString();
     }
 
-	public static String getUglifyLookup(SchemaInfo schemaInfo) {
+	public static String getUglifyLookup(DocInfo docInfo) {
 		StringBuffer result = new StringBuffer();
 		result.append("<Elements>\n");
-		Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
-		for (String group : schemaInfo.getGroups().keySet()) {
+		Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
+		for (String group : docInfo.getGroups().keySet()) {
 			for (IbisBean ibisBean : groups.get(group)) {
 				String type = "";
 				String className = ibisBean.getClazz().getName();
@@ -273,9 +273,9 @@ public class DocWriter {
 		return result.toString();
 	}
 
-	public static String getHtmlFrankDocAll(SchemaInfo schemaInfo) {
+	public static String getHtmlFrankDocAll(DocInfo docInfo) {
 		StringBuffer allHtml = new StringBuffer();
-		getMenuHtml(null, allHtml, null, schemaInfo);
+		getMenuHtml(null, allHtml, null, docInfo);
 		return allHtml.toString();
 	}
 
@@ -283,11 +283,11 @@ public class DocWriter {
 			StringBuffer topmenuHtml,
 			StringBuffer allHtml,
 			Map<String, String> groupsHtml,
-			SchemaInfo schemaInfo) {
+			DocInfo docInfo) {
 		if (topmenuHtml == null) topmenuHtml = new StringBuffer();
 		if (allHtml == null)  allHtml = new StringBuffer();
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
-		Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
+		Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
 
 		for (String group : groups.keySet()) {
 			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
@@ -309,14 +309,14 @@ public class DocWriter {
 		topmenuHtml.append("<a href='excludes.html' target='contentFrame'>Excludes</a><br/>\n");
 	}
 
-	public static String getHtmlFrankDocGroupOrBean(String page, SchemaInfo schemaInfo) {
+	public static String getHtmlFrankDocGroupOrBean(String page, DocInfo docInfo) {
 		String result = null;
-		if (schemaInfo.getGroups().get(page) != null) {
+		if (docInfo.getGroups().get(page) != null) {
 			Map<String, String> groupsHtml = new HashMap<String, String>();
-			getMenuHtml(null, null, groupsHtml, schemaInfo);
+			getMenuHtml(null, null, groupsHtml, docInfo);
 			result = groupsHtml.get(page);
 		} else {
-			String beanHtml = getBeanHtml(page, schemaInfo);
+			String beanHtml = getBeanHtml(page, docInfo);
 			if (beanHtml != null) {
 				result = beanHtml;
 			}
@@ -324,8 +324,8 @@ public class DocWriter {
 		return result;
 	}
 
-	private static String getBeanHtml(String beanName, SchemaInfo schemaInfo) {
-		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
+	private static String getBeanHtml(String beanName, DocInfo docInfo) {
+		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
 			if (beanName.equals(ibisBean.getName())) {
 				StringBuffer result = new StringBuffer();
 				result.append(beanName);
@@ -359,15 +359,15 @@ public class DocWriter {
 				+ "</html>";
 	}
 
-	public static String getHtmlFrankDocTopMenu(SchemaInfo schemaInfo) {
+	public static String getHtmlFrankDocTopMenu(DocInfo docInfo) {
 		StringBuffer topmenuHtml = new StringBuffer();
-		getMenuHtml(topmenuHtml, null, null, schemaInfo);
+		getMenuHtml(topmenuHtml, null, null, docInfo);
 		return topmenuHtml.toString();
 	}
 
-	public static String getHtmlFrankDocExcludes(SchemaInfo schemaInfo) {
+	public static String getHtmlFrankDocExcludes(DocInfo docInfo) {
 		StringBuffer excludesHtml = new StringBuffer();
-		for (String exclude : schemaInfo.getExcludeFilters()) {
+		for (String exclude : docInfo.getExcludeFilters()) {
 			excludesHtml.append("<p> " + exclude + "</p>\n");
 		}
 		return excludesHtml.toString();

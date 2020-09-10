@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.objects.SchemaInfo;
+import nl.nn.adapterframework.doc.objects.DocInfo;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -33,9 +33,9 @@ import nl.nn.adapterframework.stream.Message;
 public class IbisDocPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		SchemaInfo schemaInfo;
+		DocInfo docInfo;
 		try {
-			schemaInfo = InfoBuilder.build();
+			docInfo = InfoBuilder.build();
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Could not gather the necessary information", e);
 		}
@@ -55,13 +55,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 		String result = "Not found";
 		String contentType = "text/html";
 		if ("/ibisdoc/ibisdoc.xsd".equals(uri)) {
-			result = DocWriter.getSchema(schemaInfo);
+			result = DocWriter.getSchema(docInfo);
 			contentType = "application/xml";
 		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
-			result = DocWriter.getUglifyLookup(schemaInfo);
+			result = DocWriter.getUglifyLookup(docInfo);
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = DocWriter.getJson(schemaInfo);
+			result = DocWriter.getJson(docInfo);
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -75,15 +75,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = DocWriter.getHtmlFrankDocTopLevel();
 		} else if (uri.endsWith(".html")) {
 			if ("/ibisdoc/topmenu.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocTopMenu(schemaInfo);
+				result = DocWriter.getHtmlFrankDocTopMenu(docInfo);
 			} else if ("/ibisdoc/all.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocAll(schemaInfo);
+				result = DocWriter.getHtmlFrankDocAll(docInfo);
 			} else if ("/ibisdoc/excludes.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocExcludes(schemaInfo);
+				result = DocWriter.getHtmlFrankDocExcludes(docInfo);
 			} else {
 				if (uri.length() > "/ibisdoc/".length() && uri.indexOf(".") != -1) {
 					String page = uri.substring("/ibisdoc/".length(), uri.lastIndexOf("."));
-					result = DocWriter.getHtmlFrankDocGroupOrBean(page, schemaInfo);
+					result = DocWriter.getHtmlFrankDocGroupOrBean(page, docInfo);
 				}
 			}
 		}

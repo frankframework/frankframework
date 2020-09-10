@@ -38,7 +38,7 @@ import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
 import nl.nn.adapterframework.doc.objects.MethodExtra;
-import nl.nn.adapterframework.doc.objects.SchemaInfo;
+import nl.nn.adapterframework.doc.objects.DocInfo;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -372,21 +372,21 @@ public class InfoBuilder {
 		}
 	}
 
-	public static SchemaInfo build() throws Exception {
-		SchemaInfo schemaInfo = new SchemaInfo();
-		schemaInfo.setExcludeFilters(excludeFilters);
-		schemaInfo.setIgnores(ignores);
-		schemaInfo.setGroups(getGroups());
-		schemaInfo.setIbisBeansExtra(getIbisBeans(schemaInfo.getGroups()));
-		schemaInfo.setIbisMethods(getIbisMethods());
-		for (IbisBean ibisBean : schemaInfo.getIbisBeansExtra()) {
-			enrichIbisBean(ibisBean, schemaInfo);
+	public static DocInfo build() throws Exception {
+		DocInfo docInfo = new DocInfo();
+		docInfo.setExcludeFilters(excludeFilters);
+		docInfo.setIgnores(ignores);
+		docInfo.setGroups(getGroups());
+		docInfo.setIbisBeans(getIbisBeans(docInfo.getGroups()));
+		docInfo.setMethodNameMappings(getIbisMethods());
+		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
+			enrichIbisBean(ibisBean, docInfo);
 		}
-		addFolders(schemaInfo);
-		return schemaInfo;
+		addFolders(docInfo);
+		return docInfo;
 	}
 
-	private static void enrichIbisBean(IbisBean ibisBean, SchemaInfo schemaInfo) {
+	private static void enrichIbisBean(IbisBean ibisBean, DocInfo docInfo) {
 		if (ibisBean.getClazz() != null) {
 			final Map<String, Integer> sortWeight;
 			if (ibisBean.getName().equals("Adapter")) {
@@ -430,11 +430,11 @@ public class InfoBuilder {
 		if (ibisBean.getClazz() != null) {
 			for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
                 MethodNameToChildIbisBeanNameMapping methodNameMapping =
-                		getMethodNameMapping(methodExtra.getMethod().getName(), schemaInfo.getIbisMethods());
+                		getMethodNameMapping(methodExtra.getMethod().getName(), docInfo.getMethodNameMappings());
 				if (methodNameMapping != null) {
 					methodExtra.setChildIbisBeanName(
 							toUpperCamelCase(methodNameMapping.getChildIbisBeanName()));
-					methodExtra.setChildIbisBeans(schemaInfo.getGroups().get(
+					methodExtra.setChildIbisBeans(docInfo.getGroups().get(
 							methodExtra.getChildIbisBeanName() + "s"));
 					if (methodExtra.getChildIbisBeans() != null) {
 						// Pipes, Senders, ...
@@ -447,7 +447,7 @@ public class InfoBuilder {
 						// Param, Forward, ...
 						if (methodExtra.getChildIbisBeanName() != null) {
 							boolean isExistingIbisBean = false;
-							for (IbisBean existingIbisBean : schemaInfo.getIbisBeansExtra()) {
+							for (IbisBean existingIbisBean : docInfo.getIbisBeans()) {
 								if (existingIbisBean.getName().equals(methodExtra.getChildIbisBeanName())) {
 									isExistingIbisBean = true;
 								}
@@ -465,11 +465,12 @@ public class InfoBuilder {
 				}
 			}
 		}
-		addPropertiesToIbisBean(ibisBean, schemaInfo);
-		schemaInfo.getIbisBeansExtra().add(ibisBean);
+		addPropertiesToIbisBean(ibisBean, docInfo);
+		docInfo.getIbisBeans().add(ibisBean);
 	}
 
-	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
+	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(
+			String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
 		for (MethodNameToChildIbisBeanNameMapping mapping : mappings) {
 			if (mapping.getMethodName().equals(ibisMethodName)) {
 				return mapping;
@@ -478,13 +479,13 @@ public class InfoBuilder {
 		return null;
 	}
 
-	private static void addPropertiesToIbisBean(final IbisBean ibisBean, final SchemaInfo schemaInfo) {
+	private static void addPropertiesToIbisBean(final IbisBean ibisBean, final DocInfo docInfo) {
 		Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
 		String name = ibisBean.getName();
 		if (copyPropterties.containsKey(name)) {
-			for (IbisBean ibisBean2 : schemaInfo.getIbisBeansExtra()) {
-				if (copyPropterties.get(name).equals(ibisBean2.getName())) {
-					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
+			for (IbisBean copySource : docInfo.getIbisBeans()) {
+				if (copyPropterties.get(name).equals(copySource.getName())) {
+					beanProperties.putAll(getBeanProperties(copySource.getClazz()));
 				}
 			}
 		}
@@ -521,18 +522,18 @@ public class InfoBuilder {
 		}
 	}		
 
-    private static void addFolders(SchemaInfo schemaInfo) {
-    	Map<String, TreeSet<IbisBean>> groups = schemaInfo.getGroups();
-    	schemaInfo.setFolders(new ArrayList<>());
+    private static void addFolders(DocInfo docInfo) {
+    	Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
+    	docInfo.setFolders(new ArrayList<>());
     	Map<String, AClass> aClassLookup = new TreeMap<>();
         // Folder "All" is expected to be empty.
     	AFolder allFolder = new AFolder("All");
         for (String folder : groups.keySet()) {
             AFolder newFolder = new AFolder(folder);
             setClassesOfFolder(groups, newFolder, aClassLookup);
-            schemaInfo.getFolders().add(newFolder);
+            docInfo.getFolders().add(newFolder);
         }
-        schemaInfo.getFolders().add(allFolder);
+        docInfo.getFolders().add(allFolder);
         setSuperclasses(aClassLookup);
     }
 
@@ -542,7 +543,8 @@ public class InfoBuilder {
      * @param groups - Contains all information
      * @param folder - The folder object we have to add the classes to
      */
-    private static void setClassesOfFolder(Map<String, TreeSet<IbisBean>> groups, AFolder folder, Map<String, AClass> aClassLookup) {
+    private static void setClassesOfFolder(
+    		Map<String, TreeSet<IbisBean>> groups, AFolder folder, Map<String, AClass> aClassLookup) {
 		for (IbisBean ibisBean : groups.get(folder.getName())) {
             Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
             if (!beanProperties.isEmpty()) {
@@ -603,27 +605,6 @@ public class InfoBuilder {
             }
         }
     }
-
-    /**
-     * Get the superclasses of a certain class.
-     *
-     * @param referredClassName - The class we have to derive the superclasses from
-     */
-    /*
-    private static void setSuperclasses(AClass newClass) {
-        List<String> superClassesSimpleNames = new ArrayList<>();
-    	if (!newClass.getReferredClassName().isEmpty()) {
-            superClassesSimpleNames.add(newClass.getReferredClassName());
-        }
-        Class<?> superClass = newClass.getClazz();
-        while (superClass.getSuperclass() != null) {
-            // Assign a string to the array of superclasses
-            superClassesSimpleNames.add(superClass.getSuperclass().getSimpleName());
-            superClass = superClass.getSuperclass();
-        }
-        newClass.setSuperClassesSimpleNames(superClassesSimpleNames);
-    }
-    */
 
     private static void setSuperclasses(Map<String, AClass> aClassLookup) {
     	new SuperClassesAdder().run(aClassLookup);

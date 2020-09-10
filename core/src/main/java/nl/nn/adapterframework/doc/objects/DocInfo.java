@@ -8,10 +8,10 @@ import java.util.TreeSet;
 import lombok.Getter;
 import lombok.Setter;
 
-public class SchemaInfo {
+public class DocInfo {
 	private @Getter @Setter Map<String, TreeSet<IbisBean>> groups;
-	private @Getter @Setter List<MethodNameToChildIbisBeanNameMapping> ibisMethods;
-	private @Getter @Setter Set<IbisBean> ibisBeansExtra;
+	private @Getter @Setter List<MethodNameToChildIbisBeanNameMapping> methodNameMappings;
+	private @Getter @Setter Set<IbisBean> ibisBeans;
 	private @Getter @Setter List<AFolder> folders;
 	private @Getter @Setter Map<String, String> ignores;
 	private @Getter @Setter Set<String> excludeFilters;
