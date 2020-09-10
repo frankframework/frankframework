@@ -49,10 +49,8 @@ public class FileNameComparatorTest {
 		String s1 = "file1.txt";
 		String s2 = "File2.txt";
 		String s4 = "file2.txt";
-		int a = FileNameComparator.compareStringsNaturalOrder(s1, s2, true);
-		int d = FileNameComparator.compareStringsNaturalOrder(s2, s4, false);
-		assertTrue(a > 0);
-		assertTrue(d == 0);
+		assertTrue(FileNameComparator.compareStringsNaturalOrder(s1, s2, true) > 0);
+		assertTrue(FileNameComparator.compareStringsNaturalOrder(s2, s4, false) == 0);
 	}
 
 	/**
@@ -64,14 +62,24 @@ public class FileNameComparatorTest {
 		File f2 = new File("second.txt");
 		File f3 = new File("first.txt");
 		File f4 = new File("FiRst.txt");
-		int i = FileNameComparator.compareFilenames(f1, f2);
-		int j = FileNameComparator.compareFilenames(f1, f3);
-		int k = FileNameComparator.compareFilenames(f1, f4);
-		int l = FileNameComparator.compareFilenames(f2, f1);
-		assertTrue(i < 0);
-		assertTrue(j == 0);
-		assertTrue(k > 0);
-		assertTrue(l > 0);
+		File f5 = new File("filename5.txt");
+		File f6 = new File("filename24.txt");
+		assertTrue(FileNameComparator.compareFilenames(f1, f2) < 0);
+		assertTrue(FileNameComparator.compareFilenames(f1, f3) == 0);
+		assertTrue(FileNameComparator.compareFilenames(f1, f4) > 0);
+		assertTrue(FileNameComparator.compareFilenames(f2, f1) > 0);
+		assertTrue(FileNameComparator.compareFilenames(f5, f6) < 0);
+	}
+
+	@Test
+	public void testEndingWithNumber() throws Exception {
+		List<File> list = new ArrayList<>();
+		list.add(new File("ibis_xml.log.1"));list.add(new File( "ibis_xml.log.2"));
+		list.add(new File("ibis_xml.log.-2"));
+		Collections.sort(list, new FileNameComparator());
+		assertEquals("ibis_xml.log.1", list.get(0).getName());
+		assertEquals("ibis_xml.log.2", list.get(1).getName());
+		assertEquals("ibis_xml.log.-2", list.get(2).getName());
 	}
 
 } 
