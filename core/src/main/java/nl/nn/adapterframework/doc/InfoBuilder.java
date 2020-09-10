@@ -549,6 +549,7 @@ public class InfoBuilder {
             	AClass aClass;
             	if(!aClassLookup.containsKey(clazz.getName())) {
             		aClass = new AClass();
+            		aClass.setMethods(new ArrayList<>());
             		aClass.setClazz(clazz);
             		aClassLookup.put(clazz.getName(), aClass);
 
@@ -594,7 +595,7 @@ public class InfoBuilder {
                 aMethod.setDeprecated(isDeprecated);
                 aMethod.setReferredClassName(fromAnnotations.referredClass);
 
-                newClass.addMethod(aMethod);
+                newClass.getMethods().add(aMethod);
                 if(!aMethod.getReferredClassName().isEmpty()) {
                 	newClass.setReferredClassName(aMethod.getReferredClassName());
                 }
@@ -644,16 +645,20 @@ public class InfoBuilder {
     			return;
     		}
     		toHandle.setSuperClassesSimpleNames(new ArrayList<>());
+			if(!toHandle.getReferredClassName().isEmpty()) {
+				toHandle.getSuperClassesSimpleNames().add(toHandle.getReferredClassName());
+			}
     		Class<?> superClazz = toHandle.getClazz().getSuperclass();
     		AClass superClass = null;
     		if((superClazz != null) && aClassLookup.containsKey(superClazz.getName())) {
     			superClass = aClassLookup.get(superClazz.getName());
     			handle(superClass);
-    			if(!superClass.getReferredClassName().isEmpty()) {
-    				toHandle.getSuperClassesSimpleNames().add(superClass.getReferredClassName());
-    			}
     			toHandle.getSuperClassesSimpleNames().add(superClass.getClazz().getSimpleName());
-    			toHandle.getSuperClassesSimpleNames().addAll(superClass.getSuperClassesSimpleNames());
+    			List<String> remainingSuperClasses = new ArrayList<>(superClass.getSuperClassesSimpleNames());
+    			if(!toHandle.getReferredClassName().isEmpty()) {
+    				remainingSuperClasses.remove(toHandle.getReferredClassName());
+    			}
+    			toHandle.getSuperClassesSimpleNames().addAll(remainingSuperClasses);
     		}
     		else {
     			while(superClazz != null) {

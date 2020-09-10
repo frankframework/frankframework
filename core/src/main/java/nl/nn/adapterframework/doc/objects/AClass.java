@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -27,22 +26,9 @@ import lombok.Setter;
  * @author Chakir el Moussaoui
  */
 public class AClass {
-
     private @Getter @Setter Class<?> clazz;
     private @Getter @Setter String javadocLink;
     private @Getter @Setter List<String> superClassesSimpleNames;
-    private ArrayList<AMethod> methods;
+    private @Getter @Setter List<AMethod> methods;
     private @Getter @Setter String referredClassName = "";
-
-    public AClass() {
-        this.methods = new ArrayList<>();
-    }
-
-    public List<AMethod> getMethods() {
-    	return methods;
-    }
-
-    public void addMethod(AMethod method) {
-        methods.add(method);
-    }
 }
