@@ -25,9 +25,16 @@ public class FileUtilsTest {
 	@ClassRule
 	public static TemporaryFolder testFolderSource = new TemporaryFolder();
 
-	private static String sourceFolderPath;
+	@ClassRule
+	public static TemporaryFolder testFolderDest = new TemporaryFolder();
+
+	public static String sourceFolderPath;
+
+	public static String destFolderPath;
 
 	private static File f1;
+
+	private static File f2;
 
 	String sep = File.separator;
 
@@ -35,6 +42,21 @@ public class FileUtilsTest {
 	public static void setUpTest() throws IOException {
 		sourceFolderPath = testFolderSource.getRoot().getPath();
 		f1 = testFolderSource.newFile("1.txt");
+		destFolderPath = testFolderDest.getRoot().getPath();
+		f2 = testFolderDest.newFile("2.txt");
+	}
+
+	@Test
+	public void testGetFreeFile() throws Exception {
+		File f = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes");
+		File res = FileUtils.getFreeFile(f);
+		assertEquals("Pipes", res.getName());
+	}
+
+	@Test
+	public void testMoveFile() throws Exception {
+		String s = FileUtils.moveFile(f1, destFolderPath, true, 2);
+		assertEquals(destFolderPath + sep + "1.txt", s);
 	}
 
 
@@ -47,6 +69,14 @@ public class FileUtilsTest {
 		File destFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "destinationFile.txt");
 		String res = FileUtils.appendFile(orgFile, destFile, 5, 5000);
 		assertEquals(destFile.getAbsolutePath(), res);
+	}
+
+	@Test
+	public void testCopyFile() throws Exception {
+		File sourceFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "fileToAppend.txt");
+		File destFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "copyFile.txt");
+		boolean b = FileUtils.copyFile(sourceFile, destFile, true);
+		assertEquals(true, b);
 	}
 
 
@@ -68,22 +98,20 @@ public class FileUtilsTest {
 	public void testMakeBackups() throws Exception {
 		FileUtils.makeBackups(f1, 5);
 		assertEquals(3, 3);
-
 	}
-
 
 	/**
 	 * Method: getFiles(String directory, String wildcard, String excludeWildcard, long minStability)
 	 */
-	/* WIP
+	/*
 	@Test
 	public void testGetFiles() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript";
 		File f = new File(path);
-		File[] files = FileUtils.getFiles(path, ".txt", "", 5);
-		assertEquals("2.txt", files[0].getName());
+		File[] files = FileUtils.getFiles(path, ".txt", ".txt", 5);
+		assertEquals("rhino-test.js", files[0].getName());
 	}
-	 */
+*/
 
 	/**
 	 * Method: getFirstFile(File directory)
@@ -94,7 +122,6 @@ public class FileUtilsTest {
 		File f = new File(path);
 		File file = FileUtils.getFirstFile(f);
 		assertEquals("2.txt", file.getName());
-
 	}
 
 	/**
