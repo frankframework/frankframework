@@ -7,8 +7,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -28,6 +30,7 @@ public class InfoBuilder {
 	private static final int MAX_ORDER = 999;
 
 	private DocInfo docInfo;
+	private final Map<String, AClass> aClassLookup = new TreeMap<>();
 
 	/**
 	 * @return The {@link DocInfo} object that holds all the information that is needed to
@@ -49,69 +52,64 @@ public class InfoBuilder {
 		docInfo.setIbisBeans(InfoBuilderSource.getIbisBeans(docInfo.getGroups()));
 		docInfo.setMethodNameMappings(InfoBuilderSource.getMethodMappings());
 		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
-			enrichIbisBeanWithSortedClassMethods(ibisBean);
 			if (ibisBean.getClazz() != null) {
+				enrichIbisBeanWithSortedClassMethods(ibisBean);
 				for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
 	                enrichMethodOfIbisBean(methodExtra, ibisBean);
 				}
 			}
 			enrichIbisBeanWithProperties(ibisBean);
+			ibisBean.getProperties().keySet().forEach(
+					property -> enrichPropertyOfIbisBean(ibisBean.getProperties().get(property), ibisBean));			
 			docInfo.getIbisBeans().add(ibisBean);
 		}
+		calculateFolderClasses();
 		addFolders();
 		return docInfo;
 	}
 
-	private void enrichIbisBeanWithSortedClassMethods(IbisBean ibisBean) {
-		if (ibisBean.getClazz() != null) {
-			final Map<String, Integer> sortWeight;
-			if (ibisBean.getName().equals("Adapter")) {
-				sortWeight = InfoBuilderSource.sortWeightAdapter;
-			} else if (ibisBean.getName().equals("Receiver")) {
-				sortWeight = InfoBuilderSource.sortWeightReceiver;
-			} else if (ibisBean.getName().equals("Pipeline")) {
-				sortWeight = InfoBuilderSource.sortWeightPipeline;
-			} else {
-				sortWeight = InfoBuilderSource.sortWeight;
-			}
-			Method[] classMethods = new Method[]{};
-			try {
-				classMethods = ibisBean.getClazz().getMethods();
-			} catch (NoClassDefFoundError e) {
-				//TODO Why is it trying to resolve (sub) interfaces?
-				log.warn("Cannot retrieve methods of [" + ibisBean.getName() + "] due to a NoClassDefFoundError");
-			}
-			Arrays.sort(classMethods, new Comparator<Method>() {
-				@Override
-				public int compare(Method m1, Method m2) {
-					Integer w1 = sortWeight.get(m1.getName());
-					Integer w2 = sortWeight.get(m2.getName());
-					if (w1 != null || w2 != null) {
-						if (w1 == null) w1 = Integer.MIN_VALUE;
-						if (w2 == null) w2 = Integer.MIN_VALUE;
-						return w2.compareTo(w1);
-					}
-					return (m1.getName().compareTo(m2.getName()));
+	/**
+	 * 
+	 * @param ibisBean. The {@code clazz} field should not be null.
+	 */
+	public void enrichIbisBeanWithSortedClassMethods(IbisBean ibisBean) {
+		final Map<String, Integer> sortWeight;
+		if (ibisBean.getName().equals("Adapter")) {
+			sortWeight = InfoBuilderSource.sortWeightAdapter;
+		} else if (ibisBean.getName().equals("Receiver")) {
+			sortWeight = InfoBuilderSource.sortWeightReceiver;
+		} else if (ibisBean.getName().equals("Pipeline")) {
+			sortWeight = InfoBuilderSource.sortWeightPipeline;
+		} else {
+			sortWeight = InfoBuilderSource.sortWeight;
+		}
+		Method[] classMethods = new Method[]{};
+		try {
+			classMethods = ibisBean.getClazz().getMethods();
+		} catch (NoClassDefFoundError e) {
+			//TODO Why is it trying to resolve (sub) interfaces?
+			log.warn("Cannot retrieve methods of [" + ibisBean.getName() + "] due to a NoClassDefFoundError");
+		}
+		Arrays.sort(classMethods, new Comparator<Method>() {
+			@Override
+			public int compare(Method m1, Method m2) {
+				Integer w1 = sortWeight.get(m1.getName());
+				Integer w2 = sortWeight.get(m2.getName());
+				if (w1 != null || w2 != null) {
+					if (w1 == null) w1 = Integer.MIN_VALUE;
+					if (w2 == null) w2 = Integer.MIN_VALUE;
+					return w2.compareTo(w1);
 				}
-			});
-			MethodExtra[] methodsExtra = new MethodExtra[classMethods.length];
-			for(int i = 0; i < classMethods.length; i++) {
-				MethodExtra m = new MethodExtra();
-				m.setMethod(classMethods[i]);
-				methodsExtra[i] = m;
+				return (m1.getName().compareTo(m2.getName()));
 			}
-			ibisBean.setSortedClassMethods(methodsExtra);
+		});
+		MethodExtra[] methodsExtra = new MethodExtra[classMethods.length];
+		for(int i = 0; i < classMethods.length; i++) {
+			MethodExtra m = new MethodExtra();
+			m.setMethod(classMethods[i]);
+			methodsExtra[i] = m;
 		}
-	}
-
-	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(
-			String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
-		for (MethodNameToChildIbisBeanNameMapping mapping : mappings) {
-			if (mapping.getMethodName().equals(ibisMethodName)) {
-				return mapping;
-			}
-		}
-		return null;
+		ibisBean.setSortedClassMethods(methodsExtra);
 	}
 
 	private void enrichMethodOfIbisBean(MethodExtra methodExtra, IbisBean ibisBean) {
@@ -151,6 +149,16 @@ public class InfoBuilder {
 		}
 	}
 
+	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(
+			String ibisMethodName, List<MethodNameToChildIbisBeanNameMapping> mappings) {
+		for (MethodNameToChildIbisBeanNameMapping mapping : mappings) {
+			if (mapping.getMethodName().equals(ibisMethodName)) {
+				return mapping;
+			}
+		}
+		return null;
+	}
+
 	private void enrichIbisBeanWithProperties(final IbisBean ibisBean) {
 		Map<String, Method> beanProperties = getBeanPropertiesXSD(ibisBean);
 		ibisBean.setProperties(new TreeMap<>());
@@ -159,12 +167,6 @@ public class InfoBuilder {
 			bp.setName(property);
 			bp.setMethod(beanProperties.get(property));
 			ibisBean.getProperties().put(property, bp);
-		}
-		Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
-		while (iterator.hasNext()) {
-			String property = (String)iterator.next();
-			BeanProperty beanProperty = ibisBean.getProperties().get(property);
-			enrichPropertyOfIbisBean(beanProperty, ibisBean);
 		}
 	}
 
@@ -320,51 +322,30 @@ public class InfoBuilder {
         return ibisDoc;
     }
 
-    private void addFolders() {
-    	Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
-    	docInfo.setFolders(new ArrayList<>());
-    	Map<String, AClass> aClassLookup = new TreeMap<>();
-        // Folder "All" is expected to be empty.
-    	AFolder allFolder = new AFolder("All");
-        for (String folder : groups.keySet()) {
-            AFolder newFolder = new AFolder(folder);
-            setClassesOfFolder(groups, newFolder, aClassLookup);
-            docInfo.getFolders().add(newFolder);
-        }
-        docInfo.getFolders().add(allFolder);
-        setSuperclasses(aClassLookup);
+    private void calculateFolderClasses() {
+    	docInfo.getGroups().values().stream()
+    		.flatMap(group -> group.stream())
+    		.map(ibisBean -> ibisBean.getClazz())
+    		.forEach(this::handleClass);
+    	setSuperclasses();
     }
 
-    /**
-     * Add classes to the folder object.
-     *
-     * @param groups - Contains all information
-     * @param folder - The folder object we have to add the classes to
-     */
-    private static void setClassesOfFolder(
-    		Map<String, TreeSet<IbisBean>> groups, AFolder folder, Map<String, AClass> aClassLookup) {
-		for (IbisBean ibisBean : groups.get(folder.getName())) {
-            Map<String, Method> beanProperties = InfoBuilderSource.getBeanPropertiesJson(ibisBean.getClazz());
-            if (!beanProperties.isEmpty()) {
-            	Class<?> clazz = ibisBean.getClazz();
-            	AClass aClass;
-            	if(!aClassLookup.containsKey(clazz.getName())) {
-            		aClass = new AClass();
-            		aClass.setMethods(new ArrayList<>());
-            		aClass.setClazz(clazz);
-            		aClassLookup.put(clazz.getName(), aClass);
+    void handleClass(Class<?> clazz) {
+    	if(aClassLookup.containsKey(clazz.getName())) {
+    		return;
+    	}
+		AClass aClass = new AClass();
+		aClass.setClazz(clazz);
+		aClassLookup.put(clazz.getName(), aClass);
 
-            		// Get the javadoc link for the class
-            		String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-            		aClass.setJavadocLink(javadocLink);
-            		setMethodsOfFolderClass(beanProperties, aClass);
-            	} else {
-            		aClass = aClassLookup.get(clazz.getName());
-            	}
-                folder.addClass(aClass);
-            }
-        }
+		// Get the javadoc link for the class
+		String javadocLink = clazz.getName().replaceAll("\\.", "/");
+		aClass.setJavadocLink(javadocLink);
+		Map<String, Method> beanProperties = InfoBuilderSource.getBeanPropertiesJson(clazz);
+		enrichAClassWithMethods(aClass, beanProperties);
+        enrichAClassWithReferredClassName(aClass);
     }
+
 
     /**
      * Add the methods to the class object.
@@ -372,39 +353,37 @@ public class InfoBuilder {
      * @param beanProperties - The properties of a class
      * @param newClass       - The class object we have to add the methods to
      */
-    private static void setMethodsOfFolderClass(Map<String, Method> beanProperties, AClass newClass) {
-        Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
-        newClass.setReferredClassName("");
+    private static void enrichAClassWithMethods(AClass newClass, Map<String, Method> beanProperties) {
+    	newClass.setMethods(new ArrayList<>());
+    	Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
         while (iterator.hasNext()) {
-
-            // Get the method
             String property = iterator.next();
-            Method method = beanProperties.get(property);
-            FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method, true);
-            if(fromAnnotations != null) {
-            	AMethod aMethod = new AMethod();
-            	aMethod.setName(property);
-
-            	// Check for whether the method (attribute) is deprecated
-            	Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
-            	boolean isDeprecated = deprecated != null;
-
-                aMethod.setOriginalClassName(fromAnnotations.originalClass);
-                aMethod.setDescription(fromAnnotations.description);
-                aMethod.setDefaultValue(fromAnnotations.defaultValue);
-                aMethod.setOrder(fromAnnotations.order);
-                aMethod.setDeprecated(isDeprecated);
-                aMethod.setReferredClassName(fromAnnotations.referredClass);
-
-                newClass.getMethods().add(aMethod);
-                if(!aMethod.getReferredClassName().isEmpty()) {
-                	newClass.setReferredClassName(aMethod.getReferredClassName());
-                }
-            }
+    		Method method = beanProperties.get(property);
+    		FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method, true);
+    		if(fromAnnotations != null) {
+    			AMethod aMethod = new AMethod();
+    			aMethod.setName(property);
+    			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
+    			boolean isDeprecated = deprecated != null;
+    		    aMethod.setOriginalClassName(fromAnnotations.originalClass);
+    		    aMethod.setDescription(fromAnnotations.description);
+    		    aMethod.setDefaultValue(fromAnnotations.defaultValue);
+    		    aMethod.setOrder(fromAnnotations.order);
+    		    aMethod.setDeprecated(isDeprecated);
+    		    aMethod.setReferredClassName(fromAnnotations.referredClass);
+    		    newClass.getMethods().add(aMethod);
+    		}
         }
     }
 
-    private static void setSuperclasses(Map<String, AClass> aClassLookup) {
+	private static void enrichAClassWithReferredClassName(AClass aClass) {
+		Set<String> candidates = aClass.getMethods().stream()
+				.map(m -> m.getReferredClassName()).collect(Collectors.toSet());
+		candidates.remove("");
+		aClass.setReferredClasses(new ArrayList<>(candidates));
+	}
+
+    private void setSuperclasses() {
     	new SuperClassesAdder().run(aClassLookup);
     }
 
@@ -425,9 +404,7 @@ public class InfoBuilder {
     			return;
     		}
     		toHandle.setSuperClassesSimpleNames(new ArrayList<>());
-			if(!toHandle.getReferredClassName().isEmpty()) {
-				toHandle.getSuperClassesSimpleNames().add(toHandle.getReferredClassName());
-			}
+			toHandle.getSuperClassesSimpleNames().addAll(toHandle.getReferredClasses());
     		Class<?> superClazz = toHandle.getClazz().getSuperclass();
     		AClass superClass = null;
     		if((superClazz != null) && aClassLookup.containsKey(superClazz.getName())) {
@@ -435,9 +412,7 @@ public class InfoBuilder {
     			handle(superClass);
     			toHandle.getSuperClassesSimpleNames().add(superClass.getClazz().getSimpleName());
     			List<String> remainingSuperClasses = new ArrayList<>(superClass.getSuperClassesSimpleNames());
-    			if(!toHandle.getReferredClassName().isEmpty()) {
-    				remainingSuperClasses.remove(toHandle.getReferredClassName());
-    			}
+    			remainingSuperClasses.removeAll(toHandle.getReferredClasses());
     			toHandle.getSuperClassesSimpleNames().addAll(remainingSuperClasses);
     		}
     		else {
@@ -447,5 +422,22 @@ public class InfoBuilder {
     			}
     		}
     	}
+    }
+
+    private void addFolders() {
+    	Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
+    	docInfo.setFolders(new ArrayList<>());
+    	for (String groupName : groups.keySet()) {
+    		AFolder newFolder = new AFolder(groupName);
+    		for (IbisBean ibisBean : groups.get(groupName)) {
+    			if((ibisBean.getClazz() != null)
+    					&& (ibisBean.getProperties().size() >= 1)) {
+    				newFolder.addClass(aClassLookup.get(ibisBean.getClazz().getName()));
+    			}
+    		}
+    		docInfo.getFolders().add(newFolder);
+    	}
+    	// Folder "All" is expected to be empty.
+    	docInfo.getFolders().add(new AFolder("All"));
     }
 }

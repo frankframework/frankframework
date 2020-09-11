@@ -30,5 +30,5 @@ public class AClass {
     private @Getter @Setter String javadocLink;
     private @Getter @Setter List<String> superClassesSimpleNames;
     private @Getter @Setter List<AMethod> methods;
-    private @Getter @Setter String referredClassName = "";
+    private @Getter @Setter List<String> referredClasses;
 }
