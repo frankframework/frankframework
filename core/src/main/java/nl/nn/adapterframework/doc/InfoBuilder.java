@@ -306,7 +306,7 @@ public class InfoBuilder {
         IbisDoc ibisDoc = null;
         try {
             Class<?> parentClass = Class.forName(className);
-            for (Method parentMethod : parentClass.getDeclaredMethods()) {
+            for (Method parentMethod : parentClass.getMethods()) {
                 if (parentMethod.getName().equals(methodName)) {
 
                     // Get the IbisDoc values of that method

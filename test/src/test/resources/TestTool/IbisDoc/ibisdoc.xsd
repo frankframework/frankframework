@@ -4821,7 +4821,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
@@ -5857,7 +5861,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
@@ -34971,7 +34979,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
