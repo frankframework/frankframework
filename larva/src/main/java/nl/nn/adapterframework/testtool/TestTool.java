@@ -2857,8 +2857,13 @@ public class TestTool {
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'", writers);
 		} else {
-			debugMessage("Read file " + fileName, writers);
-			fileContent = readFile(fileNameAbsolutePath, writers);
+			if (fileName.endsWith("ignore")) {
+				debugMessage("creating dummy expected file for filename '"+fileName+"'", writers);
+				fileContent = "ignore";
+			} else {
+				debugMessage("Read file " + fileName, writers);
+				fileContent = readFile(fileNameAbsolutePath, writers);
+			}
 			if (fileContent == null) {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
@@ -3072,6 +3077,10 @@ public class TestTool {
 	}
 
 	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
+		if (fileName.endsWith("ignore")) {
+			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
+			return RESULT_OK;
+		}
 		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
