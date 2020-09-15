@@ -1,7 +1,28 @@
-<throwable><class>nl.nn.adapterframework.core.SenderException</class><message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbJmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-EsbJmsFFSender] caught exception: &lt;request action=&quot;exception&quot;&gt;
+<throwable>
+  <class>nl.nn.adapterframework.core.SenderException</class>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbJmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-EsbJmsFFSender] caught exception: &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
-&lt;/request&gt;</message><cause><throwable><class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class><message>RequestProcessor [ibis4test-EsbJmsFFSender] caught exception</message><cause><throwable><class>nl.nn.adapterframework.core.ListenerException</class><message>&lt;request action=&quot;exception&quot;&gt;
+&lt;/request&gt;</message>
+  <cause>
+    <throwable>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <message>RequestProcessor [ibis4test-EsbJmsFFSender] caught exception</message>
+      <cause>
+        <throwable>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>&lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
-&lt;/request&gt;</message><cause><throwable><class>nl.nn.adapterframework.core.PipeRunException</class><message>&lt;request action=&quot;exception&quot;&gt;
+&lt;/request&gt;</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>&lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
-&lt;/request&gt;</message></throwable></cause></throwable></cause></throwable></cause></throwable>
+&lt;/request&gt;</message>
+            </throwable>
+          </cause>
+        </throwable>
+      </cause>
+    </throwable>
+  </cause>
+</throwable>
