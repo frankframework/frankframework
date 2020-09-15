@@ -68,6 +68,33 @@
 	</bean>
 
 	<bean
+		name="adapterService"
+		class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
+		autowire="byName"
+		scope="prototype"
+		>
+	</bean>
+
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
+		<property name="defaultDomain" value="${instance.name}" />
+	</bean>
+
+	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
+		<property name="defaultDomain" value="${instance.name}" />
+	</bean>
+
+	<bean name="MBeanManager" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+		<property name="namingStrategy" ref="namingStrategy" />
+		<property name="server" ref="mbeanServer"/>
+		<property name="ensureUniqueRuntimeObjectNames" value="false" />
+		<property name="assembler">
+			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+	</bean>
+
+	<bean
 		name="flowDiagramManager"
 		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
 		autowire="no"

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.jmx.JmxOperation;
 import nl.nn.adapterframework.util.RunStateEnum;
 /**
  * Models starting and stopping of objects that support such behaviour.
@@ -28,16 +29,20 @@ public interface IManagable extends INamedObject {
      * Possible values are defined by {@link RunStateEnum}.
      */
     RunStateEnum getRunState();
+
     /**
      * Instruct the object that implements <code>IManagable</code> to start working.
      * The method does not wait for completion of the command; at return of this method,
      * the object might be still in the STARTING-runstate
      */
+    @JmxOperation(description = "Start the Adapter")
     void startRunning();
+
     /**
      * Instruct the object that implements <code>IManagable</code> to stop working.
      * The method does not wait for completion of the command; at return of this method,
      * the object might be still in the STOPPING-runstate
      */
+    @JmxOperation(description = "Stop the Adapter")
     void stopRunning();
 }

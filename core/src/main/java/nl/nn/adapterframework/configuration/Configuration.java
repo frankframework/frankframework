@@ -63,7 +63,7 @@ public class Configuration {
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private String name;
-    private String version;
+    private String version = Integer.toHexString(this.hashCode());
     private IbisManager ibisManager;
     private String originalConfiguration;
     private String loadedConfiguration;
@@ -289,7 +289,9 @@ public class Configuration {
 	}
 
 	public void setVersion(String version) {
-		this.version = version;
+		if(StringUtils.isNotEmpty(version)) {
+			this.version = version;
+		}
 	}
 
 	public String getVersion() {
