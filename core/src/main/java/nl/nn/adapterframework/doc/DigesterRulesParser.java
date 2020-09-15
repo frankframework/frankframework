@@ -19,15 +19,15 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
+import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class DigesterXmlHandler extends DefaultHandler {
+public class DigesterRulesParser extends DefaultHandler {
     private String currentIbisBeanName;
-    private List<MethodNameToChildIbisBeanNameMapping> ibisMethods = new ArrayList<MethodNameToChildIbisBeanNameMapping>();
+    private List<ChildIbisBeanMapping> childIbisBeanMappings = new ArrayList<ChildIbisBeanMapping>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -42,7 +42,7 @@ public class DigesterXmlHandler extends DefaultHandler {
             }
         } else if ("set-next-rule".equals(qName)) {
             String methodName = attributes.getValue("methodname");
-            ibisMethods.add(getIbisMethod(methodName, currentIbisBeanName));
+            childIbisBeanMappings.add(getChildIbisBeanMapping(methodName, currentIbisBeanName));
         }
     }
 
@@ -54,12 +54,12 @@ public class DigesterXmlHandler extends DefaultHandler {
         }
     }
 
-    public List<MethodNameToChildIbisBeanNameMapping> getIbisMethods() {
-        return ibisMethods;
+    public List<ChildIbisBeanMapping> getChildIbisBeanMappings() {
+        return childIbisBeanMappings;
     }
 
-    private static MethodNameToChildIbisBeanNameMapping getIbisMethod(String methodName, String childIbisBeanName) {
-        MethodNameToChildIbisBeanNameMapping result = new MethodNameToChildIbisBeanNameMapping();
+    private static ChildIbisBeanMapping getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
+        ChildIbisBeanMapping result = new ChildIbisBeanMapping();
         result.setMaxOccurs(-1);
     	result.setMethodName(methodName);
         result.setChildIbisBeanName(childIbisBeanName);

@@ -1,5 +1,21 @@
 package nl.nn.adapterframework.doc;
 
+/* 
+Copyright 2019, 2020 Integration Partners 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -27,7 +43,7 @@ import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
+import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -323,15 +339,15 @@ class InfoBuilderSource {
 		return ibisBeans;
 	}
 
-	static List<MethodNameToChildIbisBeanNameMapping> getMethodMappings() throws IOException, SAXException {
-		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
+	static List<ChildIbisBeanMapping> getChildIbisBeanMappings() throws IOException, SAXException {
+		DigesterRulesParser digesterRulesParser = new DigesterRulesParser();
 		try {
-			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterXmlHandler);
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
 			log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
 			throw e;
 		}
-		return digesterXmlHandler.getIbisMethods();
+		return digesterRulesParser.getChildIbisBeanMappings();
 	}
 
 	static Map<String, Method> getBeanPropertiesJson(Class<?> clazz) {

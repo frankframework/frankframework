@@ -17,16 +17,15 @@ limitations under the License.
 */
 
 import java.lang.reflect.Method;
+import java.util.TreeSet;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public class BeanProperty {
-	private @Getter @Setter String name;
+public class MethodXsd {
 	private @Getter @Setter Method method;
-	private @Getter @Setter boolean isExcluded;
-	private @Getter @Setter boolean hasDocumentation;
-	private @Getter @Setter String description;
-	private @Getter @Setter String defaultValue;
-	private @Getter @Setter int order;
+	private @Getter @Setter String childIbisBeanName;
+	private @Getter @Setter TreeSet<IbisBean> childIbisBeans;
+	private @Getter @Setter boolean isExistingIbisBean;
+	private @Getter @Setter int maxOccurs;
 }

@@ -1,5 +1,21 @@
 package nl.nn.adapterframework.doc;
 
+/* 
+Copyright 2019, 2020 Integration Partners 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,91 +30,101 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.doc.objects.AClass;
-import nl.nn.adapterframework.doc.objects.AFolder;
-import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.ClassJson;
+import nl.nn.adapterframework.doc.objects.FolderJson;
+import nl.nn.adapterframework.doc.objects.MethodJson;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.MethodExtra;
+import nl.nn.adapterframework.doc.objects.MethodXsd;
 import nl.nn.adapterframework.doc.objects.DocInfo;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class DocWriter {
+	private static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
+
 	public static String getSchema(DocInfo docInfo) throws PipeRunException {
 		XmlBuilder schema;
-		XmlBuilder element;
 		XmlBuilder complexType;
 		XmlBuilder choice;
 
-		schema = new XmlBuilder("schema", "xs", "http://www.w3.org/2001/XMLSchema");
-		schema.addAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema");
+		schema = new XmlBuilder("schema", "xs", XML_SCHEMA_URI);
+		schema.addAttribute("xmlns:xs", XML_SCHEMA_URI);
 		schema.addAttribute("elementFormDefault", "qualified");
 
-		element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
-		element.addAttribute("name", "Configuration");
-		element.addAttribute("type", "ConfigurationType");
-		schema.addSubElement(element);
-
-		element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
-		element.addAttribute("name", "Module");
-		element.addAttribute("type", "ModuleType");
-		schema.addSubElement(element);
-
-		element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
-		element.addAttribute("name", "Adapter");
-		element.addAttribute("type", "AdapterType");
-		schema.addSubElement(element);
-
-		complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
-		complexType.addAttribute("name", "ModuleType");
-		schema.addSubElement(complexType);
-
-		choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
-		choice.addAttribute("minOccurs", "0");
-		choice.addAttribute("maxOccurs", "unbounded");
-		complexType.addSubElement(choice);
-
-		element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
-		element.addAttribute("name", "Adapter");
-		element.addAttribute("type", "AdapterType");
-		element.addAttribute("minOccurs", "0");
-		choice.addSubElement(element);
-
-		element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
-		element.addAttribute("name", "Job");
-		element.addAttribute("type", "JobType");
-		element.addAttribute("minOccurs", "0");
-		choice.addSubElement(element);
-
+		addElement(schema, "Configuration", "ConfigurationType");
+		addElement(schema, "Module", "ModuleType");
+		addElement(schema, "Adapter", "AdapterType");
+		complexType = addComplexType(schema, "ModuleType");
+		choice = addChoice(complexType, "0", "unbounded");
+		addElement(choice, "Adapter", "AdapterType", "0");
+		addElement(choice, "Job", "JobType", "0");
 		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
 			addIbisBeanToSchema(ibisBean, schema, docInfo);
 		}
 		return schema.toXML(true);
 	}
 
+	private static void addElement(
+			XmlBuilder choice,
+			String elementName,
+			String elementType,
+			String minOccurs) {
+		XmlBuilder element;
+		element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("name", elementName);
+		element.addAttribute("type", elementType);
+		element.addAttribute("minOccurs", minOccurs);
+		choice.addSubElement(element);
+	}
+
+	private static void addElement(XmlBuilder schema, String elementName, String elementType) {
+		XmlBuilder element;
+		element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("name", elementName);
+		element.addAttribute("type", elementType);
+		schema.addSubElement(element);
+	}
+
+	private static XmlBuilder addComplexType(XmlBuilder schema, String complexTypeName) {
+		XmlBuilder complexType;
+		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
+		complexType.addAttribute("name", complexTypeName);
+		schema.addSubElement(complexType);
+		return complexType;
+	}
+
+	private static XmlBuilder addChoice(XmlBuilder complexType, String minOccurs, String maxOccurs) {
+		XmlBuilder choice;
+		choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+		choice.addAttribute("minOccurs", minOccurs);
+		choice.addAttribute("maxOccurs", maxOccurs);
+		complexType.addSubElement(choice);
+		return choice;
+	}
+
 	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, DocInfo docInfo) {
-		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedClassMethods().length >= 1)) {
-			XmlBuilder complexType = new XmlBuilder("complexType", "xs", "http://www.w3.org/2001/XMLSchema");
+		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedMethodsXsd().length >= 1)) {
+			XmlBuilder complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
 			complexType.addAttribute("name", ibisBean.getName() + "Type");
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
-			for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
-				if (methodExtra.getChildIbisBeans() != null) {
+			for (MethodXsd methoXsd : ibisBean.getSortedMethodsXsd()) {
+				if (methoXsd.getChildIbisBeans() != null) {
 					// Pipes, Senders, ...
-					if (!ignore(ibisBean, methodExtra.getChildIbisBeanName(), docInfo)) {
-						XmlBuilder choice = new XmlBuilder("choice", "xs", "http://www.w3.org/2001/XMLSchema");
+					if (!ignore(ibisBean, methoXsd.getChildIbisBeanName(), docInfo)) {
+						XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
 						choice.addAttribute("minOccurs", "0");
-						addMaxOccurs(choice, methodExtra.getMaxOccurs());
-							for (IbisBean childIbisBean : methodExtra.getChildIbisBeans()) {
+						addMaxOccurs(choice, methoXsd.getMaxOccurs());
+							for (IbisBean childIbisBean : methoXsd.getChildIbisBeans()) {
 							choice.addSubElement(getChildIbisBeanSchemaElement(childIbisBean.getName(), 1));
 						}
 						choices.add(choice);
 					}
 				} else {
 					// Param, Forward, ...
-					if (methodExtra.getChildIbisBeanName() != null) {
-						if (methodExtra.isExistingIbisBean()) {
+					if (methoXsd.getChildIbisBeanName() != null) {
+						if (methoXsd.isExistingIbisBean()) {
 							choices.add(getChildIbisBeanSchemaElement(
-									methodExtra.getChildIbisBeanName(), methodExtra.getMaxOccurs()));
+									methoXsd.getChildIbisBeanName(), methoXsd.getMaxOccurs()));
 						}
 					}
 				}
@@ -127,7 +153,7 @@ public class DocWriter {
 	}
 
 	private static XmlBuilder getChildIbisBeanSchemaElement(String childIbisBeanName, int maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", "http://www.w3.org/2001/XMLSchema");
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", childIbisBeanName);
 		element.addAttribute("type", childIbisBeanName + "Type");
 		element.addAttribute("minOccurs", "0");
@@ -205,20 +231,20 @@ public class DocWriter {
         JSONArray newMethods;
 
         try {
-            for (AFolder folder : docInfo.getFolders()) {
+            for (FolderJson folder : docInfo.getFolders()) {
                 JSONObject folderObject = new JSONObject();
                 folderObject.put("name", folder.getName());
 
                 newClasses = new JSONArray();
-                for (AClass aClass : folder.getClasses()) {
+                for (ClassJson classJson : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
-                    classObject.put("name", aClass.getClazz().getSimpleName());
-                    classObject.put("packageName", aClass.getClazz().getName());
-                    classObject.put("javadocLink", aClass.getJavadocLink());
-                    classObject.put("superClasses", aClass.getSuperClassesSimpleNames());
+                    classObject.put("name", classJson.getClazz().getSimpleName());
+                    classObject.put("packageName", classJson.getClazz().getName());
+                    classObject.put("javadocLink", classJson.getJavadocLink());
+                    classObject.put("superClasses", classJson.getSuperClassesSimpleNames());
 
                     newMethods = new JSONArray();
-                    for (AMethod method : aClass.getMethods()) {
+                    for (MethodJson method : classJson.getMethods()) {
                         JSONObject methodObject = new JSONObject();
                         methodObject.put("name", method.getName());
                         methodObject.put("originalClassName", method.getOriginalClassName());

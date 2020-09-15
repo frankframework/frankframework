@@ -15,20 +15,11 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents the Class object for the IbisDoc application
- *
- * @author Chakir el Moussaoui
- */
-public class AClass {
-    private @Getter @Setter Class<?> clazz;
-    private @Getter @Setter String javadocLink;
-    private @Getter @Setter List<String> superClassesSimpleNames;
-    private @Getter @Setter List<AMethod> methods;
-    private @Getter @Setter List<String> referredClasses;
+public class ChildIbisBeanMapping {
+    private @Getter @Setter String methodName; // E.g. registerAdapter
+    private @Getter @Setter String childIbisBeanName; // E.g. adapter
+    private @Getter @Setter int maxOccurs;
 }

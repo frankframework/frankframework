@@ -1,5 +1,21 @@
 package nl.nn.adapterframework.doc;
 
+/* 
+Copyright 2019, 2020 Integration Partners 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,14 +31,14 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import nl.nn.adapterframework.doc.objects.AClass;
-import nl.nn.adapterframework.doc.objects.AFolder;
-import nl.nn.adapterframework.doc.objects.AMethod;
+import nl.nn.adapterframework.doc.objects.ClassJson;
+import nl.nn.adapterframework.doc.objects.FolderJson;
+import nl.nn.adapterframework.doc.objects.MethodJson;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.DocInfo;
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.MethodExtra;
-import nl.nn.adapterframework.doc.objects.MethodNameToChildIbisBeanNameMapping;
+import nl.nn.adapterframework.doc.objects.MethodXsd;
+import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class InfoBuilder {
@@ -30,7 +46,7 @@ public class InfoBuilder {
 	private static final int MAX_ORDER = 999;
 
 	private DocInfo docInfo;
-	private final Map<String, AClass> aClassLookup = new TreeMap<>();
+	private final Map<String, ClassJson> classJsonLookup = new TreeMap<>();
 
 	/**
 	 * @return The {@link DocInfo} object that holds all the information that is
@@ -51,12 +67,12 @@ public class InfoBuilder {
 		docInfo.setIgnores(InfoBuilderSource.ignores);
 		docInfo.setGroups(InfoBuilderSource.getGroups());
 		docInfo.setIbisBeans(InfoBuilderSource.getIbisBeans(docInfo.getGroups()));
-		docInfo.setMethodNameMappings(InfoBuilderSource.getMethodMappings());
+		docInfo.setChildIbisBeanMappings(InfoBuilderSource.getChildIbisBeanMappings());
 		for (IbisBean ibisBean : docInfo.getIbisBeans()) {
 			if (ibisBean.getClazz() != null) {
 				enrichIbisBeanWithSortedClassMethods(ibisBean);
-				for (MethodExtra methodExtra : ibisBean.getSortedClassMethods()) {
-					enrichMethodOfIbisBean(methodExtra, ibisBean);
+				for (MethodXsd methodXsd : ibisBean.getSortedMethodsXsd()) {
+					enrichMethodOfIbisBean(methodXsd, ibisBean);
 				}
 			}
 			enrichIbisBeanWithProperties(ibisBean);
@@ -106,54 +122,54 @@ public class InfoBuilder {
 				return (m1.getName().compareTo(m2.getName()));
 			}
 		});
-		MethodExtra[] methodsExtra = new MethodExtra[classMethods.length];
+		MethodXsd[] methodsXsd = new MethodXsd[classMethods.length];
 		for (int i = 0; i < classMethods.length; i++) {
-			MethodExtra m = new MethodExtra();
+			MethodXsd m = new MethodXsd();
 			m.setMethod(classMethods[i]);
-			methodsExtra[i] = m;
+			methodsXsd[i] = m;
 		}
-		ibisBean.setSortedClassMethods(methodsExtra);
+		ibisBean.setSortedMethodsXsd(methodsXsd);
 	}
 
-	private void enrichMethodOfIbisBean(MethodExtra methodExtra, IbisBean ibisBean) {
-		MethodNameToChildIbisBeanNameMapping methodNameMapping = getMethodNameMapping(methodExtra.getMethod().getName(),
-				docInfo.getMethodNameMappings());
-		if (methodNameMapping != null) {
-			methodExtra
-					.setChildIbisBeanName(InfoBuilderSource.toUpperCamelCase(methodNameMapping.getChildIbisBeanName()));
-			methodExtra.setChildIbisBeans(docInfo.getGroups().get(methodExtra.getChildIbisBeanName() + "s"));
-			if (methodExtra.getChildIbisBeans() != null) {
+	private void enrichMethodOfIbisBean(MethodXsd methodXsd, IbisBean ibisBean) {
+		ChildIbisBeanMapping childIbisBeanMapping = getChildIbisBeanMapping(methodXsd.getMethod().getName(),
+				docInfo.getChildIbisBeanMappings());
+		if (childIbisBeanMapping != null) {
+			methodXsd
+					.setChildIbisBeanName(InfoBuilderSource.toUpperCamelCase(childIbisBeanMapping.getChildIbisBeanName()));
+			methodXsd.setChildIbisBeans(docInfo.getGroups().get(methodXsd.getChildIbisBeanName() + "s"));
+			if (methodXsd.getChildIbisBeans() != null) {
 				// Pipes, Senders, ...
-				int maxOccursX = methodNameMapping.getMaxOccurs();
+				int maxOccursX = childIbisBeanMapping.getMaxOccurs();
 				if (InfoBuilderSource.overwriteMaxOccursToUnbounded.contains(ibisBean.getName())) {
 					maxOccursX = -1;
 				}
-				methodExtra.setMaxOccurs(maxOccursX);
+				methodXsd.setMaxOccurs(maxOccursX);
 			} else {
 				// Param, Forward, ...
-				if (methodExtra.getChildIbisBeanName() != null) {
+				if (methodXsd.getChildIbisBeanName() != null) {
 					boolean isExistingIbisBean = false;
 					for (IbisBean existingIbisBean : docInfo.getIbisBeans()) {
-						if (existingIbisBean.getName().equals(methodExtra.getChildIbisBeanName())) {
+						if (existingIbisBean.getName().equals(methodXsd.getChildIbisBeanName())) {
 							isExistingIbisBean = true;
 						}
 					}
-					methodExtra.setExistingIbisBean(isExistingIbisBean);
+					methodXsd.setExistingIbisBean(isExistingIbisBean);
 					if (isExistingIbisBean) {
-						int maxOccurs = methodNameMapping.getMaxOccurs();
-						if (InfoBuilderSource.overwriteMaxOccursToOne.contains(methodNameMapping.getMethodName())) {
+						int maxOccurs = childIbisBeanMapping.getMaxOccurs();
+						if (InfoBuilderSource.overwriteMaxOccursToOne.contains(childIbisBeanMapping.getMethodName())) {
 							maxOccurs = 1;
 						}
-						methodExtra.setMaxOccurs(maxOccurs);
+						methodXsd.setMaxOccurs(maxOccurs);
 					}
 				}
 			}
 		}
 	}
 
-	private static MethodNameToChildIbisBeanNameMapping getMethodNameMapping(String ibisMethodName,
-			List<MethodNameToChildIbisBeanNameMapping> mappings) {
-		for (MethodNameToChildIbisBeanNameMapping mapping : mappings) {
+	private static ChildIbisBeanMapping getChildIbisBeanMapping(String ibisMethodName,
+			List<ChildIbisBeanMapping> mappings) {
+		for (ChildIbisBeanMapping mapping : mappings) {
 			if (mapping.getMethodName().equals(ibisMethodName)) {
 				return mapping;
 			}
@@ -348,19 +364,19 @@ public class InfoBuilder {
 	}
 
 	void handleClass(Class<?> clazz) {
-		if (aClassLookup.containsKey(clazz.getName())) {
+		if (classJsonLookup.containsKey(clazz.getName())) {
 			return;
 		}
-		AClass aClass = new AClass();
-		aClass.setClazz(clazz);
-		aClassLookup.put(clazz.getName(), aClass);
+		ClassJson classJson = new ClassJson();
+		classJson.setClazz(clazz);
+		classJsonLookup.put(clazz.getName(), classJson);
 
 		// Get the javadoc link for the class
 		String javadocLink = clazz.getName().replaceAll("\\.", "/");
-		aClass.setJavadocLink(javadocLink);
+		classJson.setJavadocLink(javadocLink);
 		Map<String, Method> beanProperties = InfoBuilderSource.getBeanPropertiesJson(clazz);
-		enrichAClassWithMethods(aClass, beanProperties);
-		enrichAClassWithReferredClassName(aClass);
+		enrichClassJsonWithMethods(classJson, beanProperties);
+		enrichAClassWithReferredClassName(classJson);
 	}
 
 	/**
@@ -369,7 +385,7 @@ public class InfoBuilder {
 	 * @param beanProperties - The properties of a class
 	 * @param newClass       - The class object we have to add the methods to
 	 */
-	private static void enrichAClassWithMethods(AClass newClass, Map<String, Method> beanProperties) {
+	private static void enrichClassJsonWithMethods(ClassJson newClass, Map<String, Method> beanProperties) {
 		newClass.setMethods(new ArrayList<>());
 		Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
 		while (iterator.hasNext()) {
@@ -377,22 +393,22 @@ public class InfoBuilder {
 			Method method = beanProperties.get(property);
 			FromAnnotations fromAnnotations = parseIbisDocAndIbisDocRef(method, true);
 			if (fromAnnotations != null) {
-				AMethod aMethod = new AMethod();
-				aMethod.setName(property);
+				MethodJson methodJson = new MethodJson();
+				methodJson.setName(property);
 				Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
 				boolean isDeprecated = deprecated != null;
-				aMethod.setOriginalClassName(fromAnnotations.originalClass);
-				aMethod.setDescription(fromAnnotations.description);
-				aMethod.setDefaultValue(fromAnnotations.defaultValue);
-				aMethod.setOrder(fromAnnotations.order);
-				aMethod.setDeprecated(isDeprecated);
-				aMethod.setReferredClassName(fromAnnotations.referredClass);
-				newClass.getMethods().add(aMethod);
+				methodJson.setOriginalClassName(fromAnnotations.originalClass);
+				methodJson.setDescription(fromAnnotations.description);
+				methodJson.setDefaultValue(fromAnnotations.defaultValue);
+				methodJson.setOrder(fromAnnotations.order);
+				methodJson.setDeprecated(isDeprecated);
+				methodJson.setReferredClassName(fromAnnotations.referredClass);
+				newClass.getMethods().add(methodJson);
 			}
 		}
 	}
 
-	private static void enrichAClassWithReferredClassName(AClass aClass) {
+	private static void enrichAClassWithReferredClassName(ClassJson aClass) {
 		Set<String> candidates = aClass.getMethods().stream().map(m -> m.getReferredClassName())
 				.collect(Collectors.toSet());
 		candidates.remove("");
@@ -400,7 +416,7 @@ public class InfoBuilder {
 	}
 
 	private void setSuperclasses() {
-		new SuperClassesAdder().run(aClassLookup);
+		new SuperClassesAdder().run();
 	}
 
 	/**
@@ -415,28 +431,26 @@ public class InfoBuilder {
 	 * @author martijn
 	 *
 	 */
-	private static class SuperClassesAdder {
-		List<AClass> classesToIterate = new ArrayList<>();
-		Map<String, AClass> aClassLookup = null;
+	private class SuperClassesAdder {
+		List<ClassJson> classesToIterate = new ArrayList<>();
 
-		void run(Map<String, AClass> aClassLookup) {
-			this.aClassLookup = aClassLookup;
-			classesToIterate.addAll(aClassLookup.values());
-			for (AClass currentIterate : classesToIterate) {
+		void run() {
+			classesToIterate.addAll(classJsonLookup.values());
+			for (ClassJson currentIterate : classesToIterate) {
 				handle(currentIterate);
 			}
 		}
 
-		void handle(AClass toHandle) {
+		void handle(ClassJson toHandle) {
 			if (toHandle.getSuperClassesSimpleNames() != null) {
 				return;
 			}
 			toHandle.setSuperClassesSimpleNames(new ArrayList<>());
 			toHandle.getSuperClassesSimpleNames().addAll(toHandle.getReferredClasses());
 			Class<?> superClazz = toHandle.getClazz().getSuperclass();
-			AClass superClass = null;
-			if ((superClazz != null) && aClassLookup.containsKey(superClazz.getName())) {
-				superClass = aClassLookup.get(superClazz.getName());
+			ClassJson superClass = null;
+			if ((superClazz != null) && classJsonLookup.containsKey(superClazz.getName())) {
+				superClass = classJsonLookup.get(superClazz.getName());
 				handle(superClass);
 				toHandle.getSuperClassesSimpleNames().add(superClass.getClazz().getSimpleName());
 				List<String> remainingSuperClasses = new ArrayList<>(superClass.getSuperClassesSimpleNames());
@@ -455,15 +469,15 @@ public class InfoBuilder {
 		Map<String, TreeSet<IbisBean>> groups = docInfo.getGroups();
 		docInfo.setFolders(new ArrayList<>());
 		for (String groupName : groups.keySet()) {
-			AFolder newFolder = new AFolder(groupName);
+			FolderJson newFolder = new FolderJson(groupName);
 			for (IbisBean ibisBean : groups.get(groupName)) {
 				if ((ibisBean.getClazz() != null) && (ibisBean.getProperties().size() >= 1)) {
-					newFolder.addClass(aClassLookup.get(ibisBean.getClazz().getName()));
+					newFolder.addClass(classJsonLookup.get(ibisBean.getClazz().getName()));
 				}
 			}
 			docInfo.getFolders().add(newFolder);
 		}
 		// Folder "All" is expected to be empty.
-		docInfo.getFolders().add(new AFolder("All"));
+		docInfo.getFolders().add(new FolderJson("All"));
 	}
 }
