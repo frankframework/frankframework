@@ -31,10 +31,9 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * This implementation of {@link AdapterService} also registers the adapters to a JMX server, and configures the registered Adapters.
+ * This implementation of {@link AdapterService} registers the adapters to a JMX server.
 
  * @author Niels Meijer
- * @since 5.0.29
  */
 public class BasicAdapterServiceImpl extends AdapterServiceImpl implements ApplicationContextAware, InitializingBean {
 
@@ -59,8 +58,6 @@ public class BasicAdapterServiceImpl extends AdapterServiceImpl implements Appli
 			registeredAdapters.put(adapter, name);
 		}
 		log.info("[" + adapter.getName() + "] registered to the JMX server");
-
-		adapter.configure();
 	}
 
 	@Override
