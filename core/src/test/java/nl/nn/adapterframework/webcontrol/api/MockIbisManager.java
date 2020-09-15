@@ -34,6 +34,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {
@@ -45,9 +46,10 @@ public class MockIbisManager extends Mockito implements IbisManager {
 		IAdapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
+			adapter.registerPipeLine(new PipeLine());
 			adapterService.registerAdapter(adapter);
 		} catch (ConfigurationException e) {
-			fail("error registering adapter ["+adapter+"]");
+			fail("error registering adapter ["+adapter+"] " + e.getMessage());
 		}
 		Configuration mockConfiguration = spy(new Configuration(adapterService));
 		mockConfiguration.setName("myConfiguration");
