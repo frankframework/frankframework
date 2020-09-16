@@ -63,7 +63,7 @@ public class Configuration {
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private String name;
-    private String version = Integer.toHexString(this.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
+    private String version;
     private IbisManager ibisManager;
     private String originalConfiguration;
     private String loadedConfiguration;

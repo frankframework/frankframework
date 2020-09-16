@@ -58,11 +58,13 @@ public class JmxNamingStrategy implements ObjectNamingStrategy, InitializingBean
 			IAdapter adapter = (IAdapter) managedBean;
 			Configuration config = adapter.getConfiguration();
 			if (config != null) {
-				String configString = config.getName();
+				String version = null;
 				if (StringUtils.isNotEmpty(config.getVersion())) {
-					configString = configString + "-" + config.getVersion();
+					version = config.getVersion();
+				} else {
+					version = Integer.toHexString(this.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
 				}
-				properties.put("type", configString);
+				properties.put("type", String.format("%s-%s", config.getName(), version));
 			} else { //if configuration is null (for whatever reason) we need to be able to differentiate adapters in between reloads.
 				properties.put("identity", Integer.toHexString(adapter.hashCode()));
 			}
