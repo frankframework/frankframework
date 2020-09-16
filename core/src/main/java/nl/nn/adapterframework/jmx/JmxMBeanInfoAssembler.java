@@ -33,7 +33,7 @@ public class JmxMBeanInfoAssembler extends AbstractConfigurableMBeanInfoAssemble
 
 	@Override
 	protected boolean includeWriteAttribute(Method method, String beanKey) {
-		return false; //Always return false unless we see a good reason to also include setters..
+		return AnnotationUtils.findAnnotation(method, JmxAttribute.class) != null; //AnnotationUtils caches results. Use find so other methods can use the cached results!
 	}
 
 	@Override
