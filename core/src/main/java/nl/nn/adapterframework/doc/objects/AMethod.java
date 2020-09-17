@@ -15,20 +15,22 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Represents the Class object for the IbisDoc application
+ * Represents the Method/Attribute object for the IbisDoc application
+ *
+ * TODO: Rename to MethodJson
  *
  * @author Chakir el Moussaoui
  */
-public class ClassJson {
-    private @Getter @Setter Class<?> clazz;
-    private @Getter @Setter String javadocLink;
-    private @Getter @Setter List<String> superClassesSimpleNames;
-    private @Getter @Setter List<MethodJson> methods;
-    private @Getter @Setter List<String> referredClasses;
+public class AMethod {
+    private @Getter @Setter String name;
+    private @Getter @Setter String originalClassName; // The name of the class the method was declared in
+    private @Getter @Setter String description;
+    private @Getter @Setter String defaultValue;
+    private @Getter @Setter int order;
+    private @Getter @Setter boolean deprecated;
+    private @Getter @Setter String referredClassName = "";
 }

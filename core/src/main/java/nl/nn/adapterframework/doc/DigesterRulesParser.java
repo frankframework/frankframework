@@ -19,7 +19,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+import nl.nn.adapterframework.doc.objects.IbisMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
 
 public class DigesterRulesParser extends DefaultHandler {
     private String currentIbisBeanName;
-    private List<ChildIbisBeanMapping> childIbisBeanMappings = new ArrayList<ChildIbisBeanMapping>();
+    private List<IbisMethod> childIbisBeanMappings = new ArrayList<IbisMethod>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -54,12 +54,12 @@ public class DigesterRulesParser extends DefaultHandler {
         }
     }
 
-    public List<ChildIbisBeanMapping> getChildIbisBeanMappings() {
+    public List<IbisMethod> getChildIbisBeanMappings() {
         return childIbisBeanMappings;
     }
 
-    private static ChildIbisBeanMapping getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
-        ChildIbisBeanMapping result = new ChildIbisBeanMapping();
+    private static IbisMethod getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
+        IbisMethod result = new IbisMethod();
         result.setMaxOccurs(-1);
     	result.setMethodName(methodName);
         result.setChildIbisBeanName(childIbisBeanName);

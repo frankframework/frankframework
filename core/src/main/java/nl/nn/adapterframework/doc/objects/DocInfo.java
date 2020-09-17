@@ -26,9 +26,9 @@ import lombok.Setter;
 
 public class DocInfo {
 	private @Getter @Setter Map<String, TreeSet<IbisBean>> groups;
-	private @Getter @Setter List<ChildIbisBeanMapping> childIbisBeanMappings;
+	private @Getter @Setter List<IbisMethod> childIbisBeanMappings;
 	private @Getter @Setter Set<IbisBean> ibisBeans;
-	private @Getter @Setter List<FolderJson> folders;
+	private @Getter @Setter List<AFolder> folders;
 	private @Getter @Setter Map<String, String> ignores;
 	private @Getter @Setter Set<String> excludeFilters;
 }

@@ -30,9 +30,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.doc.objects.ClassJson;
-import nl.nn.adapterframework.doc.objects.FolderJson;
-import nl.nn.adapterframework.doc.objects.MethodJson;
+import nl.nn.adapterframework.doc.objects.AClass;
+import nl.nn.adapterframework.doc.objects.AFolder;
+import nl.nn.adapterframework.doc.objects.AMethod;
 import nl.nn.adapterframework.doc.objects.BeanProperty;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.MethodXsd;
@@ -231,12 +231,12 @@ public class DocWriter {
         JSONArray newMethods;
 
         try {
-            for (FolderJson folder : docInfo.getFolders()) {
+            for (AFolder folder : docInfo.getFolders()) {
                 JSONObject folderObject = new JSONObject();
                 folderObject.put("name", folder.getName());
 
                 newClasses = new JSONArray();
-                for (ClassJson classJson : folder.getClasses()) {
+                for (AClass classJson : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
                     classObject.put("name", classJson.getClazz().getSimpleName());
                     classObject.put("packageName", classJson.getClazz().getName());
@@ -244,7 +244,7 @@ public class DocWriter {
                     classObject.put("superClasses", classJson.getSuperClassesSimpleNames());
 
                     newMethods = new JSONArray();
-                    for (MethodJson method : classJson.getMethods()) {
+                    for (AMethod method : classJson.getMethods()) {
                         JSONObject methodObject = new JSONObject();
                         methodObject.put("name", method.getName());
                         methodObject.put("originalClassName", method.getOriginalClassName());

@@ -15,32 +15,17 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Represents the Folder object for the IbisDoc application
+ * TODO: Rename to ChildIbisBeanMapping.
  *
- * @author Chakir el Moussaoui
+ * @author martijn
+ *
  */
-public class FolderJson {
-
-    private @Getter @Setter String name;
-    private List<ClassJson> classes;
-
-    public FolderJson(String name) {
-        this.name = name;
-        this.classes = new ArrayList<>();
-    }
-
-    public void addClass(ClassJson classJson) {
-        this.classes.add(classJson);
-    }
-
-    public List<ClassJson> getClasses() {
-        return this.classes;
-    }
+public class IbisMethod {
+    private @Getter @Setter String methodName; // E.g. registerAdapter
+    private @Getter @Setter String childIbisBeanName; // E.g. adapter
+    private @Getter @Setter int maxOccurs;
 }

@@ -15,20 +15,34 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Represents the Method/Attribute object for the IbisDoc application
+ * Represents the Folder object for the IbisDoc application
+ *
+ * TODO: Rename to FolderJson.
  *
  * @author Chakir el Moussaoui
  */
-public class MethodJson {
+public class AFolder {
+
     private @Getter @Setter String name;
-    private @Getter @Setter String originalClassName; // The name of the class the method was declared in
-    private @Getter @Setter String description;
-    private @Getter @Setter String defaultValue;
-    private @Getter @Setter int order;
-    private @Getter @Setter boolean deprecated;
-    private @Getter @Setter String referredClassName = "";
+    private List<AClass> classes;
+
+    public AFolder(String name) {
+        this.name = name;
+        this.classes = new ArrayList<>();
+    }
+
+    public void addClass(AClass classJson) {
+        this.classes.add(classJson);
+    }
+
+    public List<AClass> getClasses() {
+        return this.classes;
+    }
 }

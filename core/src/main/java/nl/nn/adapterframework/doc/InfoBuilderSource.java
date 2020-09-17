@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.doc.objects.IbisBean;
-import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+import nl.nn.adapterframework.doc.objects.IbisMethod;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -339,7 +339,7 @@ class InfoBuilderSource {
 		return ibisBeans;
 	}
 
-	static List<ChildIbisBeanMapping> getChildIbisBeanMappings() throws IOException, SAXException {
+	static List<IbisMethod> getChildIbisBeanMappings() throws IOException, SAXException {
 		DigesterRulesParser digesterRulesParser = new DigesterRulesParser();
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
