@@ -103,15 +103,16 @@ public class FileUtilsTest {
 	/**
 	 * Method: getFiles(String directory, String wildcard, String excludeWildcard, long minStability)
 	 */
-	/*
+
 	@Test
 	public void testGetFiles() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript";
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File f = new File(path);
-		File[] files = FileUtils.getFiles(path, ".txt", ".txt", 5);
-		assertEquals("rhino-test.js", files[0].getName());
+		File[] files = FileUtils.getFiles(path, "*", null, 5);
+		assertEquals("2.txt", files[0].getName());
+		assertEquals(8, files.length);
 	}
-*/
+
 
 	/**
 	 * Method: getFirstFile(File directory)
