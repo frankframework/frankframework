@@ -393,6 +393,7 @@
 				<prop key="H2">nl.nn.adapterframework.jdbc.dbms.H2DbmsSupport</prop>
 				<prop key="MySQL">nl.nn.adapterframework.jdbc.dbms.MySqlDbmsSupport</prop>
 				<prop key="MariaDB">nl.nn.adapterframework.jdbc.dbms.MariaDbDbmsSupport</prop>
+				<prop key="PostgreSQL">nl.nn.adapterframework.jdbc.dbms.PostgresqlDbmsSupport</prop>
 			</props>
 		</property>
 	</bean>

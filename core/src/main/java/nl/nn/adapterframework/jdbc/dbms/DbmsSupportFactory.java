@@ -68,6 +68,10 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		}
 		else {
 			log.warn("no dbmsSupportMap specified, reverting to built in types");
+			if (Dbms.H2.getProductName().equals(product)) {
+				log.debug("Setting databasetype to H2");
+				return new H2DbmsSupport();
+			}
 			if (Dbms.ORACLE.getProductName().equals(product)) {
 				log.debug("Setting databasetype to ORACLE");
 				return new OracleDbmsSupport();
@@ -83,6 +87,10 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 			if (Dbms.MARIADB.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MARIADB");
 				return new MariaDbDbmsSupport();
+			}
+			if (Dbms.POSTGRESQL.getProductName().equals(product)) {
+				log.debug("Setting databasetype to POSTGRESQL");
+				return new PostgresqlDbmsSupport();
 			}
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");

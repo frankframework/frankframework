@@ -191,10 +191,10 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 					if (StringUtils.isNotEmpty(getMessageField())) {
 						Message message;
 						if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-							message=new Message(JdbcUtil.getClobAsString(rs,getMessageField(),false));
+							message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
 						} else {
 							if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-								message=new Message(JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
+								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
 							} else {
 								message=new Message(rs.getString(getMessageField()));
 							}
@@ -279,7 +279,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 				stmt.clearParameters();
 				if (StringUtils.isNotEmpty(parameter)) {
 					log.debug("setting parameter 1 to ["+parameter+"]");
-					stmt.setString(1,parameter);
+					JdbcUtil.setParameter(stmt, 1, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 				stmt.execute();
 				

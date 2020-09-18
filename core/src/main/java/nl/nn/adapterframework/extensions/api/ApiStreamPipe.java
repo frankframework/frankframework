@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden
+   Copyright 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -173,7 +173,7 @@ public class ApiStreamPipe extends StreamPipe {
 		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return JdbcUtil.executeBlobQuery(conn, query);
+			return JdbcUtil.executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
 		} finally {
 			if (conn != null) {
 				try {

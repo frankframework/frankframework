@@ -24,7 +24,8 @@ public enum Dbms {
 	DB2("DB2"),
 	H2("H2"),
 	MYSQL("MySQL"),
-	MARIADB("MariaDB");
+	MARIADB("MariaDB"),
+	POSTGRESQL("PostgreSQL");
 	
 	private String key;
 	private String productName;

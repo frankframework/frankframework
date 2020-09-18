@@ -820,23 +820,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		InputStream blobStream=null;
-		try {
-			Blob blob = rs.getBlob(columnIndex);
-			if (blob==null) {
+		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
+			if (blobInputStream==null) {
 				return null;
 			}
-			if (compressed) {
-				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex)));
-			} else {
-				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
-			}
-			try (ObjectInputStream ois = new ObjectInputStream(blobStream)) {
+			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
 				return (S)ois.readObject();
-			}
-		} finally {
-			if (blobStream!=null) {
-				blobStream.close();
 			}
 		}
 	}

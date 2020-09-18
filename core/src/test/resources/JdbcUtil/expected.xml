@@ -1,10 +1,10 @@
 <result>
   <fielddefinition>
-    <field name="TKEY" type="INTEGER" columnDisplaySize="10" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer" />
-    <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="18" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
-    <field name="TVARCHAR2" type="VARCHAR" columnDisplaySize="17" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
-    <field name="TINT" type="INTEGER" columnDisplaySize="10" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer" />
-    <field name="TDATETIME" type="TIMESTAMP" columnDisplaySize="19" precision="23" scale="10" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp" />
+		<field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+		<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+		<field name="TVARCHAR2" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+		<field name="TINT" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+		<field name="TDATETIME" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
   </fielddefinition>
   <rowset>
     <row number="0">

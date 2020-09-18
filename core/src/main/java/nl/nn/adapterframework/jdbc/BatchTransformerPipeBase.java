@@ -99,7 +99,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session, querySender.getDbmsSupport().isParameterTypeMatchRequired());
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
