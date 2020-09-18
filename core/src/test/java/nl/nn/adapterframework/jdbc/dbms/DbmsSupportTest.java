@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
@@ -46,6 +45,19 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class DbmsSupportTest {
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 
+	private String productKey;
+	private String url;
+	private String userid;
+	private String password;
+	private boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid '' if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
+	private boolean testSkipLocked;							// if there is no skip locked functionality, JdbcListeners can only run in a single thread
+	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
+	
+	
+	private static Connection connection;
+	private IDbmsSupport dbmsSupport;
+
+	
 	@Parameters(name= "{index}: {0}")
 	public static Iterable<Object[]> data() {
 		Object[][] datasources = {
@@ -71,17 +83,6 @@ public class DbmsSupportTest {
 		return availableDatasources;
 	}
 
-	private String productKey;
-	private String url;
-	private String userid;
-	private String password;
-	private boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid '' if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
-	private boolean testSkipLocked;							// if there is no skip locked functionality, JdbcListeners can only run in a single thread
-	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
-	
-	
-	private static Connection connection;
-	private IDbmsSupport dbmsSupport;
 
 	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked, boolean testSkipLocked) throws SQLException {
 		this.productKey = productKey;

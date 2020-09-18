@@ -1216,7 +1216,7 @@ public class JdbcUtil {
 				statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate((String) value).getTime()));
 				break;
 			case Types.TIMESTAMP:
-				statement.setTimestamp(parameterIndex, new java.sql.Timestamp(DateUtils.parseAnyDate((String) value).getTime()));
+				statement.setTimestamp(parameterIndex, new Timestamp(DateUtils.parseAnyDate((String) value).getTime()));
 				break;
 			default:
 				log.warn("parameter type ["+JDBCType.valueOf(sqlTYpe).getName()+"] handled as String");

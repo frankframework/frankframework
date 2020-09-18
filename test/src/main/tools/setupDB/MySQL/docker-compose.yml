@@ -11,5 +11,5 @@ services:
       lock_wait_timeout: 5
       performance_schema: 1
     ports:
-      - 3306:3306
+      - 3307:3306
     container_name: iaf-test-my-sql
