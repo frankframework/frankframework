@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.doc;
+package nl.nn.adapterframework.doc.objects;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import nl.nn.adapterframework.doc.objects.IbisMethod;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class DigesterRulesParser extends DefaultHandler {
+/**
+ * TODO: Rename to DigesterRulesParser.
+ *
+ */
+public class DigesterXmlHandler extends DefaultHandler {
     private String currentIbisBeanName;
     private List<IbisMethod> childIbisBeanMappings = new ArrayList<IbisMethod>();
 

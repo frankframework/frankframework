@@ -1,7 +1,5 @@
-package nl.nn.adapterframework.doc;
-
 /* 
-Copyright 2019, 2020 Integration Partners 
+Copyright 2019, 2020 WeAreFrank! 
 
 Licensed under the Apache License, Version 2.0 (the "License"); 
 you may not use this file except in compliance with the License. 
@@ -15,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and 
 limitations under the License. 
 */
+
+package nl.nn.adapterframework.doc;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -42,6 +42,7 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.doc.objects.DigesterXmlHandler;
 import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.IbisMethod;
 import nl.nn.adapterframework.doc.objects.SpringBean;
@@ -340,7 +341,7 @@ class InfoBuilderSource {
 	}
 
 	static List<IbisMethod> getChildIbisBeanMappings() throws IOException, SAXException {
-		DigesterRulesParser digesterRulesParser = new DigesterRulesParser();
+		DigesterXmlHandler digesterRulesParser = new DigesterXmlHandler();
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
