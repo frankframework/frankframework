@@ -14,128 +14,36 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
-import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@RunWith(Parameterized.class)
-public class DbmsSupportTest {
+public class DbmsSupportTest extends JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 
-	private String productKey;
-	private String url;
-	private String userid;
-	private String password;
-	private boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid '' if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
-	private boolean testSkipLocked;							// if there is no skip locked functionality, JdbcListeners can only run in a single thread
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 	
-	
-	private static Connection connection;
-	private IDbmsSupport dbmsSupport;
-
-	
-	@Parameters(name= "{index}: {0}")
-	public static Iterable<Object[]> data() {
-		Object[][] datasources = {
-			{ "H2",         "jdbc:h2:mem:test", null, null, false, false },
-			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, true }, 
-			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, true }, 
-			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true,  true }, 
-			{ "MariaDB",    "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false, false }, 
-			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true,  true }
-		};
-		List<Object[]> availableDatasources = new ArrayList<>();
-		for (Object[] datasource:datasources) {
-			String product = (String)datasource[0];
-			String url = (String)datasource[1];
-			String userId = (String)datasource[2];
-			String password = (String)datasource[3];
-			try (Connection connection=getConnection(url, userId, password)) {
-				availableDatasources.add(datasource);
-			} catch (Exception e) {
-				log.warn("Cannot connect to ["+url+"], skipping DbmsSupportTest for ["+product+"]:"+e.getMessage());
-			}
-		}
-		return availableDatasources;
-	}
 
 
 	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked, boolean testSkipLocked) throws SQLException {
-		this.productKey = productKey;
-		this.url = url;
-		this.userid = userid;
-		this.password = password;
-		this.testPeekShouldSkipRecordsAlreadyLocked = testPeekDoesntFindRecordsAlreadyLocked;
-		this.testSkipLocked = testSkipLocked;
-
-		connection = getConnection();
-		DbmsSupportFactory factory = new DbmsSupportFactory();
-		dbmsSupport = factory.getDbmsSupport(connection);
-		try {
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
-				log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			JdbcUtil.executeStatement(connection, 
-					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
-					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
-			log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private static Connection getConnection(String url, String userId, String password) throws SQLException {
-		DriverManager.setLoginTimeout(1);
-		Connection connection;
-		if (userId==null && password==null) {
-			connection = DriverManager.getConnection(url);
-		} else {
-			connection = DriverManager.getConnection(url, userId, password);
-		}
-		return connection;
-	}
-	
-	public Connection getConnection() throws SQLException {
-		return getConnection(url, userid, password);
-	}
-
-	@AfterClass
-	public static void stopDatabase() throws SQLException {
-		try  {
-			connection.createStatement().execute("DROP TABLE TEMP");
-		} finally {
-			connection.close();
-		}
+		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked, testSkipLocked);
 	}
 
 	@Test
@@ -165,14 +73,14 @@ public class DbmsSupportTest {
 	@Test
 	public void testGetDateTimeLiteral() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3,"+dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()),4)+","+dbmsSupport.getDatetimeLiteral(new Date())+")");
-		Object result = JdbcUtil.executeQuery(connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=1", null, false);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=1", null);
 		System.out.println("result:"+result);
 	}
 
 	@Test
 	public void testSysDate() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3,"+dbmsSupport.getSysDate()+","+dbmsSupport.getSysDate()+")");
-		Object result = JdbcUtil.executeQuery(connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=2", null, false);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM TEMP WHERE TKEY=2", null);
 		System.out.println("result:"+result);
 	}
 	

@@ -1024,13 +1024,13 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void executeStatement(Connection connection, String query, ParameterValueList parameterValues, boolean parameterTypeMatchRequired) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
 		PreparedStatement stmt = null;
 		try {
 			if (log.isDebugEnabled())
 				log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 			stmt = connection.prepareStatement(query);
-			applyParameters(stmt, parameterValues, parameterTypeMatchRequired);
+			applyParameters(dbmsSupport, stmt, parameterValues);
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
@@ -1046,13 +1046,13 @@ public class JdbcUtil {
 		}
 	}
 
-	public static Object executeQuery(Connection connection, String query, ParameterValueList parameterValues, boolean parameterTypeMatchRequired) throws JdbcException {
+	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
 		PreparedStatement stmt = null;
 		try {
 			if (log.isDebugEnabled())
 				log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 			stmt = connection.prepareStatement(query);
-			applyParameters(stmt, parameterValues, parameterTypeMatchRequired);
+			applyParameters(dbmsSupport, stmt, parameterValues);
 			ResultSet rs = stmt.executeQuery();
 			try {
 				if (!rs.next()) {
@@ -1096,13 +1096,14 @@ public class JdbcUtil {
 		return sb.toString();
 	}
 
-	public static void applyParameters(PreparedStatement statement, ParameterList parameters, Message message, IPipeLineSession session, boolean parameterTypeMatchRequired) throws SQLException, JdbcException, ParameterException {
+	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, IPipeLineSession session) throws SQLException, JdbcException, ParameterException {
 		if (parameters != null) {
-			applyParameters(statement,parameters.getValues(message, session), parameterTypeMatchRequired);
+			applyParameters(dbmsSupport,statement, parameters.getValues(message, session));
 		}
 	}
 
-	public static void applyParameters(PreparedStatement statement, ParameterValueList parameters, boolean parameterTypeMatchRequired) throws SQLException, JdbcException {
+	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
+		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters!=null) {
 			for (int i = 0; i < parameters.size(); i++) {
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired);

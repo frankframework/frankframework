@@ -57,7 +57,7 @@ public class JdbcUtilTest {
 		params.add(new SimpleParameter(null, null, "5th text"));
 		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(15092002)));
 		params.add(new SimpleParameter(null, Parameter.TYPE_DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
-		JdbcUtil.executeStatement(connection, query, params, false);
+		JdbcUtil.executeStatement(dbmsSupport, connection, query, params);
 
 		query = "SELECT COUNT(*) FROM TEMP";
 		int intResult = JdbcUtil.executeIntQuery(connection, query);
@@ -79,12 +79,12 @@ public class JdbcUtilTest {
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
 		params = new ParameterValueList();
 		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(3)));
-		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(connection, query, params, false);
+		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, params);
 		assertEquals("just a third text", listResult.get(0));
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
 
 		query = "SELECT COUNT(*) FROM TEMP";
-		long result = (Long)JdbcUtil.executeQuery(connection, query, null, false);
+		long result = (Long)JdbcUtil.executeQuery(dbmsSupport, connection, query, null);
 		assertEquals(5, result);
 	}
 

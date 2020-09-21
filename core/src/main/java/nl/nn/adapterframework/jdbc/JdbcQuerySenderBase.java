@@ -314,7 +314,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	protected Message executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session, getDbmsSupport().isParameterTypeMatchRequired());
+			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			if ("select".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				Object blobSessionVar=null;
 				Object clobSessionVar=null;
@@ -656,7 +656,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			if (queryExecutionContext.getParameterList() != null) {
-				JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList().getValues(new Message(""), session), getDbmsSupport().isParameterTypeMatchRequired());
+				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), next) {
@@ -808,7 +808,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				int ri = 1;
 				if (parameterList != null) {
 					ParameterValueList parameters = parameterList.getValues(message, session);
-					JdbcUtil.applyParameters(cstmt, parameters, getDbmsSupport().isParameterTypeMatchRequired());
+					JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
 					ri = parameters.size() + 1;
 				}
 				cstmt.registerOutParameter(ri, Types.VARCHAR);
