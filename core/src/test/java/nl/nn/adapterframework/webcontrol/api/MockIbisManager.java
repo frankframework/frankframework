@@ -25,8 +25,8 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.AdapterService;
-import nl.nn.adapterframework.configuration.AdapterServiceImpl;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -42,7 +42,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
-		AdapterService adapterService = new AdapterServiceImpl();
+		IAdapterService adapterService = new AdapterService();
 		IAdapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
