@@ -20,7 +20,6 @@ import java.util.Map;
 
 import javax.management.ObjectName;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -28,16 +27,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.MBeanExporter;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * This implementation of {@link AdapterService} registers the adapters to a JMX server.
+ * This implementation of {@link IAdapterService} registers the adapters to a JMX server.
 
  * @author Niels Meijer
  */
-public class BasicAdapterServiceImpl extends AdapterServiceImpl implements ApplicationContextAware, InitializingBean {
+public class JmxRegisteringAdapterService extends AdapterService implements ApplicationContextAware, InitializingBean {
 
-	private final Logger log = LogUtil.getLogger(BasicAdapterServiceImpl.class);
 	private MBeanExporter mBeanManager = null;
 	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<>();
 

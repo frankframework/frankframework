@@ -29,7 +29,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.configuration.AdapterService;
+import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -153,7 +153,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 		while (configuration.getRegisteredAdapters().size() > 0) {
 			IAdapter adapter = configuration.getRegisteredAdapter(0);
-			AdapterService adapterService = configuration.getAdapterService();
+			IAdapterService adapterService = configuration.getAdapterService();
 			adapterService.unRegisterAdapter(adapter);
 		}
 

@@ -69,7 +69,7 @@
 
 	<bean
 		name="adapterService"
-		class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
+		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
 		autowire="byName"
 		scope="prototype"
 		>

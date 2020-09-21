@@ -344,7 +344,7 @@ public class IbisContext extends IbisApplicationContext {
 		Configuration configuration = null;
 		try {
 			//TODO autowire the entire configuration in it's own context.
-			AdapterService adapterService = getBean("adapterService", AdapterService.class);
+			IAdapterService adapterService = getBean("adapterService", IAdapterService.class);
 
 			configuration = new Configuration(adapterService);
 			configuration.setName(currentConfigurationName);

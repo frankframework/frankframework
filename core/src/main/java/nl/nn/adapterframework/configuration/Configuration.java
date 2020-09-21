@@ -53,7 +53,7 @@ public class Configuration {
 
 	private Boolean autoStart = null;
 
-    private AdapterService adapterService;
+    private IAdapterService adapterService;
 
     private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
     private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
@@ -133,7 +133,7 @@ public class Configuration {
 	 *	initializes the log and the AppConstants
 	 * @see nl.nn.adapterframework.util.AppConstants
 	 */
-	public Configuration(AdapterService adapterService) {
+	public Configuration(IAdapterService adapterService) {
 		this.adapterService = adapterService;
 	}
 
@@ -157,7 +157,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Get a registered adapter by its name through {@link AdapterService#getAdapter(String)}
+	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
@@ -192,11 +192,11 @@ public class Configuration {
         return adapterService.getAdapters().values().iterator();
     }
     
-    public AdapterService getAdapterService() {
+    public IAdapterService getAdapterService() {
         return adapterService;
     }
 
-    public void setAdapterService(AdapterService adapterService) {
+    public void setAdapterService(IAdapterService adapterService) {
         this.adapterService = adapterService;
     }
 
