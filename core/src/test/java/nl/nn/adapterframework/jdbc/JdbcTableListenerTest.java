@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import java.sql.Connection;
@@ -133,7 +135,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	}
 
 	@Test
-	public void testDoubleGet() throws Exception {
+	public void testParallelGet() throws Exception {
 		assumeFalse("H2 does not support multithreaded JdbcListeners", dbmsSupport.getDbmsName().equals("H2"));
 		listener.configure();
 		listener.open();
@@ -151,4 +153,22 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 	}
 
+	@Test
+	public void testPeekWhileGet() throws Exception {
+		assumeFalse("H2 does not support multithreaded JdbcListeners", dbmsSupport.getDbmsName().equals("H2"));
+		listener.configure();
+		listener.open();
+		
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+		try (Connection connection1 = getConnection()) {
+			connection1.setAutoCommit(false);
+			Object rawMessage1 = listener.getRawMessage(connection1,null);
+			assertEquals("10",rawMessage1);
+
+			//assertFalse("Should not peek message when there is none", listener.hasRawMessageAvailable());
+			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (11,1)", null);
+			assertTrue("Should peek message when there is one", listener.hasRawMessageAvailable());
+			
+		}
+	}
 }

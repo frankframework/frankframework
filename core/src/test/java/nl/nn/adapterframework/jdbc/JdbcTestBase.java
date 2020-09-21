@@ -18,7 +18,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
-public class JdbcTestBase {
+public abstract class JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
 	protected String productKey;
@@ -113,5 +113,5 @@ public class JdbcTestBase {
 			connection.close();
 		}
 	}
-
+	
 }
