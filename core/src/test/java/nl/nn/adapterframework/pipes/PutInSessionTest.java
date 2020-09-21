@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.stream.Message;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * PutInSession Tester.

@@ -20,7 +20,6 @@ import java.util.jar.JarFile;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import static org.junit.Assert.*;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {

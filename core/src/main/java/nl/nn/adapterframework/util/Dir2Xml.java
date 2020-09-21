@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**

@@ -19,8 +19,6 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-
 public class DirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<DirectoryClassLoader> {
 
 	@Override

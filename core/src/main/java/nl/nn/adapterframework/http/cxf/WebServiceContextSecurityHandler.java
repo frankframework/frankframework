@@ -34,10 +34,12 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 		this.webServiceContext = webServiceContext;
 	}
 
+	@Override
 	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return webServiceContext.isUserInRole(role);
 	}
 
+	@Override
 	public Principal getPrincipal(IPipeLineSession session){
 		return webServiceContext.getUserPrincipal();
 	}

@@ -199,7 +199,6 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		return "iaf/api/*";
 	}
 
-	
 	@Override
 	public Map<String, String> getParameters() {
 		Map<String, String> parameters = new HashMap<>();
