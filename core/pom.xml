@@ -623,7 +623,7 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>42.2.16</version>
-			<!-- compile scope required for LargeObjectManager (to handle PostgreSQL BLOBs and CLOBs in an alternative way), could consider to remove that, and change scope to 'test' -->
+			<scope>test</scope>
 		</dependency>
 		
 		<dependency>
