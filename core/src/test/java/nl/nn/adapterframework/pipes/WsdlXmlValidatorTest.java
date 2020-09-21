@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.AdapterServiceImpl;
 import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -235,7 +236,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
-		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		Configuration configuration = new Configuration(new AdapterServiceImpl());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
@@ -276,7 +277,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
-		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		Configuration configuration = new Configuration(new AdapterServiceImpl());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);

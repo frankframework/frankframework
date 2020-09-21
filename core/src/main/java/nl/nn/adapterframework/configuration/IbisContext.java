@@ -243,10 +243,6 @@ public class IbisContext extends IbisApplicationContext {
 		if (uriPatterns.size() > 0) {
 			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
-		Set mbeans = JmxMbeanHelper.getMBeans();
-		if (mbeans != null && mbeans.size() > 0) {
-			log("Not all JMX MBeans are unregistered: " + mbeans, MessageKeeperLevel.ERROR);
-		}
 		JdbcUtil.resetJdbcProperties();
 
 		init();
@@ -347,7 +343,10 @@ public class IbisContext extends IbisApplicationContext {
 
 		Configuration configuration = null;
 		try {
-			configuration = new Configuration(new BasicAdapterServiceImpl());
+			//TODO autowire the entire configuration in it's own context.
+			AdapterService adapterService = getBean("adapterService", AdapterService.class);
+
+			configuration = new Configuration(adapterService);
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);

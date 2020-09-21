@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -67,6 +68,7 @@ public interface IAdapter extends IManagable {
 	 */
 	public String getErrorState();
 
+	@JmxAttribute(description = "Return the Adapter description")
 	public String getDescription();
 
 	public String getAdapterConfigurationAsString();

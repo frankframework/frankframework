@@ -289,7 +289,9 @@ public class Configuration {
 	}
 
 	public void setVersion(String version) {
-		this.version = version;
+		if(StringUtils.isNotEmpty(version)) {
+			this.version = version;
+		}
 	}
 
 	public String getVersion() {
