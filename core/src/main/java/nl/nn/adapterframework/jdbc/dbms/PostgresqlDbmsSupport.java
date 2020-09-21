@@ -30,8 +30,8 @@ import java.util.Date;
 
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.lang.StringUtils;
-import org.postgresql.largeobject.LargeObject;
-import org.postgresql.largeobject.LargeObjectManager;
+//import org.postgresql.largeobject.LargeObject;
+//import org.postgresql.largeobject.LargeObjectManager;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -39,6 +39,9 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
 * Support for PostgreSQL.
+* 
+* Limitations:
+*   PostgreSQL blobs and clobs are handled via byte arrays that are kept in memory. The maximum size of blobs and clobs is therefor limited by memory size.
 */
 public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
@@ -85,27 +88,28 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "TEXT";
 	}
 	
-	private LargeObjectManager getLargeObjectManager(ResultSet rs) throws SQLException {
-		return rs.getStatement().getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
-	}
+//	private LargeObjectManager getLargeObjectManager(ResultSet rs) throws SQLException {
+//		return rs.getStatement().getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
+//	}
 	
 	private Object createLob(ResultSet rs) throws SQLException {
 		if (useLargeObjectFeature) {
-			LargeObjectManager lobj = getLargeObjectManager(rs);
-			// Create a new large object
-			long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
-			return oid;
+			throw new IllegalStateException("Handling BLOBs and CLOBs as LargeObjects not available");
+//			LargeObjectManager lobj = getLargeObjectManager(rs);
+//			// Create a new large object
+//			long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
+//			return oid;
 		}
 		return new ByteArrayOutputStream();
 	}
 
 	private OutputStream openLobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException {
-		if (useLargeObjectFeature) {
-			LargeObjectManager lobj = getLargeObjectManager(rs);
-			long oid = (long)blobUpdateHandle;
-			LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
-			return obj.getOutputStream();
-		}
+//		if (useLargeObjectFeature) {
+//			LargeObjectManager lobj = getLargeObjectManager(rs);
+//			long oid = (long)blobUpdateHandle;
+//			LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
+//			return obj.getOutputStream();
+//		}
 		return (ByteArrayOutputStream)blobUpdateHandle;
 	}
 	

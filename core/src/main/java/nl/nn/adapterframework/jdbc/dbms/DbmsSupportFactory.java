@@ -53,14 +53,14 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		} else {
 			Properties supportMap=getDbmsSupportMap();
 			if (supportMap==null) {
-				log.warn("no dbmsSupportMap specified, reverting to built in types");
+				log.debug("no dbmsSupportMap specified, reverting to built-in types");
 			} else {
 				if (!supportMap.containsKey(product)) {
-					log.warn("product ["+product+"] not configured in dbmsSupportMap, will search in built in types");
+					log.debug("product ["+product+"] not configured in dbmsSupportMap, will search in built-in types");
 				} else {
 					String dbmsSupportClass=supportMap.getProperty(product);
 					if (StringUtils.isEmpty(dbmsSupportClass)) {
-						log.warn("product ["+product+"] configured empty in dbmsSupportMap, will search in built in types");
+						log.warn("product ["+product+"] configured empty in dbmsSupportMap, will search in built-in types");
 					} else {
 						try {
 							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]");
@@ -71,35 +71,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 					}
 				}
 			}
-			log.debug("searching built in types for ["+product+"] productVersion ["+productVersion+"]");
-			if (Dbms.H2.getProductName().equals(product)) {
-				log.debug("Setting databasetype to H2");
-				return new H2DbmsSupport();
-			}
-			if (Dbms.ORACLE.getProductName().equals(product)) {
-				log.debug("Setting databasetype to ORACLE");
-				return new OracleDbmsSupport();
-			}
-			if (Dbms.MSSQL.getProductName().equals(product)) {
-				log.debug("Setting databasetype to MSSQLSERVER");
-				return new MsSqlServerDbmsSupport();
-			}
-			if (Dbms.MYSQL.getProductName().equals(product)) {
-				if (productVersion.contains("MariaDB")) {
-					log.debug("Setting databasetype to MARIADB (using MySQL driver)");
-					return new MariaDbDbmsSupport();
-				}
-				log.debug("Setting databasetype to MYSQL");
-				return new MySqlDbmsSupport();
-			}
-			if (Dbms.MARIADB.getProductName().equals(product)) {
-				log.debug("Setting databasetype to MARIADB (using MariaDB driver)");
-				return new MariaDbDbmsSupport();
-			}
-			if (Dbms.POSTGRESQL.getProductName().equals(product)) {
-				log.debug("Setting databasetype to POSTGRESQL");
-				return new PostgresqlDbmsSupport();
-			}
+			return Dbms.findDbmsSupportByProduct(product, productVersion);
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");
 		return new GenericDbmsSupport();

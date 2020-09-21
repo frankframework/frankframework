@@ -1227,7 +1227,7 @@ public class JdbcUtil {
 				statement.setString(parameterIndex, (String) value);
 				break;
 			}
-		} catch (CalendarParserException e) {
+		} catch (CalendarParserException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
 		}
 	}

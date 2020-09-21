@@ -85,9 +85,6 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
-	private boolean lockRows=false;
-	private int lockWait=-1;
-
 	public class Column {
 		private String name = null;
 		private String value = null;
@@ -592,27 +589,11 @@ public class XmlQuerySender extends DirectQuerySender {
 				} else {
 					//if (column.getParameter() instanceof String) 
 					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
-					JdbcUtil.setParameter(statement, var++, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
+					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
+					var++;
 				}
 			}
 		}
 	}
 
-	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
-	public void setLockRows(boolean b) {
-		lockRows = b;
-	}
-
-	public boolean isLockRows() {
-		return lockRows;
-	}
-
-	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
-	public void setLockWait(int i) {
-		lockWait = i;
-	}
-
-	public int getLockWait() {
-		return lockWait;
-	}
 }
