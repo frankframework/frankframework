@@ -39,11 +39,13 @@ public class DbmsSupportTest extends JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
+	private boolean testSkipLocked;
 	
 
 
-	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked, boolean testSkipLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked, testSkipLocked);
+	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
+		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+		testSkipLocked = dbmsSupport.hasSkipLockedFunctionality();
 	}
 
 	@Test

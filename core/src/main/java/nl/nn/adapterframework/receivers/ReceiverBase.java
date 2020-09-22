@@ -255,6 +255,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private ISender sender=null; // answer-sender
 	private IMessageBrowser<Serializable> messageLog=null;
+	private IMessageBrowser<Serializable> inProcessBrowser=null;
 	
 	//private boolean transacted=false;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
@@ -645,6 +646,14 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					this.messageLog = messageLogBrowser;
 				}
 			}
+			if (getListener() instanceof IProvidesMessageBrowsers) {
+				IMessageBrowser inProcessBrowser = ((IProvidesMessageBrowsers)getListener()).getInProcessBrowser();
+				if (inProcessBrowser!=null && inProcessBrowser instanceof IConfigurable) {
+					((IConfigurable)inProcessBrowser).configure();
+				}
+				this.inProcessBrowser = inProcessBrowser;
+			}
+			
 			if (isTransacted()) {
 //				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
 //					warn(getLogPrefix()+"sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
@@ -1822,6 +1831,12 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
 		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
+	}
+	/**
+	 * returns a browser of messages inProcess, if provided as a {@link IMessageBrowser} by the listener itself. 
+	 */
+	public IMessageBrowser<Serializable> getInProcessBrowser() {
+		return inProcessBrowser;
 	}
 
 

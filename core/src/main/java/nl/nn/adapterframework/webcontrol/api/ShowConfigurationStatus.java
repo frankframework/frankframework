@@ -669,6 +669,20 @@ public final class ShowConfigurationStatus extends Base {
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}
+					ts=rb.getInProcessBrowser();
+					receiverInfo.put("hasInProcessLog", (ts!=null));
+					if (ts!=null) {
+						try {
+							if (showCountMessageLog) {
+								receiverInfo.put("inProcessLogCount", ts.getMessageCount());
+							} else {
+								receiverInfo.put("inProcessLogCount", "?");
+							}
+						} catch (Exception e) {
+							log.warn("Cannot determine number of messages in inProcessLog", e);
+							receiverInfo.put("inProcessLogCount", "error");
+						}
+					}
 					boolean isRestListener = (listener instanceof RestListener);
 					listenerInfo.put("isRestListener", isRestListener);
 					if (isRestListener) {
