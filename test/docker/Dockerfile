@@ -34,6 +34,7 @@ RUN wget -O lib/commons-pool-1.5.6.jar "https://repo1.maven.org/maven2/commons-p
 COPY docker/ojdbc7.jar lib/ojdbc7.jar
 COPY --from=0 /home/jtds-1.3.1.jar lib/jtds-1.3.1.jar
 
+RUN sed -i -e 's|Connector port=\"8080\"|Connector port=\"80\"|g' conf/server.xml
 RUN echo "dtap.stage=LOC" >> conf/catalina.properties
 RUN mkdir -p log/larvatest
 RUN echo "log.dir=/usr/local/tomcat/log/larvatest" >> conf/catalina.properties
@@ -41,5 +42,6 @@ RUN echo "log.dir.match=/usr/local/tomcat/log/larvatest" >> conf/catalina.proper
 RUN echo "jdbc.dbms.default=oracle-docker" >> conf/catalina.properties
 RUN echo "web.port=8080" >> conf/catalina.properties
 RUN echo "file.separator.regex=/" >> conf/catalina.properties
+RUN echo "web.port=80" >> conf/catalina.properties
 
 COPY --from=0 /home/work/iaf-test.war webapps/iaf-test.war
