@@ -1,0 +1,107 @@
+<module name="validators">
+	<adapter name="SoapValidator">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-Java">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SoapValidator" throwException="false" />
+		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-Webservice">
+			<listener className="nl.nn.adapterframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
+		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
+		</receiver>
+		<pipeline firstPipe="CopyItem">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+	
+			<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" soapBody="Item_Request" outputSoapBody="Item_Response" allowPlainXml="true"
+				rootElementSessionKey="receivedRootElement" rootNamespaceSessionKey="receivedRootNamespace" soapVersion="auto" >
+				<param name="Status" sessionKey="Status" />
+				<param name="Id" sessionKey="Id" />
+				<param name="Item/Id" sessionKey="ItemId" />
+				<param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
+				<forward name="failure" path="InputValidationFailure" />
+				<forward name="outputFailure" path="OutputValidationFailure" />
+			</inputValidator>
+			<inputWrapper  className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" direction="unwrap"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" outputNamespace="urn:items" root="Item_Response" soapNamespaceSessionKey="receivedRootNamespace"/>
+	
+			<pipe name="InputValidationFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
+				<param name="cmhVersion" value="1" />
+				<param name="errorCode" value="ERR6003" />
+				<param name="errorReason" value="Invalid Request" />
+				<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+				<param name="addErrorsDetailsXml" value="true" />
+				<param name="originalMessage" sessionKey="originalMessage" />
+				<param name="operationName" value="Test/SoapValidator" />
+				<param name="paradigm" value="Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="OutputValidationFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
+				<param name="cmhVersion" value="1" />
+				<param name="errorCode" value="ERR6993" />
+				<param name="errorReason" value="Invalid Response" />
+				<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+				<param name="addErrorsDetailsXml" value="true" />
+				<param name="addErrorsFromInputMessage" value="true" />
+				<param name="operationName" value="Test/SoapValidator" />
+				<param name="paradigm" value="Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
+			<pipe name="CopyItem" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="Validators/xsl/CopyItem.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="Json2XmlValidator">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-Java">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
+		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" method="GET"/>
+		</receiver>
+		<pipeline firstPipe="CopyItem">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+	
+			<inputValidator className="nl.nn.adapterframework.pipes.Json2XmlValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" root="Item_Request" responseRoot="Item_Response">
+				<param name="Status" sessionKey="Status" />
+				<param name="Id" sessionKey="Id" />
+				<param name="Item/Id" sessionKey="ItemId" />
+				<param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
+				<forward name="failure" path="InputValidationFailure" />
+				<forward name="outputFailure" path="OutputValidationFailure" />
+			</inputValidator>
+	
+			<pipe name="InputValidationFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
+				<param name="cmhVersion" value="1" />
+				<param name="errorCode" value="ERR6003" />
+				<param name="errorReason" value="Invalid Request" />
+				<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+				<param name="addErrorsDetailsXml" value="true" />
+				<param name="originalMessage" sessionKey="originalMessage" />
+				<param name="operationName" value="Test/Json2XmlValidator" />
+				<param name="paradigm" value="Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="OutputValidationFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" getInputFromFixedValue="&lt;Item_Response xmlns=&quot;urn:items&quot;/&gt;">
+				<param name="cmhVersion" value="1" />
+				<param name="errorCode" value="ERR6993" />
+				<param name="errorReason" value="Invalid Response" />
+				<param name="errorDetailsXml" sessionKey="xmlFailureReason" type="domdoc" />
+				<param name="addErrorsDetailsXml" value="true" />
+				<param name="addErrorsFromInputMessage" value="true" />
+				<param name="operationName" value="Test/Json2XmlValidator" />
+				<param name="paradigm" value="Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
+			<pipe name="CopyItem" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="Validators/xsl/CopyItem.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>
