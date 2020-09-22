@@ -43,6 +43,7 @@ public interface IDbmsSupport {
 	String getDbmsName();
 	
 	boolean isParameterTypeMatchRequired();
+	boolean hasSkipLockedFunctionality();
 	/**
 	 * SQL String returning current date and time of dbms.
 	 */

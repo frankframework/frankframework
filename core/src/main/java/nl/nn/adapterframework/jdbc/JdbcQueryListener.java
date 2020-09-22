@@ -19,6 +19,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
 
@@ -45,6 +46,9 @@ public class JdbcQueryListener extends JdbcListener {
 			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
 		super.configure();
+		if (StringUtils.isEmpty(getUpdateStatusToInProcessQuery()) && !getDbmsSupport().hasSkipLockedFunctionality()) {
+			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
+		}
 	}
 	
 

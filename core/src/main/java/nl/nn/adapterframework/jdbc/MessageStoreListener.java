@@ -129,6 +129,18 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 
 	@Override
+	public IMessageBrowser<Object> getInProcessBrowser() {
+		IMessageBrowser<Object> result = super.getInProcessBrowser();
+		if (result!=null && result instanceof JdbcTableMessageBrowser) {
+			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
+			jtmb.setCommentField("COMMENTS");
+			jtmb.setExpiryDateField("EXPIRYDATE");
+			jtmb.hostField="HOST";
+		}
+		return result;
+	}
+
+	@Override
 	public IMessageBrowser<Object> getMessageLogBrowser() {
 		IMessageBrowser<Object> result = super.getMessageLogBrowser();
 		if (result!=null && result instanceof JdbcTableMessageBrowser) {

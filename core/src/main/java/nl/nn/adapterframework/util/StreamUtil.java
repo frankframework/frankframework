@@ -40,8 +40,8 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
-	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	

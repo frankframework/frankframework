@@ -36,6 +36,11 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DATABASE()");
 	}

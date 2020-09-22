@@ -2,6 +2,8 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ public abstract class JdbcTestBase {
 	@Parameters(name= "{index}: {0}")
 	public static Iterable<Object[]> data() {
 		Object[][] datasources = {
-			{ "H2",         "jdbc:h2:mem:test", null, null, false, false },
+			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=10", null, null, false, false },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, true }, 
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, true }, 
 			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true,  true }, 
@@ -114,4 +116,19 @@ public abstract class JdbcTestBase {
 		}
 	}
 	
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType) throws JdbcException, SQLException {
+		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
+		dbmsSupport.convertQuery(context, "Oracle");
+		log.debug("executing translated query ["+context.getQuery()+"]");
+		if (queryType.equals("select")) {
+			return  connection.prepareStatement(context.getQuery());
+		}
+		if (queryType.equals("select for update")) {
+			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+		}
+		JdbcUtil.executeStatement(connection, context.getQuery());
+		return null;
+	}
+	
+
 }

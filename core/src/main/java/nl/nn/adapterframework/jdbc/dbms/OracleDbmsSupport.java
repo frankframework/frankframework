@@ -36,6 +36,11 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSysDate() {
 		return "SYSDATE";
 	}

@@ -24,6 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -47,10 +51,9 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class JdbcListener extends JdbcFacade implements IPeekableListener<Object> {
 
-	private String startLocalTransactionQuery;
-	private String commitLocalTransactionQuery;
 	private String selectQuery;
 	private String peekQuery;
+	private String updateStatusToInProcessQuery;
 	private String updateStatusToProcessedQuery;
 	private String updateStatusToErrorQuery;
 
@@ -70,6 +73,10 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	private boolean trace=false;
 	private boolean peekUntransacted=true;
 
+	protected PlatformTransactionManager txManager;
+	private TransactionDefinition txNew = null;
+	private int transactionTimeout = 10;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		try {
@@ -84,6 +91,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? getPeekQuery() : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, getSelectQuery());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
+		}
+		if (StringUtils.isNotEmpty(getUpdateStatusToInProcessQuery())) {
+			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+			if (transactionTimeout > 0) {
+				txDef.setTimeout(transactionTimeout);
+			}
+			txNew = txDef;
 		}
 	}
 
@@ -162,6 +176,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			return getRawMessage(connection,threadContext);
 		}
 	}
+	
 
 	protected Object getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		boolean inTransaction=false;
@@ -173,10 +188,19 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			inTransaction=false;
 		}
 		try {
-			if (!inTransaction) {
-				execute(conn,getStartLocalTransactionQuery());
-			}
-
+			TransactionStatus txStatus = null;
+			boolean autoCommitState=false;
+			if (StringUtils.isNotEmpty(getUpdateStatusToInProcessQuery())) {
+				if (!inTransaction) {
+					if (autoCommitState = conn.getAutoCommit()) {
+						conn.setAutoCommit(false);
+					} else {
+						conn.commit();
+					}
+				} else {
+					txStatus = txManager.getTransaction(txNew);
+				}
+			}			
 			String query=preparedSelectQuery;
 			try (Statement stmt= conn.createStatement()) {
 				stmt.setFetchSize(1);
@@ -187,6 +211,18 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 					}
 					Object result;
 					String key=rs.getString(getKeyField());
+					
+					if (StringUtils.isNotEmpty(getUpdateStatusToInProcessQuery())) {
+						execute(conn,getUpdateStatusToInProcessQuery(),key);
+						if (txStatus!=null) {
+							txManager.commit(txStatus);
+						} else {
+							conn.commit();
+							if (autoCommitState) {
+								conn.setAutoCommit(true);
+							}
+						}
+					}
 					
 					if (StringUtils.isNotEmpty(getMessageField())) {
 						Message message;
@@ -208,14 +244,21 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 						result = key;
 					}
 					return result;
+				} catch (SQLException e) {
+					if (!getDbmsSupport().hasSkipLockedFunctionality()) {
+						String errorMessage = e.getMessage();
+						if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
+							log.debug(getLogPrefix()+"caught lock timeout exception, returning null: ("+e.getClass().getName()+")"+e.getMessage());
+							return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
+						}
+					}
+					throw e;
 				}
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
 			}
-		} finally {
-			if (!inTransaction) {
-				execute(conn,getCommitLocalTransactionQuery());
-			}
+		} catch (SQLException e) {
+			throw new ListenerException(getLogPrefix() + "could not start local transaction",e);
 		}
 		
 	}
@@ -289,6 +332,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		}
 	}
 
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
+
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
 	}
@@ -327,6 +377,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return updateStatusToProcessedQuery;
 	}
 
+	protected void setUpdateStatusToInProcessQuery(String string) {
+		updateStatusToInProcessQuery = string;
+	}
+	public String getUpdateStatusToInProcessQuery() {
+		return updateStatusToInProcessQuery;
+	}
+
 	@IbisDoc({"primary key field of the table, used to identify messages", ""})
 	protected void setKeyField(String fieldname) {
 		keyField = fieldname;
@@ -341,20 +398,6 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 	public String getMessageField() {
 		return messageField;
-	}
-
-	public void setStartLocalTransactionQuery(String string) {
-		startLocalTransactionQuery = string;
-	}
-	public String getStartLocalTransactionQuery() {
-		return startLocalTransactionQuery;
-	}
-
-	public void setCommitLocalTransactionQuery(String string) {
-		commitLocalTransactionQuery = string;
-	}
-	public String getCommitLocalTransactionQuery() {
-		return commitLocalTransactionQuery;
 	}
 
 	@IbisDoc({"type of the field containing the message data: either string, clob or blob", "<i>string</i>"})
