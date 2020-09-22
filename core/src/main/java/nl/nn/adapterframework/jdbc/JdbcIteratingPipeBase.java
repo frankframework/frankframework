@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -90,7 +91,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
 	@SuppressWarnings("finally")
 	@Override
@@ -102,7 +103,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");
@@ -111,7 +112,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 				JdbcUtil.fullClose(connection, rs);
 				return null; // no results
 			}
-			return getIterator(connection, rs);
+			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
 			try {
 				if (rs!=null) {

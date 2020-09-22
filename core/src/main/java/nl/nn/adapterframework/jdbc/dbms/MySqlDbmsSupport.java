@@ -122,14 +122,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
-	@Override
-	public String emptyClobValue() {
-		return "";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "";
-	}
 }

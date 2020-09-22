@@ -79,7 +79,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			fos = new FileOutputStream(fileName, isAppend());
 			QueryExecutionContext queryExecutionContext = blockHandle;
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {

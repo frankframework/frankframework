@@ -123,10 +123,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
-		return selectQuery; // In Oracle, writers do not block readers
-	}
 	
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {

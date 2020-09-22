@@ -38,52 +38,40 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	public IDbmsSupport getDbmsSupport(Connection conn) {
 		String product;
+		String productVersion;
 		try {
 			DatabaseMetaData md = conn.getMetaData();
-			product=md.getDatabaseProductName();
+			product = md.getDatabaseProductName();
+			productVersion = md.getDatabaseProductVersion();
+			
+			log.debug("found product ["+product+"] productVersion ["+productVersion+"]");
 		} catch (SQLException e1) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e1);
 		}
-		Properties supportMap=getDbmsSupportMap();
-		if (supportMap!=null) {
-			if (StringUtils.isEmpty(product)) {
-				log.warn("no product found from connection metadata");
+		if (StringUtils.isEmpty(product)) {
+			log.warn("no product found from connection metadata");
+		} else {
+			Properties supportMap=getDbmsSupportMap();
+			if (supportMap==null) {
+				log.debug("no dbmsSupportMap specified, reverting to built-in types");
 			} else {
 				if (!supportMap.containsKey(product)) {
-					log.warn("product ["+product+"] not configured in dbmsSupportMap");
+					log.debug("product ["+product+"] not configured in dbmsSupportMap, will search in built-in types");
 				} else {
 					String dbmsSupportClass=supportMap.getProperty(product);
 					if (StringUtils.isEmpty(dbmsSupportClass)) {
-						log.warn("product ["+product+"] configured empty in dbmsSupportMap");
+						log.warn("product ["+product+"] configured empty in dbmsSupportMap, will search in built-in types");
 					} else {
 						try {
-							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"]");
+							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]");
 							return (IDbmsSupport)ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
-							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"]",e);
+							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]",e);
 						} 
 					}
 				}
 			}
-		}
-		else {
-			log.warn("no dbmsSupportMap specified, reverting to built in types");
-			if (Dbms.ORACLE.getProductName().equals(product)) {
-				log.debug("Setting databasetype to ORACLE");
-				return new OracleDbmsSupport();
-			}
-			if (Dbms.MSSQL.getProductName().equals(product)) {
-				log.debug("Setting databasetype to MSSQLSERVER");
-				return new MsSqlServerDbmsSupport();
-			}
-			if (Dbms.MYSQL.getProductName().equals(product)) {
-				log.debug("Setting databasetype to MYSQL");
-				return new MySqlDbmsSupport();
-			}
-			if (Dbms.MARIADB.getProductName().equals(product)) {
-				log.debug("Setting databasetype to MARIADB");
-				return new MariaDbDbmsSupport();
-			}
+			return Dbms.findDbmsSupportByProduct(product, productVersion);
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");
 		return new GenericDbmsSupport();

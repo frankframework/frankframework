@@ -22,7 +22,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +33,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
 import org.apache.commons.lang.StringUtils;
@@ -820,23 +818,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		InputStream blobStream=null;
-		try {
-			Blob blob = rs.getBlob(columnIndex);
-			if (blob==null) {
+		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
+			if (blobInputStream==null) {
 				return null;
 			}
-			if (compressed) {
-				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex)));
-			} else {
-				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
-			}
-			try (ObjectInputStream ois = new ObjectInputStream(blobStream)) {
+			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
 				return (S)ois.readObject();
-			}
-		} finally {
-			if (blobStream!=null) {
-				blobStream.close();
 			}
 		}
 	}

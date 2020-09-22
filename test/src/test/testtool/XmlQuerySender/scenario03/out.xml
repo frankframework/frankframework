@@ -1,0 +1,45 @@
+<results>
+  <result item="1">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="2">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="3">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="4">
+    <result>
+      <fielddefinition>
+        <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+        <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+        <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="TNUMBER" type="DECIMAL" columnDisplaySize="17" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
+        <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+        <field name="TDATE" type="TIME" columnDisplaySize="8" precision="8" scale="0" isCurrency="false" columnTypeName="TIME" columnClassName="java.sql.Time"/>
+        <field name="TBLOB1" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob"/>
+        <field name="TCLOB" type="CLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="java.sql.Clob"/>
+        <field name="TBLOB2" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="TKEY">56907</field>
+          <field name="TCHAR">Z</field>
+          <field name="TVARCHAR">dit is een test</field>
+          <field name="TNUMBER">123</field>
+          <field name="TTIMESTAMP">2009-08-26 09:20:41</field>
+          <field name="TDATE">11:46:12</field>
+          <field name="TBLOB1">hallo---------1</field>
+          <field name="TCLOB">changed------9</field>
+          <field name="TBLOB2">hallo---------3</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+</results>

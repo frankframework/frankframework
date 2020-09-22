@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.sql.SQLException;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 /**
  * Pipe that iterates over rows in in ResultSet.
@@ -43,9 +44,9 @@ import nl.nn.adapterframework.core.SenderException;
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
 	@Override
-	protected IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException {
+	protected IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException {
 		try {
-			return new ResultSetIterator(conn, rs);
+			return new ResultSetIterator(dbmsSupport, conn, rs);
 		} catch (SQLException e) {
 			throw new SenderException(e);
 		}

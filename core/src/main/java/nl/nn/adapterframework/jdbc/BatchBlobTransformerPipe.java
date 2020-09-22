@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 	@Override
 	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
 		try {
-			InputStream blobStream=JdbcUtil.getBlobInputStream(rs,1,querySender.isBlobsCompressed());
+			InputStream blobStream=JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs ,1 , querySender.isBlobsCompressed());
 			return getReaderFactory().getReader(blobStream, charset, streamId, session);
 		} catch (Exception e) {
 			throw new SenderException(e);
