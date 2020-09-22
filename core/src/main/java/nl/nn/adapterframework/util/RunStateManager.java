@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**

@@ -33,9 +33,9 @@ import nl.nn.adapterframework.http.PushingListenerAdapter;
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class MessageProvider extends SOAPProviderBase {
 
-	private PushingListenerAdapter listener;
+	private PushingListenerAdapter<String> listener;
 
-	public MessageProvider(PushingListenerAdapter listener, String multipartXmlSessionKey) {
+	public MessageProvider(PushingListenerAdapter<String> listener, String multipartXmlSessionKey) {
 		super();
 		this.listener = listener;
 		setAttachmentXmlSessionKey(multipartXmlSessionKey);

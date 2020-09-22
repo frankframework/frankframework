@@ -27,18 +27,13 @@ package nl.nn.adapterframework.configuration;
  */
 public class JmsRealmsFactory extends AbstractSpringPoweredDigesterFactory {
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
-     */
-    public String getSuggestedBeanName() {
-        return "jmsRealmsFactory";
-    }
-    
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#isPrototypesOnly()
-     */
-    public boolean isPrototypesOnly() {
-        return false;
-    }
+	@Override
+	public String getSuggestedBeanName() {
+		return "jmsRealmsFactory";
+	}
 
+	@Override
+	public boolean isPrototypesOnly() {
+		return false;
+	}
 }

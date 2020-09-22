@@ -15,17 +15,17 @@
  */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import static nl.nn.adapterframework.testutil.TestAssertions.*;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.net.URL;
 
-import nl.nn.adapterframework.extensions.graphviz.Format;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.extensions.graphviz.Options;
+import org.junit.Test;
+
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.junit.Test;
 
 public class GraphvizEngineTest {
 

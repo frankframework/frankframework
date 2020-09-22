@@ -218,6 +218,7 @@ public class MiscTest {
             sb.append(line).append("\n");
             line = buf.readLine();
         }
+        buf.close();
 
         String fileAsString = sb.toString();
         assertEquals("test\n", fileAsString);

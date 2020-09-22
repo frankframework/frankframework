@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.http.cxf;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -45,12 +47,8 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.http.cxf.InputStreamAttachmentPart;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;

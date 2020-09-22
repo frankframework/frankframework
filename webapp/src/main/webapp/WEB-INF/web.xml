@@ -209,6 +209,8 @@
 		</taglib>
 	</jsp-config>
 
+	<!-- this login-config might trigger application server authentication popups. -->
+	<!-- TODO: find a way to dynamically set this! -->
 	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>Ibis</realm-name>
