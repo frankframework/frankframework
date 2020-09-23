@@ -24,7 +24,13 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 	private JdbcTableListener listener;
 	
-	private boolean testNegativePeekWhileGet = false; // when this test fails, it is not really a problem, only small performance impact
+	/*
+	 * set testNegativePeekWhileGet=true to test that peek does not see new records when there is a record in process.
+	 * This test fails currently for Oracle and MsSqlServer. It can be fixed by adding 'FOR UPDATE SKIP LOCKED' or 'WITH(updlock)' respectively.
+	 * Doing that, however, increases the amount of locks on the table. For now, the overhead of peeking some messages that do not exist is considered
+	 * less expensive than setting locks on the database to have a more secure peek.
+	 */
+	private boolean testNegativePeekWhileGet = false;
 	
 	public JdbcTableListenerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
 		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
@@ -151,6 +157,9 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1);
+			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+				connection1.commit();
+			}
 
 			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (11,1)", null);
 			Object rawMessage2 = listener.getRawMessage(null);
@@ -171,8 +180,11 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
-			Object rawMessage1 = listener.getRawMessage(connection1,null);
+			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
+			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+				connection1.commit();
+			}
 
 			assertFalse("Should not peek message when there is none", listener.hasRawMessageAvailable());
 			
@@ -189,8 +201,11 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
-			Object rawMessage1 = listener.getRawMessage(connection1,null);
+			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
+			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+				connection1.commit();
+			}
 
 			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (11,1)", null);
 			assertTrue("Should peek message when there is one", listener.hasRawMessageAvailable());
@@ -198,6 +213,34 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 	}
 	
+	@Test
+	public void testRollback() throws Exception {
+		if (!dbmsSupport.hasSkipLockedFunctionality()) {
+			listener.setStatusValueInProcess("4");
+		}
+		listener.configure();
+		listener.open();
+		boolean useStatusInProcess;
+		Object rawMessage;
+		
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+		try (Connection connection1 = getConnection()) {
+			connection1.setAutoCommit(false);
+			rawMessage = listener.getRawMessage(connection1,null);
+			assertEquals("10",rawMessage);
+			if (useStatusInProcess=listener.setMessageStateToInProcess.operate(connection1, rawMessage, null)) {
+				connection1.commit();
+			} else {
+				connection1.rollback();
+			}
+		}
+
+		if (useStatusInProcess) {
+			listener.revertInProcessStatusToAvailable.operate(connection, rawMessage, null);
+		}
+		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM TEMP WHERE TKEY=10");
+		assertEquals("status should be returned to available, to be able to try again", "1", status);
+	}
 
 	private boolean getMessageInParallel() throws Exception {
 		// execute peek, the result does not matter, but it should not throw an exception;

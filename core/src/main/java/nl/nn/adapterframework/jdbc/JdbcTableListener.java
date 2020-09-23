@@ -60,8 +60,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
-		setSelectQuery("SELECT "+getKeyField()+
-						(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
+		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
 						" FROM "+getTableName()+
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValueAvailable())?
@@ -73,6 +72,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
 		if (StringUtils.isNotEmpty(getStatusValueInProcess())) {
 			setUpdateStatusToInProcessQuery(getUpdateStatusQuery(getStatusValueInProcess(),null)); 
+			setRevertInProcessStatusQuery(getUpdateStatusQuery(getStatusValueAvailable(),null));
 		}
 		super.configure();
 		if (StringUtils.isEmpty(getStatusValueInProcess()) && !getDbmsSupport().hasSkipLockedFunctionality()) {

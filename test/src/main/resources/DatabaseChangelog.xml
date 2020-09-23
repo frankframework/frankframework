@@ -56,17 +56,4 @@ TagDatabase
 		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
-	<changeSet id="FIX_MYSQL_XA" author="Gerrit van Brakel" dbms="mysql">
-		<comment>create index to avoid locks, e.g. while deleting. This helps to fix some lock wait timeouts, but not all</comment>
-		<createIndex 
-			indexName="IX_IBISTEMP" tableName="IBISTEMP" unique="true">
-			<column name="TNUMBER" />
-			<column name="TKEY" />
-		</createIndex>
-		<createIndex 
-			indexName="IX_IBISSTORE_03" tableName="IBISSTORE" unique="true">
-			<column name="SLOTID" />
-			<column name="MESSAGEKEY" />
-		</createIndex>
-	</changeSet>
 </databaseChangeLog>
