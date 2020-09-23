@@ -79,7 +79,7 @@ public final class TestPipeline extends Base {
 			throw new ApiException("Config not found!");
 		}
 
-		String message = null, fileName = null;
+		String message = null;
 		InputStream file = null;
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
@@ -93,7 +93,7 @@ public final class TestPipeline extends Base {
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
-			fileName = filePart.getContentDisposition().getParameter( "filename" );
+			String fileName = filePart.getContentDisposition().getParameter( "filename" );
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
@@ -117,6 +117,7 @@ public final class TestPipeline extends Base {
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
+				result.put("message", message);
 				result.put("result", plr.getResult().asString());
 			} catch (Exception e) {
 				throw new ApiException("exception on sending message", e);

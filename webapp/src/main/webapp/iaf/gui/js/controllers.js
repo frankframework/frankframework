@@ -2284,6 +2284,11 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
+			if($scope.file != null) {
+				angular.element(".form-file")[0].value = null;
+				$scope.file = null;
+				formData.message = returnData.message;
+			}
 		}, function(returnData) {
 			$scope.result = "";
 			$scope.processingMessage = false;
