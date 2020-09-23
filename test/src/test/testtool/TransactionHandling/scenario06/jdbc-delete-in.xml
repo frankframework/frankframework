@@ -1,5 +1,5 @@
 <manageDatabaseREQ>
 <delete>
-<tableName>ibisprop</tableName>
+<tableName>IBISPROP</tableName>
 </delete>
 </manageDatabaseREQ> 
