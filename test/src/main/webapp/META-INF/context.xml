@@ -93,16 +93,15 @@
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
 
-<!-- 
 	<Resource 
-		name="jdbc/ibis4test-postgres" 
+		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
 		url="jdbc:postgresql://localhost:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
- -->
+
  	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
