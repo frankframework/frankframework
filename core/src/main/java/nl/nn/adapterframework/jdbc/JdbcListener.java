@@ -139,8 +139,6 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		}
 	}
 
-
-
 	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
 			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {

@@ -164,7 +164,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ListenTask implements SchedulingAwareRunnable {
 
-		boolean useInProcessStatus=false;
+		private boolean useInProcessStatus=false;
 
 		@Override
 		public boolean isLongLived() {
@@ -227,11 +227,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							// found a message, process it
 							
 							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IUsesInProcessState) {
-								if ((useInProcessStatus=((IUsesInProcessState<M>)listener).setMessageStateToInProcess(rawMessage, threadContext)) && txStatus!=null) {
-									txManager.commit(txStatus);
-									txStatus = txManager.getTransaction(txNew);
-								}
+							if (listener instanceof IUsesInProcessState &&
+									(useInProcessStatus=((IUsesInProcessState<M>)listener).setMessageStateToInProcess(rawMessage, threadContext)) && txStatus!=null) {
+								txManager.commit(txStatus);
+								txStatus = txManager.getTransaction(txNew);
 							}
 							try {
 								receiver.processRawMessage(listener, rawMessage, threadContext);

@@ -60,7 +60,6 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 	}
 
-
 	@Override
 	public void open() throws ListenerException {
 	}

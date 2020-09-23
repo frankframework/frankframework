@@ -29,7 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @since   4.7
  */
 public class JdbcQueryListener extends JdbcListener {
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getSelectQuery())) {
