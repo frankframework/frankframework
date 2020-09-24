@@ -70,6 +70,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	@Test
 	public void testNullSessionKey() throws Exception {
 		exception.expect(PipeRunException.class);
+		configurePipe();
 		doPipe(pipe, "das", session);
 		fail("this is expected to fail");
 
@@ -80,6 +81,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		// exception.expect(PipeRunException.class);
 		exception.expectMessage("Pipe [UploadFilePipe under test] msgId [null] got null value from session under key [fdsf123]");
 		pipe.setSessionKey("fdsf123");
+		configurePipe();
 		doPipe(pipe, "das", session1);
 		fail("this is expected to fail");
 
@@ -95,6 +97,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		pipe.setSessionKey(key);
 		pipe.setDirectory(sourceFolderPath);
 		session1.put("key", "32434");
+		configurePipe();
 		doPipe(pipe, "dsfdfs", session1);
 		fail("this is expected to fail");
 
@@ -110,6 +113,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		pipe.setDirectory(sourceFolderPath);
 		session1.put("key", zis);
 		session1.put("fileName", "1.zip");
+		configurePipe();
 		PipeRunResult res = doPipe(pipe, "dsfdf", session1);
 		assertEquals(sourceFolderPath, res.getResult().asString());
 	}
@@ -126,6 +130,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		pipe.setDirectory(sourceFolderPath);
 		session1.put("key", zis);
 		session1.put("fileName", "1.txt");
+		configurePipe();
 		doPipe(pipe, "dsfdf", session1);
 		fail("this is expected to fail");
 
@@ -142,6 +147,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		session1.put("key", zis);
 		session1.put("fileName", "1.zip");
 		session1.put("key2", sourceFolderPath);
+		configurePipe();
 		PipeRunResult res = doPipe(pipe, "dsfdf", session1);
 		assertEquals(sourceFolderPath, res.getResult().asString());
 	}
@@ -158,6 +164,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		session1.put("fileName", "1.zip");
 		File parent = new File(sourceFolderPath);
 		File zipFile = new File(parent, "hoooray.zip");
+		configurePipe();
 		PipeRunResult res = doPipe(pipe, zipFile.getAbsolutePath(), session1);
 		assertEquals(zipFile.getPath(), res.getResult().asString());
 	}
@@ -173,24 +180,8 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		session1.put("key", zis);
 		session1.put("fileName", "1.zip");
 		session1.put("key2", sourceFolderPath + "/new_dir");
+		configurePipe();
 		PipeRunResult res = doPipe(pipe, "dsfdf", session1);
 		assertEquals(sourceFolderPath + File.separator + "new_dir", res.getResult().asString());
 	}
-
-	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
-	 */
-	@Test
-	public void testDoPipeCantCreateNonExistingDirectory() throws Exception {
-		String key = "key";
-		pipe.setSessionKey(key);
-		pipe.setDirectorySessionKey("key2");
-		session1.put("key", zis);
-		session1.put("fileName", "1.zip");
-		session1.put("key2", "");
-		PipeRunResult res = doPipe(pipe, "dsfdf", session1);
-		assertNotEquals("something", res.getResult().asString());
-		assertEquals(null, res.getPipeForward());
-	}
-
 }
