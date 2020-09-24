@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>7.6-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>ibis-adapterframework-assemble-test</artifactId>
+	<name>Ibis AdapterFramework assemble test</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>7.6-SNAPSHOT</version>
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeScope>provided</includeScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>	
+	</build>
+</project>
