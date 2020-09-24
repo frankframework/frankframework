@@ -13,23 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.doc.objects;
+package nl.nn.adapterframework.doc;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-/**
- * TODO: Rename to DigesterRulesParser.
- *
- */
-public class DigesterXmlHandler extends DefaultHandler {
+public class DigesterRulesParser extends DefaultHandler {
     private String currentIbisBeanName;
-    private List<IbisMethod> childIbisBeanMappings = new ArrayList<IbisMethod>();
+    private List<ChildIbisBeanMapping> childIbisBeanMappings = new ArrayList<ChildIbisBeanMapping>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -56,12 +54,12 @@ public class DigesterXmlHandler extends DefaultHandler {
         }
     }
 
-    public List<IbisMethod> getChildIbisBeanMappings() {
+    public List<ChildIbisBeanMapping> getChildIbisBeanMappings() {
         return childIbisBeanMappings;
     }
 
-    private static IbisMethod getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
-        IbisMethod result = new IbisMethod();
+    private static ChildIbisBeanMapping getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
+        ChildIbisBeanMapping result = new ChildIbisBeanMapping();
         result.setMaxOccurs(-1);
     	result.setMethodName(methodName);
         result.setChildIbisBeanName(childIbisBeanName);

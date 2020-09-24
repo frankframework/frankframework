@@ -21,11 +21,9 @@ import lombok.Setter;
 /**
  * Represents the Method/Attribute object for the IbisDoc application
  *
- * TODO: Rename to MethodJson
- *
  * @author Chakir el Moussaoui
  */
-public class AMethod {
+public class MethodJson {
     private @Getter @Setter String name;
     private @Getter @Setter String originalClassName; // The name of the class the method was declared in
     private @Getter @Setter String description;
