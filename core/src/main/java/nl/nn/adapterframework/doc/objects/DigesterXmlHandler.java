@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+/**
+ * TODO: Rename to DigesterRulesParser.
+ *
+ */
 public class DigesterXmlHandler extends DefaultHandler {
     private String currentIbisBeanName;
-    private List<IbisMethod> ibisMethods = new ArrayList<IbisMethod>();
+    private List<IbisMethod> childIbisBeanMappings = new ArrayList<IbisMethod>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -40,7 +44,7 @@ public class DigesterXmlHandler extends DefaultHandler {
             }
         } else if ("set-next-rule".equals(qName)) {
             String methodName = attributes.getValue("methodname");
-            ibisMethods.add(new IbisMethod(methodName, currentIbisBeanName));
+            childIbisBeanMappings.add(getChildIbisBeanMapping(methodName, currentIbisBeanName));
         }
     }
 
@@ -52,8 +56,20 @@ public class DigesterXmlHandler extends DefaultHandler {
         }
     }
 
-    public List<IbisMethod> getIbisMethods() {
-        return ibisMethods;
+    public List<IbisMethod> getChildIbisBeanMappings() {
+        return childIbisBeanMappings;
     }
 
+    private static IbisMethod getChildIbisBeanMapping(String methodName, String childIbisBeanName) {
+        IbisMethod result = new IbisMethod();
+        result.setMaxOccurs(-1);
+    	result.setMethodName(methodName);
+        result.setChildIbisBeanName(childIbisBeanName);
+        if (methodName.startsWith("set")) {
+            result.setMaxOccurs(1);
+        } else if (!(methodName.startsWith("add") || methodName.startsWith("register"))) {
+            throw new RuntimeException("Unknow verb in method name: " + methodName);
+        }
+        return result;
+    }
 }

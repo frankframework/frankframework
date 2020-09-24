@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,35 +15,17 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * TODO: Rename to ChildIbisBeanMapping.
+ *
+ * @author martijn
+ *
+ */
 public class IbisMethod {
-    private String methodName; // E.g. registerAdapter
-    private String parameterName; // E.g. adapter
-    int maxOccurs = -1;
-
-    IbisMethod(String methodName, String parameterName) {
-        this.methodName = methodName;
-        this.parameterName = parameterName;
-        if (methodName.startsWith("set")) {
-            maxOccurs = 1;
-        } else if (!(methodName.startsWith("add") || methodName.startsWith("register"))) {
-            throw new RuntimeException("Unknow verb in method name: " + methodName);
-        }
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public String getParameterName() {
-        return parameterName;
-    }
-
-    public int getMaxOccurs() {
-        return maxOccurs;
-    }
-
-    @Override
-    public String toString() {
-        return methodName +  "(" + parameterName + ")";
-    }
+    private @Getter @Setter String methodName; // E.g. registerAdapter
+    private @Getter @Setter String childIbisBeanName; // E.g. adapter
+    private @Getter @Setter int maxOccurs;
 }

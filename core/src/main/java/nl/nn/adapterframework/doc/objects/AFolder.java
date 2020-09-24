@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,59 +15,34 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-import nl.nn.adapterframework.doc.IbisDocPipe;
-
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents the Folder object for the IbisDoc application
+ *
+ * TODO: Rename to FolderJson.
  *
  * @author Chakir el Moussaoui
  */
 public class AFolder {
 
-    private String name;
-    private ArrayList<AClass> classes;
+    private @Getter @Setter String name;
+    private List<AClass> classes;
 
     public AFolder(String name) {
         this.name = name;
         this.classes = new ArrayList<>();
     }
 
-    /**
-     * Add classes to the folder object.
-     *
-     * @param groups - Contains all information
-     * @param folder - The folder object we have to add the classes to
-     */
-    public void setClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
-        for (IbisBean ibisBean : groups.get(folder.getName())) {
-            Map<String, Method> beanProperties = IbisDocPipe.getBeanProperties(ibisBean.getClazz());
-            if (!beanProperties.isEmpty()) {
-                AClass aClass = new AClass(ibisBean.getClazz());
-
-                // Get the javadoc link for the class
-                String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-
-                // Create a new class and add the methods (attributes) to it, then add it to the folder object
-                aClass.setJavadocLink(javadocLink);
-                aClass.setMethods(beanProperties, aClass);
-                folder.addClass(aClass);
-            }
-        }
-    }
-    public void addClass(AClass clazz) {
-        this.classes.add(clazz);
+    public void addClass(AClass classJson) {
+        this.classes.add(classJson);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ArrayList<AClass> getClasses() {
+    public List<AClass> getClasses() {
         return this.classes;
     }
 }

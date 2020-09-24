@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,19 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
-public class SpringBean implements Comparable<Object> {
-    private String name;
-    protected Class<?> clazz;
+import lombok.Getter;
+
+public class SpringBean implements Comparable<SpringBean> {
+    private @Getter String name;
+    private @Getter Class<?> clazz;
 
     public SpringBean(String name, Class<?> clazz) {
         this.name = name;
         this.clazz = clazz;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Class<?> getClazz() {
-        return clazz;
-    }
-
-    public int compareTo(Object o) {
-        return name.compareTo(((SpringBean)o).name);
+    public int compareTo(SpringBean s) {
+        return name.compareTo(s.name);
     }
 
     @Override
