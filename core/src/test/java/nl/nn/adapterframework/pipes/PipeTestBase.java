@@ -63,7 +63,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	 * Configure and start the pipe
 	 */
 	protected void configureAndStartPipe() throws ConfigurationException, PipeStartException {
-		configureAdapter();
+		configurePipe();
 		pipe.start();
 	}
 
