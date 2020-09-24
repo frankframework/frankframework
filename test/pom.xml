@@ -14,7 +14,7 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
-		<databaseIpAddress>localhost</databaseIpAddress>
+		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
