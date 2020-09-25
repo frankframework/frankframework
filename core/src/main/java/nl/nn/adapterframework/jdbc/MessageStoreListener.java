@@ -135,7 +135,7 @@ public class MessageStoreListener extends JdbcTableListener {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
 			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+			jtmb.setHostField("HOST");
 		}
 		return result;
 	}
@@ -147,7 +147,7 @@ public class MessageStoreListener extends JdbcTableListener {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
 			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+			jtmb.setHostField("HOST");
 		}
 		return result;
 	}
@@ -159,7 +159,7 @@ public class MessageStoreListener extends JdbcTableListener {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
 			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+			jtmb.setHostField("HOST");
 		}
 		return result;
 	}

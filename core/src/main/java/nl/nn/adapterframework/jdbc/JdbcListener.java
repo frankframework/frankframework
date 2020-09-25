@@ -267,7 +267,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return doConnected(rawMessage, threadContext, setMessageStateToInProcess);
 	}
 
-	public ConnectedOperation<Boolean> setMessageStateToInProcess = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
+	public ConnectedOperation setMessageStateToInProcess = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
 		if (StringUtils.isEmpty(getUpdateStatusToInProcessQuery())) {
 			return false;
 		}
@@ -285,7 +285,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		doConnected(rawMessage, threadContext, revertInProcessStatusToAvailable);	
 	}
 
-	protected ConnectedOperation<Boolean> revertInProcessStatusToAvailable = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
+	protected ConnectedOperation revertInProcessStatusToAvailable = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
 		if (StringUtils.isEmpty(getRevertInProcessStatusQuery())) {
 			return false;
 		}
@@ -294,11 +294,11 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return true;
 	};
 
-	protected interface ConnectedOperation<X> {
-		X operate(Connection conn, Object rawMessage, Map<String, Object> threadContext) throws ListenerException;
+	protected interface ConnectedOperation {
+		boolean operate(Connection conn, Object rawMessage, Map<String, Object> threadContext) throws ListenerException;
 	}
 	
-	protected <X> X doConnected(Object rawMessage, Map<String, Object> threadContext, ConnectedOperation<X> operation) throws ListenerException {
+	protected boolean doConnected(Object rawMessage, Map<String, Object> threadContext, ConnectedOperation operation) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return operation.operate(c, rawMessage, threadContext);
