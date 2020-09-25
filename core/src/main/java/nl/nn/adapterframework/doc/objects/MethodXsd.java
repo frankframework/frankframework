@@ -16,24 +16,16 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.objects;
 
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.TreeSet;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public class IbisBean implements Comparable<IbisBean>{
-    private @Getter String name;
-    private @Getter Class<?> clazz;
-	private @Getter @Setter MethodXsd[] sortedMethodsXsd;
-	private @Getter @Setter Map<String, BeanProperty> properties;
-
-    public IbisBean(String name, Class<?> clazz) {
-        this.name = name;
-        this.clazz = clazz;
-    }
-
-	@Override
-	public int compareTo(final IbisBean other) {
-		return this.getName().compareTo(other.getName());
-	}
+public class MethodXsd {
+	private @Getter @Setter Method method;
+	private @Getter @Setter String childIbisBeanName;
+	private @Getter @Setter TreeSet<IbisBean> childIbisBeans;
+	private @Getter @Setter boolean isExistingIbisBean;
+	private @Getter @Setter int maxOccurs;
 }

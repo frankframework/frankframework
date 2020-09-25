@@ -301,7 +301,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -316,12 +316,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secretKey" type="xs:string">
@@ -436,7 +436,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -451,12 +451,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secretKey" type="xs:string">
@@ -4821,7 +4821,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
@@ -5857,7 +5861,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
@@ -13064,7 +13072,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -13104,12 +13112,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
@@ -13184,7 +13192,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -13224,12 +13232,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
@@ -14331,17 +14339,17 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -14464,7 +14472,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="preserveInput" type="xs:string">
@@ -14480,12 +14488,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secLogSessionKeys" type="xs:string">
@@ -14566,17 +14574,17 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -14621,17 +14629,17 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -17088,7 +17096,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="passive" type="xs:string">
@@ -17173,12 +17181,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
@@ -17333,7 +17341,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="passive" type="xs:string">
@@ -17418,12 +17426,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
@@ -27658,7 +27666,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="root" type="xs:string">
@@ -27668,12 +27676,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
@@ -27806,7 +27814,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="preserveInput" type="xs:string">
@@ -27827,12 +27835,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secLogSessionKeys" type="xs:string">
@@ -27923,7 +27931,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="root" type="xs:string">
@@ -27933,12 +27941,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
@@ -34971,7 +34979,11 @@
         <xs:documentation>xpath expression to extract correlationid from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="durationThreshold" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default: If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory)</xs:documentation>
@@ -35483,7 +35495,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -35493,12 +35505,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -35646,7 +35658,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -35667,12 +35679,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secLogSessionKeys" type="xs:string">
@@ -35778,7 +35790,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -35788,12 +35800,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -35868,7 +35880,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -35883,12 +35895,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -36148,7 +36160,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -36174,12 +36186,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secLogSessionKeys" type="xs:string">
@@ -36290,7 +36302,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -36305,12 +36317,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -36385,7 +36397,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -36400,12 +36412,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -36665,7 +36677,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -36691,12 +36703,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secLogSessionKeys" type="xs:string">
@@ -36807,7 +36819,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
@@ -36822,12 +36834,12 @@
     </xs:attribute>
     <xs:attribute name="rotateDays" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="xs:string">
       <xs:annotation>
-        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept (default: 0)</xs:documentation>
+        <xs:documentation>for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides (default: 0)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="share" type="xs:string">
@@ -46903,12 +46915,12 @@
     <xs:attribute name="jndiProperties" type="xs:string" />
     <xs:attribute name="lockRows" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query) (default: false)</xs:documentation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lockWait" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set and &gt;=0, ' for update wait #' is used instead of ' for update nowait skip locked' (default: -1)</xs:documentation>
+        <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' (default: -1)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxRows" type="xs:string">
@@ -47128,12 +47140,12 @@
     <xs:attribute name="jndiProperties" type="xs:string" />
     <xs:attribute name="lockRows" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query) (default: false)</xs:documentation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) (default: false)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lockWait" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when set and &gt;=0, ' for update wait #' is used instead of ' for update nowait skip locked' (default: -1)</xs:documentation>
+        <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' (default: -1)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxRows" type="xs:string">

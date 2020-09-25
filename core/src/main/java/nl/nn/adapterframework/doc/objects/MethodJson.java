@@ -16,22 +16,19 @@
 package nl.nn.adapterframework.doc.objects;
 
 import lombok.Getter;
+import lombok.Setter;
 
-public class SpringBean implements Comparable<SpringBean> {
-    private @Getter String name;
-    private @Getter Class<?> clazz;
-
-    public SpringBean(String name, Class<?> clazz) {
-        this.name = name;
-        this.clazz = clazz;
-    }
-
-    public int compareTo(SpringBean s) {
-        return name.compareTo(s.name);
-    }
-
-    @Override
-    public String toString() {
-        return name +  "[" + clazz.getName() + "]";
-    }
+/**
+ * Represents the Method/Attribute object for the IbisDoc application
+ *
+ * @author Chakir el Moussaoui
+ */
+public class MethodJson {
+    private @Getter @Setter String name;
+    private @Getter @Setter String originalClassName; // The name of the class the method was declared in
+    private @Getter @Setter String description;
+    private @Getter @Setter String defaultValue;
+    private @Getter @Setter int order;
+    private @Getter @Setter boolean deprecated;
+    private @Getter @Setter String referredClassName = "";
 }

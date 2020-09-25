@@ -179,7 +179,19 @@ eclipse.exe file.
         <JarScanFilter defaultPluggabilityScan="false" />
     </JarScanner>
 
+### Let Eclipse check Javadoc comments
 
+Please ensure that your Javadoc comments are correct. Eclipse can check this for you. Please do the following:
+
+- In the main menu, open Windows | Preferences.
+- Go to Java | Compiler | Javadoc.
+- Check checkbox "Process Javadoc comments".
+- In pull-down menu "Malformed Javadoc comments", select "Error".
+- In pull-down menu "Only consider members as visible as", choose "Private".
+- Check checkbox "Validate tag arguments".
+- Uncheck "Report non visible references" and "Report deprecated references".
+- In pull-down menu "Missing tag descriptions", select "Ignore".
+- In pull-down menu "Missing Javadoc tags", select "Ignore".
 
 ## Developing with IntelliJ
 
