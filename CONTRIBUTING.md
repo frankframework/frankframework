@@ -187,7 +187,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Go to Java | Compiler | Javadoc.
 - Check checkbox "Process Javadoc comments".
 - In pull-down menu "Malformed Javadoc comments", select "Error".
-- In pull-down menu "Only consider members as visible as", choose "Public".
+- In pull-down menu "Only consider members as visible as", choose "Private".
 - Check checkbox "Validate tag arguments".
 - Uncheck "Report non visible references" and "Report deprecated references".
 - In pull-down menu "Missing tag descriptions", select "Ignore".
