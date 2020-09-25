@@ -24,25 +24,23 @@ import lombok.Setter;
 /**
  * Represents the Folder object for the IbisDoc application
  *
- * TODO: Rename to FolderJson.
- *
  * @author Chakir el Moussaoui
  */
-public class AFolder {
+public class FolderJson {
 
     private @Getter @Setter String name;
-    private List<AClass> classes;
+    private List<ClassJson> classes;
 
-    public AFolder(String name) {
+    public FolderJson(String name) {
         this.name = name;
         this.classes = new ArrayList<>();
     }
 
-    public void addClass(AClass classJson) {
+    public void addClass(ClassJson classJson) {
         this.classes.add(classJson);
     }
 
-    public List<AClass> getClasses() {
+    public List<ClassJson> getClasses() {
         return this.classes;
     }
 }
