@@ -46,7 +46,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 	@Test
 	public void doesNotTimeout() throws Exception {
-		configurePipe();
+		configureAndStartPipe();
 		Message input = new Message("500");
 		PipeRunResult result = doPipe(input);
 
@@ -55,7 +55,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 	@Test
 	public void doesTimeoutWithException() throws Exception {
-		configurePipe();
+		configureAndStartPipe();
 		Message input = new Message("1500");
 		try {
 			doPipe(input);
@@ -69,7 +69,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	@Test
 	public void doesTimeoutWithoutException() throws Exception {
 		pipe.setThrowException(false);
-		configurePipe();
+		configureAndStartPipe();
 		Message input = new Message("1500");
 		PipeRunResult result = doPipe(input);
 

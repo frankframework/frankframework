@@ -30,20 +30,20 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	public void testConfigureNullDateFormat() throws Exception {
 		expectedEx.expectMessage("has a null value for dateFormat");
 		pipe.setDateFormat(null);
-		configurePipe();
+		configureAndStartPipe();
 	}
 
 	@Test
 	public void testConfigureNullSessionKey() throws Exception {
 		expectedEx.expectMessage("has a null value for sessionKey");
 		pipe.setSessionKey(null);
-		configurePipe();
+		configureAndStartPipe();
 	}
 
 	@Test
 	public void testFixedDateTimeFormatInvalid() throws Exception {
 		expectedEx.expectMessage("cannot parse fixed date");
-		configurePipe();
+		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 		pipe.setSessionKey("first");
@@ -53,7 +53,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testReturnFixedDateFromSessionKey() throws Exception {
-		configurePipe();
+		configureAndStartPipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
 		// because of not being singleton
@@ -87,7 +87,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	public void testReturnFixedDate() throws Exception {
 		pipe.setSessionKey("first");
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		configurePipe();
+		configureAndStartPipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
 		// because of not being singleton
@@ -114,14 +114,14 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		expectedEx.expectMessage("returnFixedDate only allowed in stub mode");
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
-		configurePipe();
+		configureAndStartPipe();
 	}
 
 	@Test
 	public void testGetTimeStampInMillis() throws Exception {
 		pipe.setSessionKey("dummy");
 		pipe.setGetCurrentTimeStampInMillis(true);
-		configurePipe();
+		configureAndStartPipe();
 		doPipe(pipe, "dummy", session);
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
@@ -134,14 +134,14 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		expectedEx.expectMessage("has an illegal value for dateFormat");
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
-		configurePipe();
+		configureAndStartPipe();
 	}
 
 	@Test
 	public void testSleepWhenEqualsToPrevious() throws Exception {
 		long sleep = 1000;
 		pipe.setSleepWhenEqualToPrevious(sleep);
-		configurePipe();
+		configureAndStartPipe();
 
 		pipe.setSessionKey("first");
 		doPipe(pipe, "dummy", session);
