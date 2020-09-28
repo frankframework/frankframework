@@ -235,11 +235,11 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return message;
 	}
 
-	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
+	protected void afterMessageProcessed(Connection conn, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
 		if (processResult.isSuccessful() || StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
-			execute(c,getUpdateStatusToProcessedQuery(),key);
+			execute(conn, getUpdateStatusToProcessedQuery(), key);
 		} else {
-			execute(conn,getUpdateStatusToErrorQuery(),key);
+			execute(conn, getUpdateStatusToErrorQuery(), key);
 		}
 	}
 
