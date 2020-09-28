@@ -150,7 +150,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
 		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", metrics.getUptimeDate());
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
