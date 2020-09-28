@@ -32,7 +32,6 @@
 		maxWait="5000"
 	/>
 
-
 	<Resource 
 		name="jdbc/ibis4test-mssql" 
 		type="javax.sql.DataSource"
