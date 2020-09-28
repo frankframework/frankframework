@@ -35,12 +35,14 @@
 
 	<Resource 
 		name="jdbc/ibis4test-mssql" 
-		auth="Container" 
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+		type="javax.sql.DataSource"
+		driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
 		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
-		user="testiaf_user"
+		username="testiaf_user"
 		password="testiaf_user00"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sendStringParametersAsUnicode="false"
 		sendTimeAsDatetime="true"
 		selectMethod="direct"
@@ -54,6 +56,7 @@
 		applicationName="iaf-test on TomCat"
 		applicationIntent="readwrite"
 	/>
+
 
 	<Resource
 		name="jdbc/ibis4test-mysql"
