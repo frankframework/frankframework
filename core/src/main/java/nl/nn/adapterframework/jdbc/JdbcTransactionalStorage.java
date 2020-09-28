@@ -523,8 +523,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery)) {
 			if (!selectKeyQueryIsDbmsSupported) {
 				int paramPos=applyStandardParameters(stmt, true, false);
-				stmt.setString(paramPos++,messageId);
-				stmt.setString(paramPos++,correlationId);
+				JdbcUtil.setParameter(stmt, paramPos++, messageId, getDbmsSupport().isParameterTypeMatchRequired());
+				JdbcUtil.setParameter(stmt, paramPos++, correlationId, getDbmsSupport().isParameterTypeMatchRequired());
 				stmt.setTimestamp(paramPos++, receivedDateTime);
 			}
 	
@@ -584,7 +584,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	
 			if (!isStoreFullMessage()) {
 				if (isOnlyStoreWhenMessageIdUnique()) {
-					stmt.setString(++parPos, messageId);
+					JdbcUtil.setParameter(stmt, ++parPos, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 					stmt.setString(++parPos, getSlotId());
 				}
 				stmt.execute();
@@ -711,7 +711,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		
 		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)){
 			stmt.clearParameters();
-			stmt.setString(++paramPosition, messageId);
+			JdbcUtil.setParameter(stmt, ++paramPosition, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 			// executing query, getting message as response in a result set.
 			try (ResultSet rs = stmt.executeQuery()) {
 				// if rs.next() needed as you can not simply call rs.
@@ -1013,9 +1013,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		return active;
 	}
 
+	@Override
 	@IbisDoc({"the name of the column that stores the hostname of the server", "host"})
 	public void setHostField(String hostField) {
-		this.hostField = hostField;
+		super.setHostField(hostField);
 	}
 
 

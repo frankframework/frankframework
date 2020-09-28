@@ -87,7 +87,7 @@ public class InfoBuilder {
 
 	/**
 	 * 
-	 * @param ibisBean. The {@code clazz} field should not be null.
+	 * @param ibisBean The {@code clazz} field should not be null.
 	 */
 	public void enrichIbisBeanWithSortedMethods(IbisBean ibisBean) {
 		final Map<String, Integer> sortWeight;

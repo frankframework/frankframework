@@ -34,6 +34,7 @@
 						statusValueAvailable="5"
 						statusValueProcessed="6"
 						statusValueError="7"
+						statusValueInProcess="8"
 						keyField="tkey"/>
 		</receiver>
 		<pipeline transactionAttribute="Required">

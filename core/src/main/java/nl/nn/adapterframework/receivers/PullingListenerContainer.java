@@ -18,15 +18,6 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPeekableListener;
-import nl.nn.adapterframework.core.IPullingListener;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.Semaphore;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -36,6 +27,16 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import nl.nn.adapterframework.core.IPeekableListener;
+import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.IUsesInProcessState;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.Semaphore;
 
 
 /**
@@ -58,7 +59,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private boolean idle = false; // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
 	private int maxThreadCount = 1;
- 
+
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
@@ -163,6 +164,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ListenTask implements SchedulingAwareRunnable {
 
+		private boolean useInProcessStatus=false;
+
 		@Override
 		public boolean isLongLived() {
 			return false;
@@ -185,16 +188,14 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							boolean retrieveMessage = true;
+							boolean messageAvailable = true;
 							if (isIdle() && listener instanceof IPeekableListener) {
 								IPeekableListener peekableListener = (IPeekableListener) listener;
 								if (peekableListener.isPeekUntransacted()) {
-									retrieveMessage = peekableListener.hasRawMessageAvailable();
+									messageAvailable = peekableListener.hasRawMessageAvailable();
 								}
 							}
-							if (!retrieveMessage) {
-								rawMessage = null;
-							} else {
+							if (messageAvailable) {
 								if (receiver.isTransacted()) {
 									txStatus = txManager.getTransaction(txNew);
 								}
@@ -224,12 +225,19 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
+							
+							// first check if it needs to be set to 'inProcess'
+							if (listener instanceof IUsesInProcessState &&
+									(useInProcessStatus=((IUsesInProcessState<M>)listener).setMessageStateToInProcess(rawMessage, threadContext)) && txStatus!=null) {
+								txManager.commit(txStatus);
+								txStatus = txManager.getTransaction(txNew);
+							}
 							try {
 								receiver.processRawMessage(listener, rawMessage, threadContext);
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
 										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-										txManager.rollback(txStatus);
+										rollBack(txStatus, listener, rawMessage, threadContext);
 									} else {
 										txManager.commit(txStatus);
 									}
@@ -237,7 +245,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							} catch (Exception e) {
 								try {
 									if (txStatus != null && !txStatus.isCompleted()) {
-										txManager.rollback(txStatus);
+										rollBack(txStatus, listener, rawMessage, threadContext);
 									}
 								} catch (Exception e2) {
 									receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -251,10 +259,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							}
 						}
-					} finally  {
+					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							 txManager.rollback(txStatus);
-						 }
+							rollBack(txStatus, listener, rawMessage, threadContext);
+						}
 					}
 				}
 			} catch (Throwable e) {
@@ -275,141 +283,20 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				ThreadContext.removeStack();
 			}
 		}
-    }
-    
-    
+		
+		private void rollBack(TransactionStatus txStatus, IPullingListener<M> listener, M rawMessage, Map<String,Object> threadContext) throws ListenerException {
+			try {
+				txManager.rollback(txStatus);
+			} finally {
+				if (useInProcessStatus) {
+					txStatus = txManager.getTransaction(txNew);
+					((IUsesInProcessState<M>)listener).revertInProcessStatusToAvailable(rawMessage, threadContext);
+					txManager.commit(txStatus);
+				}
+			}
+		}
+	}
 
-    
-	/**
-	 * Starts the receiver. This method is called by the startRunning method.<br/>
-	 * Basically:
-	 * <ul>
-	 * <li>it calls the getRawMessage method to get a message<li>
-	 * <li> it performs the onMessage method, resulting a PipeLineResult</li>
-	 * <li>it calls the afterMessageProcessed() method of the listener<li>
-	 * <li> it optionally sends the result using the sender</li>
-	 * </ul>
-	 */
-//    public void run() {
-//		threadsRunning.increase(); 
-//        Thread.currentThread().setName(receiver.getName()+"-listener["+threadsRunning.getValue()+"]");
-//        IPullingListener listener = null;
-//        Map threadContext = null;
-//        try {
-//            listener = (IPullingListener) receiver.getListener();
-//            threadContext = listener.openThread();
-//            if (threadContext == null) {
-//                threadContext = new HashMap();
-//            }
-//            long startProcessingTimestamp;
-//            long finishProcessingTimestamp = System.currentTimeMillis();
-//            receiver.setRunState(RunStateEnum.STARTED);
-//            while (receiver.isInRunState(RunStateEnum.STARTED)) {
-//                boolean permissionToGo = true;
-//                if (pollToken != null) {
-//                    try {
-//                        permissionToGo = false;
-//                        pollToken.acquire();
-//                        permissionToGo = true;
-//                    } catch (Exception e) {
-//                        receiver.error("acquisition of polltoken interupted", e);
-//                        receiver.stopRunning();
-//                    }
-//                }
-//                Object rawMessage = null;
-//                TransactionStatus txStatus = null;
-//                try {
-//					try {
-//						if (permissionToGo && receiver.isInRunState(RunStateEnum.STARTED)) {
-//							try {
-//								if (receiver.isTransacted()) {
-//									txStatus = txManager.getTransaction(txNew);
-//								}
-//								rawMessage = listener.getRawMessage(threadContext);
-//								resetRetryInterval();
-//							} catch (Exception e) {
-//								if (txStatus!=null) {
-//									txManager.rollback(txStatus);
-//								}
-//								if (receiver.isOnErrorContinue()) {
-//									increaseRetryIntervalAndWait(e);
-//								} else {
-//									receiver.error("stopping receiver after exception in retrieving message", e);
-//									receiver.stopRunning();
-//								}
-//							}
-//						}
-//					} finally {
-//						if (pollToken != null) {
-//							pollToken.release();
-//						}
-//					}
-//					if (rawMessage != null) {
-//						// found a message, process it
-//						try {
-//							startProcessingTimestamp = System.currentTimeMillis();
-//							try {
-//								receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
-//								if (txStatus != null) {
-//									if (txStatus.isRollbackOnly()) {
-//										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
-//										txManager.rollback(txStatus);
-//									} else {
-//										txManager.commit(txStatus);
-//									}
-//								}
-//							} catch (Exception e) {
-//								if (txStatus != null && !txStatus.isCompleted()) {
-//									txManager.rollback(txStatus);
-//								}
-//								if (receiver.isOnErrorContinue()) {
-//									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
-//								} else {
-//									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
-//									receiver.stopRunning();
-//								}
-//							}
-//						} finally {
-//							finishProcessingTimestamp = System.currentTimeMillis();
-//						}
-//					} else {
-//						// no message found, cleanup
-//					   if (txStatus != null && !txStatus.isCompleted()) {
-//							txManager.rollback(txStatus);
-//						}
-//						if (receiver.getPollInterval()>0) {
-//							for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
-//								Thread.sleep(1000);
-//							}
-//						}
-//					}
-//                } finally  {
-//					if (txStatus != null && !txStatus.isCompleted()) {
-//						 txManager.rollback(txStatus);
-//					 }
-//                }
-//            }
-//        } catch (Throwable e) {
-//            receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
-//        } finally {
-//            if (listener != null) {
-//                try {
-//                    listener.closeThread(threadContext);
-//                } catch (ListenerException e) {
-//                    receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
-//                }
-//            }
-//            long stillRunning = threadsRunning.decrease();
-//            if (stillRunning > 0) {
-//				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
-//				receiver.throwEvent(ReceiverBase.RCV_THREAD_EXIT_MONITOR_EVENT);
-//                return;
-//            }
-//			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
-//            receiver.closeAllResources();
-//            NDC.remove();
-//        }
-//    }
 
 	private void resetRetryInterval() {
 		synchronized (receiver) {
@@ -471,6 +358,5 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	public synchronized boolean isIdle() {
 		return idle;
 	}
-
 
 }

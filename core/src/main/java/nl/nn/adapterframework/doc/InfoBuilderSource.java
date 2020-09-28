@@ -328,7 +328,7 @@ class InfoBuilderSource {
 	 * @param groups The Map holding the groups with their IbisBean objects.
 	 * 
 	 * @return The set of all IbisBean objects in all groups. Please note
-	 * that {@link getGroups} fills the IbisBean objects partially. Only
+	 * that {@link InfoBuilderSource#getGroups} fills the IbisBean objects partially. Only
 	 * the {@code name} and {@code clazz} fields are set by that method.
 	 */
 	static Set<IbisBean> getIbisBeans(Map<String, TreeSet<IbisBean>> groups) {
