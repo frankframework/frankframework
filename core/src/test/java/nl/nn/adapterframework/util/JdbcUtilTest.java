@@ -31,7 +31,7 @@ public class JdbcUtilTest {
 		connection = DriverManager.getConnection(H2_CONNECTION_STRING);
 		dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
 		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-			connection.createStatement().execute("DROPE TABLE TEMP");
+			connection.createStatement().execute("DROP TABLE TEMP");
 		}
 		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME)");
 	}

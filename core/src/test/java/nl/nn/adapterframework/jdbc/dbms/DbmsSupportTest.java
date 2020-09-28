@@ -39,11 +39,13 @@ public class DbmsSupportTest extends JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
+	private boolean testSkipLocked;
 	
 
 
-	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked, boolean testSkipLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked, testSkipLocked);
+	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
+		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+		testSkipLocked = dbmsSupport.hasSkipLockedFunctionality();
 	}
 
 	@Test
@@ -460,23 +462,6 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 	
 	
-	
-	private PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType) throws JdbcException, SQLException {
-		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		if (queryType.equals("select")) {
-			return  connection.prepareStatement(context.getQuery());
-		}
-		if (queryType.equals("select for update")) {
-			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		}
-		try {
-			JdbcUtil.executeStatement(connection, context.getQuery());
-		} catch (Exception e) {
-			System.out.println("---> query: "+context.getQuery()+": "+e.getMessage());
-		}
-		return null;
-	}
 	
 
 }

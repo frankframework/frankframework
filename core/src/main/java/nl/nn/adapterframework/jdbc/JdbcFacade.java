@@ -164,7 +164,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
 		}

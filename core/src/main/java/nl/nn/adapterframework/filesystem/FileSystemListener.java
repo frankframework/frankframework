@@ -287,6 +287,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
+	public IMessageBrowser<F> getInProcessBrowser() {
+		if (StringUtils.isEmpty(getInProcessFolder())) {
+			return null;
+		}
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
+	}
+
+	@Override
 	public IMessageBrowser<F> getMessageLogBrowser() {
 		if (StringUtils.isEmpty(getProcessedFolder())) {
 			return null;
