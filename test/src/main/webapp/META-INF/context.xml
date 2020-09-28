@@ -24,7 +24,7 @@
 		name="jdbc/ibis4test-oracle-docker"
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
-		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		url="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
 		username="testiaf_user"
 		password="testiaf_user00"
 		maxActive="10"
@@ -37,7 +37,7 @@
 		name="jdbc/ibis4test-mssql" 
 		type="javax.sql.DataSource"
 		driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		url="jdbc:sqlserver://localhost:1433;database=testiaf"
 		username="testiaf_user"
 		password="testiaf_user00"
 		maxActive="10"
@@ -60,32 +60,38 @@
 
 	<Resource
 		name="jdbc/ibis4test-mysql"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		user="testiaf_user"
-		password="testiaf_user00"
+		type="javax.sql.DataSource"
+		driverClassName="com.mysql.cj.jdbc.Driver"
 		url="jdbc:mysql://localhost:3307/testiaf"
+		username="testiaf_user"
+		password="testiaf_user00"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="10000"
+		socketTimeout="5000"
 	/>
-	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
+ 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
 
 	<!-- Use MySQL driver for MariaDB for proper XA support. -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		user="testiaf_user"
-		password="testiaf_user00"
+		type="javax.sql.DataSource"
+		driverClassName="com.mysql.cj.jdbc.Driver"
 		url="jdbc:mysql://localhost:3306/testiaf"
+		username="testiaf_user"
+		password="testiaf_user00"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="10000"
+		socketTimeout="5000"
 	/>
-
 <!-- 
 	<Resource
 		name="jdbc/ibis4test-mariadb"
