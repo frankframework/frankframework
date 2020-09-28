@@ -16,22 +16,14 @@
 package nl.nn.adapterframework.doc.objects;
 
 import lombok.Getter;
+import lombok.Setter;
 
-public class SpringBean implements Comparable<SpringBean> {
-    private @Getter String name;
-    private @Getter Class<?> clazz;
-
-    public SpringBean(String name, Class<?> clazz) {
-        this.name = name;
-        this.clazz = clazz;
-    }
-
-    public int compareTo(SpringBean s) {
-        return name.compareTo(s.name);
-    }
-
-    @Override
-    public String toString() {
-        return name +  "[" + clazz.getName() + "]";
-    }
+/**
+ * @author martijn
+ *
+ */
+public class ChildIbisBeanMapping {
+    private @Getter @Setter String methodName; // E.g. registerAdapter
+    private @Getter @Setter String childIbisBeanName; // E.g. adapter
+    private @Getter @Setter int maxOccurs;
 }

@@ -14,6 +14,7 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
+		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
@@ -126,6 +127,11 @@
 							<directory>src/test/testtool</directory>
 							<targetPath>testtool</targetPath>
 						</resource>
+						<webResource>
+							<directory>src/main/webapp/META-INF</directory>
+							<targetPath>META-INF</targetPath>
+							<filtering>true</filtering>
+						</webResource>
 					</webResources>
 				</configuration>
 			</plugin>

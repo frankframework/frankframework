@@ -16,24 +16,19 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.objects;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public class IbisBean implements Comparable<IbisBean>{
-    private @Getter String name;
-    private @Getter Class<?> clazz;
-	private @Getter @Setter MethodXsd[] sortedMethodsXsd;
-	private @Getter @Setter Map<String, BeanProperty> properties;
-
-    public IbisBean(String name, Class<?> clazz) {
-        this.name = name;
-        this.clazz = clazz;
-    }
-
-	@Override
-	public int compareTo(final IbisBean other) {
-		return this.getName().compareTo(other.getName());
-	}
+public class DocInfo {
+	private @Getter @Setter Map<String, TreeSet<IbisBean>> groups;
+	private @Getter @Setter List<ChildIbisBeanMapping> childIbisBeanMappings;
+	private @Getter @Setter Set<IbisBean> ibisBeans;
+	private @Getter @Setter List<FolderJson> folders;
+	private @Getter @Setter Map<String, String> ignores;
+	private @Getter @Setter Set<String> excludeFilters;
 }

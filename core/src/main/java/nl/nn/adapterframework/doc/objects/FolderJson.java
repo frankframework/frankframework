@@ -15,23 +15,32 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Getter;
+import lombok.Setter;
 
-public class SpringBean implements Comparable<SpringBean> {
-    private @Getter String name;
-    private @Getter Class<?> clazz;
+/**
+ * Represents the Folder object for the IbisDoc application
+ *
+ * @author Chakir el Moussaoui
+ */
+public class FolderJson {
 
-    public SpringBean(String name, Class<?> clazz) {
+    private @Getter @Setter String name;
+    private List<ClassJson> classes;
+
+    public FolderJson(String name) {
         this.name = name;
-        this.clazz = clazz;
+        this.classes = new ArrayList<>();
     }
 
-    public int compareTo(SpringBean s) {
-        return name.compareTo(s.name);
+    public void addClass(ClassJson classJson) {
+        this.classes.add(classJson);
     }
 
-    @Override
-    public String toString() {
-        return name +  "[" + clazz.getName() + "]";
+    public List<ClassJson> getClasses() {
+        return this.classes;
     }
 }
