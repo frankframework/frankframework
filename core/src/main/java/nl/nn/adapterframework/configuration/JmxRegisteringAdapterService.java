@@ -22,8 +22,8 @@ import javax.management.ObjectName;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
 import nl.nn.adapterframework.core.IAdapter;
@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.IAdapter;
 
  * @author Niels Meijer
  */
-public class JmxRegisteringAdapterService extends AdapterService implements ApplicationContextAware, InitializingBean {
+public class JmxRegisteringAdapterService extends AdapterService implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
 	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<>();
@@ -67,8 +67,9 @@ public class JmxRegisteringAdapterService extends AdapterService implements Appl
 		}
 	}
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		mBeanManager = applicationContext.getBean("MBeanManager", MBeanExporter.class);
+	@Autowired
+	@Qualifier("MBeanManager")
+	public void setMBeanManager(MBeanExporter mBeanManager) {
+		this.mBeanManager = mBeanManager;
 	}
 }

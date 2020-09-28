@@ -17,30 +17,20 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Straight forward implementation of {@link IAdapterService}, which is only filled by calls to 
- * {@link #registerAdapter(nl.nn.adapterframework.core.IAdapter)}, typically by digester rules 
- * via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.IAdapter)}
- *
- * @author Michiel Meeuwissen
- * @since 5.4
+ * Used with test cases that don't need JMX/flowDiagrams.
  */
-public class AdapterService implements IAdapterService {
+public class DummyAdapterService implements IAdapterService {
 
 	protected final Logger log = LogUtil.getLogger(this);
 	private final Map<String, IAdapter> adapters = new LinkedHashMap<>(); // insertion order map
-	private FlowDiagramManager flowDiagramManager;
 
 	@Override
 	public IAdapter getAdapter(String name) {
@@ -65,14 +55,6 @@ public class AdapterService implements IAdapterService {
 
 		if(log.isDebugEnabled()) log.debug("configuring adapter ["+adapter+"]");
 		adapter.configure();
-
-		if (flowDiagramManager != null) {
-			try {
-				flowDiagramManager.generate(adapter);
-			} catch (IOException e) {
-				ConfigurationWarnings.add(adapter, log, "error generating flow diagram", e);
-			}
-		}
 	}
 
 	@Override
@@ -81,9 +63,4 @@ public class AdapterService implements IAdapterService {
 		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+adapter+"] from AdapterService ["+this+"]");
 	}
 
-	@Autowired(required = false)
-	@Qualifier("flowDiagramManager")
-	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
-		this.flowDiagramManager = flowDiagramManager;
-	}
 }

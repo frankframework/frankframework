@@ -17,9 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,15 +29,12 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -60,13 +55,11 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @since 4.8
  */
 public class IbisContext extends IbisApplicationContext {
-	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
 
-	private final static Logger secLog = LogUtil.getLogger("SEC");
+	private static final Logger secLog = LogUtil.getLogger("SEC");
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	private static final long UPTIME = System.currentTimeMillis();
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
@@ -78,15 +71,11 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	private IbisManager ibisManager;
-	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
+	private Map<String, MessageKeeper> messageKeepers = new HashMap<>();
 	private int messageKeeperSize = 10;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
-	private static List<String> loadingConfigs = new ArrayList<String>();
-
-	public static String getApplicationServerType() {
-		return AppConstants.getInstance().getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
-	}
+	private static List<String> loadingConfigs = new ArrayList<>();
 
 	/**
 	 * Creates the Spring context, and load the configuration. Optionally  with
@@ -121,7 +110,7 @@ public class IbisContext extends IbisApplicationContext {
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
-			ibisManager = (IbisManager) getBean("ibisManager");
+			ibisManager = getBean("ibisManager", IbisManager.class);
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 
@@ -357,7 +346,7 @@ public class IbisContext extends IbisApplicationContext {
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
 					try {
-						Migrator databaseMigrator = (Migrator) getBean("jdbcMigrator");
+						Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class);
 						databaseMigrator.setIbisContext(this);
 						databaseMigrator.configure(currentConfigurationName, classLoader);
 						databaseMigrator.update();
@@ -389,7 +378,6 @@ public class IbisContext extends IbisApplicationContext {
 				}
 				log(currentConfigurationName, currentConfigurationVersion, msg);
 				secLog.info("Configuration [" + currentConfigurationName + "] [" + currentConfigurationVersion+"] " + msg);
-				generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
 			} else {
 				throw customClassLoaderConfigurationException;
 			}
@@ -404,27 +392,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void generateFlows(Configuration configuration, String currentConfigurationName, String currentConfigurationVersion) {
-		if (flowDiagramManager != null) {
-			List<IAdapter> registeredAdapters = configuration.getRegisteredAdapters();
-			for (Iterator<IAdapter> adapterIt = registeredAdapters.iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter) adapterIt.next();
-				try {
-					flowDiagramManager.generate(adapter);
-				} catch (IOException e) {
-					log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for adapter ["+adapter.getName()+"]", MessageKeeperLevel.WARN, e);
-				}
-			}
-
-			try {
-				flowDiagramManager.generate(configuration);
-			} catch (IOException e) {
-				log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for configuration ["+configuration.getName()+"]", MessageKeeperLevel.WARN, e);
-			}
-		}
-	}
-
-	private void generateFlow() {
+	private void generateFlow() { //Generate big flow diagram file for all configurations
 		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {
@@ -527,18 +495,6 @@ public class IbisContext extends IbisApplicationContext {
 
 	private String getApplicationVersion() {
 		return ConfigurationUtils.getApplicationVersion();
-	}
-
-	public Date getUptimeDate() {
-		return new Date(UPTIME);
-	}
-	
-	public String getUptime() {
-		return getUptime(DateUtils.FORMAT_GENERICDATETIME);
-	}
-	
-	public String getUptime(String dateFormat) {
-		return DateUtils.format(getUptimeDate(), dateFormat);
 	}
 
 	public boolean isLoadingConfigs() {

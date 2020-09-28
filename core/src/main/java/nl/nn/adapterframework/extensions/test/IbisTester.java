@@ -138,7 +138,7 @@ public class IbisTester {
 		}
 		System.setProperty("log.level", "INFO");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("application.server.type", "IBISTEST");
+		System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 		System.setProperty("flow.create.url", "");
 		debug("***start***");
 		ibisContext = null;
