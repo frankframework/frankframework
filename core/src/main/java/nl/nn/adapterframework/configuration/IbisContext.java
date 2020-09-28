@@ -58,6 +58,7 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
 
 	private static final Logger secLog = LogUtil.getLogger("SEC");
+	private static final String ALL_CONFIGS_KEY = "*ALL*";
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 
@@ -115,7 +116,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Loaded IbisManager Bean");
 
 			MessageKeeper messageKeeper = new MessageKeeper();
-			messageKeepers.put("*ALL*", messageKeeper);
+			messageKeepers.put(ALL_CONFIGS_KEY, messageKeeper);
 
 			classLoaderManager = new ClassLoaderManager(this);
 
@@ -243,10 +244,10 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	private void load() {
 		try {
-			loadingConfigs.add("*ALL*");
+			loadingConfigs.add(ALL_CONFIGS_KEY);
 			load(null);
 		} finally {
-			loadingConfigs.remove("*ALL*");
+			loadingConfigs.remove(ALL_CONFIGS_KEY);
 		}
 	}
 
@@ -398,16 +399,16 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagramManager.generate(configurations);
 			} catch (IOException e) {
-				log("*ALL*", null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
+				log(ALL_CONFIGS_KEY, null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
 
-	public void log(String message) {
+	private void log(String message) {
 		log(null, null, message, MessageKeeperLevel.INFO, null, true);
 	}
 
-	public void log(String message, MessageKeeperLevel level) {
+	private void log(String message, MessageKeeperLevel level) {
 		log(null, null, message, level, null, true);
 	}
 
@@ -415,7 +416,7 @@ public class IbisContext extends IbisApplicationContext {
 		log(configurationName, configurationVersion, message, MessageKeeperLevel.INFO);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level) {
+	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level) {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
@@ -426,7 +427,7 @@ public class IbisContext extends IbisApplicationContext {
 	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e, boolean allOnly) {
 		String key;
 		if (allOnly || configurationName == null) {
-			key = "*ALL*";
+			key = ALL_CONFIGS_KEY;
 		} else {
 			key = configurationName;
 		}
@@ -471,7 +472,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @return MessageKeeper for '*ALL*' configurations
 	 */
 	public MessageKeeper getMessageKeeper() {
-		return getMessageKeeper("*ALL*");
+		return getMessageKeeper(ALL_CONFIGS_KEY);
 	}
 
 	/**
