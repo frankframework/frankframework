@@ -331,12 +331,9 @@ public class IbisContext extends IbisApplicationContext {
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
 
-		Configuration configuration = null;
+		//TODO autowire the entire configuration in it's own context.
+		Configuration configuration = createBeanAutowireByName(Configuration.class);
 		try {
-			//TODO autowire the entire configuration in it's own context.
-			IAdapterService adapterService = getBean("adapterService", IAdapterService.class);
-
-			configuration = new Configuration(adapterService);
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);
