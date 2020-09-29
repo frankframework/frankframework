@@ -25,7 +25,9 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Used with test cases that don't need JMX/flowDiagrams.
+ * Used with test cases.
+ * This implementation keeps a list of all {@link IAdapter}s within this IAdapterService.
+ * It does not wire any extra's such as JMX and flowDiagrams.
  */
 public class DummyAdapterService implements IAdapterService {
 
