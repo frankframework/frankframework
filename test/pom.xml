@@ -36,25 +36,9 @@
 		</dependency>
 -->
 		<dependency>
-			<groupId>oracle</groupId>
-			<artifactId>ojdbc8</artifactId>
-			<version>12.2.0.1</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -183,7 +167,33 @@
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-		 </dependencies>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>oracle</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle.database.jdbc</groupId>
+					<artifactId>ojdbc8</artifactId>
+					<version>12.2.0.1</version>
+					<scope>compile</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jms_1.1_spec</artifactId>
+					<scope>compile</scope>
+				</dependency>
+				<dependency>
+					<groupId>commons-dbcp</groupId>
+					<artifactId>commons-dbcp</artifactId>
+					<scope>compile</scope>
+				</dependency>
+				<dependency>
+					<groupId>commons-pool</groupId>
+					<artifactId>commons-pool</artifactId>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
 		</profile>
 	</profiles>
 </project>
