@@ -12,3 +12,5 @@ bin
 
 **/META-INF/maven
 **/META-INF/MANIFEST.MF
+
+test/src/main/tools/appServers/tomcat/iaf-test.war

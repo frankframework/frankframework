@@ -5,15 +5,16 @@ This subdirectory of the IAF Git repository lets you run Ibis4Test within a Dock
 - Find the IP address of your host, for example using `ifconfig` or `ipconfig`. You may have multiple IP addresses. This project was tested for IP address `192.168.178.11`. In the remainder of this file, read your own IP address for `192.168.178.11`.
 - Run the Maven build of the IAF project with the following command:
 
-      mvn clean install -Poracle -DdatabaseHost=192.168.178.11
+      mvn -DdatabaseHost=192.168.178.11 -P oracle clean install
 
+- Copy `iaf/test/target/ibis-adapterframework-test-<your version>.war to `iaf/test/src/main/tools/appServers/tomcat/iaf-test.war`.
 - Run a dockerized Oracle database. You find instructions in subdirectory `iaf/test/src/main/tools/setupDB/Oracle`.
-- Wait until the container has initialized users and tables. When this happens, it still takes some time before you can connect to the database.
-- In the mean time, build your Oracle container for the Frank!Framework. Within the directory of this `README.md` file, please enter the following command:
+- In the mean time, build your ibis4test container of the Frank!Framework for using an Oracle database. Within the directory of this `README.md` file, please enter the following command:
 
       docker build --build-arg ORACLE_DB_IP=192.168.178.11 --tag ibis4test .
 
-- Run your container with the following command:
+- Wait until the Oracle database container has initialized users and tables. When this happens, it still takes some time before you can connect to the database.
+- Run your ibis4test container with the following command:
 
       docker run --name ibis4test -p80:80 ibis4test
 

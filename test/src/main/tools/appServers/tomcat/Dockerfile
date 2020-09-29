@@ -11,4 +11,4 @@ RUN echo "jdbc.dbms.default=oracle-docker" >> conf/catalina.properties
 RUN echo "web.port=8080" >> conf/catalina.properties
 RUN echo "file.separator.regex=/" >> conf/catalina.properties
 
-COPY ../../../../../target/*.war webapps/iaf-test.war
+COPY iaf-test.war webapps/iaf-test.war
