@@ -460,7 +460,6 @@
         <module>test</module>
         <module>ear-test</module>
         <module>ladybug</module>
-        <module>deployTest</module>
       </modules>
     </profile>
     <profile>
