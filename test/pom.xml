@@ -14,6 +14,7 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
+		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
@@ -34,13 +35,27 @@
 			<version>${iaf.version}</version>
 		</dependency>
 -->
-
+		<dependency>
+			<groupId>oracle</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
