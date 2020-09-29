@@ -53,6 +53,7 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -148,7 +149,8 @@ public class ServerStatistics extends Base {
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
-		returnMap.put("uptime", getIbisContext().getUptimeDate());
+		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}

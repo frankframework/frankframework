@@ -113,7 +113,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		OutputStream fullWsdlOut = null;
 		try {
 			Adapter adapter = new Adapter();
-			Configuration configuration = new Configuration(null);
+			Configuration configuration = new Configuration();
 			configuration.setClassLoader(getConfigurationClassLoader());
 			adapter.setConfiguration(configuration);
 			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(
