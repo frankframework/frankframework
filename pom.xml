@@ -9,7 +9,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.version>2.13.1</log4j2.version>
-    <databaseHost>localhost</databaseHost>
   </properties>
 
   <name>Ibis AdapterFramework parent</name>
