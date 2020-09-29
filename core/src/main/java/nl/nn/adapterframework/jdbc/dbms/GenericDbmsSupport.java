@@ -68,6 +68,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public boolean isParameterTypeMatchRequired() {
 		return false;
 	}
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return false;
+	}
 
 	@Override
 	public String getSysDate() {

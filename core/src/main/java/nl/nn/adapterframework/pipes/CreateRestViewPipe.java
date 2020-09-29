@@ -22,14 +22,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -137,11 +139,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-public class CreateRestViewPipe extends XsltPipe {
+public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAware {
 	private static final String CONTENTTYPE = "contentType";
 	private static final String SRCPREFIX = "srcPrefix";
 
 	private String contentType = "text/html";
+	private ApplicationContext applicationContext;
 
 	AppConstants appConstants;
 
@@ -191,7 +194,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest, ServletContext servletContext, String srcPrefix) throws DomBuilderException {
-		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
+		ApplicationMetrics metrics = applicationContext.getBean("metrics", ApplicationMetrics.class);
 		Map<String,Object> parameters = new Hashtable<String,Object>();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
@@ -199,7 +202,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ httpServletRequest.getServerName() + "</serverName>"
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
-		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (ibisContext==null?"null":ibisContext.getUptime()) + "</upTime>"));
+		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (metrics==null?"null":metrics.getUptime()) + "</upTime>"));
 		String machineNameXml = "<machineName>" + Misc.getHostname()
 				+ "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));
@@ -302,5 +305,10 @@ public class CreateRestViewPipe extends XsltPipe {
 
 	public String getContentType() {
 		return contentType;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

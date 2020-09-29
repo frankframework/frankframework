@@ -63,7 +63,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	protected String slotId=null;
 	protected String typeField=null;
 	private String type = "";
-	protected String hostField=null;
+	private String hostField=null;
 
 	private String prefix="";
 
@@ -178,7 +178,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 	protected int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
-		stmt.setString(position++,paramValue);
+		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchRequired());
 		return position;
 	}
 
@@ -564,6 +564,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 	public String getTypeField() {
 		return typeField;
+	}
+
+	protected void setHostField(String hostField) {
+		this.hostField = hostField;
 	}
 	protected String getHostField() {
 		return hostField;

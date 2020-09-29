@@ -243,7 +243,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
 					} else {
 						String successState = getCommitOnState();
-						if (successState!=null && successState.equals(plr.getState())) {
+						if (successState!=null && successState.equalsIgnoreCase(plr.getState())) {
 							session.commit();
 						} else {
 							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");

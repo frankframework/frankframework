@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -240,9 +241,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
-		Object exitState = context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		String exitState = (String)context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && !exitState.equals("success")) {
+		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}

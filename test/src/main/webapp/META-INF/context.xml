@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
-	<!-- please make sure number of allowed database connections is at least 50, for iaf-test -->
 
 	<Resource
 		name="jdbc/ibis4test-h2"
@@ -12,32 +11,37 @@
 	<Resource
 		name="jdbc/ibis4test-oracle"
 		type="javax.sql.DataSource"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:@localhost:1521:xe"
 		username="testiaf_user"
 		password="testiaf_user"
-		driverClassName="oracle.jdbc.driver.OracleDriver"
-		url="jdbc:oracle:thin:@${databaseHost}:1521:xe"
-		maxActive="50"
+		maxActive="10"
 		maxIdle="2"
-		maxWait="30000"
+		maxWait="5000"
 	/>
 
 	<Resource
 		name="jdbc/ibis4test-oracle-docker"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@${databaseHost}:1521:ORCLCDB"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		url="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		username="testiaf_user"
 		password="testiaf_user00"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 	/>
 
 	<Resource 
 		name="jdbc/ibis4test-mssql" 
-		auth="Container" 
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
-		URL="jdbc:sqlserver://${databaseHost}:1433;database=testiaf"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+		url="jdbc:sqlserver://localhost:1433;database=testiaf"
+		username="testiaf_user"
 		password="testiaf_user00"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sendStringParametersAsUnicode="false"
 		sendTimeAsDatetime="true"
 		selectMethod="direct"
@@ -52,34 +56,41 @@
 		applicationIntent="readwrite"
 	/>
 
+
 	<Resource
 		name="jdbc/ibis4test-mysql"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		driverClassName="com.mysql.cj.jdbc.Driver"
+		url="jdbc:mysql://localhost:3307/testiaf"
+		username="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mysql://${databaseHost}:3307/testiaf"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="100000"
+		socketTimeout="5000"
 	/>
-	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
+ 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
 
 	<!-- Use MySQL driver for MariaDB for proper XA support. -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		user="testiaf_user"
+		type="javax.sql.DataSource"
+		driverClassName="com.mysql.cj.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/testiaf"
+		username="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mysql://${databaseHost}:3306/testiaf"
+		maxActive="10"
+		maxIdle="2"
+		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="10000"
+		socketTimeout="5000"
 	/>
-
 <!-- 
 	<Resource
 		name="jdbc/ibis4test-mariadb"
@@ -93,16 +104,15 @@
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
 
-<!-- 
 	<Resource 
-		name="jdbc/ibis4test-postgres" 
+		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
 		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
- -->
+
  	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"

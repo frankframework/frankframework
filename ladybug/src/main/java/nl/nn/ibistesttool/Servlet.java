@@ -51,7 +51,7 @@ public class Servlet extends WebContainerServlet {
 	@Override
 	public ApplicationInstance newApplicationInstance() {
 		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(getServletContext());
-		return (Echo2Application)ibisContext.getBean("echo2Application");
+		return ibisContext.getBean("echo2Application", Echo2Application.class);
 	}
 
 }

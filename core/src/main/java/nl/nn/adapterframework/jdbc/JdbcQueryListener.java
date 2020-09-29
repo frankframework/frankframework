@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
 
@@ -45,37 +46,52 @@ public class JdbcQueryListener extends JdbcListener {
 			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
 		super.configure();
+		if (StringUtils.isEmpty(getUpdateStatusToInProcessQuery()) && !getDbmsSupport().hasSkipLockedFunctionality()) {
+			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
+		}
 	}
 	
 
 	@Override
-	@IbisDoc({"primary key field of the table, used to identify messages", ""})
+	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
 	@Override
-	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
+	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
 	@Override
-	@IbisDoc({"query that returns a row to be processed. must contain a key field and optionally a message field", ""})
+	@IbisDoc({"3", "Query that returns a row to be processed. Must contain a key field and optionally a message field", ""})
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}
 
 	@Override
-	@IbisDoc({"sql statement to the status of a row to 'error'. must contain one parameter, that is set to the value of the key", "same as <code>updatestatustoprocessedquery</code>"})
+	@IbisDoc({"SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key", ""})
+	public void setUpdateStatusToProcessedQuery(String string) {
+		super.setUpdateStatusToProcessedQuery(string);
+	}
+
+	@Override
+	@IbisDoc({"SQL statement to set the status of a row to 'error'. Must contain one parameter, that is set to the value of the key", "same as <code>updateStatusToProcessedQuery</code>"})
 	public void setUpdateStatusToErrorQuery(String string) {
 		super.setUpdateStatusToErrorQuery(string);
 	}
 
 	@Override
-	@IbisDoc({"sql statement to the status of a row to 'processed'. must contain one parameter, that is set to the value of the key", ""})
-	public void setUpdateStatusToProcessedQuery(String string) {
-		super.setUpdateStatusToProcessedQuery(string);
+	@IbisDoc({"SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. Can be left emtpy if database has SKIP LOCKED functionality", ""})
+	public void setUpdateStatusToInProcessQuery(String string) {
+		super.setUpdateStatusToInProcessQuery(string);
+	}
+
+	@Override
+	@IbisDoc({"SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key. Only use in rollbacks, when updateStatusToInProcessQuery is specified", ""})
+	public void setRevertInProcessStatusQuery(String string) {
+		super.setRevertInProcessStatusQuery(string);
 	}
 
 

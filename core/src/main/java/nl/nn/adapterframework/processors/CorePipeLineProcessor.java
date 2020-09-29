@@ -64,7 +64,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
 					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
-					if (plr == null || !plr.getState().equals("success")) {
+					if (plr == null || !plr.isSuccessful()) {
 						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
 					message = plr.getResult();
