@@ -46,8 +46,6 @@ import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
 import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
-import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
-import microsoft.exchange.webservices.data.credential.WebCredentials;
 import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
@@ -81,12 +79,20 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBaseFolder(String) basefolder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * 
+ * 
+ * To obtain an accessToken:
+ * <ol>
+ * 	<li>follow the steps in {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
+ *  <li>request an Authorization-Code for scope https://outlook.office.com/EWS.AccessAsUser.All</li>
+ *  <li>exchange the Authorization-Code for an accessToken</li>
+ *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
+ * </ol>
+ * 
  * 
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
@@ -96,9 +102,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
 	private String url;
+	private String accessToken;
 	private String authAlias;
-	private String username;
-	private String password;
 	private String basefolder;
 	private String filter;
 	private boolean readMimeContents=false;
@@ -127,15 +132,12 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		}
 	}
 	
-	
 	@Override
 	public void open() throws FileSystemException {
 		try {
 			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-			String usernameToUse=StringUtils.isNotEmpty(getUsername())?getUsername():getMailAddress();
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), usernameToUse, getPassword());
-			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(credentials);
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), null, getAccessToken());
+			exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
 
 			if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
 				CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
@@ -641,23 +643,16 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return url;
 	}
 
-	@IbisDoc({"4", "Username for authentication to exchange mail server", ""})
-	public void setUsername(String username) {
-		this.username = username;
+	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
 	}
-	public String getUsername() {
-		return username;
+	public String getAccessToken() {
+		return accessToken;
 	}
 
-	@IbisDoc({"5", "Password for authentication to exchange mail server", ""})
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getPassword() {
-		return password;
-	}
-	
-	@IbisDoc({"6", "Alias used to obtain credentials for authentication to exchange mail server", ""})
+
+	@IbisDoc({"5", "Alias used to obtain accessToken for authentication to Exchange mail server", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -665,7 +660,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return authAlias;
 	}
 
-	
+
 	@IbisDoc({"7", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
