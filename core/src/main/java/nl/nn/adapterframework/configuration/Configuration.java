@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package nl.nn.adapterframework.configuration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -48,31 +48,31 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-    protected Logger log = LogUtil.getLogger(this);
-    private ClassLoader configurationClassLoader = null;
+	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader configurationClassLoader = null;
 
 	private Boolean autoStart = null;
 
-    private AdapterService adapterService;
+	private IAdapterService adapterService;
 
-    private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-    private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-    private boolean unloadInProgressOrDone = false;
+	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private boolean unloadInProgressOrDone = false;
 
-	private final Map<String, JobDef> jobTable = new LinkedHashMap<String, JobDef>(); // TODO useless synchronization ?
-    private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
+	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
+	private final List<JobDef> scheduledJobs = new ArrayList<>();
 
-    private String name;
-    private String version;
-    private IbisManager ibisManager;
-    private String originalConfiguration;
-    private String loadedConfiguration;
-    private StatisticsKeeperIterationHandler statisticsHandler=null;
+	private String name;
+	private String version;
+	private IbisManager ibisManager;
+	private String originalConfiguration;
+	private String loadedConfiguration;
+	private StatisticsKeeperIterationHandler statisticsHandler = null;
 
-    private ConfigurationException configurationException=null;
-    private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
+	private ConfigurationException configurationException = null;
+	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
-    private static Date statisticsMarkDateMain=new Date();
+	private static Date statisticsMarkDateMain=new Date();
 	private static Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
@@ -128,12 +128,10 @@ public class Configuration {
 
 	}
 
+	public Configuration() {
+	}
 
-	/**
-	 *	initializes the log and the AppConstants
-	 * @see nl.nn.adapterframework.util.AppConstants
-	 */
-	public Configuration(AdapterService adapterService) {
+	public Configuration(IAdapterService adapterService) {
 		this.adapterService = adapterService;
 	}
 
@@ -157,7 +155,7 @@ public class Configuration {
 	}
 
 	/**
-	 * Get a registered adapter by its name through {@link AdapterService#getAdapter(String)}
+	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
@@ -170,7 +168,7 @@ public class Configuration {
 	}
 
 	public List<IAdapter> getRegisteredAdapters() {
-		return new ArrayList<IAdapter>(adapterService.getAdapters().values());
+		return new ArrayList<>(adapterService.getAdapters().values());
 	}
 
 	public List<String> getSortedStartedAdapterNames() {
@@ -186,63 +184,58 @@ public class Configuration {
 		return startedAdapters;
 	}
 
-    //Returns a sorted list of registered adapter names as an <code>Iterator</code>
-    @Deprecated
-    public Iterator<IAdapter> getRegisteredAdapterNames() {
-        return adapterService.getAdapters().values().iterator();
-    }
-    
-    public AdapterService getAdapterService() {
-        return adapterService;
-    }
+	public IAdapterService getAdapterService() {
+		return adapterService;
+	}
 
-    public void setAdapterService(AdapterService adapterService) {
-        this.adapterService = adapterService;
-    }
+	@Autowired
+	public void setAdapterService(IAdapterService adapterService) {
+		this.adapterService = adapterService;
+	}
 
-    public void addStartAdapterThread(Runnable runnable) {
-        startAdapterThreads.add(runnable);
-    }
+	public void addStartAdapterThread(Runnable runnable) {
+		startAdapterThreads.add(runnable);
+	}
 
-    public void removeStartAdapterThread(Runnable runnable) {
-        startAdapterThreads.remove(runnable);
-    }
+	public void removeStartAdapterThread(Runnable runnable) {
+		startAdapterThreads.remove(runnable);
+	}
 
-    public List<Runnable> getStartAdapterThreads() {
-        return startAdapterThreads;
-    }
+	public List<Runnable> getStartAdapterThreads() {
+		return startAdapterThreads;
+	}
 
-    public void addStopAdapterThread(Runnable runnable) {
-        stopAdapterThreads.add(runnable);
-    }
+	public void addStopAdapterThread(Runnable runnable) {
+		stopAdapterThreads.add(runnable);
+	}
 
-    public void removeStopAdapterThread(Runnable runnable) {
-        stopAdapterThreads.remove(runnable);
-    }
+	public void removeStopAdapterThread(Runnable runnable) {
+		stopAdapterThreads.remove(runnable);
+	}
 
-    public List<Runnable> getStopAdapterThreads() {
-        return stopAdapterThreads;
-    }
+	public List<Runnable> getStopAdapterThreads() {
+		return stopAdapterThreads;
+	}
 
-    public boolean isUnloadInProgressOrDone() {
-        return unloadInProgressOrDone;
-    }
+	public boolean isUnloadInProgressOrDone() {
+		return unloadInProgressOrDone;
+	}
 
-    public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
-        this.unloadInProgressOrDone = unloadInProgressOrDone;
-    }
+	public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
+		this.unloadInProgressOrDone = unloadInProgressOrDone;
+	}
 
-    /**
-     * Performs a check to see if the receiver is known at the adapter
-     * @return true if the receiver is known at the adapter
-     */
-    public boolean isRegisteredReceiver(String adapterName, String receiverName){
-        IAdapter adapter=getRegisteredAdapter(adapterName);
-        if (null ==adapter) {
-        	return false;
+	/**
+	 * Performs a check to see if the receiver is known at the adapter
+	 * @return true if the receiver is known at the adapter
+	 */
+	public boolean isRegisteredReceiver(String adapterName, String receiverName) {
+		IAdapter adapter = getRegisteredAdapter(adapterName);
+		if(null == adapter) {
+			return false;
 		}
-        return adapter.getReceiverByName(receiverName) != null;
-    }
+		return adapter.getReceiverByName(receiverName) != null;
+	}
 
 	/**
 	 * Register an adapter with the configuration.
@@ -257,22 +250,22 @@ public class Configuration {
 		log.debug("Configuration [" + name + "] registered adapter [" + adapter.toString() + "]");
 	}
 
-    /**
-     * Register an {@link JobDef job} for scheduling at the configuration.
-     * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
-     * information from the parameters, after checking the
-     * parameters of the job. (basically, it checks wether the adapter and the
-     * receiver are registered.
-     * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
-     * @param jobdef a JobDef object
-     * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
-     * @since 4.0
-     */
-    public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
+	/**
+	 * Register an {@link JobDef job} for scheduling at the configuration.
+	 * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
+	 * information from the parameters, after checking the
+	 * parameters of the job. (basically, it checks wether the adapter and the
+	 * receiver are registered.
+	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
+	 * @param jobdef a JobDef object
+	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
+	 * @since 4.0
+	 */
+	public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
 		jobdef.configure(this);
 		jobTable.put(jobdef.getName(), jobdef);
-        scheduledJobs.add(jobdef);
-    }
+		scheduledJobs.add(jobdef);
+	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
 		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");
@@ -289,7 +282,9 @@ public class Configuration {
 	}
 
 	public void setVersion(String version) {
-		this.version = version;
+		if(StringUtils.isNotEmpty(version)) {
+			this.version = version;
+		}
 	}
 
 	public String getVersion() {
@@ -346,7 +341,7 @@ public class Configuration {
 	}
 
 	public JobDef getScheduledJob(String name) {
-		return (JobDef) jobTable.get(name);
+		return jobTable.get(name);
 	}
 
 	public JobDef getScheduledJob(int index) {

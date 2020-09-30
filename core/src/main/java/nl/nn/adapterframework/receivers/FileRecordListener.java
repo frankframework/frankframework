@@ -72,7 +72,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
 		String tcid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		if (sender != null) {
-			if (processResult.getState().equalsIgnoreCase("success")) {
+			if (processResult.isSuccessful()) {
 				try {
 					sender.sendMessage(processResult.getResult(), null);
 				} catch (Exception e) {

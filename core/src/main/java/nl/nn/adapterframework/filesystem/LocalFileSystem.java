@@ -34,6 +34,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.WildCardFilter;
 
+/**
+ * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
+ *  
+ * @author Gerrit van Brakel
+ *
+ */
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	private String root;
@@ -89,6 +95,9 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public File toFile(String folder, String filename) {
 		if (StringUtils.isEmpty(folder)) {
+			if (StringUtils.isEmpty(getRoot())) {
+				return new File(filename);
+			}
 			return new File(getRoot(), filename);
 		}
 		if (StringUtils.isEmpty(getRoot())) {
@@ -179,29 +188,29 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
 		File dest;
 
-		dest = new File(newName);
+		dest = new File(f.getParentFile(), newName);
 		if (dest.exists()) {
 			if (force)
 				dest.delete();
 			else {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
+				throw new FileSystemException("Cannot rename file to ["+newName+"]. Destination file already exists.");
 			}
 		}
 		f.renameTo(dest);
 		return dest;
 	}
 	
-	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
+	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		File toFolder = toFile(destinationFolder);
 		if (toFolder.exists()) {
 			if (!toFolder.isDirectory()) {
-				throw new FileSystemException("Cannot "+action+" file. Destination ["+toFolder.getName()+"] is not a folder.");
+				throw new FileSystemException("destination ["+toFolder.getPath()+"] is not a folder");
 			}
 		} else {
 			if (createFolder)
 				createFolder(destinationFolder);
 			else {
-				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+toFolder.getName()+"] does not exist.");
+				throw new FileSystemException("destination folder ["+toFolder.getPath()+"] does not exist");
 			}
 		}
 		File target=new File(toFolder,f.getName());
@@ -210,19 +219,19 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	
 	@Override
 	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder, "move");
+		File target = getDestinationFile(f, destinationFolder, createFolder);
 		if (!f.renameTo(target)) {
-			return f;
+			throw new FileSystemException("cannot move file ["+f.getPath()+"] to ["+target.getPath()+"]");
 		}
 		return target;
 	}
 	@Override
 	public File copyFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder, "copy");
+		File target = getDestinationFile(f, destinationFolder, createFolder);
 		try {
 			FileUtils.copyFile(f, target);
 		} catch (IOException e) {
-			throw new FileSystemException("cannot copy file ["+f.getName()+"] to folder ["+destinationFolder+"]",e);
+			throw new FileSystemException("cannot copy file ["+f.getPath()+"] to ["+target.getPath()+"]",e);
 		}
 		return target;
 	}
@@ -263,7 +272,8 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 
-	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
+			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
 		this.root = root;
 	}

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,14 +24,17 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.configuration.AdapterService;
+import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -51,6 +55,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -69,6 +74,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	private PlatformTransactionManager transactionManager;
 	private ListenerPortPoller listenerPortPoller;
 	private ApplicationEventPublisher applicationEventPublisher;
+	private FlowDiagramManager flowDiagramManager;
 
 	@Override
 	public void setIbisContext(IbisContext ibisContext) {
@@ -107,6 +113,23 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void startConfiguration(Configuration configuration) {
 		startAdapters(configuration);
 		startScheduledJobs(configuration);
+		updateFlowDiagram(configuration);
+	}
+
+	private void updateFlowDiagram(Configuration configuration) {
+		if (flowDiagramManager != null) {
+			try {
+				flowDiagramManager.generate(configuration);
+			} catch (IOException e) {
+				ConfigurationWarnings.add(log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
+			}
+		}
+	}
+
+	@Autowired(required = false)
+	@Qualifier("flowDiagramManager")
+	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
+		this.flowDiagramManager = flowDiagramManager;
 	}
 
 	/**
@@ -153,7 +176,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 		while (configuration.getRegisteredAdapters().size() > 0) {
 			IAdapter adapter = configuration.getRegisteredAdapter(0);
-			AdapterService adapterService = configuration.getAdapterService();
+			IAdapterService adapterService = configuration.getAdapterService();
 			adapterService.unRegisterAdapter(adapter);
 		}
 

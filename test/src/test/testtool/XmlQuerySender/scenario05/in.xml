@@ -1,0 +1,12 @@
+<root>
+	<delete>
+		<tableName>IBISTEMP</tableName>
+	</delete>
+	<sql>
+		<query>INSERT INTO IBISTEMP (tkey,tblob1,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),EMPTY_CLOB())</query>
+	</sql>
+	<sql>
+		<type>select</type>
+		<query>SELECT * FROM IBISTEMP ORDER BY tkey</query>
+	</sql>
+</root>

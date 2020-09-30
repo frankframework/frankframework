@@ -39,7 +39,7 @@
 			</column>
 			<column>
 				<name>tblob1</name>
-				<value>hallo---------1</value>
+				<value>hallo---------1</value> <!--  this inserts a BLOB using an INSERT, rather then via a SELECT FOR UPDATE  -->
 				<type>blob</type>
 			</column>
 			<column>
@@ -81,114 +81,4 @@
 		<tableName>IBISTEMP</tableName>
 		<order>tkey</order>
 	</select>
-	<insert>
-		<tableName>IBISTEMP</tableName>
-		<columns>
-			<column>
-				<name>tkey</name>
-				<value>SEQ_IBISTEMP.NEXTVAL</value>
-				<type>function</type>
-			</column>
-			<column>
-				<name>tnumber</name>
-				<value>1.000,123</value>
-				<type>number</type>
-				<decimalSeparator>,</decimalSeparator>
-				<groupingSeparator>.</groupingSeparator>
-			</column>
-			<column>
-				<name>ttimestamp</name>
-				<value>01-02-2003</value>
-				<type>datetime</type>
-				<formatString>dd-MM-yyyy</formatString>
-			</column>
-		</columns>
-	</insert>
-	<delete>
-		<tableName>IBISTEMP</tableName>
-		<where>tnumber&gt;2000</where>
-	</delete>
-	<select>
-		<tableName>IBISTEMP</tableName>
-		<columns>
-			<column>
-				<name>tkey</name>
-			</column>
-			<column>
-				<name>tnumber</name>
-			</column>
-		</columns>
-		<order>tkey</order>
-	</select>
-	<select>
-		<tableName>IBISTEMP</tableName>
-		<columns>
-			<column>
-				<name>tkey</name>
-			</column>
-			<column>
-				<name>tnumber</name>
-			</column>
-		</columns>
-		<where>tnumber&lt;1500</where>
-		<order>tkey</order>
-	</select>
-	<update>
-		<tableName>IBISTEMP</tableName>
-		<columns>
-			<column>
-				<name>tclob</name>
-				<value>changed------9</value>
-				<type>clob</type>
-			</column>
-			<column>
-				<name>tnumber</name>
-				<value>123</value>
-			</column>
-		</columns>
-		<where>tnumber&lt;1500</where>
-	</update>
-	<select>
-		<tableName>IBISTEMP</tableName>
-		<order>tkey</order>
-	</select>
-<!-- 	<alter>
-		<sequenceName>SEQ_IBISTEMP</sequenceName>
-		<startWith>1973</startWith>
-	</alter>
- -->	<select>
-		<tableName>DUAL</tableName>
-		<columns>
-			<column>
-				<name>SEQ_IBISTEMP.NEXTVAL AS NEXTVAL</name>
-				<type>function</type>
-			</column>
-		</columns>
-	</select>
-	<insert>
-		<tableName>IBISTEMP</tableName>
-		<columns>
-			<column>
-				<name>tkey</name>
-				<value>SEQ_IBISTEMP.NEXTVAL</value>
-				<type>function</type>
-			</column>
-			<column>
-				<name>tblob1</name>
-				<value>EMPTY_BLOB()</value>
-				<type>function</type>
-			</column>
-		</columns>
-	</insert>
-	<select>
-		<tableName>IBISTEMP</tableName>
-		<order>tkey</order>
-	</select>
-	<sql>
-		<query>INSERT INTO IBISTEMP (tkey,tblob1,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),EMPTY_CLOB())</query>
-	</sql>
-	<sql>
-		<type>select</type>
-		<query>SELECT * FROM IBISTEMP ORDER BY tkey</query>
-	</sql>
 </root>

@@ -87,11 +87,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.open();	
 	}
 	
-	/**
-	 * Returns the listener 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
 	protected abstract ExchangeMailListener createExchangeMailListener();
 	
 	protected void equalsCheck(String content, String actual) {

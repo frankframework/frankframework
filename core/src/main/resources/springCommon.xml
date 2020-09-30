@@ -7,6 +7,13 @@
 	>
 
 	<bean
+		name="metrics"
+		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
+		autowire="byName"
+		scope="singleton"
+	/>
+
+	<bean
 		name="lowerCasePropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
 		autowire="byName"
@@ -68,6 +75,33 @@
 	</bean>
 
 	<bean
+		name="adapterService"
+		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
+		autowire="byName"
+		scope="prototype"
+		>
+	</bean>
+
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
+		<property name="defaultDomain" value="${instance.name}" />
+	</bean>
+
+	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
+		<property name="defaultDomain" value="${instance.name}" />
+	</bean>
+
+	<bean name="MBeanManager" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+		<property name="namingStrategy" ref="namingStrategy" />
+		<property name="server" ref="mbeanServer"/>
+		<property name="ensureUniqueRuntimeObjectNames" value="false" />
+		<property name="assembler">
+			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
+		</property>
+		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+	</bean>
+
+	<bean
 		name="flowDiagramManager"
 		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
 		autowire="no"
@@ -78,7 +112,7 @@
 	<bean
 		name="flowGenerator"
 		class="nl.nn.adapterframework.util.flow.V8FlowGenerator"
-		scope="singleton"
+		scope="prototype"
 		lazy-init="true"
 		>
 	</bean>
@@ -386,13 +420,9 @@
 		>
 		<property name="dbmsSupportMap">
 			<props>
-				<prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
-				<prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
+				<!-- configure additional DbmsSupport mappings here -->
 				<prop key="DB2/NT">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
 				<prop key="DB2/LINUXX8664">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
-				<prop key="H2">nl.nn.adapterframework.jdbc.dbms.H2DbmsSupport</prop>
-				<prop key="MySQL">nl.nn.adapterframework.jdbc.dbms.MySqlDbmsSupport</prop>
-				<prop key="MariaDB">nl.nn.adapterframework.jdbc.dbms.MariaDbDbmsSupport</prop>
 			</props>
 		</property>
 	</bean>

@@ -196,7 +196,7 @@ public class ApiServiceDispatcher {
 		return root.build();
 	}
 
-	private Json2XmlValidator getJsonValidator(PipeLine pipeline) {
+	public static Json2XmlValidator getJsonValidator(PipeLine pipeline) {
 		IPipe validator = pipeline.getInputValidator();
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());

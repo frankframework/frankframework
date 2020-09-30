@@ -36,6 +36,11 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DATABASE()");
 	}
@@ -122,14 +127,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
-	@Override
-	public String emptyClobValue() {
-		return "";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "";
-	}
 }

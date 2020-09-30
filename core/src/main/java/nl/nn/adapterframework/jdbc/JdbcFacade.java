@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
@@ -46,6 +45,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -84,6 +84,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	private boolean credentialsConfigured=false;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
+	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -154,7 +155,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(applicationServerType) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
@@ -164,7 +165,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
 		}

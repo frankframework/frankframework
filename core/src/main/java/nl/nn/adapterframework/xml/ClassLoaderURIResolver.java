@@ -82,7 +82,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 		if (resource==null) {
 			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
-			//log.warn(message);
+			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
 		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");

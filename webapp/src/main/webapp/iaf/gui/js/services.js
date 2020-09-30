@@ -19,7 +19,9 @@ angular.module('iaf.beheerconsole')
 				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
 				if(typeof httpOptions == "object") {
 					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
-					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
+					if(!httpOptions.poller) {
+						Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
+					}
 				}
 			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
 				var tag = etags[uri];
@@ -210,14 +212,14 @@ angular.module('iaf.beheerconsole')
 						if(poller.fired == y.fired || poller.fired-1 == y.fired || poller.fired-2 == y.fired)
 							e++;
 					}
-					Debug.info("Encountered unhandeled exception, poller["+uri+"] eventId["+poller.fired+"] retries["+e+"]");
+					Debug.info("Encountered unhandled exception, poller["+uri+"] eventId["+poller.fired+"] retries["+e+"]");
 					if(e < 3) return;
 
 					Debug.warn("Max retries reached. Stopping poller ["+uri+"]", poller);
 
 					runOnce = true;
 					data[uri].stop();
-				}).then(function() {
+				}, {poller:true}).then(function() {
 					if(runOnce) return;
 
 					var p = data[uri];
@@ -1090,13 +1092,22 @@ angular.module('iaf.beheerconsole')
 		};
 	}]).service('Toastr', ['toaster', function(toaster) {
 		this.error = function(title, text) {
-			toaster.pop({type: 'error', title: title, body: text});
+			var options = {type: 'error', title: title, body: text};
+			if (angular.isObject(title)) {
+				angular.merge(options, options, title);
+			}
+			toaster.pop(options);
 		};
 		this.success = function(title, text) {
-			toaster.pop({type: 'success', title: title, body: text});
+			var options = {type: 'success', title: title, body: text};
+			if (angular.isObject(title)) {
+				angular.merge(options, options, title);
+			}
+			toaster.pop(options);
 		};
 	}]).config(['$httpProvider', function($httpProvider) {
 		$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function(appConstants, $q, Misc, Toastr, $location) {
+			var errorCount = 0;
 			return {
 				request: function(config) {
 					if (config.url.indexOf('views') !== -1 && ff_version != null) {
@@ -1115,8 +1126,20 @@ angular.module('iaf.beheerconsole')
 										console.warn("Authorization error");
 									}
 								}
-								else if(appConstants.init == 2) {
+								else if(appConstants.init == 2 && rejection.config.poller) {
 									console.warn("Connection to the server was lost!");
+									errorCount++;
+									if(errorCount == 3) {
+										Toastr.error({
+											title: "Server Error",
+											body: "Connection to the server was lost! Click to refresh the page.",
+											timeout: 0,
+											showCloseButton: true,
+											onHideCallback: function() {
+												window.location.reload();
+											}
+										});
+									}
 								}
 								break;
 							case 401:

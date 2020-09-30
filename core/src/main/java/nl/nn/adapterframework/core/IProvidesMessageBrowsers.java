@@ -22,6 +22,11 @@ package nl.nn.adapterframework.core;
 public interface IProvidesMessageBrowsers<M> {
 
 	/**
+	 * returns a {@link IMessageBrowser browser} of messages that have a status that they are currently being processed.
+	 */
+	public IMessageBrowser<M> getInProcessBrowser();
+
+	/**
 	 * returns a {@link IMessageBrowser browser} of messages that have been processed successfully, and are stored in a 
 	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog in the configuration).
 	 */

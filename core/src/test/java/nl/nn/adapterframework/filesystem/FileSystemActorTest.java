@@ -602,10 +602,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		}
 
-		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+(numOfWrites<numOfBackups?numOfWrites:numOfBackups))));
+		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
+		assertTrue("last backup with no "+lastSavedBackup+" does not exist",fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)));
 		for (int i=1;i<=numOfBackups;i++) {
 			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+			assertEquals("contents of backup no "+i+" is not correct",(contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
 		}
 	}
 	
@@ -617,17 +618,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 	}
 	
-	public void fileSystemActorMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
+	public void fileSystemActorMoveActionTest(String srcFolder, String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
-		if (folder1!=null) {
-			_createFolder(folder1);
+		if (srcFolder!=null) {
+			_createFolder(srcFolder);
 		}
-		if (folderExists && folder2!=null) {
-			_createFolder(folder2);
+		if (createDestFolder && destFolder!=null) {
+			_createFolder(destFolder);
 		}
-		createFile(folder1, filename, contents);
+		createFile(srcFolder, filename, contents);
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
@@ -635,7 +636,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
-		p.setValue(folder2);
+		p.setValue(destFolder);
 		params.add(p);
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
@@ -656,7 +657,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 		
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertFalse("file should not exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
+		assertFalse("file should not exist anymore in original folder ["+srcFolder+"]", _fileExists(srcFolder, filename));
 	}
 
 

@@ -57,15 +57,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
  * <tr><td>write</td><td>write contents to a file<td>
  *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
@@ -390,6 +390,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
+				if (!fileSystem.exists(file)) {
+					throw new FileNotFoundException("file to move ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
+				}
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
@@ -398,6 +401,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
+				if (!fileSystem.exists(file)) {
+					throw new FileNotFoundException("file to copy ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
+				}
 				if (destinationFolder == null) {
 					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
 				}
@@ -579,7 +585,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-	@IbisDoc({"6", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDoc({"6", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
@@ -587,7 +593,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
@@ -595,7 +601,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateSize;
 	}
 
-	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}

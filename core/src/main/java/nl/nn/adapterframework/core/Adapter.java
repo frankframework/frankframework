@@ -39,6 +39,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -357,6 +358,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * retrieve the date and time of the last message.
 	 */
+	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
 		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
 	}
@@ -465,6 +467,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * the functional name of this adapter
 	 * @return  the name of the adapter
 	 */
+	@JmxAttribute(description = "Name of the Adapter")
 	@Override
 	public String getName() {
 		return name;
@@ -473,11 +476,13 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
+	@JmxAttribute(description = "# Messages in Error")
 	public long getNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesInError.getValue();
 		}
 	}
+	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesInProcess;
@@ -493,6 +498,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Total of messages processed
 	 * @return long total messages processed
 	 */
+	@JmxAttribute(description = "# Messages Processed")
 	public long getNumOfMessagesProcessed() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesProcessed.getValue();
@@ -545,6 +551,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return runState.getRunState();
 	}
 
+	@JmxAttribute(description = "RunState")
 	public String getRunStateAsString() {
 		return runState.getRunState().toString();
 	}
@@ -566,6 +573,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Creation date: (19-02-2003 12:16:53)
 	 * @return String  Date
 	 */
+	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
 		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
 	}

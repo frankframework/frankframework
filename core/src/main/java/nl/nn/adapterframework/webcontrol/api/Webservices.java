@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -139,10 +139,11 @@ public final class Webservices extends Base {
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 				PipeLine pipeline = adapter.getPipeLine();
-				if (pipeline.getInputValidator()==null && pipeline.getOutputValidator()==null) {
-					endpoint.put("error","pipeline has no validator");
-				} else {
+				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) { 
+					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
 					endpoint.put("schemaResource","openapi.json");
+				} else {
+					endpoint.put("error","pipeline has no validator");
 				}
 				apiListeners.add(endpoint);
 			}

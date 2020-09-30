@@ -23,6 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -42,6 +43,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  * @author  John Dekker
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpListener extends FtpSession implements IPullingListener<String>, INamedObject, RunStateEnquiring {
 
 	private LinkedList<String> remoteFilenames;

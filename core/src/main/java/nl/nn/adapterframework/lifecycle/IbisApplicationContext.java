@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -187,10 +187,6 @@ public class IbisApplicationContext {
 
 			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 		}
-	}
-
-	public Object getBean(String beanName) {
-		return applicationContext.getBean(beanName);
 	}
 
 	public <T> T getBean(String beanName, Class<T> beanClass) {

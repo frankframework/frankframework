@@ -25,8 +25,8 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.configuration.AdapterService;
-import nl.nn.adapterframework.configuration.AdapterServiceImpl;
+import nl.nn.adapterframework.configuration.IAdapterService;
+import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -34,6 +34,9 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {
@@ -41,13 +44,23 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
-		AdapterService adapterService = new AdapterServiceImpl();
+		IAdapterService adapterService = new DummyAdapterService();
 		IAdapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
+			PipeLine pipeline = new PipeLine();
+			PipeLineExit exit = new PipeLineExit();
+			exit.setPath("EXIT");
+			exit.setState("success");
+			pipeline.registerPipeLineExit(exit);
+			EchoPipe pipe = new EchoPipe();
+			pipe.setName("myPipe");
+			pipeline.addPipe(pipe);
+			adapter.registerPipeLine(pipeline);
 			adapterService.registerAdapter(adapter);
 		} catch (ConfigurationException e) {
-			fail("error registering adapter ["+adapter+"]");
+			e.printStackTrace();
+			fail("error registering adapter ["+adapter+"] " + e.getMessage());
 		}
 		Configuration mockConfiguration = spy(new Configuration(adapterService));
 		mockConfiguration.setName("myConfiguration");

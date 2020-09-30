@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import nl.nn.adapterframework.logging.IbisLoggerConfigurationFactory;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;

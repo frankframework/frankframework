@@ -38,19 +38,23 @@ public class InputStreamDataSource implements DataSource {
 		this.inputStream = inputStream;
 	}
 
+	@Override
 	public String getContentType() {
 		return contentType;
 	}
 
+	@Override
 	public InputStream getInputStream() throws IOException {
 		return inputStream;
 	}
 
+	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public OutputStream getOutputStream() throws IOException {
 		// TODO Auto-generated method stub
 		return null;
