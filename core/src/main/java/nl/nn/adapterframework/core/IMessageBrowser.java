@@ -26,7 +26,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public interface IMessageBrowser<M> extends IXAEnabled {
 
-	public enum SortOrder { NONE, ASC, DESC; }
+	public enum SortOrder { NONE, ASC, DESC }
 
 	public enum StorageType {
 		NONE(null),
