@@ -11,7 +11,7 @@ public class ExchangeFileSystemTest extends BasicFileSystemTestBase<Item, Exchan
 
 	private String PROPERTY_FILE = "ExchangeMail.properties";
 	
-	private String DEFAULT_URL = "https://outlook.office365.com/EWS/Exchange.asmx";
+	//private String DEFAULT_URL = "https://outlook.office365.com/EWS/Exchange.asmx";
 	
 	private String url         = PropertyUtil.getProperty(PROPERTY_FILE, "url");
 	private String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
