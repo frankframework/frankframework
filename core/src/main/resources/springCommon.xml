@@ -7,6 +7,13 @@
 	>
 
 	<bean
+		name="metrics"
+		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
+		autowire="byName"
+		scope="singleton"
+	/>
+
+	<bean
 		name="lowerCasePropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
 		autowire="byName"
