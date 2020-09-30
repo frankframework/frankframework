@@ -22,6 +22,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	protected String mailaddress;
 	protected String accessToken;
+	protected String username;
+	protected String password;
 	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
 
 	protected String recipient;
@@ -53,6 +55,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		accessToken = properties.getProperty("accessToken");
+		username = properties.getProperty("username");
+		password = properties.getProperty("password");
 		recipient=  properties.getProperty("recipient");
 		basefolder1 = properties.getProperty("basefolder1");
 		basefolder2 = properties.getProperty("basefolder2");
@@ -65,6 +69,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
 		mailListener.setAccessToken(accessToken);
+		mailListener.setUsername(username);
+		mailListener.setPassword(password);
 		mailListener.setUrl(baseurl);
 	}
 	

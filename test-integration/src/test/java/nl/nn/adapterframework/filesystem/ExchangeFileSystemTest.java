@@ -16,6 +16,8 @@ public class ExchangeFileSystemTest extends BasicFileSystemTestBase<Item, Exchan
 	private String url         = PropertyUtil.getProperty(PROPERTY_FILE, "url");
 	private String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
 	private String accessToken = PropertyUtil.getProperty(PROPERTY_FILE, "accessToken");
+	private String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+	private String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	
 	
 	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
@@ -26,6 +28,8 @@ public class ExchangeFileSystemTest extends BasicFileSystemTestBase<Item, Exchan
 		if (StringUtils.isNotEmpty(url)) fileSystem.setUrl(url);
 		fileSystem.setMailAddress(mailaddress);
 		fileSystem.setAccessToken(accessToken);
+		fileSystem.setUsername(username);
+		fileSystem.setPassword(password);
 		return fileSystem;
 	}
 
