@@ -26,7 +26,6 @@ public class ExchangeFileSystemTest extends BasicFileSystemTestBase<Item, Exchan
 		if (StringUtils.isNotEmpty(url)) fileSystem.setUrl(url);
 		fileSystem.setMailAddress(mailaddress);
 		fileSystem.setAccessToken(accessToken);
-		fileSystem.setAccessToken(accessToken);
 		return fileSystem;
 	}
 

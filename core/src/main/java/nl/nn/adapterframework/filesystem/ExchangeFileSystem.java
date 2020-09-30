@@ -88,7 +88,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * To obtain an accessToken:
  * <ol>
  * 	<li>follow the steps in {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
- *  <li>bewaar client_id en tenant-id
  *  <li>request an Authorization-Code for scope https://outlook.office.com/EWS.AccessAsUser.All</li>
  *  <li>exchange the Authorization-Code for an accessToken</li>
  *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
@@ -662,7 +661,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	}
 
 
-	
 	@IbisDoc({"7", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
@@ -753,9 +751,5 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	public ExchangeService getExchangeService() {
 		return exchangeService;
 	}
-
-
-
-
 
 }
