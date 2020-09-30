@@ -27,12 +27,15 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			scope.$watch('::time', updateTime);
+			var watch = scope.$watch('time', updateTime);
 			function updateTime(time) {
+				if(!time) return;
+
 				if(isNaN(time))
 					time = new Date(time).getTime();
 				var toDate = new Date(time - appConstants.timeOffset);
 				element.text(dateFilter(toDate, appConstants["console.dateFormat"]));
+				watch();
 			}
 		}
 	};
@@ -73,6 +76,7 @@ angular.module('iaf.beheerconsole')
 		},
 		link: function(scope, element, attributes) {
 			function updateTime() {
+				if(!attributes.time) return;
 				var seconds = Math.round((new Date().getTime() - attributes.time + appConstants.timeOffset) / 1000);
 
 				var minutes = seconds / 60;
@@ -90,7 +94,7 @@ angular.module('iaf.beheerconsole')
 				if (days < 1) {
 					return element.text( hours + 'h');
 				}
-				days = Math.floor(days % 7);
+				days = Math.floor(days);
 				return element.text( days + 'd');
 			}
 

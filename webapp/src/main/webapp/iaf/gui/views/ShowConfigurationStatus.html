@@ -277,6 +277,10 @@
                                         <td ng-if="adapter.lastMessage"><span to-date time="{{adapter.lastMessage}}"></span></td>
                                         <td ng-if="!adapter.lastMessage">-</td>
                                     </tr>
+                                    <tr>
+                                        <td>Configuration</td>
+                                        <td>{{::adapter.configuration}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
