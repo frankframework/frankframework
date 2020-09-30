@@ -25,7 +25,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -69,10 +69,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
-	private String order;
-	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","DESC");
-	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","ASC");
+
+	private SortOrder sortOrder = null;
+	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
 
 	protected PlatformTransactionManager txManager;
@@ -301,7 +301,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex);
+		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
 	}
 
 	@Override
@@ -575,18 +575,23 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 
 	public void setOrder(String string) {
-		order = string;
+		if(StringUtils.isNotEmpty(string)) {
+			sortOrder = SortOrder.valueOf(string.trim());
+		}
 	}
 	public String getOrder() {
-		if (StringUtils.isNotEmpty(order)) {
-			return order;
-		} else {
+		return getOrderEnum().name();
+	}
+
+	public SortOrder getOrderEnum() {
+		if(sortOrder == null) {
 			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				return errorsOrder; //Defaults to ASC
+				setOrder(errorsOrder); //Defaults to ASC
 			} else {
-				return messagesOrder; //Defaults to DESC
+				setOrder(messagesOrder); //Defaults to DESC
 			}
 		}
+		return sortOrder;
 	}
 
 
