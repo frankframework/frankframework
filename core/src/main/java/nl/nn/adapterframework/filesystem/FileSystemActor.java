@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,6 +125,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String base64;
 	private int rotateDays=0;
 	private int rotateSize=0;
+	private boolean overwrite=false;
 	private int numberOfBackups=0;
 	
 
@@ -242,14 +244,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	private String determineDestination(ParameterValueList pvl) {
+	private String determineDestination(ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getDestination())) {
 			return getDestination();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_DESTINATION)) {
-			return pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			if (StringUtils.isEmpty(destination)) {
+				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
+			}
+			return destination;
 		}
-		return null;
+		throw new FileSystemException("no destination specified");
 	}
 
 	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
@@ -380,23 +386,30 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				fileSystem.removeFolder(folder);
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
-				F file=getFile(input, pvl);
-				String destination = determineDestination(pvl);
-				if (destination == null) {
-					throw new FileSystemException("unknown destination [" + destination + "]");
+				F source=getFile(input, pvl);
+				String destinationName = determineDestination(pvl);
+				F destination;
+				if (destinationName.contains("/")) {
+					destination = fileSystem.toFile(destinationName);
+				} else {
+					String sourceName = fileSystem.getCanonicalName(source);
+					File sourceAsFile = new File(sourceName);
+					String folderPath = sourceAsFile.getParent();
+					destination = fileSystem.toFile(folderPath,destinationName);
 				}
-				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
-				return destination;
+				if (!fileSystem.exists(source)) {
+					throw new FileNotFoundException("file to rename ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
+				}
+				FileSystemUtils.prepareDestination(fileSystem, destination, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+				F renamed = ((IWritableFileSystem<F>)fileSystem).renameFile(source, destination);
+				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
 				if (!fileSystem.exists(file)) {
 					throw new FileNotFoundException("file to move ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
 				}
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
+				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(moved);
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
@@ -404,10 +417,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				if (!fileSystem.exists(file)) {
 					throw new FileNotFoundException("file to copy ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
 				}
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
+				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(copied);
 			}
 		} catch (Exception e) {
@@ -552,7 +562,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return createFolder;
 	}
 
-//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
+	}
+	public boolean isOverwrite() {
+		return overwrite;
+	}
+
+	//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
 //	public void setForce(boolean force) {
 //		this.force = force;
 //	}
@@ -608,5 +625,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public int getNumberOfBackups() {
 		return numberOfBackups;
 	}
+
+
+
+
 
 }

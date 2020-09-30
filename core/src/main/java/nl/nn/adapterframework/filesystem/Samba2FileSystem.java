@@ -308,14 +308,11 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
-		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			if (exists(newName) && !force) {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
-			}
-			file.rename(newName, force);
+	public String renameFile(String source, String destination) throws FileSystemException {
+		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			file.rename(destination, true);
 		}
-		return newName;
+		return destination;
 	}
 
 	protected String getDestinationFile(String f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {

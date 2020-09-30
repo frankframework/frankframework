@@ -93,19 +93,12 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<File, LocalFil
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
-		thrown.expectMessage("unable to process [move] action for File ["+folder.getRoot().getAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+File.separator+"folder] does not exist");
+		thrown.expectMessage("unable to process [move] action for File ["+folder.getRoot().getAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+"/folder] does not exist");
 		fileSystemActorMoveActionTestNoRoot("folder",false,false);
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreateNoRoot() throws Exception {
 		fileSystemActorMoveActionTestNoRoot("folder",true,true);
-	}
-
-	@Override // to adjust expected error message
-	@Test
-	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+File.separator+"folder] does not exist");
-		fileSystemActorMoveActionTest(null,"folder",false,false);
 	}
 
 }

@@ -18,7 +18,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystem.open();
 	}
 	
-	public void testBackupByNumber(String folder) throws Exception {
+	public void testRolloverByNumber(String folder) throws Exception {
 		String filename = "backupTest" + FILE1;
 		String contents = "text content:";
 		int numOfBackups=3;
@@ -40,8 +40,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
 		
+		F file = fileSystem.toFile(folder, filename);
 		// execute rollover
-		FileSystemUtils.rolloverByNumber(fileSystem, folder, filename, numOfBackups);
+		FileSystemUtils.rolloverByNumber(fileSystem, file, numOfBackups);
 		
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
@@ -53,12 +54,12 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void testBackupByNumberInRoot() throws Exception {
-		testBackupByNumber(null);
+	public void testRolloverByNumberInRoot() throws Exception {
+		testRolloverByNumber(null);
 	}
 	@Test
-	public void testBackupByNumberInFolder() throws Exception {
-		testBackupByNumber("folder");
+	public void testRolloverByNumberInFolder() throws Exception {
+		testRolloverByNumber("folder");
 	}
 	
 	public void testRolloverBySize(String folder) throws Exception {
@@ -78,7 +79,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(folder, filename,contents+"0");
 		
 		// test for rollover for the small file, it should do nothing now
-		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), folder, rotateSize, numOfBackups);
+		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
 
 		// assert that nothing has changed yet, because the file is smaller than the rotate size.
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
@@ -88,9 +89,13 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		// create a bigger file
 		_deleteFile(folder, filename);
 		createFile(folder, filename,contents+contents+"0");
-		
+
+		for (int i=1;i<=numOfBackups;i++) {
+			assertFileExistsWithContents(folder, filename+"."+i, contents.trim()+(i));
+		}
+
 		// test rollover for bigger file
-		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), folder, rotateSize, numOfBackups);
+		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
 		
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
@@ -198,7 +203,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void testMoveWithOverWrite() throws Exception {
+	public void testMoveWithOverwrite() throws Exception {
 		String filename = "backupTest" + FILE1;
 		String contents = "text content:";
 		String srcFolder = "srcFolder";

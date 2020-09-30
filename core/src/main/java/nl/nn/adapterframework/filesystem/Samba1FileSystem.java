@@ -213,19 +213,10 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public SmbFile renameFile(SmbFile f, String newName, boolean force) throws FileSystemException {
-		SmbFile dest;
+	public SmbFile renameFile(SmbFile source, SmbFile destination) throws FileSystemException {
 		try {
-			dest = new SmbFile(smbContext, newName);
-			if (exists(dest)) {
-				if (force)
-					dest.delete();
-				else {
-					throw new FileSystemException("Cannot rename file. Destination file already exists.");
-				}
-			}
-			f.renameTo(dest);
-			return dest;
+			source.renameTo(destination);
+			return destination;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -12,6 +13,9 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 
 import org.junit.Test;
+
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 
 import nl.nn.adapterframework.util.Misc;
 
@@ -184,7 +188,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination, false);
+		F d = fileSystem.toFile(destination);
+		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 		
 		assertTrue("Destination must exist",_fileExists(destination));
@@ -192,29 +197,59 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void writableFileSystemTestRenameToExisting() throws Exception {
-		thrown.expectMessage("Cannot rename file. Destination file already exists.");
-		String fileName = "fileToBeRenamedExisting.txt";
+	public void writableFileSystemTestRenameToOtherFolder() throws Exception {
+		String sourceFolder = "srcFolder";
+		String destinationFolder = "dstFolder";
+		String fileName = "fileTobeRenamed.txt";
+		String destination = "fileRenamed.txt";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, fileName, "");
+		_createFolder(sourceFolder);
+		_createFolder(destinationFolder);
+		createFile(sourceFolder,fileName, "");
 		waitForActionToFinish();
 		
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(sourceFolder, fileName));
 		
-		String destination = "fileRenamedExists.txt";
-		createFile(null, destination, "");
+		deleteFile(destinationFolder, destination);
+		assertFalse(_fileExists(destinationFolder, destination));
 		waitForActionToFinish();
 		
-		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination, false);
+		F f = fileSystem.toFile(sourceFolder, fileName);
+		F d = fileSystem.toFile(destinationFolder, destination);
+		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 		
-		assertTrue("Origin must still exist",_fileExists(fileName));
-		assertTrue("Destination must exist",_fileExists(destination));
+		assertTrue("Destination must exist",_fileExists(destinationFolder, destination));
+		assertFalse("Origin must have disappeared",_fileExists(sourceFolder, fileName));
 	}
+	
+//	@Test
+//	public void writableFileSystemTestRenameToExisting() throws Exception {
+//		String fileName = "fileToBeRenamedExisting.txt";
+//		
+//		fileSystem.configure();
+//		fileSystem.open();
+//
+//		createFile(null, fileName, "fileContents");
+//		waitForActionToFinish();
+//		
+//		assertTrue(_fileExists(fileName));
+//		
+//		String destination = "fileRenamedExists.txt";
+//		createFile(null, destination, "originalFileContents");
+//		waitForActionToFinish();
+//		
+//		F f = fileSystem.toFile(fileName);
+//		F d = fileSystem.toFile(destination);
+//		fileSystem.renameFile(f, d);
+//		waitForActionToFinish();
+//		
+//		assertFileExistsWithContents(null, destination, "fileContents");
+//		assertFalse("Origin must have disappeared",_fileExists(fileName));
+//	}
 
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
@@ -356,5 +391,31 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 		
 		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+	}
+	
+	@Test
+	public void writableFileSystemTestReferToFileInFolder() throws Exception{
+		String folder = "folder";
+		String filename = "fileToBeReferred.txt";
+		String content = "some content";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(folder);
+		createFile(folder, filename, content);
+		
+		F file1 = fileSystem.toFile(folder,filename);
+		assertTrue(fileSystem.exists(file1));
+		assertThat(fileSystem.getCanonicalName(file1),anyOf(endsWith(folder+"/"+filename),endsWith(folder+"\\"+filename)));
+		assertThat(fileSystem.getName(file1),endsWith(filename));
+
+		String absoluteName1 = folder+"/"+filename;
+		String absoluteName2 = folder+"\\"+filename;
+		F file2 = fileSystem.toFile(absoluteName1);
+		assertTrue(fileSystem.exists(file2));
+		assertThat(fileSystem.getCanonicalName(file2),anyOf(endsWith(absoluteName1),endsWith(absoluteName2)));
+		assertThat(fileSystem.getName(file2),endsWith(filename));
+
 	}
 }

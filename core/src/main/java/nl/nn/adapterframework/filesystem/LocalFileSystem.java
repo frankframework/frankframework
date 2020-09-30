@@ -94,16 +94,17 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	@Override
 	public File toFile(String folder, String filename) {
-		if (StringUtils.isEmpty(folder)) {
-			if (StringUtils.isEmpty(getRoot())) {
-				return new File(filename);
-			}
-			return new File(getRoot(), filename);
+		int slashPos = Math.max(filename.lastIndexOf('/'),filename.lastIndexOf('\\'));
+		String absFilename;
+		if (StringUtils.isEmpty(folder) || slashPos >= 0) {
+			absFilename = filename;
+		} else {
+			absFilename = folder +"/" + filename;
 		}
-		if (StringUtils.isEmpty(getRoot())) {
-			return new File(folder, filename);
+		if (StringUtils.isEmpty(getRoot()) || absFilename.startsWith(getRoot())) {
+			return new File(absFilename);
 		}
-		return new File(getRoot()+"/"+folder, filename);
+		return new File(getRoot()+"/"+ absFilename);
 	}
 
 	@Override
@@ -185,19 +186,11 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 	@Override
-	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
-		File dest;
-
-		dest = new File(f.getParentFile(), newName);
-		if (dest.exists()) {
-			if (force)
-				dest.delete();
-			else {
-				throw new FileSystemException("Cannot rename file to ["+newName+"]. Destination file already exists.");
-			}
+	public File renameFile(File source, File destination) throws FileSystemException {
+		if (!source.renameTo(destination)) {
+			throw new FileSystemException("Could not rename ["+source.getPath()+"] to ["+destination.getPath()+"]");
 		}
-		f.renameTo(dest);
-		return dest;
+		return destination;
 	}
 	
 	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {

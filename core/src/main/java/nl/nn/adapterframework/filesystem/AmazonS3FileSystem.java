@@ -268,13 +268,13 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	}
 
 	@Override
-	public S3Object renameFile(S3Object f, String destinationFile, boolean force) throws FileSystemException {
-		if(s3Client.doesObjectExist(bucketName, destinationFile)) {
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
+	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
+		if(s3Client.doesObjectExist(bucketName, destination.getKey())) {
+			throw new FileSystemException("Cannot rename file to ["+destination.getKey()+"]. Destination file ["+bucketName + "/"+ destination.getKey()+"] already exists.");
 		}
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
-		s3Client.deleteObject(bucketName, f.getKey());
-		return toFile(destinationFile);
+		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
+		s3Client.deleteObject(bucketName, source.getKey());
+		return destination;
 	}
 
 	@Override
@@ -289,7 +289,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	@Override
 	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		return renameFile(f,destinationFolder+"/"+f.getKey(), false);
+		return renameFile(f,toFile(destinationFolder,f.getKey()));
 	}
 
 
