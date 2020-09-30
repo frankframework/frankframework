@@ -218,7 +218,7 @@ class InfoBuilderSource {
 		return beanName.substring(0,  1).toUpperCase() + beanName.substring(1);
 	}
 
-	private static Set<SpringBean> getSpringBeans(Class<?> interfaze) {
+	public static Set<SpringBean> getSpringBeans(Class<?> interfaze) {
 		Set<SpringBean> result = new HashSet<SpringBean>();
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
@@ -308,7 +308,7 @@ class InfoBuilderSource {
 		}
 	}
 
-	private static Class<?> getClass(String className) {
+	public static Class<?> getClass(String className) {
 		try {
 			return Class.forName(className);
 		} catch (NoClassDefFoundError e) {
