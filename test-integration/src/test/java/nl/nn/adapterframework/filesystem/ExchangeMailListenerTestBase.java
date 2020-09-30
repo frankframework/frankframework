@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Test;
 
@@ -13,26 +14,29 @@ import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase{
 
-	private String mailaddress = "gerrit@integrationpartners.nl";
-	private String password    = "";
-	private String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
+	protected String mailaddress;
+	protected String accessToken;
+	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
 
+	protected String recipient;
 
-	private String username    = mailaddress;
-	private String basefolder1  = "IAF Integration Tests 1";
-	protected String basefolder2  = "IAF Integration Tests 2";
+	private String testProperties="ExchangeMail.properties";
+
+	protected String basefolder1;
+	protected String basefolder2;
 	
-	private String senderSmtpHost="smtp.fastmail.com";
-	private int senderSmtpPort=465;
-	private boolean senderSsl=true;
-	private String senderUserId="xxx@xxxx.nl";
-//	private String senderPassword="";
-	private String sendGridApiKey="";
+	private String senderSmtpHost;
+	private int senderSmtpPort;
+	private boolean senderSsl;
+	private String senderUserId;
+	private String senderPassword;
+//	private String sendGridApiKey;
 	
 //	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
@@ -40,16 +44,27 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, sendGridApiKey);
+		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, senderPassword);
 	}
 	
 	@Override
 	public void setUp() throws Exception {
+		Properties properties=new Properties();
+		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
+		mailaddress = properties.getProperty("mailaddress");
+		accessToken = properties.getProperty("accessToken");
+		recipient=  properties.getProperty("recipient");
+		basefolder1 = properties.getProperty("basefolder1");
+		basefolder2 = properties.getProperty("basefolder2");
+		senderSmtpHost = properties.getProperty("senderSmtpHost");
+		senderSmtpPort = Integer.parseInt(properties.getProperty("senderSmtpPort"));
+		senderSsl      = Boolean.parseBoolean(properties.getProperty("mailaddress"));
+		senderUserId   = properties.getProperty("senderUserId");
+		senderPassword = properties.getProperty("senderPassword");
 		super.setUp();
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
-		mailListener.setUserName(username);
-		mailListener.setPassword(password);
+		mailListener.setAccessToken(accessToken);
 		mailListener.setUrl(baseurl);
 	}
 	
@@ -69,11 +84,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.open();	
 	}
 	
-	/**
-	 * Returns the listener 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
 	protected abstract ExchangeMailListener createExchangeMailListener();
 	
 	protected void equalsCheck(String content, String actual) {

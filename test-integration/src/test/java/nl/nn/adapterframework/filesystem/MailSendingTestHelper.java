@@ -6,7 +6,8 @@ import java.io.OutputStream;
 import org.junit.After;
 import org.junit.Before;
 
-import nl.nn.adapterframework.senders.SendGridSender;
+import nl.nn.adapterframework.senders.MailSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -17,7 +18,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 	private String senderUserId="";
 	private String senderPassword="";
 
-	private SendGridSender mailSender;
+	private MailSender mailSender;
 	
 	private MockFile currentFile;
 	
@@ -30,11 +31,12 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 	
 	@Before
 	public void setUp() throws Exception {
-		mailSender=new SendGridSender();
+//		mailSender=new SendGridSender();
+		mailSender=new MailSender();
 		mailSender.setName("MailSendingTestHelper");
-//		mailSender.setSmtpHost(senderSmtpHost);
-//		mailSender.setProperties(properties);
-//		mailSender.setUserId(senderUserId);
+		mailSender.setSmtpHost(senderSmtpHost);
+		//mailSender.setProperties(properties);
+		mailSender.setUserId(senderUserId);
 		mailSender.setPassword(senderPassword);
 		mailSender.setDefaultMessageType("text/plain");
 		mailSender.configure();
@@ -135,9 +137,9 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 		email.addSubElement(message);
 		message.setValue(Misc.streamToString(currentFile.getInputStream()));
 
-		String msg=email.toXML();
+		Message msg=new Message(email.toXML());
 		System.out.println("email: ["+msg+"]");
-		mailSender.sendMessage("fakeCorrelationId", msg);
+		mailSender.sendMessage(msg.asString(), null);
 		Thread.sleep(5000);
 	}
 }
