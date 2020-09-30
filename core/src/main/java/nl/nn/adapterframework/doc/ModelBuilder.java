@@ -64,7 +64,6 @@ public class ModelBuilder {
 				result.add(b);
 			}
 		}
-		result.sort((b1, b2) -> b1.compareTo(b2));
 		return result;
 	}
 }
