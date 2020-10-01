@@ -133,7 +133,8 @@ public class FileUtilsTest {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File f = new File(path);
 		File file = FileUtils.getFirstFile(f);
-		assertEquals("2.txt", file.getName());
+		String[] l = f.list();
+		assertEquals(l[0], file.getName());
 	}
 
 	/**
@@ -251,7 +252,8 @@ public class FileUtilsTest {
 		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File f = new File(p2);
 		File res = FileUtils.getFirstFile(f);
-		assertEquals("2.txt", res.getName());
+		String[] l = f.list();
+		assertEquals(l[0], res.getName());
 	}
 	/**
 	 * Method: encodeFileName(String fileName)
