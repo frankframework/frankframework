@@ -96,7 +96,9 @@ public class FileUtilsTest {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File f = new File(path);
 		File file = FileUtils.createTempDir(f);
-		assertTrue(file.exists());
+		boolean b = file.exists();
+		file.delete();
+		assertTrue(b);
 	}
 
 	/**
@@ -117,7 +119,9 @@ public class FileUtilsTest {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
 		assertEquals("2.txt", files[0].getName());
-		assertEquals(9, files.length);
+		File numFiles = new File(path);
+		int count = numFiles.list().length;
+		assertEquals(count, files.length);
 	}
 
 
