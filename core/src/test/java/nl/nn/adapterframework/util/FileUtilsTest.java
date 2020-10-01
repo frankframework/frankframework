@@ -127,13 +127,6 @@ public class FileUtilsTest {
 	}
 
 	/**
-	 * Method: getFirstFile(String directory, long minStability)
-	 */
-	@Test
-	public void testGetFirstFileForDirectoryMinStability() throws Exception {
-	}
-
-	/**
 	 * Method: getListFromNames(String names, char seperator)
 	 */
 	@Test
