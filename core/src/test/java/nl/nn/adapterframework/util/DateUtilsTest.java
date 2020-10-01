@@ -2,7 +2,10 @@ package nl.nn.adapterframework.util;
 
 import org.junit.Test;
 
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,6 +16,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class DateUtilsTest {
 
+	public Calendar now = Calendar.getInstance();
+	public String tz = now.getTimeZone().getDisplayName(false, TimeZone.SHORT);
 
 	/**
 	 * Method: format(Date date, String dateFormat)
@@ -31,7 +36,7 @@ public class DateUtilsTest {
 	@Test
 	public void testParseToDate() throws Exception {
 		Date d = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
-		assertEquals("Sat Oct 05 00:00:00 CEST 2013", d.toString());
+		assertEquals("Sat Oct 05 00:00:00 " + tz + " 2013", d.toString());
 	}
 
 	/**
@@ -40,7 +45,7 @@ public class DateUtilsTest {
 	@Test
 	public void testParseXmlDateTime() throws Exception {
 		Date d = DateUtils.parseXmlDateTime("2013-10-10");
-		assertEquals("Thu Oct 10 00:00:00 CEST 2013", d.toString());
+		assertEquals("Thu Oct 10 00:00:00 " + tz + " 2013", d.toString());
 	}
 
 	/**
