@@ -5,11 +5,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -35,7 +32,7 @@ public class FileUtilsTest {
 
 	private static File f1;
 
-	String sep = File.separator;
+	public String sep = File.separator;
 
 	@BeforeClass
 	public static void setUpTest() throws IOException {
