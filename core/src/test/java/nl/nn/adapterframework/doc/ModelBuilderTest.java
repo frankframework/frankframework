@@ -125,21 +125,51 @@ public class ModelBuilderTest {
 	}
 
 	@Test
-	public void testGetSelfAndAncestorSeeds() {
+	public void whenNoExistingFrankElementsThenEverySuperclassProducesSeed() {
 		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerChild");
-		List<ModelBuilder.ElementSeed> actual = ModelBuilder.getSelfAndAncestorSeeds(clazz);
+		List<ModelBuilder.ElementSeed> actual = ModelBuilder.getSelfAndAncestorSeeds(clazz, new HashMap<>());
 		Assert.assertEquals(3, actual.size());
 		Assert.assertEquals("nl.nn.adapterframework.doc.target.simple.ListenerChild", actual.get(0).getFullName());
 		Assert.assertEquals("nl.nn.adapterframework.doc.target.simple.ListenerParent", actual.get(1).getFullName());
 		Assert.assertEquals("java.lang.Object", actual.get(2).getFullName());
+		Assert.assertNull(actual.get(2).getExistingParent());
+	}
+
+	@Test
+	public void whenFrankElementObjectExistsThenNoSeedProducedForObject() {
+		Map<String, FrankElement> repository = createRepositoryWithObject();
+		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerChild");
+		List<ModelBuilder.ElementSeed> actual = ModelBuilder.getSelfAndAncestorSeeds(clazz, repository);
+		Assert.assertEquals(2, actual.size());
+		Assert.assertEquals("nl.nn.adapterframework.doc.target.simple.ListenerChild", actual.get(0).getFullName());
+		Assert.assertEquals("nl.nn.adapterframework.doc.target.simple.ListenerParent", actual.get(1).getFullName());
+		Assert.assertSame(repository.get("java.lang.Object"), actual.get(1).getExistingParent());
+	}
+
+	private static Map<String, FrankElement> createRepositoryWithObject() {
+		FrankElement object = new FrankElement("java.lang.Object", "Object");
+		Map<String, FrankElement> repository = new HashMap<>();
+		repository.put(object.getFullName(), object);
+		return repository;
+	}
+
+	@Test
+	public void whenFrankElementAlreadyExistsThenEmptyListReturned() {
+		Map<String, FrankElement> repository = createRepositoryWithObject();
+		Class<?> clazz = InfoBuilderSource.getClass("java.lang.Object");
+		List<ModelBuilder.ElementSeed> actual = ModelBuilder.getSelfAndAncestorSeeds(clazz, repository);
+		Assert.assertEquals(0, actual.size());
 	}
 
 	@Test
 	public void whenChildElementAddedBeforeParentThenCorrectModel() {
 		ModelBuilder builder = new ModelBuilder();
 		FrankDocGroup group = builder.addGroup("Listeners");
-		builder.addElementsToGroup(getSeedsForChild(), group);
-		builder.addElementsToGroup(getSeedsForParent(), group);
+		builder.addElementsToGroup(
+				"mypackage.Child",
+				Arrays.asList(new ElementSeed[] {getElementSeedChild(), getElementSeedParent(), getElementSeedObject()}),
+				group);
+		builder.addElementsToGroup("mypackage.Parent", new ArrayList<>(), group);
 		checkModelAfterChildAndParentAdded(builder.getModel());
 	}
 
@@ -147,16 +177,15 @@ public class ModelBuilderTest {
 	public void whenParentElementAddedBeforeChildThenCorrectModel() {
 		ModelBuilder builder = new ModelBuilder();
 		FrankDocGroup group = builder.addGroup("Listeners");
-		builder.addElementsToGroup(getSeedsForParent(), group);
-		builder.addElementsToGroup(getSeedsForChild(), group);
+		builder.addElementsToGroup(
+				"mypackage.Parent",
+				Arrays.asList(new ElementSeed[] {getElementSeedParent(), getElementSeedObject()}),
+				group);
+		ElementSeed elementSeedChild = getElementSeedChild();
+		elementSeedChild.setExistingParent(builder.getModel().getAllElements().get("mypackage.Parent"));
+		builder.addElementsToGroup(
+				"mypackage.Child", Arrays.asList(new ElementSeed[] {elementSeedChild}), group);
 		checkModelAfterChildAndParentAdded(builder.getModel());
-	}
-
-	private List<ModelBuilder.ElementSeed> getSeedsForParent() {
-		List<ModelBuilder.ElementSeed> result = new ArrayList<>();
-		result.add(getElementSeedParent());
-		result.add(getElementSeedObject());
-		return result;
 	}
 
 	private ModelBuilder.ElementSeed getElementSeedObject() {
@@ -209,13 +238,6 @@ public class ModelBuilderTest {
 		inherited.putAll(getElementSeedParent().getMethods());
 		seed.setMethodsWithInherited(inherited);
 		return seed;
-	}
-
-	private List<ModelBuilder.ElementSeed> getSeedsForChild() {
-		List<ModelBuilder.ElementSeed> result = new ArrayList<>();
-		result.add(getElementSeedChild());
-		result.addAll(getSeedsForParent());
-		return result;
 	}
 
 	private void checkModelAfterChildAndParentAdded(FrankDocModel model) {

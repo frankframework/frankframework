@@ -85,6 +85,7 @@ public class ModelBuilder {
 		private @Getter @Setter Map<String, AttributeSeed> methodsWithInherited;
 		private @Getter String fullName;
 		private @Getter @Setter String simpleName;
+		private @Getter @Setter FrankElement existingParent;
 
 		ElementSeed(Class<?> clazz) {
 			methods = new HashMap<>();
@@ -138,13 +139,17 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static List<ElementSeed> getSelfAndAncestorSeeds(Class<?> clazz) {
+	static List<ElementSeed> getSelfAndAncestorSeeds(Class<?> clazz, Map<String, FrankElement> repository) {
 		List<ElementSeed> result = new ArrayList<>();
-		result.add(new ElementSeed(clazz));
-		Class<?> superClass = clazz.getSuperclass();
-		while(superClass != null) {
-			result.add(new ElementSeed(superClass));
+		Class<?> superClass = clazz;
+		ElementSeed newSeed = null;
+		while((superClass != null) && (!repository.containsKey(superClass.getName()))) {
+			newSeed = new ElementSeed(superClass);
+			result.add(newSeed);
 			superClass = superClass.getSuperclass();
+		}
+		if((newSeed != null) && (superClass != null)) {
+			newSeed.setExistingParent(repository.get(superClass.getName()));
 		}
 		return result;
 	}
@@ -156,20 +161,19 @@ public class ModelBuilder {
 		return group;
 	}
 
-	void addElementsToGroup(List<ElementSeed> elementHierarchy, FrankDocGroup group) {
+	void addElementsToGroup(String elementName, List<ElementSeed> elementHierarchy, FrankDocGroup group) {	
 		List<ElementSeed> reversedSeeds = new ArrayList<>(elementHierarchy);
 		Collections.reverse(reversedSeeds);
-		FrankElement parent = null;
-		for(ElementSeed seed: reversedSeeds) {
-			if(model.getAllElements().containsKey(seed.getFullName())) {
-				parent = model.getAllElements().get(seed.getFullName());
-			}
-			else {
+		if(reversedSeeds.isEmpty()) {
+			group.getElements().putIfAbsent(elementName, model.getAllElements().get(elementName));
+		} else {
+			FrankElement parent = reversedSeeds.get(0).getExistingParent();
+			for(ElementSeed seed: reversedSeeds) {
 				parent = createFrankElement(seed, parent);
 				model.getAllElements().put(parent.getFullName(), parent);
 			}
+			group.getElements().putIfAbsent(parent.getFullName(), parent);
 		}
-		group.getElements().putIfAbsent(parent.getFullName(), parent);
 	}
 
 	FrankElement createFrankElement(ElementSeed seed, FrankElement parent) {
