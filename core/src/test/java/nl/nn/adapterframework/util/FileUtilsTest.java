@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -8,9 +7,6 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -68,7 +64,7 @@ public class FileUtilsTest {
 	}
 
 	public void moveBack(File f, String dir) throws IOException, InterruptedException {
-		String s2 = FileUtils.moveFile(f, dir, true, 2);
+		FileUtils.moveFile(f, dir, true, 2);
 	}
 
 
