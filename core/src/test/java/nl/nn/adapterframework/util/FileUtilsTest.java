@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.util;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -7,6 +8,9 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -41,6 +45,7 @@ public class FileUtilsTest {
 		destFolderPath = testFolderDest.getRoot().getPath();
 	}
 
+
 	@Test
 	public void testGetFreeFile() throws Exception {
 		File f = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes");
@@ -51,8 +56,19 @@ public class FileUtilsTest {
 
 	@Test
 	public void testMoveFile() throws Exception {
-		String s = FileUtils.moveFile(f1, destFolderPath, true, 2);
-		assertEquals(destFolderPath + sep + "1.txt", s);
+		File toBeMoved = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "movingFile.txt");
+		String destDir = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript";
+		String s = FileUtils.moveFile(toBeMoved, destDir, true, 2);
+		String movedPath = destDir + sep + "movingFile.txt";
+		File moveBack =  new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript" + sep + "movingFile.txt");
+		destDir = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		moveBack(moveBack, destDir);
+		assertEquals(movedPath.substring(2, movedPath.length()), s.substring(s.length()-56, s.length()));
+
+	}
+
+	public void moveBack(File f, String dir) throws IOException, InterruptedException {
+		String s2 = FileUtils.moveFile(f, dir, true, 2);
 	}
 
 
@@ -105,7 +121,7 @@ public class FileUtilsTest {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
 		assertEquals("2.txt", files[0].getName());
-		assertEquals(8, files.length);
+		assertEquals(9, files.length);
 	}
 
 
