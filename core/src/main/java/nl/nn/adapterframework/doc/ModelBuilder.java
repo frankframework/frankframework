@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.doc;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
@@ -20,11 +22,57 @@ import nl.nn.adapterframework.doc.objects.SpringBean;
 public class ModelBuilder {
 	private @Getter FrankDocModel model;
 
+	@EqualsAndHashCode
+	static class Type {
+		private @Getter @Setter boolean isPrimitive;
+		private @Getter @Setter String name;
+
+		Type(Class<?> clazz) {
+			isPrimitive = clazz.isPrimitive();
+			name = clazz.getName();
+		}
+
+		Type() {		
+		}
+
+		Type(Parameter param) {
+			this(param.getType());
+		}
+
+		static Type typeVoid() {
+			Type result = new Type();
+			result.setPrimitive(true);
+			result.setName("void");
+			return result;
+		}
+
+		static Type typeString() {
+			Type result = new Type();
+			result.setPrimitive(false);
+			result.setName("java.lang.String");
+			return result;
+		}
+
+		static Type typeBoolean() {
+			Type result = new Type();
+			result.setPrimitive(true);
+			result.setName("boolean");
+			return result;
+		}
+	}
+
 	static class AttributeSeed {
 		private @Getter String name;
+		private @Getter @Setter List<Type> argumentTypes;
+		private @Getter @Setter Type returnType;
 
 		AttributeSeed(Method reflectMethod) {
 			name = reflectMethod.getName();
+			returnType = new Type(reflectMethod.getReturnType());
+			argumentTypes = new ArrayList<>();
+			for(Parameter p: reflectMethod.getParameters()) {
+				argumentTypes.add(new Type(p));
+			}
 		}
 
 		AttributeSeed(String name) {
@@ -132,10 +180,9 @@ public class ModelBuilder {
 	}
 
 	static List<FrankAttribute> createAttributes(ElementSeed elementSeed) {
-		Set<String> methodNames = elementSeed.getMethods().keySet();
-		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methodNames, "set");
-		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methodNames, "get");
-		getterAttributes.putAll(getAttributeToMethodNameMap(methodNames, "is"));
+		Map<String, String> setterAttributes = getAttributeToMethodNameMap(elementSeed.getMethods(), "set");
+		Map<String, String> getterAttributes = getAttributeToMethodNameMap(elementSeed.getMethodsWithInherited(), "get");
+		getterAttributes.putAll(getAttributeToMethodNameMap(elementSeed.getMethodsWithInherited(), "is"));
 		Map<String, String> attributes = new HashMap<>();
 		for(String attributeName: setterAttributes.keySet()) {
 			if(getterAttributes.containsKey(attributeName)) {
@@ -150,22 +197,33 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static Map<String, String> getAttributeToMethodNameMap(Set<String> rawMethodNames, String prefix) {
-		Set<String> methodNames = rawMethodNames.stream()
-				.filter(name -> name.startsWith(prefix) && (name.length() >= prefix.length()))
+	static Map<String, String> getAttributeToMethodNameMap(Map<String, AttributeSeed> methods, String prefix) {
+		Set<String> methodNames = methods.values().stream()
+				.filter(ModelBuilder::isGetterOrSetter)
+				.map(method -> method.getName())
+				.filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
 				.collect(Collectors.toSet());		
 		Map<String, String> result = new HashMap<>();
 		for(String methodName: methodNames) {
-			if(!methodName.startsWith(prefix)) {
-				throw new IllegalArgumentException("Only apply this method with matching prefix: " + prefix);
-			}
 			String strippedName = methodName.substring(prefix.length());
 			String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);
-			if(result.containsKey(attributeName)) {
-				throw new IllegalStateException("Duplicate method for attribute name: " + attributeName);
-			}
 			result.put(attributeName, methodName);
 		}
 		return result;
+	}
+
+	static boolean isGetterOrSetter(AttributeSeed attributeSeed) {
+		boolean isSetter = attributeSeed.getReturnType().equals(Type.typeVoid())
+				&& (attributeSeed.getArgumentTypes().size() == 1)
+				&& isPrimitiveOrString(attributeSeed.getArgumentTypes().get(0));
+		boolean isGetter = isPrimitiveOrString(attributeSeed.getReturnType())
+				&& (attributeSeed.getArgumentTypes().size() == 0);
+		return isSetter || isGetter;
+	}
+
+	private static boolean isPrimitiveOrString(Type t) {
+		boolean isString = t.getName().equals("java.lang.String");
+		boolean isVoid = t.getName().equals("void");
+		return (!isVoid) && (isString || t.isPrimitive);
 	}
 }

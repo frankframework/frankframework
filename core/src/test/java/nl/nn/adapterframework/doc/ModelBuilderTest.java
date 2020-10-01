@@ -1,16 +1,19 @@
 package nl.nn.adapterframework.doc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.doc.ModelBuilder.AttributeSeed;
+import nl.nn.adapterframework.doc.ModelBuilder.ElementSeed;
+import nl.nn.adapterframework.doc.ModelBuilder.Type;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -45,6 +48,8 @@ public class ModelBuilderTest {
 		checkAttributeSeedsPresent(actual.getMethodsWithInherited(), "getParentAttribute", "setParentAttribute");
 		checkSameAttributeSeedWithAndWithoutInherited(actual, "getParentAttribute", "setParentAttribute");
 		checkNameEqualsMapKey(actual, "getParentAttribute", "setParentAttribute");
+		checkAttributeSeedsAreStringGetter(actual.getMethods().get("getParentAttribute"));
+		checkAttributeSeedsAreStringSetters(actual.getMethods().get("setParentAttribute"));
 		Assert.assertEquals("nl.nn.adapterframework.doc.target.simple.ListenerParent", actual.getFullName());
 		Assert.assertEquals("ListenerParent", actual.getSimpleName());
 	}
@@ -69,6 +74,26 @@ public class ModelBuilderTest {
 		}
 	}
 
+	private void checkAttributeSeedsAreStringGetter(ModelBuilder.AttributeSeed ...attributeSeeds) {
+		for(AttributeSeed a: attributeSeeds) {
+			Assert.assertEquals(0, a.getArgumentTypes().size());
+			Assert.assertEquals(false, a.getReturnType().isPrimitive());
+			Assert.assertEquals("java.lang.String", a.getReturnType().getName());
+		}
+	}
+
+	private void checkAttributeSeedsAreStringSetters(ModelBuilder.AttributeSeed ...attributeSeeds) {
+		for(AttributeSeed a: attributeSeeds) {
+			Assert.assertEquals(1, a.getArgumentTypes().size());
+			ModelBuilder.Type argType = a.getArgumentTypes().get(0);
+			Assert.assertEquals(false, argType.isPrimitive());
+			Assert.assertEquals("java.lang.String", argType.getName());
+			Assert.assertNotNull(a.getReturnType());
+			Assert.assertEquals(true, a.getReturnType().isPrimitive());
+			Assert.assertEquals("void", a.getReturnType().getName());
+		}
+	}
+
 	@Test
 	public void testInhieritedMethodsAreOnlyInMethodsWithInherited() {
 		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerChild");
@@ -80,6 +105,23 @@ public class ModelBuilderTest {
 				"getParentAttribute", "setParentAttribute", "getChildAttribute", "setChildAttribute");
 		checkSameAttributeSeedWithAndWithoutInherited(actual, "getChildAttribute", "setChildAttribute");
 		checkNameEqualsMapKey(actual, "getChildAttribute", "setChildAttribute");
+	}
+
+	@Test
+	public void testParseJavaMethodWithPrimitiveTypes() {
+		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.ReflectTarget");
+		ModelBuilder.ElementSeed elementSeed = new ModelBuilder.ElementSeed(clazz);
+		Assert.assertTrue(elementSeed.getMethods().containsKey("methodWithPrimitiveTypes"));
+		AttributeSeed actual = elementSeed.getMethods().get("methodWithPrimitiveTypes");
+		ModelBuilder.Type actualReturnType = actual.getReturnType();
+		Assert.assertEquals(true, actualReturnType.isPrimitive());
+		Assert.assertEquals("int", actualReturnType.getName());
+		List<ModelBuilder.Type> argumentTypes = actual.getArgumentTypes();
+		Assert.assertEquals(2, argumentTypes.size());
+		Assert.assertEquals(true, argumentTypes.get(0).isPrimitive());
+		Assert.assertEquals("boolean", argumentTypes.get(0).getName());
+		Assert.assertEquals(true, argumentTypes.get(1).isPrimitive());
+		Assert.assertEquals("long", argumentTypes.get(1).getName());
 	}
 
 	@Test
@@ -129,23 +171,38 @@ public class ModelBuilderTest {
 		ModelBuilder.ElementSeed seed = new ModelBuilder.ElementSeed("mypackage.Parent");
 		seed.setSimpleName("Parent");
 		Map<String, ModelBuilder.AttributeSeed> attributeSeeds = new HashMap<>();
-		add(attributeSeeds, "getParentAttribute");
-		add(attributeSeeds, "setParentAttribute");
+		add(attributeSeeds, "getParentAttribute", ModelBuilderTest::makeGetter);
+		add(attributeSeeds, "setParentAttribute", ModelBuilderTest::makeSetter);
 		seed.setMethods(attributeSeeds);
 		seed.setMethodsWithInherited(attributeSeeds);
 		return seed;
 	}
 
-	private void add(Map<String, AttributeSeed> attributeSeeds, String name) {
-		attributeSeeds.put(name, new AttributeSeed(name));
+	private void add(Map<String, AttributeSeed> attributeSeeds, String name, Function<AttributeSeed, AttributeSeed> modifier) {
+		AttributeSeed attributeSeed = new AttributeSeed(name);
+		modifier.apply(attributeSeed);
+		attributeSeeds.put(name, attributeSeed);
+	}
+
+	private static AttributeSeed makeSetter(AttributeSeed target) {
+		target.setArgumentTypes(Arrays.asList(new Type[] {
+				Type.typeString()}));
+		target.setReturnType(Type.typeVoid());
+		return target;
+	}
+
+	private static AttributeSeed makeGetter(AttributeSeed target) {
+		target.setArgumentTypes(new ArrayList<>());
+		target.setReturnType(Type.typeString());
+		return target;
 	}
 
 	private ModelBuilder.ElementSeed getElementSeedChild() {
 		ModelBuilder.ElementSeed seed = new ModelBuilder.ElementSeed("mypackage.Child");
 		seed.setSimpleName("Child");
 		Map<String, ModelBuilder.AttributeSeed> notInherited = new HashMap<>();
-		add(notInherited, "getChildAttribute");
-		add(notInherited, "setChildAttribute");
+		add(notInherited, "getChildAttribute", ModelBuilderTest::makeGetter);
+		add(notInherited, "setChildAttribute", ModelBuilderTest::makeSetter);
 		seed.setMethods(notInherited);
 		Map<String, ModelBuilder.AttributeSeed> inherited = new HashMap<>();
 		inherited.putAll(notInherited);
@@ -188,19 +245,89 @@ public class ModelBuilderTest {
 
 	@Test
 	public void whenSetterAndIsThenAttribute() {
-		ModelBuilder.AttributeSeed[] attributeSeeds = new ModelBuilder.AttributeSeed[] { 
-				new ModelBuilder.AttributeSeed("setAttribute"),
-				new ModelBuilder.AttributeSeed("isAttribute")};
-		ModelBuilder.ElementSeed elementSeed = new ModelBuilder.ElementSeed("mypackage.SomeClass");
-		Map<String, ModelBuilder.AttributeSeed> attributeSeedMap = new HashMap<>();
-		for(AttributeSeed a: attributeSeeds) {
-			attributeSeedMap.put(a.getName(), a);
-		}
-		elementSeed.setMethods(attributeSeedMap);
-		elementSeed.setMethodsWithInherited(attributeSeedMap);
+		ElementSeed elementSeed = createElementSeed("mypackage.SomeClass", 
+				makeSetter(new ModelBuilder.AttributeSeed("setAttribute")),
+				makeIsser(new ModelBuilder.AttributeSeed("isAttribute")));
 		List<FrankAttribute> actual = ModelBuilder.createAttributes(elementSeed);
 		Assert.assertEquals(1, actual.size());
 		FrankAttribute actualAttribute = actual.get(0);
 		Assert.assertEquals("attribute", actualAttribute.getName());
+	}
+
+	@Test
+	public void whenOnlySetterThenNotAttribute() {
+		ElementSeed elementSeed = createElementSeed("mypackage.SomeClass", 
+				makeSetter(new ModelBuilder.AttributeSeed("setAttribute")));
+		List<FrankAttribute> actual = ModelBuilder.createAttributes(elementSeed);
+		Assert.assertEquals(0, actual.size());
+	}
+
+	private static ElementSeed createElementSeed(String className, AttributeSeed ...attributeSeeds) {
+		ModelBuilder.ElementSeed result = new ModelBuilder.ElementSeed(className);
+		Map<String, ModelBuilder.AttributeSeed> attributeSeedMap = new HashMap<>();
+		for(AttributeSeed a: attributeSeeds) {
+			attributeSeedMap.put(a.getName(), a);
+		}
+		result.setMethods(attributeSeedMap);
+		result.setMethodsWithInherited(attributeSeedMap);
+		return result;
+	}
+
+	private static AttributeSeed makeIsser(AttributeSeed target) {
+		target.setArgumentTypes(new ArrayList<>());
+		target.setReturnType(Type.typeBoolean());
+		return target;
+	}
+
+	@Test
+	public void whenMethodsHaveWrongTypeThenNoAttribute() {
+		ElementSeed elementSeed = createElementSeed("mypackage.SomeClass",
+				modifySeedToSetter(new AttributeSeed("setAttribute"), typeList()),
+				modifySeedToGetter(new AttributeSeed("getAttribute"), typeList()));
+		List<FrankAttribute> actual = ModelBuilder.createAttributes(elementSeed);
+		Assert.assertEquals(0, actual.size());
+	}
+
+	private static AttributeSeed modifySeedToSetter(AttributeSeed target, Type theType) {
+		target.setArgumentTypes(Arrays.asList(new Type[] {theType}));
+		target.setReturnType(Type.typeVoid());
+		return target;
+	}
+
+	private static AttributeSeed modifySeedToGetter(AttributeSeed target, Type theType) {
+		target.setArgumentTypes(new ArrayList<>());
+		target.setReturnType(theType);
+		return target;
+	}
+
+	private static Type typeList() {
+		Type result = new Type();
+		result.setPrimitive(false);
+		result.setName("java.util.List");
+		return result;
+	}
+
+	@Test
+	public void whenAttributeNameMissesPrefixThenFilteredOutOfAttributes() {
+		Map<String, AttributeSeed> in = new HashMap<>();
+		add(in, "otherAttribute", ModelBuilderTest::makeSetter);
+		Map<String, String> actual = ModelBuilder.getAttributeToMethodNameMap(in, "set");
+		Assert.assertEquals(0, actual.size());
+	}
+
+	@Test
+	public void whenAttributeNameEqualsPrefixThenFilteredOutOfAttributes() {
+		Map<String, AttributeSeed> in = new HashMap<>();
+		add(in, "set", ModelBuilderTest::makeSetter);
+		Map<String, String> actual = ModelBuilder.getAttributeToMethodNameMap(in, "set");
+		Assert.assertEquals(0, actual.size());		
+	}
+
+	@Test
+	public void whenAttributeNameOkThenNotFilteredOut() {
+		Map<String, AttributeSeed> in = new HashMap<>();
+		add(in, "setX", ModelBuilderTest::makeSetter);
+		Map<String, String> actual = ModelBuilder.getAttributeToMethodNameMap(in, "set");
+		Assert.assertEquals(1, actual.size());		
 	}
 }
