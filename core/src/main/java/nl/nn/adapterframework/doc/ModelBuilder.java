@@ -131,11 +131,13 @@ public class ModelBuilder {
 		return result;
 	}
 
-	List<FrankAttribute> createAttributes(ElementSeed elementSeed) {
+	static List<FrankAttribute> createAttributes(ElementSeed elementSeed) {
 		Set<String> setters = selectNamesByPrefix(elementSeed.getMethods().keySet(), "set");
 		Map<String, String> setterAttributes = getAttributeToMethodNameMap(setters, "set");
 		Set<String> getters = selectNamesByPrefix(elementSeed.getMethodsWithInherited().keySet(), "get");
+		Set<String> issers = selectNamesByPrefix(elementSeed.getMethodsWithInherited().keySet(), "is");
 		Map<String, String> getterAttributes = getAttributeToMethodNameMap(getters, "get");
+		getterAttributes.putAll(getAttributeToMethodNameMap(issers, "is"));
 		Map<String, String> attributes = new HashMap<>();
 		for(String attributeName: setterAttributes.keySet()) {
 			if(getterAttributes.containsKey(attributeName)) {
@@ -150,13 +152,13 @@ public class ModelBuilder {
 		return result;
 	}
 
-	Set<String> selectNamesByPrefix(final Set<String> source, final String prefix) {
+	static Set<String> selectNamesByPrefix(final Set<String> source, final String prefix) {
 		return source.stream()
 				.filter(name -> name.startsWith(prefix) && (name.length() >= prefix.length()))
 				.collect(Collectors.toSet());		
 	}
 
-	Map<String, String> getAttributeToMethodNameMap(Set<String> methodNames, String prefix) {
+	static Map<String, String> getAttributeToMethodNameMap(Set<String> methodNames, String prefix) {
 		Map<String, String> result = new HashMap<>();
 		for(String methodName: methodNames) {
 			if(!methodName.startsWith(prefix)) {

@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.doc.ModelBuilder.AttributeSeed;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
@@ -183,5 +184,23 @@ public class ModelBuilderTest {
 		Assert.assertEquals(1, actualChild.getAttributes().size());
 		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
 		Assert.assertEquals("childAttribute", actualChildAttribute.getName());
+	}
+
+	@Test
+	public void whenSetterAndIsThenAttribute() {
+		ModelBuilder.AttributeSeed[] attributeSeeds = new ModelBuilder.AttributeSeed[] { 
+				new ModelBuilder.AttributeSeed("setAttribute"),
+				new ModelBuilder.AttributeSeed("isAttribute")};
+		ModelBuilder.ElementSeed elementSeed = new ModelBuilder.ElementSeed("mypackage.SomeClass");
+		Map<String, ModelBuilder.AttributeSeed> attributeSeedMap = new HashMap<>();
+		for(AttributeSeed a: attributeSeeds) {
+			attributeSeedMap.put(a.getName(), a);
+		}
+		elementSeed.setMethods(attributeSeedMap);
+		elementSeed.setMethodsWithInherited(attributeSeedMap);
+		List<FrankAttribute> actual = ModelBuilder.createAttributes(elementSeed);
+		Assert.assertEquals(1, actual.size());
+		FrankAttribute actualAttribute = actual.get(0);
+		Assert.assertEquals("attribute", actualAttribute.getName());
 	}
 }
