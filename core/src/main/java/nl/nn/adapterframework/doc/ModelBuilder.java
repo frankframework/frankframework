@@ -41,7 +41,7 @@ public class ModelBuilder {
 		ElementSeed(Class<?> clazz) {
 			methods = new HashMap<>();
 			for(Method reflect: clazz.getDeclaredMethods()) {
-				// Jacoco is a tool for code coverage. To have predictible results,
+				// Jacoco is a tool for code coverage. To have predictable results,
 				// we omit methods introduced by Jacoco.
 				if(reflect.getName().contains("jacoco")) {
 					continue;
@@ -163,7 +163,7 @@ public class ModelBuilder {
 				throw new IllegalArgumentException("Only apply this method with matching prefix: " + prefix);
 			}
 			String strippedName = methodName.substring(prefix.length());
-			String attributeName = strippedName.substring(0, 1).toUpperCase() + strippedName.substring(1);
+			String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);
 			if(result.containsKey(attributeName)) {
 				throw new IllegalStateException("Duplicate method for attribute name: " + attributeName);
 			}

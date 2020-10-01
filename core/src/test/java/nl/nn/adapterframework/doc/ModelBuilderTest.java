@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,8 +38,6 @@ public class ModelBuilderTest {
 	public void testNonInheritedMethodsAreRepeatedInMethodsWithInherited() {
 		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerParent");
 		ModelBuilder.ElementSeed actual = new ModelBuilder.ElementSeed(clazz);
-		System.out.println(actual.getMethods().values().stream()
-				.map(m -> m.getName()).collect(Collectors.joining(", ")));
 		Assert.assertEquals(2, actual.getMethods().size());
 		Assert.assertTrue(actual.getMethodsWithInherited().size() >= 2);
 		checkAttributeSeedsPresent(actual.getMethods(), "getParentAttribute", "setParentAttribute");
@@ -181,10 +178,10 @@ public class ModelBuilderTest {
 		Assert.assertEquals("Parent", actualParent.getSimpleName());
 		Assert.assertEquals(1, actualParent.getAttributes().size());
 		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
-		Assert.assertEquals("ParentAttribute", actualParentAttribute.getName());
+		Assert.assertEquals("parentAttribute", actualParentAttribute.getName());
 		FrankElement actualChild = actualGroup.getElements().get("mypackage.Child");
 		Assert.assertEquals(1, actualChild.getAttributes().size());
 		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
-		Assert.assertEquals("ChildAttribute", actualChildAttribute.getName());
+		Assert.assertEquals("childAttribute", actualChildAttribute.getName());
 	}
 }
