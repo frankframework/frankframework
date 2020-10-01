@@ -30,8 +30,8 @@ public class DateUtilsTest {
 	 */
 	@Test
 	public void testParseToDate() throws Exception {
-		Date d = DateUtils.parseToDate("10-10-2013", DateUtils.FORMAT_DATE);
-		assertEquals("Thu Oct 10 00:00:00 CEST 2013", d.toString());
+		Date d = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
+		assertEquals("Sat Oct 05 00:00:00 CEST 2013", d.toString());
 	}
 
 	/**
@@ -78,8 +78,8 @@ public class DateUtilsTest {
 	 */
 	@Test
 	public void testConvertDate() throws Exception {
-		String s = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "10-10-13");
-		assertEquals("2013-10-10 00:00:00.000", s);
+		String s = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
+		assertEquals("2013-03-18 00:00:00.000", s);
 	}
 
 	/**
