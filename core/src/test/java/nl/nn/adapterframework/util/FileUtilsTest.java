@@ -118,10 +118,10 @@ public class FileUtilsTest {
 	public void testGetFiles() throws Exception {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
-		assertEquals("2.txt", files[0].getName());
 		File numFiles = new File(path);
-		int count = numFiles.list().length;
-		assertEquals(count, files.length);
+		String[] s = numFiles.list();
+		assertEquals(s[0], files[0].getName());
+		assertEquals(s[1], files[1].getName());
 	}
 
 
@@ -130,7 +130,7 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetFirstFileDirectory() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
 		File f = new File(path);
 		File file = FileUtils.getFirstFile(f);
 		String[] l = f.list();
@@ -249,7 +249,7 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFirstFile() {
-		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
 		File f = new File(p2);
 		File res = FileUtils.getFirstFile(f);
 		String[] l = f.list();
