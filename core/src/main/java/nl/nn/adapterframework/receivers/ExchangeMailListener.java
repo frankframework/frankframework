@@ -74,27 +74,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * </pre></code>
  * </p>
  * 
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInProcessFolder(String) inProcessFolder}</td><td>folder (subfolder of inbox) where mails are stored <i>while</i> being processed. If empty, processed mails are not temporarily moved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProcessedFolder(String) processedFolder}</td><td>folder (subfolder of inbox) where mails are stored after being processed. If empty, processed mails are deleted</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)</td><td>false</td></tr>
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * </table></p>
- * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
 public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination {
@@ -268,64 +247,77 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		getFileSystem().setMailAddress(mailAddress);
 	}
 
-	@IbisDocRef({"3", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"2", EXCHANGE_FILE_SYSTEM})
 	public void setUrl(String url) {
 		getFileSystem().setUrl(url);
 	}
-	
 
-	@IbisDocRef({"4", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"3", EXCHANGE_FILE_SYSTEM})
 	public void setAccessToken(String accessToken) {
 		getFileSystem().setAccessToken(accessToken);
 	}
 
+	@IbisDocRef({"4", EXCHANGE_FILE_SYSTEM})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
+	public void setUsername(String username) {
+		getFileSystem().setUsername(username);
+	}
+	
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
 	@IbisDocRef({"5", EXCHANGE_FILE_SYSTEM})
+	public void setPassword(String password) {
+		getFileSystem().setPassword(password);
+	}
+
+	@IbisDocRef({"6", EXCHANGE_FILE_SYSTEM})
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDocRef({"6", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"7", EXCHANGE_FILE_SYSTEM})
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-	@IbisDocRef({"7", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"8", EXCHANGE_FILE_SYSTEM})
 	public void setFilter(String filter) {
 		getFileSystem().setFilter(filter);
 	}
 
-	@IbisDocRef({"8", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"9", EXCHANGE_FILE_SYSTEM})
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
 
-	@IbisDocRef({"9", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"10", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPort(int proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
-	@IbisDocRef({"10", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
 	public void setProxyUserName(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
 
-	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"13", EXCHANGE_FILE_SYSTEM})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDocRef({"13", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"14", EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
 	}
 
 	
-	@IbisDoc({"14", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
+	@IbisDoc({"15", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
 	public void setSimple(boolean b) {
 		simple = b;
 	}
