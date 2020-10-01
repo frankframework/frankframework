@@ -116,7 +116,7 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFiles() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
 		File numFiles = new File(path);
 		String[] s = numFiles.list();
