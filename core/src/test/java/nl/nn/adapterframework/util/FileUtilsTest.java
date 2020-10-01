@@ -7,6 +7,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -34,8 +35,6 @@ public class FileUtilsTest {
 
 	private static File f1;
 
-	private static File f2;
-
 	String sep = File.separator;
 
 	@BeforeClass
@@ -43,7 +42,6 @@ public class FileUtilsTest {
 		sourceFolderPath = testFolderSource.getRoot().getPath();
 		f1 = testFolderSource.newFile("1.txt");
 		destFolderPath = testFolderDest.getRoot().getPath();
-		f2 = testFolderDest.newFile("2.txt");
 	}
 
 	@Test
@@ -53,12 +51,12 @@ public class FileUtilsTest {
 		assertEquals("Pipes", res.getName());
 	}
 
-	/*
+
 	@Test
 	public void testMoveFile() throws Exception {
 		String s = FileUtils.moveFile(f1, destFolderPath, true, 2);
 		assertEquals(destFolderPath + sep + "1.txt", s);
-	}*/
+	}
 
 
 	/**
@@ -89,7 +87,7 @@ public class FileUtilsTest {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
 		File f = new File(path);
 		File file = FileUtils.createTempDir(f);
-		assertEquals("Pipes", f.getName());
+		assertTrue(file.exists());
 	}
 
 	/**
@@ -108,7 +106,6 @@ public class FileUtilsTest {
 	@Test
 	public void testGetFiles() throws Exception {
 		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
-		File f = new File(path);
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
 		assertEquals("2.txt", files[0].getName());
 		assertEquals(8, files.length);
@@ -267,14 +264,5 @@ public class FileUtilsTest {
 		assertTrue(b2);
 		assertFalse(b);
 	}
-
-	@Test
-	public void testUnzipStream() throws Exception {
-		String initialString = "text";
-		InputStream targetStream = new ByteArrayInputStream(initialString.getBytes());
-		String s = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Utils" + "FileUtils" + "text.txt";
-		File f = new File(s);
-		FileUtils.unzipStream(targetStream, f);
-}
 
 }
