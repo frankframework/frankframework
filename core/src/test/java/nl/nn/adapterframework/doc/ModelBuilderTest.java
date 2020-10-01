@@ -43,10 +43,7 @@ public class ModelBuilderTest {
 		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerParent");
 		ModelBuilder.ElementSeed actual = new ModelBuilder.ElementSeed(clazz);
 		Assert.assertEquals(2, actual.getMethods().size());
-		Assert.assertTrue(actual.getMethodsWithInherited().size() >= 2);
 		checkAttributeSeedsPresent(actual.getMethods(), "getParentAttribute", "setParentAttribute");
-		checkAttributeSeedsPresent(actual.getMethodsWithInherited(), "getParentAttribute", "setParentAttribute");
-		checkSameAttributeSeedWithAndWithoutInherited(actual, "getParentAttribute", "setParentAttribute");
 		checkNameEqualsMapKey(actual, "getParentAttribute", "setParentAttribute");
 		checkAttributeSeedsAreStringGetter(actual.getMethods().get("getParentAttribute"));
 		checkAttributeSeedsAreStringSetters(actual.getMethods().get("setParentAttribute"));
@@ -57,14 +54,6 @@ public class ModelBuilderTest {
 	private void checkAttributeSeedsPresent(final Map<String, AttributeSeed> attributeSeeds, String ...expectedItems) {
 		for(String expectedItem: expectedItems) {
 			Assert.assertEquals(expectedItem, attributeSeeds.containsKey(expectedItem) ? expectedItem : null);
-		}
-	}
-
-	private void checkSameAttributeSeedWithAndWithoutInherited(ModelBuilder.ElementSeed actual, String ...methodNamesToCheck) {
-		for(String methodName: methodNamesToCheck) {
-			Assert.assertSame("AttributeSeeds with and without inherited should be the same for methodName: " + methodName,
-					actual.getMethods().get(methodName),
-					actual.getMethodsWithInherited().get(methodName));
 		}
 	}
 
@@ -99,11 +88,7 @@ public class ModelBuilderTest {
 		Class<?> clazz = InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.simple.ListenerChild");
 		ModelBuilder.ElementSeed actual = new ModelBuilder.ElementSeed(clazz);
 		Assert.assertEquals(actual.getMethods().size(), 2);
-		Assert.assertTrue(actual.getMethodsWithInherited().size() >= 4);
 		checkAttributeSeedsPresent(actual.getMethods(), "getChildAttribute", "setChildAttribute");
-		checkAttributeSeedsPresent(actual.getMethodsWithInherited(),
-				"getParentAttribute", "setParentAttribute", "getChildAttribute", "setChildAttribute");
-		checkSameAttributeSeedWithAndWithoutInherited(actual, "getChildAttribute", "setChildAttribute");
 		checkNameEqualsMapKey(actual, "getChildAttribute", "setChildAttribute");
 	}
 
@@ -192,7 +177,6 @@ public class ModelBuilderTest {
 		ModelBuilder.ElementSeed seed = new ModelBuilder.ElementSeed("java.lang.Object");
 		seed.setSimpleName("Object");
 		seed.setMethods(new HashMap<>());
-		seed.setMethodsWithInherited(new HashMap<>());
 		return seed;
 	}
 
@@ -203,7 +187,6 @@ public class ModelBuilderTest {
 		add(attributeSeeds, "getParentAttribute", ModelBuilderTest::makeGetter);
 		add(attributeSeeds, "setParentAttribute", ModelBuilderTest::makeSetter);
 		seed.setMethods(attributeSeeds);
-		seed.setMethodsWithInherited(attributeSeeds);
 		return seed;
 	}
 
@@ -233,10 +216,6 @@ public class ModelBuilderTest {
 		add(notInherited, "getChildAttribute", ModelBuilderTest::makeGetter);
 		add(notInherited, "setChildAttribute", ModelBuilderTest::makeSetter);
 		seed.setMethods(notInherited);
-		Map<String, ModelBuilder.AttributeSeed> inherited = new HashMap<>();
-		inherited.putAll(notInherited);
-		inherited.putAll(getElementSeedParent().getMethods());
-		seed.setMethodsWithInherited(inherited);
 		return seed;
 	}
 
@@ -291,7 +270,6 @@ public class ModelBuilderTest {
 			attributeSeedMap.put(a.getName(), a);
 		}
 		result.setMethods(attributeSeedMap);
-		result.setMethodsWithInherited(attributeSeedMap);
 		return result;
 	}
 

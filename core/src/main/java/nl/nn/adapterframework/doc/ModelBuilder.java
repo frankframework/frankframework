@@ -82,7 +82,6 @@ public class ModelBuilder {
 
 	static class ElementSeed {
 		private @Getter @Setter Map<String, AttributeSeed> methods;
-		private @Getter @Setter Map<String, AttributeSeed> methodsWithInherited;
 		private @Getter String fullName;
 		private @Getter @Setter String simpleName;
 		private @Getter @Setter FrankElement existingParent;
@@ -96,11 +95,6 @@ public class ModelBuilder {
 					continue;
 				}
 				methods.put(reflect.getName(), new AttributeSeed(reflect));
-			}
-			methodsWithInherited = new HashMap<>();
-			methodsWithInherited.putAll(methods);
-			for(Method reflect: clazz.getMethods()) {
-				methodsWithInherited.putIfAbsent(reflect.getName(), new AttributeSeed(reflect));
 			}
 			fullName = clazz.getName();
 			simpleName = clazz.getSimpleName();
@@ -185,8 +179,8 @@ public class ModelBuilder {
 
 	static List<FrankAttribute> createAttributes(ElementSeed elementSeed) {
 		Map<String, String> setterAttributes = getAttributeToMethodNameMap(elementSeed.getMethods(), "set");
-		Map<String, String> getterAttributes = getAttributeToMethodNameMap(elementSeed.getMethodsWithInherited(), "get");
-		getterAttributes.putAll(getAttributeToMethodNameMap(elementSeed.getMethodsWithInherited(), "is"));
+		Map<String, String> getterAttributes = getAttributeToMethodNameMap(elementSeed.getMethods(), "get");
+		getterAttributes.putAll(getAttributeToMethodNameMap(elementSeed.getMethods(), "is"));
 		Map<String, String> attributes = new HashMap<>();
 		for(String attributeName: setterAttributes.keySet()) {
 			if(getterAttributes.containsKey(attributeName)) {
