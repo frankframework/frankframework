@@ -387,7 +387,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F source=getFile(input, pvl);
 				String destinationName = determineDestination(pvl);
 				F destination;
-				if (destinationName.contains("/")) {
+				if (destinationName.contains("/") || destinationName.contains("\\")) {
 					destination = fileSystem.toFile(destinationName);
 				} else {
 					String sourceName = fileSystem.getCanonicalName(source);
