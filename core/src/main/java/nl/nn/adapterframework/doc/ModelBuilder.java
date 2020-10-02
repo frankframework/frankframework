@@ -112,7 +112,7 @@ public class ModelBuilder {
 	static Map<String, String> getAttributeToMethodNameMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		Set<String> methodNames = methodList.stream()
-				.filter(ModelBuilder::isGetterOrSetter2)
+				.filter(ModelBuilder::isGetterOrSetter)
 				.map(method -> method.getName())
 				.filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
 				.collect(Collectors.toSet());		
@@ -125,7 +125,7 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static boolean isGetterOrSetter2(Method method) {
+	static boolean isGetterOrSetter(Method method) {
 		boolean isSetter = method.getReturnType().isPrimitive()
 				&& method.getReturnType().getName().equals("void")
 				&& (method.getParameterTypes().length == 1)
