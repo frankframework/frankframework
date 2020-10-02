@@ -61,6 +61,7 @@ public class XmlSwitch extends AbstractPipe {
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
 	private String sessionKey=null;
+	private String storeForwardInSessionKey=null;
 	private String notFoundForwardName=null;
 	private String emptyForwardName=null;
 	private int xsltVersion=0; // set to 0 for auto detect.
@@ -204,6 +205,10 @@ public class XmlSwitch extends AbstractPipe {
 		if (pipeForward==null) {
 			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
+		if(StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
+			session.put(getStoreForwardInSessionKey(), pipeForward.getName());
+		}
+		
 		return new PipeRunResult(pipeForward, message);
 	}
 	
@@ -272,5 +277,14 @@ public class XmlSwitch extends AbstractPipe {
 	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
+	}
+
+	public String getStoreForwardInSessionKey() {
+		return storeForwardInSessionKey;
+	}
+
+	@IbisDoc({"8", "Selected forward name will be stored in the specified session key.", ""})
+	public void setStoreForwardInSessionKey(String storeForwardInSessionKey) {
+		this.storeForwardInSessionKey = storeForwardInSessionKey;
 	}
 }
