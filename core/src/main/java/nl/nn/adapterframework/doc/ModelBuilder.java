@@ -35,10 +35,10 @@ public class ModelBuilder {
 	static List<SpringBean> getSpringBeans(final String interfaceName) {
 		Class<?> interfaze = InfoBuilderSource.getClass(interfaceName);
 		if(interfaze == null) {
-			throw new NullPointerException();
+			throw new NullPointerException("Class or interface is not available on the classpath: " + interfaceName);
 		}
 		if(!interfaze.isInterface()) {
-			throw new IllegalArgumentException("Only retrieve Spring beans from an interface");
+			throw new IllegalArgumentException("This exists on the classpath but is not an interface: " + interfaceName);
 		}
 		Set<SpringBean> unfiltered = InfoBuilderSource.getSpringBeans(interfaze);
 		List<SpringBean> result = new ArrayList<SpringBean>();
