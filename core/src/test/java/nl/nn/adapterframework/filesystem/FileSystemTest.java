@@ -223,6 +223,28 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertFalse("non existing folder is seen", fileSystem.folderExists(folderName));
 	}
 	
+	@Test
+	public void writableFileSystemTestFileIsNotAFolder() throws Exception {
+		String folderName = "dummyFile";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+		
+		if (!_fileExists(folderName)) {
+			createFile(null, folderName, "tja");
+			waitForActionToFinish();
+			assertTrue("file must exist before test", _fileExists(folderName));
+		}
+
+		assertFalse("file must not be seen as folder", fileSystem.folderExists(folderName));
+	}
+	
 	
 	@Test
 	public void writableFileSystemTestRenameTo() throws Exception {
@@ -447,7 +469,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void writableFileSystemTestReferToFileInFolder() throws Exception{
+	public void writableFileSystemTestReferToFileInFolder() throws Exception {
 		String folder = "folder";
 		String filename = "fileToBeReferred.txt";
 		String content = "some content";
@@ -471,4 +493,18 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertThat(fileSystem.getName(file2),endsWith(filename));
 
 	}
+	
+	@Test
+	public void writeableFileSystemTestCreateLockfile() throws Exception {
+		String filename = "lockFile.txt";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		try (OutputStream out1 = fileSystem.createFile(fileSystem.toFile(filename))) {
+		}
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename)));
+
+	}
+	
 }

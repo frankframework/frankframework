@@ -162,7 +162,7 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	public void createFolder(String folder) throws FileSystemException {
 		if (!folderExists(folder)) {
 			toFile(folder).mkdir();
-		}else {
+		} else {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 	}
@@ -184,26 +184,9 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		return destination;
 	}
 	
-	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File toFolder = toFile(destinationFolder);
-		if (toFolder.exists()) {
-			if (!toFolder.isDirectory()) {
-				throw new FileSystemException("destination ["+toFolder.getPath()+"] is not a folder");
-			}
-		} else {
-			if (createFolder)
-				createFolder(destinationFolder);
-			else {
-				throw new FileSystemException("destination folder ["+toFolder.getPath()+"] does not exist");
-			}
-		}
-		File target=new File(toFolder,f.getName());
-		return target;
-	}
-	
 	@Override
 	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder);
+		File target = toFile(destinationFolder, f.getName());
 		if (!f.renameTo(target)) {
 			throw new FileSystemException("cannot move file ["+f.getPath()+"] to ["+target.getPath()+"]");
 		}
@@ -211,7 +194,7 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 	@Override
 	public File copyFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder);
+		File target = toFile(destinationFolder, f.getName());
 		try {
 			FileUtils.copyFile(f, target);
 		} catch (IOException e) {

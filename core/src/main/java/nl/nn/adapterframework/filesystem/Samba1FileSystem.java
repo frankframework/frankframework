@@ -222,28 +222,9 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		}
 	}
 
-	protected SmbFile getDestinationFile(SmbFile f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		SmbFile dest;
-		try {
-			dest = new SmbFile(smbContext, destinationFolder+"/"+f.getName());
-			if (!exists(dest)) {
-				// should createFolder if createFolder==true
-				throw new FileSystemException("Cannot "+action+" file. Destination ["+destinationFolder+"] does not exists.");
-			}
-			if (!isFolder(dest)) {
-				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] is not a folder.");
-			}
-			return dest;
-		} catch (FileSystemException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new FileSystemException(e);
-		}
-	}
-
 	@Override
 	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		SmbFile dest = getDestinationFile(f, destinationFolder, createFolder, "move");
+		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.renameTo(dest);
 			return dest;
@@ -254,7 +235,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
 	@Override
 	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		SmbFile dest = getDestinationFile(f, destinationFolder, createFolder, "copy");
+		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.copyTo(dest);
 			return dest;

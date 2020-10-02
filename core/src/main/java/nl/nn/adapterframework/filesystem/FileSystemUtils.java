@@ -55,6 +55,9 @@ public class FileSystemUtils {
 	
 	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, String action) throws FileSystemException {
 		if (!fileSystem.folderExists(destinationFolder)) {
+			if (fileSystem.exists(fileSystem.toFile(destinationFolder))) {
+				throw new FileSystemException("destination ["+destinationFolder+"] exists but is not a folder");
+			}
 			if (createFolders) {
 				fileSystem.createFolder(destinationFolder);
 			} else {
@@ -102,7 +105,7 @@ public class FileSystemUtils {
 		}
 		String filename = fileSystem.getCanonicalName(file);
 		
-		String tmpFilename = filename+".tmp"+Misc.createUUID();
+		String tmpFilename = filename+".tmp-"+Misc.createUUID();
 		F tmpFile = fileSystem.toFile(tmpFilename);
 		tmpFile = fileSystem.renameFile(file, tmpFile);
 
