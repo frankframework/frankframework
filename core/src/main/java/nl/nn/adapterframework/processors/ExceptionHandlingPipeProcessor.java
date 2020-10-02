@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.util.Date;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
@@ -30,17 +31,29 @@ import nl.nn.adapterframework.util.DateUtils;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)
-			throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult prr = null;
 		try {
 			prr = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		} catch (PipeRunException e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey("exception")) {
-				long tsReceived = DateUtils.parseToDate((String) pipeLineSession.get(IPipeLineSession.tsReceivedKey), DateUtils.FORMAT_FULL_GENERIC).getTime();
+				Object tsReceivedObj = pipeLineSession.get(IPipeLineSession.tsReceivedKey);
+				Date tsReceivedDate = null;
+
+				if(tsReceivedObj instanceof Date) {
+					tsReceivedDate = (Date) tsReceivedObj;
+				} else if(tsReceivedObj instanceof String) {
+					tsReceivedDate = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
+				}
+
+				long tsReceivedLong = 0L;
+				if(tsReceivedDate != null) {
+					tsReceivedLong= tsReceivedDate.getTime();
+				}
+
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-				String errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceived);
+				String errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
 				return new PipeRunResult(pipe.getForwards().get("exception"), errorMessage);
 			}
 			throw e;
