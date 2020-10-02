@@ -154,22 +154,75 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 
 	@Test
-	public void writableFileSystemTestCreateAndRemoveFolder() throws Exception {
+	public void writableFileSystemTestCreateFolder() throws Exception {
 		String folderName = "dummyFolder";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
-		_createFolder(folderName);
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+
+		fileSystem.createFolder(folderName);
 		waitForActionToFinish();
 		
 		assertTrue("folder does not exist after creation",_folderExists(folderName));
+	}
+	
+	@Test
+	public void writableFileSystemTestRemoveFolder() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
 		
 		fileSystem.removeFolder(folderName);
 		waitForActionToFinish();
 		
 		assertFalse("folder still exists after removal", _folderExists(folderName));
 	}
+
+	@Test
+	public void writableFileSystemTestFolderExists() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
+		
+		assertTrue("existing folder is not seen", fileSystem.folderExists(folderName));
+	}
+
+	@Test
+	public void writableFileSystemTestFolderDoesNotExist() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+
+		assertFalse("non existing folder is seen", fileSystem.folderExists(folderName));
+	}
+	
 	
 	@Test
 	public void writableFileSystemTestRenameTo() throws Exception {

@@ -94,30 +94,21 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	@Override
 	public File toFile(String folder, String filename) {
-		int slashPos = Math.max(filename.lastIndexOf('/'),filename.lastIndexOf('\\'));
-		String absFilename;
-		if (StringUtils.isEmpty(folder) || slashPos >= 0) {
-			absFilename = filename;
-		} else {
-			absFilename = folder +"/" + filename;
+		if (filename==null) {
+			filename="";
 		}
-		if (StringUtils.isEmpty(getRoot()) || absFilename.startsWith(getRoot())) {
-			return new File(absFilename);
+		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
+			filename = folder +"/" + filename;
 		}
-		return new File(getRoot()+"/"+ absFilename);
+		if (StringUtils.isEmpty(getRoot()) || filename.startsWith(getRoot())) {
+			return new File(filename);
+		}
+		return new File(getRoot()+"/"+ filename);
 	}
 
 	@Override
 	public Iterator<File> listFiles(String folder) {
-		String path=getRoot();
-		if (StringUtils.isEmpty(path)) {
-			path=folder;
-		} else {
-			if (StringUtils.isNotEmpty(folder)) {
-				path+="/"+folder;
-			}
-		}
-		final File dir = StringUtils.isNotEmpty(path)?new File(path):new File("/");
+		final File dir = toFile(folder);
 		final WildCardFilter wildcardfilter =  StringUtils.isEmpty(getWildcard()) ? null : new WildCardFilter(getWildcard());
 		final WildCardFilter excludeFilter =  StringUtils.isEmpty(getExcludeWildcard()) ? null : new WildCardFilter(getExcludeWildcard());
 

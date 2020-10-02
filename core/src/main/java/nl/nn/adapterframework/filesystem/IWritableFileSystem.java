@@ -29,10 +29,10 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
 	public OutputStream createFile(F f) throws FileSystemException, IOException;
 	public OutputStream appendFile(F f) throws FileSystemException, IOException;
+
 	/**
 	 * Renames the file to a new name, possibly in a another folder.
 	 */
-
 	public F renameFile(F source, F destination) throws FileSystemException;
 
 }

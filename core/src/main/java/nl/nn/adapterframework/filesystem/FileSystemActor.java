@@ -288,9 +288,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return fileSystem.getName(file);
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
+				FileSystemUtils.checkSource(fileSystem, file, "inspect");
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
@@ -397,26 +395,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					String folderPath = sourceAsFile.getParent();
 					destination = fileSystem.toFile(folderPath,destinationName);
 				}
-				if (!fileSystem.exists(source)) {
-					throw new FileNotFoundException("file to rename ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
-				}
-				FileSystemUtils.prepareDestination(fileSystem, destination, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-				F renamed = ((IWritableFileSystem<F>)fileSystem).renameFile(source, destination);
+				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file to move ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
 				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(moved);
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file to copy ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
 				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(copied);
 			}
