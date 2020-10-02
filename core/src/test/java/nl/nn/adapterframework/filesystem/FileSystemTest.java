@@ -301,31 +301,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertFalse("Origin must have disappeared",_fileExists(sourceFolder, fileName));
 	}
 	
-//	@Test
-//	public void writableFileSystemTestRenameToExisting() throws Exception {
-//		String fileName = "fileToBeRenamedExisting.txt";
-//		
-//		fileSystem.configure();
-//		fileSystem.open();
-//
-//		createFile(null, fileName, "fileContents");
-//		waitForActionToFinish();
-//		
-//		assertTrue(_fileExists(fileName));
-//		
-//		String destination = "fileRenamedExists.txt";
-//		createFile(null, destination, "originalFileContents");
-//		waitForActionToFinish();
-//		
-//		F f = fileSystem.toFile(fileName);
-//		F d = fileSystem.toFile(destination);
-//		fileSystem.renameFile(f, d);
-//		waitForActionToFinish();
-//		
-//		assertFileExistsWithContents(null, destination, "fileContents");
-//		assertFalse("Origin must have disappeared",_fileExists(fileName));
-//	}
-
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
 		thrown.expectMessage("Directory does not exist.");

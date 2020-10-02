@@ -27,6 +27,9 @@ import nl.nn.adapterframework.util.Misc;
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
 
+	/**
+	 * Check if a source file exists.
+	 */
 	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, String action) throws FileNotFoundException, FileSystemException {
 		if (!fileSystem.exists(source)) {
 			throw new FileNotFoundException("file to "+action+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
@@ -53,6 +56,9 @@ public class FileSystemUtils {
 		}
 	}
 	
+	/**
+	 * Prepares the destinationfolder, e.g. for move or copy.
+	 */
 	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, String action) throws FileSystemException {
 		if (!fileSystem.folderExists(destinationFolder)) {
 			if (fileSystem.exists(fileSystem.toFile(destinationFolder))) {
