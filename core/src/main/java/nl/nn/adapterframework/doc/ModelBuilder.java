@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.doc;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,9 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -20,90 +18,9 @@ import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 
 public class ModelBuilder {
+	private static final String JAVA_STRING = "java.lang.String";
+
 	private @Getter FrankDocModel model;
-
-	@EqualsAndHashCode
-	static class Type {
-		private @Getter @Setter boolean isPrimitive;
-		private @Getter @Setter String name;
-
-		Type(Class<?> clazz) {
-			isPrimitive = clazz.isPrimitive();
-			name = clazz.getName();
-		}
-
-		Type() {		
-		}
-
-		Type(Parameter param) {
-			this(param.getType());
-		}
-
-		static Type typeVoid() {
-			Type result = new Type();
-			result.setPrimitive(true);
-			result.setName("void");
-			return result;
-		}
-
-		static Type typeString() {
-			Type result = new Type();
-			result.setPrimitive(false);
-			result.setName("java.lang.String");
-			return result;
-		}
-
-		static Type typeBoolean() {
-			Type result = new Type();
-			result.setPrimitive(true);
-			result.setName("boolean");
-			return result;
-		}
-	}
-
-	static class AttributeSeed {
-		private @Getter String name;
-		private @Getter @Setter List<Type> argumentTypes;
-		private @Getter @Setter Type returnType;
-
-		AttributeSeed(Method reflectMethod) {
-			name = reflectMethod.getName();
-			returnType = new Type(reflectMethod.getReturnType());
-			argumentTypes = new ArrayList<>();
-			for(Parameter p: reflectMethod.getParameters()) {
-				argumentTypes.add(new Type(p));
-			}
-		}
-
-		AttributeSeed(String name) {
-			this.name = name;
-		}
-	}
-
-	static class ElementSeed {
-		private @Getter @Setter Map<String, AttributeSeed> methods;
-		private @Getter String fullName;
-		private @Getter @Setter String simpleName;
-		private @Getter @Setter FrankElement existingParent;
-
-		ElementSeed(Class<?> clazz) {
-			methods = new HashMap<>();
-			for(Method reflect: clazz.getDeclaredMethods()) {
-				// Jacoco is a tool for code coverage. To have predictable results,
-				// we omit methods introduced by Jacoco.
-				if(reflect.getName().contains("jacoco")) {
-					continue;
-				}
-				methods.put(reflect.getName(), new AttributeSeed(reflect));
-			}
-			fullName = clazz.getName();
-			simpleName = clazz.getSimpleName();
-		}
-
-		ElementSeed(final String fullName) {
-			this.fullName = fullName;
-		}
-	}
 
 	public ModelBuilder() {
 		model = new FrankDocModel();
@@ -133,21 +50,6 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static List<ElementSeed> getSelfAndAncestorSeeds(Class<?> clazz, Map<String, FrankElement> repository) {
-		List<ElementSeed> result = new ArrayList<>();
-		Class<?> superClass = clazz;
-		ElementSeed newSeed = null;
-		while((superClass != null) && (!repository.containsKey(superClass.getName()))) {
-			newSeed = new ElementSeed(superClass);
-			result.add(newSeed);
-			superClass = superClass.getSuperclass();
-		}
-		if((newSeed != null) && (superClass != null)) {
-			newSeed.setExistingParent(repository.get(superClass.getName()));
-		}
-		return result;
-	}
-
 	FrankDocGroup addGroup(String name) {
 		FrankDocGroup group = new FrankDocGroup(name);
 		group.setElements(new HashMap<>());
@@ -155,49 +57,62 @@ public class ModelBuilder {
 		return group;
 	}
 
-	void addElementsToGroup(String elementName, List<ElementSeed> elementHierarchy, FrankDocGroup group) {	
-		List<ElementSeed> reversedSeeds = new ArrayList<>(elementHierarchy);
-		Collections.reverse(reversedSeeds);
-		if(reversedSeeds.isEmpty()) {
-			group.getElements().putIfAbsent(elementName, model.getAllElements().get(elementName));
-		} else {
-			FrankElement parent = reversedSeeds.get(0).getExistingParent();
-			for(ElementSeed seed: reversedSeeds) {
-				parent = createFrankElement(seed, parent);
-				model.getAllElements().put(parent.getFullName(), parent);
-			}
-			group.getElements().putIfAbsent(parent.getFullName(), parent);
+	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
+		if(model.getAllElements().containsKey(clazz.getName())) {
+			group.getElements().put(clazz.getName(), model.getAllElements().get(clazz.getName()));
+			return;			
 		}
+		List<Class<?>> classesForNewElements = new ArrayList<>();
+		FrankElement parent = null;
+		Class<?> superClass = clazz;
+		while(true) {
+			classesForNewElements.add(superClass);
+			superClass = superClass.getSuperclass();
+			if(superClass == null) {
+				break;
+			}
+			if(model.getAllElements().containsKey(superClass.getName())) {
+				parent = model.getAllElements().get(superClass.getName());
+				break;
+			}
+		}
+		Collections.reverse(classesForNewElements);
+		for(Class<?> seed: classesForNewElements) {
+			parent = createFrankElement(seed, parent);
+			model.getAllElements().put(parent.getFullName(), parent);
+		}
+		group.getElements().put(parent.getFullName(), parent);
 	}
 
-	FrankElement createFrankElement(ElementSeed seed, FrankElement parent) {
-		FrankElement result = new FrankElement(seed.getFullName(), seed.getSimpleName());
+	FrankElement createFrankElement(Class<?> clazz, FrankElement parent) {
+		FrankElement result = new FrankElement(clazz.getName(), clazz.getSimpleName());
 		result.setParent(parent);
-		result.setAttributes(createAttributes(seed));
+		result.setAttributes(new ArrayList<>(createAttributes(clazz.getDeclaredMethods()).values()));
 		return result;
 	}
 
-	static List<FrankAttribute> createAttributes(ElementSeed elementSeed) {
-		Map<String, String> setterAttributes = getAttributeToMethodNameMap(elementSeed.getMethods(), "set");
-		Map<String, String> getterAttributes = getAttributeToMethodNameMap(elementSeed.getMethods(), "get");
-		getterAttributes.putAll(getAttributeToMethodNameMap(elementSeed.getMethods(), "is"));
+	static Map<String, FrankAttribute> createAttributes(Method[] methods) {
+		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methods, "set");
+		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methods, "get");
+		getterAttributes.putAll(getAttributeToMethodNameMap(methods, "is"));
 		Map<String, String> attributes = new HashMap<>();
 		for(String attributeName: setterAttributes.keySet()) {
 			if(getterAttributes.containsKey(attributeName)) {
 				attributes.put(attributeName, setterAttributes.get(attributeName));
 			}
 		}
-		List<FrankAttribute> result = new ArrayList<>();
+		Map<String, FrankAttribute> result = new HashMap<>();
 		for(String attributeName: attributes.keySet()) {
 			FrankAttribute attribute = new FrankAttribute(attributeName);
-			result.add(attribute);
+			result.put(attributeName, attribute);
 		}
 		return result;
 	}
 
-	static Map<String, String> getAttributeToMethodNameMap(Map<String, AttributeSeed> methods, String prefix) {
-		Set<String> methodNames = methods.values().stream()
-				.filter(ModelBuilder::isGetterOrSetter)
+	static Map<String, String> getAttributeToMethodNameMap(Method[] methods, String prefix) {
+		List<Method> methodList = Arrays.asList(methods);
+		Set<String> methodNames = methodList.stream()
+				.filter(ModelBuilder::isGetterOrSetter2)
 				.map(method -> method.getName())
 				.filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
 				.collect(Collectors.toSet());		
@@ -210,18 +125,16 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static boolean isGetterOrSetter(AttributeSeed attributeSeed) {
-		boolean isSetter = attributeSeed.getReturnType().equals(Type.typeVoid())
-				&& (attributeSeed.getArgumentTypes().size() == 1)
-				&& isPrimitiveOrString(attributeSeed.getArgumentTypes().get(0));
-		boolean isGetter = isPrimitiveOrString(attributeSeed.getReturnType())
-				&& (attributeSeed.getArgumentTypes().size() == 0);
+	static boolean isGetterOrSetter2(Method method) {
+		boolean isSetter = method.getReturnType().isPrimitive()
+				&& method.getReturnType().getName().equals("void")
+				&& (method.getParameterTypes().length == 1)
+				&& (method.getParameterTypes()[0].isPrimitive()
+						|| method.getParameterTypes()[0].getName().equals(JAVA_STRING));
+		boolean isGetter = (
+					method.getReturnType().isPrimitive()
+					|| method.getReturnType().getName().equals(JAVA_STRING)
+				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
-	}
-
-	private static boolean isPrimitiveOrString(Type t) {
-		boolean isString = t.getName().equals("java.lang.String");
-		boolean isVoid = t.getName().equals("void");
-		return (!isVoid) && (isString || t.isPrimitive);
 	}
 }
