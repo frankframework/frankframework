@@ -32,7 +32,7 @@ public class FileUtilsTest {
 
 	private static File f1;
 
-	public String sep = File.separator;
+	public final String FILE_SEPERATOR = File.separator;
 
 	@BeforeClass
 	public static void setUpTest() throws IOException {
@@ -44,7 +44,7 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFreeFile() throws Exception {
-		File f = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes");
+		File f = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes");
 		File res = FileUtils.getFreeFile(f);
 		assertEquals("Pipes", res.getName());
 	}
@@ -52,12 +52,12 @@ public class FileUtilsTest {
 
 	@Test
 	public void testMoveFile() throws Exception {
-		File toBeMoved = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "movingFile.txt");
-		String destDir = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript";
+		File toBeMoved = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "movingFile.txt");
+		String destDir = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "javascript";
 		String s = FileUtils.moveFile(toBeMoved, destDir, true, 2);
-		String movedPath = destDir + sep + "movingFile.txt";
-		File moveBack =  new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "javascript" + sep + "movingFile.txt");
-		destDir = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String movedPath = destDir + FILE_SEPERATOR + "movingFile.txt";
+		File moveBack =  new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "javascript" + FILE_SEPERATOR + "movingFile.txt");
+		destDir = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes";
 		moveBack(moveBack, destDir);
 		assertEquals(movedPath.substring(2, movedPath.length()), s.substring(s.length()-56, s.length()));
 
@@ -73,16 +73,16 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testAppendFile() throws Exception {
-		File orgFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "fileToAppend.txt");
-		File destFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "destinationFile.txt");
+		File orgFile = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "fileToAppend.txt");
+		File destFile = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "destinationFile.txt");
 		String res = FileUtils.appendFile(orgFile, destFile, 5, 5000);
 		assertEquals(destFile.getAbsolutePath(), res);
 	}
 
 	@Test
 	public void testCopyFile() throws Exception {
-		File sourceFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "fileToAppend.txt");
-		File destFile = new File(".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "copyFile.txt");
+		File sourceFile = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "fileToAppend.txt");
+		File destFile = new File(".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "copyFile.txt");
 		boolean b = FileUtils.copyFile(sourceFile, destFile, true);
 		assertEquals(true, b);
 	}
@@ -93,7 +93,7 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testCreateTempDirBaseDir() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes";
+		String path = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes";
 		File f = new File(path);
 		File file = FileUtils.createTempDir(f);
 		boolean b = file.exists();
@@ -116,7 +116,7 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFiles() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
+		String path = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "StreamUtil";
 		File[] files = FileUtils.getFiles(path, "*", null, 5);
 		File numFiles = new File(path);
 		String[] s = numFiles.list();
@@ -130,7 +130,7 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testGetFirstFileDirectory() throws Exception {
-		String path = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
+		String path = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "StreamUtil";
 		File f = new File(path);
 		File file = FileUtils.getFirstFile(f);
 		String[] l = f.list();
@@ -138,10 +138,10 @@ public class FileUtilsTest {
 	}
 
 	/**
-	 * Method: getListFromNames(String names, char seperator)
+	 * Method: getListFromNames(String names, char FILE_SEPERATORerator)
 	 */
 	@Test
-	public void testGetListFromNamesForNamesSeperator() throws Exception {
+	public void testGetListFromNamesForNamesFILE_SEPERATORerator() throws Exception {
 		List<String> list = FileUtils.getListFromNames("abc.txt,test.txt,jkl.txt", ',');
 		assertEquals("abc.txt", list.get(0));
 		assertEquals("test.txt", list.get(1));
@@ -162,7 +162,7 @@ public class FileUtilsTest {
 	}
 
 	/**
-	 * Method: getNamesFromArray(String[] names, char seperator)
+	 * Method: getNamesFromArray(String[] names, char FILE_SEPERATORerator)
 	 */
 	@Test
 	public void testGetNamesFromArray() throws Exception {
@@ -172,7 +172,7 @@ public class FileUtilsTest {
 	}
 
 	/**
-	 * Method: getNamesFromList(List<String> filenames, char seperator)
+	 * Method: getNamesFromList(List<String> filenames, char FILE_SEPERATORerator)
 	 */
 	@Test
 	public void testGetNamesFromList() throws Exception {
@@ -239,8 +239,8 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testCanWrite() throws Exception {
-		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Utils";
-		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "2.txt";
+		String p1 = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Utils";
+		String p2 = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "2.txt";
 		boolean b = FileUtils.canWrite(p1);
 		boolean b2 = FileUtils.canWrite(p2);
 		assertTrue(b);
@@ -249,7 +249,7 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFirstFile() {
-		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "StreamUtil";
+		String p2 = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "StreamUtil";
 		File f = new File(p2);
 		File res = FileUtils.getFirstFile(f);
 		String[] l = f.list();
@@ -270,8 +270,8 @@ public class FileUtilsTest {
 	 */
 	@Test
 	public void testIsFileBinaryEqual() throws Exception {
-		String p1 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "2.txt";
-		String p2 = ".." + sep + "core" + sep + "src" + sep + "test" + sep + "resources" + sep + "Pipes" + sep + "books.xml";
+		String p1 = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "2.txt";
+		String p2 = ".." + FILE_SEPERATOR + "core" + FILE_SEPERATOR + "src" + FILE_SEPERATOR + "test" + FILE_SEPERATOR + "resources" + FILE_SEPERATOR + "Pipes" + FILE_SEPERATOR + "books.xml";
 		File f1 = new File(p1);
 		File f2 = new File(p2);
 		boolean b = FileUtils.isFileBinaryEqual(f1, f2);
