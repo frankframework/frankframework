@@ -24,7 +24,6 @@ angular.module('iaf.beheerconsole')
 				var serverTime = Date.parse(new Date(data.serverTime).toUTCString());
 				var localTime  = Date.parse(new Date().toUTCString());
 				appConstants.timeOffset = serverTime - localTime;
-				//setTime(appConstants.timeOffset);
 
 				function updateTime() {
 					var serverDate = new Date();

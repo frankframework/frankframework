@@ -188,6 +188,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
+		if(normalizedFilename == null) {
+			return null; //if the path after normalization equals null, return null
+		}
+
 		url = getLocalResource(normalizedFilename);
 		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 
