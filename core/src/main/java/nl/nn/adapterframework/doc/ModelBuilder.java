@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
-import nl.nn.adapterframework.doc.model.AttributeReferenceGroup;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -89,7 +88,6 @@ public class ModelBuilder {
 		FrankElement result = new FrankElement(clazz.getName(), clazz.getSimpleName());
 		result.setParent(parent);
 		result.setAttributes(new ArrayList<>(createAttributes(clazz.getDeclaredMethods()).values()));
-		enrichWithReferenceGroups(result);
 		return result;
 	}
 
@@ -138,14 +136,5 @@ public class ModelBuilder {
 					|| method.getReturnType().getName().equals(JAVA_STRING)
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
-	}
-
-	private void enrichWithReferenceGroups(FrankElement frankElement) {
-		AttributeReferenceGroup referenceGroup = new AttributeReferenceGroup();
-		referenceGroup.setOwningElement(frankElement);
-		referenceGroup.setDescribingElement(frankElement);
-		referenceGroup.setAttributes(new ArrayList<>());
-		referenceGroup.getAttributes().addAll(frankElement.getAttributes());
-		frankElement.setAttributeReferenceGroups(Arrays.asList(referenceGroup));
 	}
 }
