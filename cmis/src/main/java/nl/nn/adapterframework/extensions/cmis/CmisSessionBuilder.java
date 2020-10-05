@@ -123,6 +123,9 @@ public class CmisSessionBuilder {
 		if (StringUtils.isEmpty(repository)) {
 			throw new CmisSessionException("no repository configured");
 		}
+		if (StringUtils.isEmpty(getBindingType())) {
+			throw new CmisSessionException("no bindingType configured");
+		}
 		if(overrideEntryPointWSDL != null && !"webservices".equals(getBindingType())) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
