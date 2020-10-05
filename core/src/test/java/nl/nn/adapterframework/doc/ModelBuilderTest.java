@@ -3,6 +3,7 @@ package nl.nn.adapterframework.doc;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,10 +86,11 @@ public class ModelBuilderTest {
 		checkAttributeCreated("attributeSetterGetter");
 	}
 
-	private void checkAttributeCreated(String attributeName) {
+	private FrankAttribute checkAttributeCreated(String attributeName) {
 		Map<String, FrankAttribute> actual = getInvestigatedFrankAttributes();
 		Assert.assertTrue(actual.containsKey(attributeName));
-		Assert.assertEquals(attributeName, actual.get(attributeName).getName());		
+		Assert.assertEquals(attributeName, actual.get(attributeName).getName());
+		return actual.get(attributeName);
 	}
 
 	/**
@@ -98,10 +100,11 @@ public class ModelBuilderTest {
 	 * to creating the enclosing FrankElement of the attributes.
 	 */
 	private static Map<String, FrankAttribute> getInvestigatedFrankAttributes() {
-		return ModelBuilder.createAttributes(
+		final List<FrankAttribute> attributes = ModelBuilder.createAttributes(
 				null,
 				InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
 					.getDeclaredMethods());
+		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));
 	}
 	
 	@Test
@@ -144,5 +147,48 @@ public class ModelBuilderTest {
 	@Test
 	public void whenSetterTakesTwoValuesThenNotSetter() {
 		Assert.assertFalse(getAttributeNameMap("set").containsKey("invalidSetter"));
+	}
+
+	@Test
+	public void testIbisDockedOnlyDescription() {
+		FrankAttribute actual = checkAttributeCreated("ibisDockedOnlyDescription");
+		Assert.assertEquals(Integer.MAX_VALUE, actual.getOrder());
+		Assert.assertEquals("Description of ibisDockedOnlyDescription", actual.getDescription());
+		Assert.assertNull(actual.getDefaultValue());
+		Assert.assertFalse(actual.isDeprecated());
+	}
+
+	@Test
+	public void testIbisDockedOrderDescription() {
+		FrankAttribute actual = checkAttributeCreated("ibisDockedOrderDescription");
+		Assert.assertEquals(3, actual.getOrder());
+		Assert.assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
+		Assert.assertNull(actual.getDefaultValue());
+		Assert.assertFalse(actual.isDeprecated());
+	}
+
+	@Test
+	public void testIbisDockedDescriptionDefault() {
+		FrankAttribute actual = checkAttributeCreated("ibisDockedDescriptionDefault");
+		Assert.assertEquals(Integer.MAX_VALUE, actual.getOrder());
+		Assert.assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
+		Assert.assertEquals("Default of ibisDockedDescriptionDefault", actual.getDefaultValue());
+		Assert.assertFalse(actual.isDeprecated());
+	}
+
+	@Test
+	public void testIbisDockedOrderDescriptionDefault() {
+		FrankAttribute actual = checkAttributeCreated("ibisDockedOrderDescriptionDefault");
+		Assert.assertEquals(5, actual.getOrder());
+		Assert.assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
+		Assert.assertEquals("Default of ibisDockedOrderDescriptionDefault", actual.getDefaultValue());
+		Assert.assertFalse(actual.isDeprecated());
+	}
+
+	@Test
+	public void testIbisDockedDeprecated() {
+		FrankAttribute actual = checkAttributeCreated("ibisDockedDeprecated");
+		Assert.assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
+		Assert.assertTrue(actual.isDeprecated());
 	}
 }

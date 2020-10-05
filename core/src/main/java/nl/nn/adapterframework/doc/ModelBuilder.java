@@ -10,15 +10,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import lombok.Getter;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.objects.SpringBean;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ModelBuilder {
 	private static final String JAVA_STRING = "java.lang.String";
+
+	private static Logger log = LogUtil.getLogger(ModelBuilder.class);
 
 	private @Getter FrankDocModel model;
 
@@ -87,25 +93,29 @@ public class ModelBuilder {
 	FrankElement createFrankElement(Class<?> clazz, FrankElement parent) {
 		FrankElement result = new FrankElement(clazz.getName(), clazz.getSimpleName());
 		result.setParent(parent);
-		result.setAttributes(new ArrayList<>(createAttributes(result, clazz.getDeclaredMethods()).values()));
+		result.setAttributes(createAttributes(result, clazz.getDeclaredMethods()));
 		return result;
 	}
 
-	static Map<String, FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
+	static List<FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
 		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methods, "set");
 		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methods, "get");
 		getterAttributes.putAll(getAttributeToMethodNameMap(methods, "is"));
-		Map<String, String> attributes = new HashMap<>();
-		for(String attributeName: setterAttributes.keySet()) {
-			if(getterAttributes.containsKey(attributeName)) {
-				attributes.put(attributeName, setterAttributes.get(attributeName));
-			}
+		Map<String, String> setterToAttributeName = new HashMap<>();
+		for(String candidateAttributeName: setterAttributes.keySet()) {
+			setterToAttributeName.put(setterAttributes.get(candidateAttributeName), candidateAttributeName);
 		}
-		Map<String, FrankAttribute> result = new HashMap<>();
-		for(String attributeName: attributes.keySet()) {
-			FrankAttribute attribute = new FrankAttribute(attributeName);
-			attribute.setDescribingElement(frankElement);
-			result.put(attributeName, attribute);
+		List<FrankAttribute> result = new ArrayList<>();
+		for(Method method: methods) {
+			if(setterToAttributeName.containsKey(method.getName())) {
+				String candidateAttributeName = setterToAttributeName.get(method.getName());
+				FrankAttribute candidate = new FrankAttribute(candidateAttributeName);
+				candidate.setDescribingElement(frankElement);
+				boolean isDocumented = documentAttribute(candidate, method);
+				if(getterAttributes.containsKey(candidateAttributeName) || isDocumented) {
+					result.add(candidate);
+				}
+			}
 		}
 		return result;
 	}
@@ -137,5 +147,37 @@ public class ModelBuilder {
 					|| method.getReturnType().getName().equals(JAVA_STRING)
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
+	}
+
+	private static boolean documentAttribute(FrankAttribute attribute, Method method) {
+		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
+		if(ibisDoc != null) {
+			String[] ibisDocValues = ibisDoc.value();
+			boolean isIbisDocHasOrder = false;
+			attribute.setOrder(Integer.MAX_VALUE);
+			try {
+				int order = Integer.parseInt(ibisDocValues[0]);
+				attribute.setOrder(order);
+				isIbisDocHasOrder = true;
+			} catch (NumberFormatException e) {
+				log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
+			}
+			if (isIbisDocHasOrder) {
+				attribute.setDescription(ibisDocValues[1]);
+				if (ibisDocValues.length > 2) {
+					attribute.setDefaultValue(ibisDocValues[2]); 
+				}
+			} else {
+				attribute.setDescription(ibisDocValues[0]);
+				if (ibisDocValues.length > 1) {
+					attribute.setDefaultValue(ibisDocValues[1]);
+				}
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
