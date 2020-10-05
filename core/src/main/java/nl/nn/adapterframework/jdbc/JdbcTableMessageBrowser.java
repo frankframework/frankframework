@@ -114,7 +114,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		(StringUtils.isNotEmpty(getCommentField())?","+getCommentField():"")+
 		" FROM "+getPrefix()+getTableName();
 	}
-	
+
 	@Override
 	protected String getSelectListQuery(IDbmsSupport dbmsSupport, Date startTime, Date endTime, IMessageBrowser.SortOrder order) {
 		String whereClause=null;
@@ -125,7 +125,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
 		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
-			order = SortOrder.valueOf(getOrder());
+			order = getOrderEnum();
 		}
 
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
