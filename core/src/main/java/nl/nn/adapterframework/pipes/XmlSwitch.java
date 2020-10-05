@@ -224,7 +224,7 @@ public class XmlSwitch extends AbstractPipe {
 	@Deprecated
 	@ConfigurationWarning("Please use the attribute styleSheetName.")
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
-		this.styleSheetName = newServiceSelectionStylesheetFilename;
+		setStyleSheetName(newServiceSelectionStylesheetFilename); 
 	}
 
 	@IbisDoc({"2", "xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
