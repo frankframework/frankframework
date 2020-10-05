@@ -262,4 +262,10 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
 		assertEquals(logPrefix+"["+getConfigurationName()+"]", classLoader.toString());
 	}
+
+	@Test
+	public void testInvalidPath() throws Exception {
+		URL url = getResource("//foo/../bar.txt");
+		assertNull(url);
+	}
 }

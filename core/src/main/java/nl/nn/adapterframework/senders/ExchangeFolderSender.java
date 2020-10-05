@@ -16,97 +16,94 @@
 package nl.nn.adapterframework.senders;
 
 import microsoft.exchange.webservices.data.core.service.item.Item;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 /**
  * Implementation of a {@link FileSystemSender} that enables to manipulate messages in a Exchange folder.
  * 
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * 
  * @author Gerrit van Brakel
  */
 public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSystem> implements HasPhysicalDestination {
+
+	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 
 	public ExchangeFolderSender() {
 		setFileSystem(new ExchangeFileSystem());
 	}
 
-	@IbisDoc({"1", "mail address (also used for auto discovery)", "" })
-	public void setMailAddress(String mailaddress) {
-		getFileSystem().setMailAddress(mailaddress);
+	@IbisDocRef({"1", EXCHANGE_FILE_SYSTEM})
+	public void setMailAddress(String mailAddress) {
+		getFileSystem().setMailAddress(mailAddress);
 	}
 
-	@IbisDoc({"2", "(only used when mailAddress is empty) url of the service", "" })
+	@IbisDocRef({"2", EXCHANGE_FILE_SYSTEM})
 	public void setUrl(String url) {
 		getFileSystem().setUrl(url);
 	}
 
-	@IbisDoc({"3", "username used in authentication to exchange mail server", "" })
+	@IbisDocRef({"3", EXCHANGE_FILE_SYSTEM})
+	public void setAccessToken(String accessToken) {
+		getFileSystem().setAccessToken(accessToken);
+	}
+
+	@IbisDocRef({"4", EXCHANGE_FILE_SYSTEM})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
-
-	@IbisDoc({"4", "password used in authentication to exchange mail server", "" })
+	
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
+	@IbisDocRef({"5", EXCHANGE_FILE_SYSTEM})
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDoc({"5", "alias used to obtain credentials for authentication to exchange mail server", "" })
+	@IbisDocRef({"6", EXCHANGE_FILE_SYSTEM})
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-
-	@IbisDoc({"7", "folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
+	@IbisDocRef({"7", EXCHANGE_FILE_SYSTEM})
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-	@IbisDoc({"8", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	@IbisDocRef({"8", EXCHANGE_FILE_SYSTEM})
 	public void setFilter(String filter) {
 		getFileSystem().setFilter(filter);
 	}
 
-	@IbisDoc({"9", "proxy host", ""})
+	@IbisDocRef({"9", EXCHANGE_FILE_SYSTEM})
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
 
-	@IbisDoc({"10", "proxy port", ""})
+	@IbisDocRef({"10", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPort(int proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
-	@IbisDoc({"11", "proxy username", ""})
+	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
 	public void setProxyUserName(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
 
-	@IbisDoc({"12", "proxy password", ""})
+	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"12", "proxy authAlias", ""})
+	@IbisDocRef({"13", EXCHANGE_FILE_SYSTEM})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDoc({"13", "proxy domain", ""})
+	@IbisDocRef({"14", EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
 	}
