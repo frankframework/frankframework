@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -64,9 +65,12 @@ public class ModelBuilder {
 	}
 
 	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
+		group.getElements().put(clazz.getName(), frankElement(clazz));
+	}
+
+	FrankElement frankElement(Class<?> clazz) {
 		if(model.getAllElements().containsKey(clazz.getName())) {
-			group.getElements().put(clazz.getName(), model.getAllElements().get(clazz.getName()));
-			return;			
+			return model.getAllElements().get(clazz.getName());
 		}
 		List<Class<?>> classesForNewElements = new ArrayList<>();
 		FrankElement parent = null;
@@ -87,7 +91,7 @@ public class ModelBuilder {
 			parent = createFrankElement(seed, parent);
 			model.getAllElements().put(parent.getFullName(), parent);
 		}
-		group.getElements().put(parent.getFullName(), parent);
+		return parent;		
 	}
 
 	FrankElement createFrankElement(Class<?> clazz, FrankElement parent) {
@@ -97,7 +101,7 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static List<FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
+	List<FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
 		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methods, "set");
 		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methods, "get");
 		getterAttributes.putAll(getAttributeToMethodNameMap(methods, "is"));
@@ -149,35 +153,113 @@ public class ModelBuilder {
 		return isSetter || isGetter;
 	}
 
-	private static boolean documentAttribute(FrankAttribute attribute, Method method) {
-		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+	private boolean documentAttribute(FrankAttribute attribute, Method method) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
+		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+		if(ibisDocRef != null) {
+			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
+			if(ibisDoc != null) {
+				attribute.setDescribingElement(frankElement(parsed.getReferredMethod().getDeclaringClass()));
+				ibisDocIntoFrankElement(ibisDoc, attribute);
+				if(parsed.hasOrder) {
+					attribute.setOrder(parsed.getOrder());
+				}
+				return true;
+			}
+		}
+		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		if(ibisDoc != null) {
-			String[] ibisDocValues = ibisDoc.value();
-			boolean isIbisDocHasOrder = false;
-			attribute.setOrder(Integer.MAX_VALUE);
-			try {
-				int order = Integer.parseInt(ibisDocValues[0]);
-				attribute.setOrder(order);
-				isIbisDocHasOrder = true;
-			} catch (NumberFormatException e) {
-				log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
-			}
-			if (isIbisDocHasOrder) {
-				attribute.setDescription(ibisDocValues[1]);
-				if (ibisDocValues.length > 2) {
-					attribute.setDefaultValue(ibisDocValues[2]); 
-				}
-			} else {
-				attribute.setDescription(ibisDocValues[0]);
-				if (ibisDocValues.length > 1) {
-					attribute.setDefaultValue(ibisDocValues[1]);
-				}
-			}
+			ibisDocIntoFrankElement(ibisDoc, attribute);
 			return true;
 		}
 		else {
 			return false;
+		}
+	}
+
+	private class ParsedIbisDocRef {
+		private @Getter @Setter boolean hasOrder;
+		private @Getter @Setter int order;
+		private @Getter @Setter Method referredMethod;
+	}
+
+	private ParsedIbisDocRef parseIbisDocRef(IbisDocRef ibisDocRef, Method originalMethod) {
+		ParsedIbisDocRef result = new ParsedIbisDocRef();
+		result.setHasOrder(false);
+		String[] values = ibisDocRef.value();
+		String methodString = null;
+		if (values.length == 1) {
+			methodString = ibisDocRef.value()[0];
+		} else if (values.length == 2) {
+			methodString = ibisDocRef.value()[1];
+			try {
+				result.setOrder(Integer.parseInt(ibisDocRef.value()[0]));
+				result.setHasOrder(true);
+			} catch (Throwable t) {
+				log.warn("Could not parse order in @IbisDocRef annotation: "
+						+ Integer.parseInt(ibisDocRef.value()[0]));
+			}
+		}
+		else {
+			log.warn(String.format("Invalid @IbisDocRef annotation on method: %s.%s",
+					originalMethod.getDeclaringClass().getName(), originalMethod.getName()));
+			return null;
+		}
+		result.setReferredMethod(getReferredMethod(methodString, originalMethod));
+		return result;
+	}
+
+	private static Method getReferredMethod(String methodString, Method originalMethod) {
+		String lastNameComponent = methodString.substring(methodString.lastIndexOf(".") + 1).trim();
+		char firstLetter = lastNameComponent.toCharArray()[0];
+		String fullClassName = methodString;
+		String methodName = lastNameComponent;
+		if (Character.isLowerCase(firstLetter)) {
+			int index = methodString.lastIndexOf(".");
+			fullClassName = methodString.substring(0, index);
+		} else {
+			methodName = originalMethod.getName();
+		}
+		return getParentMethod(fullClassName, methodName);
+	}
+
+	private static Method getParentMethod(String className, String methodName) {
+		try {
+			Class<?> parentClass = Class.forName(className);
+			for (Method parentMethod : parentClass.getMethods()) {
+				if (parentMethod.getName().equals(methodName)) {
+					return parentMethod;
+				}
+			}
+			return null;
+		} catch (ClassNotFoundException e) {
+			log.warn("Super class [" + e + "] was not found!");
+			return null;
+		}
+	}
+
+	private void ibisDocIntoFrankElement(IbisDoc ibisDoc, FrankAttribute attribute) {
+		String[] ibisDocValues = ibisDoc.value();
+		boolean isIbisDocHasOrder = false;
+		attribute.setOrder(Integer.MAX_VALUE);
+		try {
+			int order = Integer.parseInt(ibisDocValues[0]);
+			attribute.setOrder(order);
+			isIbisDocHasOrder = true;
+		} catch (NumberFormatException e) {
+			log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
+		}
+		if (isIbisDocHasOrder) {
+			attribute.setDescription(ibisDocValues[1]);
+			if (ibisDocValues.length > 2) {
+				attribute.setDefaultValue(ibisDocValues[2]); 
+			}
+		} else {
+			attribute.setDescription(ibisDocValues[0]);
+			if (ibisDocValues.length > 1) {
+				attribute.setDefaultValue(ibisDocValues[1]);
+			}
 		}
 	}
 }
