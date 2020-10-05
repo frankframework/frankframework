@@ -83,11 +83,11 @@ public class ModelBuilderTest {
 
 	@Test
 	public void whenSetterAndGetterThenAttribute() {
-		checkAttributeCreated("attributeSetterGetter");
+		checkReflectAttributeCreated("attributeSetterGetter");
 	}
 
-	private FrankAttribute checkAttributeCreated(String attributeName) {
-		Map<String, FrankAttribute> actual = getInvestigatedFrankAttributes();
+	private FrankAttribute checkReflectAttributeCreated(String attributeName) {
+		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		Assert.assertTrue(actual.containsKey(attributeName));
 		Assert.assertEquals(attributeName, actual.get(attributeName).getName());
 		return actual.get(attributeName);
@@ -99,7 +99,7 @@ public class ModelBuilderTest {
 	 * that the describingElement is not set, because we are not testing here in relation
 	 * to creating the enclosing FrankElement of the attributes.
 	 */
-	private static Map<String, FrankAttribute> getInvestigatedFrankAttributes() {
+	private static Map<String, FrankAttribute> getReflectInvestigatedFrankAttributes() {
 		final List<FrankAttribute> attributes = ModelBuilder.createAttributes(
 				null,
 				InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
@@ -109,22 +109,22 @@ public class ModelBuilderTest {
 	
 	@Test
 	public void whenSetterAndIsThenAttribute() {
-		checkAttributeCreated("attributeSetterIs");
+		checkReflectAttributeCreated("attributeSetterIs");
 	}
 
 	@Test
 	public void whenOnlySetterThenNotAttribute() {
-		checkAttributeOmitted("noAttributeOnlySetter");
+		checkReflectAttributeOmitted("noAttributeOnlySetter");
 	}
 
-	private void checkAttributeOmitted(String attributeName) {
-		Map<String, FrankAttribute> actual = getInvestigatedFrankAttributes();
+	private void checkReflectAttributeOmitted(String attributeName) {
+		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		Assert.assertFalse(actual.containsKey(attributeName));
 	}
 	
 	@Test
 	public void whenMethodsHaveWrongTypeThenNoAttribute() {
-		checkAttributeOmitted("noAttributeComplexType");
+		checkReflectAttributeOmitted("noAttributeComplexType");
 	}
 
 	@Test
@@ -151,7 +151,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testIbisDockedOnlyDescription() {
-		FrankAttribute actual = checkAttributeCreated("ibisDockedOnlyDescription");
+		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
 		Assert.assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		Assert.assertEquals("Description of ibisDockedOnlyDescription", actual.getDescription());
 		Assert.assertNull(actual.getDefaultValue());
@@ -160,7 +160,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testIbisDockedOrderDescription() {
-		FrankAttribute actual = checkAttributeCreated("ibisDockedOrderDescription");
+		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescription");
 		Assert.assertEquals(3, actual.getOrder());
 		Assert.assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
 		Assert.assertNull(actual.getDefaultValue());
@@ -169,7 +169,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testIbisDockedDescriptionDefault() {
-		FrankAttribute actual = checkAttributeCreated("ibisDockedDescriptionDefault");
+		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDescriptionDefault");
 		Assert.assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		Assert.assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
 		Assert.assertEquals("Default of ibisDockedDescriptionDefault", actual.getDefaultValue());
@@ -178,7 +178,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testIbisDockedOrderDescriptionDefault() {
-		FrankAttribute actual = checkAttributeCreated("ibisDockedOrderDescriptionDefault");
+		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescriptionDefault");
 		Assert.assertEquals(5, actual.getOrder());
 		Assert.assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
 		Assert.assertEquals("Default of ibisDockedOrderDescriptionDefault", actual.getDefaultValue());
@@ -187,7 +187,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testIbisDockedDeprecated() {
-		FrankAttribute actual = checkAttributeCreated("ibisDockedDeprecated");
+		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDeprecated");
 		Assert.assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
 		Assert.assertTrue(actual.isDeprecated());
 	}
