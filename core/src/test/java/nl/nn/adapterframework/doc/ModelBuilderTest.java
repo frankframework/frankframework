@@ -7,6 +7,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.model.AttributeReferenceGroup;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -38,7 +39,7 @@ public class ModelBuilderTest {
 		ModelBuilder builder = new ModelBuilder();
 		FrankDocGroup group = builder.addGroup("Listeners");
 		builder.addElementsToGroup(InfoBuilderSource.getClass(CHILD), group);
-		builder.addElementsToGroup(	InfoBuilderSource.getClass(PARENT), group);
+		builder.addElementsToGroup(InfoBuilderSource.getClass(PARENT), group);
 		checkModelAfterChildAndParentAdded(builder.getModel());
 	}
 
@@ -70,12 +71,26 @@ public class ModelBuilderTest {
 		Assert.assertEquals(1, actualParent.getAttributes().size());
 		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
 		Assert.assertEquals("parentAttribute", actualParentAttribute.getName());
+		Assert.assertEquals(1, actualParent.getAttributeReferenceGroups().size());
+		AttributeReferenceGroup actualParentAttributeReferenceGroup =
+				actualParent.getAttributeReferenceGroups().get(0);
+		Assert.assertSame(actualParent, actualParentAttributeReferenceGroup.getOwningElement());
+		Assert.assertSame(actualParent, actualParentAttributeReferenceGroup.getDescribingElement());
+		Assert.assertEquals(1, actualParentAttributeReferenceGroup.getAttributes().size());
+		Assert.assertSame(actualParentAttribute, actualParentAttributeReferenceGroup.getAttributes().get(0));
 		FrankElement actualChild = actualGroup.getElements().get(CHILD);
 		Assert.assertEquals(CHILD, actualChild.getFullName());
 		Assert.assertEquals("ListenerChild", actualChild.getSimpleName());
 		Assert.assertEquals(1, actualChild.getAttributes().size());
 		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
 		Assert.assertEquals("childAttribute", actualChildAttribute.getName());
+		Assert.assertEquals(1, actualChild.getAttributeReferenceGroups().size());
+		AttributeReferenceGroup actualChildAttributeReferenceGroup =
+				actualChild.getAttributeReferenceGroups().get(0);
+		Assert.assertSame(actualChild, actualChildAttributeReferenceGroup.getOwningElement());
+		Assert.assertSame(actualChild, actualChildAttributeReferenceGroup.getDescribingElement());
+		Assert.assertEquals(1, actualChildAttributeReferenceGroup.getAttributes().size());
+		Assert.assertSame(actualChildAttribute, actualChildAttributeReferenceGroup.getAttributes().get(0));
 	}
 
 	@Test
