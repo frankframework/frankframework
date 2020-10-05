@@ -70,12 +70,14 @@ public class ModelBuilderTest {
 		Assert.assertEquals(1, actualParent.getAttributes().size());
 		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
 		Assert.assertEquals("parentAttribute", actualParentAttribute.getName());
+		Assert.assertSame(actualParent, actualParentAttribute.getDescribingElement());
 		FrankElement actualChild = actualGroup.getElements().get(CHILD);
 		Assert.assertEquals(CHILD, actualChild.getFullName());
 		Assert.assertEquals("ListenerChild", actualChild.getSimpleName());
 		Assert.assertEquals(1, actualChild.getAttributes().size());
 		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
 		Assert.assertEquals("childAttribute", actualChildAttribute.getName());
+		Assert.assertSame(actualChild, actualChildAttribute.getDescribingElement());
 	}
 
 	@Test
@@ -89,8 +91,15 @@ public class ModelBuilderTest {
 		Assert.assertEquals(attributeName, actual.get(attributeName).getName());		
 	}
 
+	/**
+	 * 
+	 * @return The FrankAttributes that ModelBuilder can produce from a Class<?>. Note
+	 * that the describingElement is not set, because we are not testing here in relation
+	 * to creating the enclosing FrankElement of the attributes.
+	 */
 	private static Map<String, FrankAttribute> getInvestigatedFrankAttributes() {
 		return ModelBuilder.createAttributes(
+				null,
 				InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
 					.getDeclaredMethods());
 	}

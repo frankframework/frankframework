@@ -87,11 +87,11 @@ public class ModelBuilder {
 	FrankElement createFrankElement(Class<?> clazz, FrankElement parent) {
 		FrankElement result = new FrankElement(clazz.getName(), clazz.getSimpleName());
 		result.setParent(parent);
-		result.setAttributes(new ArrayList<>(createAttributes(clazz.getDeclaredMethods()).values()));
+		result.setAttributes(new ArrayList<>(createAttributes(result, clazz.getDeclaredMethods()).values()));
 		return result;
 	}
 
-	static Map<String, FrankAttribute> createAttributes(Method[] methods) {
+	static Map<String, FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
 		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methods, "set");
 		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methods, "get");
 		getterAttributes.putAll(getAttributeToMethodNameMap(methods, "is"));
@@ -104,6 +104,7 @@ public class ModelBuilder {
 		Map<String, FrankAttribute> result = new HashMap<>();
 		for(String attributeName: attributes.keySet()) {
 			FrankAttribute attribute = new FrankAttribute(attributeName);
+			attribute.setDescribingElement(frankElement);
 			result.put(attributeName, attribute);
 		}
 		return result;
