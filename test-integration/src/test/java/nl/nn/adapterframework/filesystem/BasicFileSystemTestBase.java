@@ -24,8 +24,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IBasicFileSystem;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;

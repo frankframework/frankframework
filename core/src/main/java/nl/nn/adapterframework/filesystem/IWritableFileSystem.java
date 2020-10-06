@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,12 @@ import java.io.OutputStream;
 
 /**
  * Extension to {@link IBasicFileSystem} that can be implemented to allow creation of files and folders.
+ * 
+ * For writable filesystems, the name of a file can be freely chosen, and:
+ * - moving or copying a file to a folder probably will not change its name
+ * - moving or copying a file to a folder can 'overwrite' a file already present in the folder
+ * To accommodate these situations, for writable filesystems we support overwrite protection and rollover.
+ * This requires that writeableFileSystem.getName() returns the name of the file in the directory, not the full name including the folder name.
  * 
  * @author Gerrit van Brakel
  *

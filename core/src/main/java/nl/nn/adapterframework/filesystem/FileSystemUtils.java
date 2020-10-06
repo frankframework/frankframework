@@ -41,7 +41,7 @@ public class FileSystemUtils {
 	 * - if the file exists, checks overwrite, or performs rollover
 	 * TODO: - if the file does not exist, checks if the parent folder exists
 	 */
-	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, boolean createFolders, String action) throws FileSystemException {
+	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, String action) throws FileSystemException {
 		if (fileSystem.exists(destination)) {
 			if (overwrite) {
 				log.debug("removing current destination file ["+fileSystem.getCanonicalName(destination)+"]");
@@ -70,13 +70,15 @@ public class FileSystemUtils {
 				throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
 			}
 		}
-		F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(source));
-		prepareDestination(fileSystem, destinationFile, overwrite, numOfBackups, createFolders, action);
+		if (fileSystem instanceof IWritableFileSystem) {
+			F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(source));
+			prepareDestination((IWritableFileSystem)fileSystem, destinationFile, overwrite, numOfBackups, action);
+		}
 	}
 	
-	public static <F> F renameFile(IWritableFileSystem<F> fileSystem, F source, F destination, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
+	public static <F> F renameFile(IWritableFileSystem<F> fileSystem, F source, F destination, boolean overwrite, int numOfBackups) throws FileSystemException {
 		checkSource(fileSystem, source, "rename");
-		prepareDestination(fileSystem, destination, overwrite, numOfBackups, createFolders, "rename");
+		prepareDestination(fileSystem, destination, overwrite, numOfBackups, "rename");
 		F newFile = fileSystem.renameFile(source, destination);
 		if (newFile == null) {
 			throw new FileSystemException("cannot rename file [" + fileSystem.getName(source) + "] to [" + fileSystem.getName(destination) + "]");

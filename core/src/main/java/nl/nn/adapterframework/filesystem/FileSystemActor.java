@@ -353,8 +353,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return dirXml.toXML();
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
-				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
-					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, file, getNumberOfBackups());
+				if (fileSystem.exists(file)) {
+					FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), ACTION_WRITE1);
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -395,7 +395,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					String folderPath = sourceAsFile.getParent();
 					destination = fileSystem.toFile(folderPath,destinationName);
 				}
-				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
 				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
@@ -542,7 +542,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-	@IbisDoc({"3", "when set to <code>true</code>, the folder to move to is created if it does not exist", "false"})
+	@IbisDoc({"3", "when set to <code>true</code>, the folder to move or copy to is created if it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
@@ -550,27 +550,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return createFolder;
 	}
 
+	@IbisDoc({"4", "when set to <code>true</code>, for actions "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 	public boolean isOverwrite() {
 		return overwrite;
-	}
-
-	//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
-//	public void setForce(boolean force) {
-//		this.force = force;
-//	}
-//	public boolean isForce() {
-//		return force;
-//	}
-
-	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
-	public void setBase64(String base64) {
-		this.base64 = base64;
-	}
-	public String getBase64() {
-		return base64;
 	}
 
 	@IbisDoc({"5", "filename to operate on. When not set, the parameter "+PARAMETER_FILENAME+" is used. When that is not set either, the input is used", ""})
@@ -614,8 +599,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return numberOfBackups;
 	}
 
-
-
-
+	@IbisDoc({"9", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		this.base64 = base64;
+	}
+	public String getBase64() {
+		return base64;
+	}
 
 }
