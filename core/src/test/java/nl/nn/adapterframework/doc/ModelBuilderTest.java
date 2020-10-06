@@ -76,7 +76,10 @@ public class ModelBuilderTest {
 					"Different objects for group element and all element for element name: " + elementInGroup,
 					groupElement, allElement);
 		}
+		FrankElement actualObject = model.getAllElements().get("java.lang.Object");
+		Assert.assertNull(actualObject.getParent());
 		FrankElement actualParent = actualGroup.getElements().get(PARENT);
+		Assert.assertSame(actualObject, actualParent.getParent());
 		Assert.assertEquals(PARENT, actualParent.getFullName());
 		Assert.assertEquals("ListenerParent", actualParent.getSimpleName());
 		Assert.assertEquals(1, actualParent.getAttributes().size());
@@ -84,6 +87,7 @@ public class ModelBuilderTest {
 		Assert.assertEquals("parentAttribute", actualParentAttribute.getName());
 		Assert.assertSame(actualParent, actualParentAttribute.getDescribingElement());
 		FrankElement actualChild = actualGroup.getElements().get(CHILD);
+		Assert.assertSame(actualParent, actualChild.getParent());
 		Assert.assertEquals(CHILD, actualChild.getFullName());
 		Assert.assertEquals("ListenerChild", actualChild.getSimpleName());
 		Assert.assertEquals(1, actualChild.getAttributes().size());
