@@ -42,7 +42,6 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -72,7 +71,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 	private SchedulerHelper schedulerHelper;
 	private PlatformTransactionManager transactionManager;
-	private ListenerPortPoller listenerPortPoller;
 	private ApplicationEventPublisher applicationEventPublisher;
 	private FlowDiagramManager flowDiagramManager;
 
@@ -137,9 +135,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 */
 	@Override
 	public void shutdown() {
-		if (listenerPortPoller != null) {
-			listenerPortPoller.clear();
-		}
 		unload((String) null);
 		IbisCacheManager.shutdown();
 	}
@@ -379,12 +374,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
-	private void stopAdapters() {
-		for (Configuration configuration : configurations) {
-			stopAdapters(configuration);
-		}
-	}
-
 	private void stopAdapters(Configuration configuration) {
 		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
@@ -454,14 +443,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		log.debug("setting transaction manager to [" + transactionManager + "]");
 		this.transactionManager = transactionManager;
-	}
-
-	public ListenerPortPoller getListenerPortPoller() {
-		return listenerPortPoller;
-	}
-
-	public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
-		this.listenerPortPoller = listenerPortPoller;
 	}
 
 	@Override
