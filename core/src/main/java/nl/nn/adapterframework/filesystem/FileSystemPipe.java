@@ -193,8 +193,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"5", FILESYSTEMACTOR})
-	public void setBase64(String base64) {
-		actor.setBase64(base64);
+	public void setOverwrite(boolean overwrite) {
+		actor.setOverwrite(overwrite);
 	}
 
 	@IbisDocRef({"6", FILESYSTEMACTOR})
@@ -210,6 +210,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@IbisDocRef({"8", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
+	}
+	
+	@IbisDocRef({"9", FILESYSTEMACTOR})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
 	}
 
 }
