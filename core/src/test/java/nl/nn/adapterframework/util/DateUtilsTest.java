@@ -41,14 +41,29 @@ public class DateUtilsTest {
 		assertEquals("2013", d.toString().substring(len-4, len));
 	}
 
+	@Test
+	public void testParseToDateFullYear() throws Exception {
+		Date d = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
+		int len = d.toString().length();
+		assertEquals("Sun Oct 05", d.toString().substring(0, 10));
+		assertEquals("2014", d.toString().substring(len-4, len));
+	}
+
+	@Test
+	public void testParseToDate90s() throws Exception {
+		Date d = DateUtils.parseToDate("05-10-98", DateUtils.FORMAT_DATE);
+		int len = d.toString().length();
+		assertEquals("1998", d.toString().substring(len-4, len));
+	}
+
 	/**
 	 * Method: parseXmlDateTime(String s)
 	 */
 	@Test
 	public void testParseXmlDateTime() throws Exception {
-		Date d = DateUtils.parseXmlDateTime("2013-10-10");
+		Date d = DateUtils.parseXmlDateTime("2013-12-10");
 		int len = d.toString().length();
-		assertEquals("Thu Oct 10", d.toString().substring(0, 10));
+		assertEquals("Tue Dec 10", d.toString().substring(0, 10));
 		assertEquals("2013", d.toString().substring(len-4, len));
 	}
 
@@ -57,9 +72,9 @@ public class DateUtilsTest {
 	 */
 	@Test
 	public void testParseAnyDate() throws Exception {
-		Date d = DateUtils.parseAnyDate("10-2013-10");
+		Date d = DateUtils.parseAnyDate("12-2013-10");
 		int len = d.toString().length();
-		assertEquals("Thu Oct 10", d.toString().substring(0, 10));
+		assertEquals("Tue Dec 10", d.toString().substring(0, 10));
 		assertEquals("2013", d.toString().substring(len-4, len));
 
 	}
