@@ -30,14 +30,16 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.Rule;
-import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.Rule;
+import org.apache.commons.digester3.binder.DigesterLoader;
+import org.apache.commons.digester3.xmlrules.FromXmlRulesModule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
@@ -102,15 +104,28 @@ public class ConfigurationDigester {
 	private class XmlErrorHandler implements ErrorHandler  {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+		}
+	}
+
+	private static class XmlRuleLoader extends FromXmlRulesModule {
+		private InputSource digesterRules;
+
+		public XmlRuleLoader(InputSource digesterRules) {
+			this.digesterRules = digesterRules;
+		}
+
+		@Override
+		protected void loadRules() {
+			loadXMLRules(digesterRules);
 		}
 	}
 
@@ -120,20 +135,26 @@ public class ConfigurationDigester {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
-				return SaxException.createSaxException(message, locator, e);
+				return SaxException.createSaxException(message, getDocumentLocator(), e);
 			}
 			@Override
 			public SAXException createSAXException(Exception e) {
-				return SaxException.createSaxException(null, locator, e);
+				return SaxException.createSaxException(null, getDocumentLocator(), e);
 			}
 		};
 
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		URL digesterRulesURL = ClassUtils.getResourceURL(configuration.getClassLoader(), getDigesterRules());
-		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
-		digester.addRuleSet(ruleSet);
+		ClassLoader configurationClassLoader = configuration.getClassLoader();
+		Resource digesterRules = Resource.getResource(configurationClassLoader, getDigesterRules());
+		try {
+			InputSource source = digesterRules.asInputSource();
+			DigesterLoader loader = DigesterLoader.newLoader(new XmlRuleLoader(source));
+			loader.addRules(digester);
+		} catch (IOException e) {
+			throw new ConfigurationException("unable to parse DigesterRules ["+getDigesterRules()+"]", e);
+		}
 
 		Rule attributeChecker = new AttributeCheckingRule();
 		digester.addRule("*/jmsRealms", attributeChecker);
@@ -180,7 +201,7 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassUtils.getResourceURL(this, CONFIGURATION_VALIDATION_SCHEMA);
+			URL xsdUrl = ClassUtils.getResourceURL(configurationClassLoader, CONFIGURATION_VALIDATION_SCHEMA);
 			if (xsdUrl==null) {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
