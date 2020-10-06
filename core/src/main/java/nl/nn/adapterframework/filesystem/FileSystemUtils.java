@@ -39,7 +39,6 @@ public class FileSystemUtils {
 	/**
 	 * Prepares the destination of a file:
 	 * - if the file exists, checks overwrite, or performs rollover
-	 * TODO: - if the file does not exist, checks if the parent folder exists
 	 */
 	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, String action) throws FileSystemException {
 		if (fileSystem.exists(destination)) {
@@ -57,7 +56,7 @@ public class FileSystemUtils {
 	}
 	
 	/**
-	 * Prepares the destinationfolder, e.g. for move or copy.
+	 * Prepares the destination folder, e.g. for move or copy.
 	 */
 	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, String action) throws FileSystemException {
 		if (!fileSystem.folderExists(destinationFolder)) {
@@ -72,7 +71,7 @@ public class FileSystemUtils {
 		}
 		if (fileSystem instanceof IWritableFileSystem) {
 			F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(source));
-			prepareDestination((IWritableFileSystem)fileSystem, destinationFile, overwrite, numOfBackups, action);
+			prepareDestination((IWritableFileSystem<F>)fileSystem, destinationFile, overwrite, numOfBackups, action);
 		}
 	}
 	
@@ -164,7 +163,7 @@ public class FileSystemUtils {
 		}
 		String srcFilename = fileSystem.getCanonicalName(file);
 		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
-		((IWritableFileSystem<F>)fileSystem).renameFile(file, tgtFilename);
+		fileSystem.renameFile(file, tgtFilename);
 		
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
