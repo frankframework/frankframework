@@ -11,7 +11,7 @@ This subdirectory of the IAF Git repository lets you run Ibis4Test within a Dock
 - Run a dockerized Oracle database. You find instructions in subdirectory `iaf/test/src/main/tools/setupDB/Oracle`.
 - In the mean time, build your ibis4test container of the Frank!Framework for using an Oracle database. Within the directory of this `README.md` file, please enter the following command:
 
-      docker build --build-arg ORACLE_DB_IP=192.168.178.11 --tag ibis4test .
+      docker build --tag ibis4test .
 
 - Wait until the Oracle database container has initialized users and tables. When this happens, it still takes some time before you can connect to the database.
 - Run your ibis4test container with the following command:
