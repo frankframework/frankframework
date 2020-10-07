@@ -7,7 +7,6 @@ import lombok.Setter;
 
 public class FrankDocGroup {
 	private @Getter String name;
-	private @Getter @Setter String digesterRulesRef;
 	private @Getter @Setter Map<String, FrankElement> elements;
 
 	public FrankDocGroup(String name) {
