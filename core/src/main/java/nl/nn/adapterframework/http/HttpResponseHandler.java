@@ -136,4 +136,11 @@ public class HttpResponseHandler {
 		}
 		return headerMap;
 	}
+
+	public Boolean isMultipart() {
+		if(getContentType().getMimeType().contains("multipart")) {
+			return true;
+		}
+		return false;
+	}
 }

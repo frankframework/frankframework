@@ -36,6 +36,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -167,7 +168,7 @@ public class HttpSender extends HttpSenderBase {
 	private boolean ignoreRedirects=false;
 	private String inputMessageParam=null;
 
-	private boolean multipartResponse=false;
+	private Boolean multipartResponse=null;
 	private String multipartXmlSessionKey;
 	private String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private boolean encodeMessages = false;
@@ -524,9 +525,11 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
+			String responseBody = getResponseBodyAsString(responseHandler, false);
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + responseBody);
+			
 		}
 
 		HttpServletResponse response = null;
@@ -551,11 +554,14 @@ public class HttpSender extends HttpSenderBase {
 			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
 				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 				return Message.nullMessage();
-			} else if (isMultipartResponse()) {
+			} else if (BooleanUtils.isTrue(isMultipartResponse()) || responseHandler.isMultipart()) {
+				if(BooleanUtils.isFalse(isMultipartResponse())) {
+					log.warn("multipart response was set to false, but the response is multipart!");
+				}
 				return handleMultipartResponse(responseHandler, session);
 			} else {
 				//TODO remove getResponseBodyAsString method and return a Message object
-				return Message.asMessage(getResponseBodyAsString(responseHandler));
+				return Message.asMessage(getResponseBodyAsString(responseHandler, true));
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
@@ -563,7 +569,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
 		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		if ("HEAD".equals(getMethodType())) {
@@ -577,7 +583,16 @@ public class HttpSender extends HttpSenderBase {
 			}
 			return headersXml.toXML();
 		}
-		String responseBody = responseHandler.getResponseAsString(true);
+		String responseBody = null;
+		try {
+			responseBody = responseHandler.getResponseAsString(true);
+		} catch(IOException e) {
+			if(throwIOExceptionWhenParsingResponse) {
+				throw e;
+			}
+			return null;
+		}
+
 		if (StringUtils.isEmpty(responseBody)) {
 			log.warn(getLogPrefix()+"responseBody is empty");
 		} else {
@@ -765,11 +780,13 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
 	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
-	public void setMultipartResponse(boolean b) {
+	public void setMultipartResponse(Boolean b) {
 		multipartResponse = b;
 	}
-	public boolean isMultipartResponse() {
+	public Boolean isMultipartResponse() {
 		return multipartResponse;
 	}
 
