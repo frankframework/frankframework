@@ -86,17 +86,19 @@ public class ModelBuilder {
 	}
 
 	List<FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
-		Map<String, String> setterAttributes = getAttributeToMethodNameMap(methods, "set");
-		Map<String, String> getterAttributes = getAttributeToMethodNameMap(methods, "get");
-		getterAttributes.putAll(getAttributeToMethodNameMap(methods, "is"));
+		Map<String, Method> setterAttributes = getAttributeToMethodNameMap(methods, "set");
+		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, frankElement);
 		Map<String, String> setterToAttributeName = new HashMap<>();
 		for(String candidateAttributeName: setterAttributes.keySet()) {
-			setterToAttributeName.put(setterAttributes.get(candidateAttributeName), candidateAttributeName);
+			setterToAttributeName.put(setterAttributes.get(candidateAttributeName).getName(), candidateAttributeName);
 		}
 		List<FrankAttribute> result = new ArrayList<>();
 		for(Method method: methods) {
 			if(setterToAttributeName.containsKey(method.getName())) {
 				String candidateAttributeName = setterToAttributeName.get(method.getName());
+				if(getterAttributes.containsKey(candidateAttributeName)) {
+					compareGetterWithSetter(method, getterAttributes.get(candidateAttributeName), frankElement);
+				}
 				FrankAttribute candidate = new FrankAttribute(candidateAttributeName);
 				candidate.setDescribingElement(frankElement);
 				boolean isDocumented = documentAttribute(candidate, method);
@@ -108,18 +110,31 @@ public class ModelBuilder {
 		return result;
 	}
 
-	static Map<String, String> getAttributeToMethodNameMap(Method[] methods, String prefix) {
+	private Map<String, Method> getGetterAndIsserAttributes(Method[] methods, FrankElement frankElement) {
+		Map<String, Method> getterAttributes = getAttributeToMethodNameMap(methods, "get");
+		Map<String, Method> isserAttributes = getAttributeToMethodNameMap(methods, "is");
+		for(String isserAttributeName : isserAttributes.keySet()) {
+			if(getterAttributes.containsKey(isserAttributeName)) {
+				log.warn("For FrankElement %s, attribute %s has both a getX and an isX method",
+						frankElement.getSimpleName(), isserAttributeName);
+			} else {
+				getterAttributes.put(isserAttributeName, isserAttributes.get(isserAttributeName));
+			}
+		}
+		return getterAttributes;
+	}
+
+	static Map<String, Method> getAttributeToMethodNameMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
-		Set<String> methodNames = methodList.stream()
+		methodList = methodList.stream()
 				.filter(ModelBuilder::isGetterOrSetter)
-				.map(method -> method.getName())
-				.filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
-				.collect(Collectors.toSet());		
-		Map<String, String> result = new HashMap<>();
-		for(String methodName: methodNames) {
-			String strippedName = methodName.substring(prefix.length());
+				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
+				.collect(Collectors.toList());		
+		Map<String, Method> result = new HashMap<>();
+		for(Method method: methodList) {
+			String strippedName = method.getName().substring(prefix.length());
 			String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);
-			result.put(attributeName, methodName);
+			result.put(attributeName, method);
 		}
 		return result;
 	}
@@ -135,6 +150,15 @@ public class ModelBuilder {
 					|| method.getReturnType().getName().equals(JAVA_STRING)
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
+	}
+
+	private void compareGetterWithSetter(Method setter, Method getter, FrankElement frankElement) {
+		String setterType = setter.getParameterTypes()[0].getName();
+		String getterType = getter.getReturnType().getName();
+		if(! getterType.equals(setterType)) {
+			log.warn("In Frank element %s: setter %s has type %s while the getter has type %s",
+					frankElement.getSimpleName(), setter.getName(), setterType, getterType);
+		}
 	}
 
 	private boolean documentAttribute(FrankAttribute attribute, Method method) {

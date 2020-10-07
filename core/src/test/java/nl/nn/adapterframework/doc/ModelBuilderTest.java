@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.doc;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -150,10 +152,15 @@ public class ModelBuilderTest {
 	}
 
 	Map<String, String> getAttributeNameMap(String prefix) {
-		return 	ModelBuilder.getAttributeToMethodNameMap(
+		Map<String, Method> attributeToMethodMap = ModelBuilder.getAttributeToMethodNameMap(
 				InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
 					.getDeclaredMethods(),
 				prefix);
+		Map<String, String> result = new HashMap<>();
+		for(String attributeName: attributeToMethodMap.keySet()) {
+			result.put(attributeName, attributeToMethodMap.get(attributeName).getName());
+		}
+		return result;
 	}
 
 	@Test
