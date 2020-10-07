@@ -3,7 +3,6 @@ package nl.nn.adapterframework.doc;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,26 +71,11 @@ public class ModelBuilder {
 		if(model.getAllElements().containsKey(clazz.getName())) {
 			return model.getAllElements().get(clazz.getName());
 		}
-		List<Class<?>> classesForNewElements = new ArrayList<>();
-		FrankElement parent = null;
-		Class<?> superClass = clazz;
-		while(true) {
-			classesForNewElements.add(superClass);
-			superClass = superClass.getSuperclass();
-			if(superClass == null) {
-				break;
-			}
-			if(model.getAllElements().containsKey(superClass.getName())) {
-				parent = model.getAllElements().get(superClass.getName());
-				break;
-			}
-		}
-		Collections.reverse(classesForNewElements);
-		for(Class<?> seed: classesForNewElements) {
-			parent = createFrankElement(seed, parent);
-			model.getAllElements().put(parent.getFullName(), parent);
-		}
-		return parent;		
+		Class<?> superClass = clazz.getSuperclass();
+		FrankElement parent = superClass == null ? null : frankElement(superClass);
+		FrankElement current = createFrankElement(clazz, parent);
+		model.getAllElements().put(current.getFullName(), current);
+		return current;
 	}
 
 	FrankElement createFrankElement(Class<?> clazz, FrankElement parent) {
