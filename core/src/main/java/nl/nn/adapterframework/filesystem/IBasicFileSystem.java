@@ -71,7 +71,17 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public boolean folderExists(String folder) throws FileSystemException;
 	public InputStream readFile(F f) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
+
+	/**
+	 * Moves the file to a another folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 */
 	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
+
+	/**
+	 * Copies the file to a another folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 */
 	public F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	public void createFolder(String folder) throws FileSystemException;
