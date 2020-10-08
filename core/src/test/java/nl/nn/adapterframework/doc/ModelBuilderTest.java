@@ -122,7 +122,8 @@ public class ModelBuilderTest {
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) {
 		final List<FrankAttribute> attributes = instance.createAttributes(
-				null, InfoBuilderSource.getClass(className).getDeclaredMethods());
+				new FrankElement("dummy.Dummy", "Dummy"),
+				InfoBuilderSource.getClass(className).getDeclaredMethods());
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
@@ -132,8 +133,8 @@ public class ModelBuilderTest {
 	}
 
 	@Test
-	public void whenOnlySetterThenNotAttribute() {
-		checkReflectAttributeOmitted("noAttributeOnlySetter");
+	public void whenOnlySetterThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetter");
 	}
 
 	private void checkReflectAttributeOmitted(String attributeName) {
@@ -152,7 +153,7 @@ public class ModelBuilderTest {
 	}
 
 	Map<String, String> getAttributeNameMap(String prefix) {
-		Map<String, Method> attributeToMethodMap = ModelBuilder.getAttributeToMethodNameMap(
+		Map<String, Method> attributeToMethodMap = ModelBuilder.getAttributeToMethodMap(
 				InfoBuilderSource.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
 					.getDeclaredMethods(),
 				prefix);

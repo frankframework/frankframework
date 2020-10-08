@@ -86,37 +86,35 @@ public class ModelBuilder {
 	}
 
 	List<FrankAttribute> createAttributes(FrankElement frankElement, Method[] methods) {
-		Map<String, Method> setterAttributes = getAttributeToMethodNameMap(methods, "set");
+		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, frankElement);
 		Map<String, String> setterToAttributeName = new HashMap<>();
-		for(String candidateAttributeName: setterAttributes.keySet()) {
-			setterToAttributeName.put(setterAttributes.get(candidateAttributeName).getName(), candidateAttributeName);
+		for(String attributeName: setterAttributes.keySet()) {
+			setterToAttributeName.put(setterAttributes.get(attributeName).getName(), attributeName);
 		}
 		List<FrankAttribute> result = new ArrayList<>();
 		for(Method method: methods) {
 			if(setterToAttributeName.containsKey(method.getName())) {
-				String candidateAttributeName = setterToAttributeName.get(method.getName());
-				if(getterAttributes.containsKey(candidateAttributeName)) {
-					compareGetterWithSetter(method, getterAttributes.get(candidateAttributeName), frankElement);
+				String attributeName = setterToAttributeName.get(method.getName());
+				if(getterAttributes.containsKey(attributeName)) {
+					compareGetterWithSetter(method, getterAttributes.get(attributeName), frankElement);
 				}
-				FrankAttribute candidate = new FrankAttribute(candidateAttributeName);
-				candidate.setDescribingElement(frankElement);
-				boolean isDocumented = documentAttribute(candidate, method);
-				if(getterAttributes.containsKey(candidateAttributeName) || isDocumented) {
-					result.add(candidate);
-				}
+				FrankAttribute attribute = new FrankAttribute(attributeName);
+				attribute.setDescribingElement(frankElement);
+				documentAttribute(attribute, method, frankElement);
+				result.add(attribute);
 			}
 		}
 		return result;
 	}
 
 	private Map<String, Method> getGetterAndIsserAttributes(Method[] methods, FrankElement frankElement) {
-		Map<String, Method> getterAttributes = getAttributeToMethodNameMap(methods, "get");
-		Map<String, Method> isserAttributes = getAttributeToMethodNameMap(methods, "is");
+		Map<String, Method> getterAttributes = getAttributeToMethodMap(methods, "get");
+		Map<String, Method> isserAttributes = getAttributeToMethodMap(methods, "is");
 		for(String isserAttributeName : isserAttributes.keySet()) {
 			if(getterAttributes.containsKey(isserAttributeName)) {
-				log.warn("For FrankElement %s, attribute %s has both a getX and an isX method",
-						frankElement.getSimpleName(), isserAttributeName);
+				log.warn(String.format("For FrankElement %s, attribute %s has both a getX and an isX method",
+						frankElement.getSimpleName(), isserAttributeName));
 			} else {
 				getterAttributes.put(isserAttributeName, isserAttributes.get(isserAttributeName));
 			}
@@ -124,7 +122,7 @@ public class ModelBuilder {
 		return getterAttributes;
 	}
 
-	static Map<String, Method> getAttributeToMethodNameMap(Method[] methods, String prefix) {
+	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
 				.filter(ModelBuilder::isGetterOrSetter)
@@ -156,12 +154,12 @@ public class ModelBuilder {
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
 		if(! getterType.equals(setterType)) {
-			log.warn("In Frank element %s: setter %s has type %s while the getter has type %s",
-					frankElement.getSimpleName(), setter.getName(), setterType, getterType);
+			log.warn(String.format("In Frank element %s: setter %s has type %s while the getter has type %s",
+					frankElement.getSimpleName(), setter.getName(), setterType, getterType));
 		}
 	}
 
-	private boolean documentAttribute(FrankAttribute attribute, Method method) {
+	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement frankElement) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
@@ -173,16 +171,16 @@ public class ModelBuilder {
 				if(parsed.hasOrder) {
 					attribute.setOrder(parsed.getOrder());
 				}
-				return true;
+				return;
 			}
 		}
 		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		if(ibisDoc != null) {
 			ibisDocIntoFrankElement(ibisDoc, attribute);
-			return true;
 		}
 		else {
-			return false;
+			log.warn(String.format("No documentation available for FrankElement %s, attribute %s",
+					frankElement.getSimpleName(), attribute.getName()));
 		}
 	}
 
@@ -205,13 +203,13 @@ public class ModelBuilder {
 				result.setOrder(Integer.parseInt(ibisDocRef.value()[0]));
 				result.setHasOrder(true);
 			} catch (Throwable t) {
-				log.warn("Could not parse order in @IbisDocRef annotation: "
-						+ Integer.parseInt(ibisDocRef.value()[0]));
+				log.warn(String.format("Could not parse order in @IbisDocRef annotation: "
+						+ Integer.parseInt(ibisDocRef.value()[0])));
 			}
 		}
 		else {
-			log.warn(String.format("Invalid @IbisDocRef annotation on method: %s.%s",
-					originalMethod.getDeclaringClass().getName(), originalMethod.getName()));
+			log.warn(String.format(String.format("Invalid @IbisDocRef annotation on method: %s.%s",
+					originalMethod.getDeclaringClass().getName(), originalMethod.getName())));
 			return null;
 		}
 		result.setReferredMethod(getReferredMethod(methodString, originalMethod));
@@ -242,7 +240,7 @@ public class ModelBuilder {
 			}
 			return null;
 		} catch (ClassNotFoundException e) {
-			log.warn("Super class [" + e + "] was not found!");
+			log.warn(String.format("Super class [" + e + "] was not found!"));
 			return null;
 		}
 	}
@@ -256,7 +254,7 @@ public class ModelBuilder {
 			attribute.setOrder(order);
 			isIbisDocHasOrder = true;
 		} catch (NumberFormatException e) {
-			log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
+			log.warn(String.format("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]));
 		}
 		if (isIbisDocHasOrder) {
 			attribute.setDescription(ibisDocValues[1]);
