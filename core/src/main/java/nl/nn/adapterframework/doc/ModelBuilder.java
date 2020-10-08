@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.doc;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +14,6 @@ public class ModelBuilder {
 
 	public ModelBuilder() {
 		model = new FrankDocModel();
-		model.setGroups(new ArrayList<>());
 	}
 
 	/**
@@ -42,7 +40,6 @@ public class ModelBuilder {
 
 	FrankDocGroup addGroup(String name) {
 		FrankDocGroup group = new FrankDocGroup(name);
-		group.setElements(new HashMap<>());
 		model.getGroups().add(group);
 		return group;
 	}
