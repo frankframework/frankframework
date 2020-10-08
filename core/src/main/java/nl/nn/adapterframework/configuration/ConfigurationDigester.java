@@ -31,19 +31,17 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.DigesterLoader;
-import org.apache.commons.digester3.xmlrules.FromXmlRulesModule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
+import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -89,14 +87,11 @@ public class ConfigurationDigester {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
-
 	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
-	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
 	private boolean configLogAppend = false;
 
 	String lastResolvedEntity = null;
@@ -113,19 +108,6 @@ public class ConfigurationDigester {
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
 			ConfigurationWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
-		}
-	}
-
-	private static class XmlRuleLoader extends FromXmlRulesModule {
-		private InputSource digesterRules;
-
-		public XmlRuleLoader(InputSource digesterRules) {
-			this.digesterRules = digesterRules;
-		}
-
-		@Override
-		protected void loadRules() {
-			loadXMLRules(digesterRules);
 		}
 	}
 
@@ -147,51 +129,10 @@ public class ConfigurationDigester {
 		digester.push(configuration);
 
 		ClassLoader configurationClassLoader = configuration.getClassLoader();
-		Resource digesterRules = Resource.getResource(configurationClassLoader, getDigesterRules());
-		try {
-			InputSource source = digesterRules.asInputSource();
-			DigesterLoader loader = DigesterLoader.newLoader(new XmlRuleLoader(source));
-			loader.addRules(digester);
-		} catch (IOException e) {
-			throw new ConfigurationException("unable to parse DigesterRules ["+getDigesterRules()+"]", e);
-		}
 
-		Rule attributeChecker = new AttributeCheckingRule();
-		digester.addRule("*/jmsRealms", attributeChecker);
-		digester.addRule("*/jmsRealm", attributeChecker);
-		digester.addRule("*/sapSystem", attributeChecker);
-		digester.addRule("*/adapter", attributeChecker);
-		digester.addRule("*/pipeline", attributeChecker);
-		digester.addRule("*/errorMessageFormatter", attributeChecker);
-		digester.addRule("*/receiver", attributeChecker);
-		digester.addRule("*/sender", attributeChecker);
-		digester.addRule("*/listener", attributeChecker);
-		digester.addRule("*/postboxSender", attributeChecker);
-		digester.addRule("*/postboxListener", attributeChecker);
-		digester.addRule("*/errorSender", attributeChecker);
-		digester.addRule("*/messageLog", attributeChecker);
-		digester.addRule("*/inProcessStorage", attributeChecker);
-		digester.addRule("*/errorStorage", attributeChecker);
-		digester.addRule("*/pipe", attributeChecker);
-		digester.addRule("*/readerFactory", attributeChecker);
-		digester.addRule("*/manager", attributeChecker);
-		digester.addRule("*/manager/flow", attributeChecker);
-		digester.addRule("*/recordHandler", attributeChecker);
-		digester.addRule("*/resultHandler", attributeChecker);
-		digester.addRule("*/forward", attributeChecker);
-		digester.addRule("*/child", attributeChecker);
-		digester.addRule("*/param", attributeChecker);
-		digester.addRule("*/pipeline/exits/exit", attributeChecker);
-		digester.addRule("*/scheduler/job", attributeChecker);
-		digester.addRule("*/locker", attributeChecker);
-		digester.addRule("*/directoryCleaner", attributeChecker);
-		digester.addRule("*/statistics", attributeChecker);
-		digester.addRule("*/handler", attributeChecker);
-		digester.addRule("*/cache", attributeChecker);
-		digester.addRule("*/inputValidator", attributeChecker);
-		digester.addRule("*/outputValidator", attributeChecker);
-		digester.addRule("*/inputWrapper", attributeChecker);
-		digester.addRule("*/outputWrapper", attributeChecker);
+		DigesterLoader loader = DigesterLoader.newLoader(new FrankDigesterRules(digester));
+		loader.addRules(digester);
+
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().setDigesterRules(digester);
 		}
@@ -223,10 +164,6 @@ public class ConfigurationDigester {
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
-			URL digesterRulesURL = ClassUtils.getResourceURL(classLoader, getDigesterRules());
-			if (digesterRulesURL == null) {
-				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
-			}
 
 			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
 			if (configurationResource == null) {
@@ -262,7 +199,7 @@ public class ConfigurationDigester {
 				currentElementName = digester.getCurrentElementName();
 			}
 			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
-				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
+				"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 			throw e;
 		}
 		if (MonitorManager.getInstance().isEnabled()) {
@@ -307,12 +244,4 @@ public class ConfigurationDigester {
 			}
 		}
 	}
-
-	public void setDigesterRules(String string) {
-		digesterRulesFile = string;
-	}
-	public String getDigesterRules() {
-		return digesterRulesFile;
-	}
-
 }
