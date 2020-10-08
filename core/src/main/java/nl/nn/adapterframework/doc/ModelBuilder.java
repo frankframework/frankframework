@@ -8,16 +8,14 @@ import java.util.Set;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
-import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 
-public class ModelBuilder implements FrankElement.FrankElementStore {
+public class ModelBuilder {
 	private @Getter FrankDocModel model;
 
 	public ModelBuilder() {
 		model = new FrankDocModel();
 		model.setGroups(new ArrayList<>());
-		model.setAllElements(new HashMap<>());
 	}
 
 	/**
@@ -50,27 +48,7 @@ public class ModelBuilder implements FrankElement.FrankElementStore {
 	}
 
 	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
-		group.getElements().put(clazz.getName(), FrankElement.frankElement(clazz, this));
-	}
-
-	@Override
-	public boolean hasFrankElement(String name) {
-		return model.getAllElements().containsKey(name);
-	}
-
-	@Override
-	public FrankElement getFrankElement(String name) {
-		return model.getAllElements().get(name);
-	}
-
-	@Override
-	public void addFrankElement(FrankElement frankElement) {
-		model.getAllElements().put(frankElement.getFullName(), frankElement);
-	}
-
-	@Override
-	public int numFrankElements() {
-		return model.getAllElements().size();
+		group.getElements().put(clazz.getName(), model.frankElement(clazz));
 	}
 
 	public static Class<?> getClass(final String name) {

@@ -21,7 +21,7 @@ public class FrankElementTest {
 
 	@Before
 	public void setUp() {
-		store = new ModelBuilder();
+		store = new FrankDocModel();
 	}
 
 	@Test
