@@ -24,8 +24,8 @@ public class FrankElement {
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
-	private @Getter @Setter FrankElement parent;
-	private @Getter @Setter List<FrankAttribute> attributes;
+	private @Getter FrankElement parent;
+	private @Getter List<FrankAttribute> attributes;
 
 	public interface FrankElementStore {
 		boolean hasFrankElement(String name);
