@@ -38,12 +38,6 @@ public class ModelBuilder {
 		return result;
 	}
 
-	FrankDocGroup addGroup(String name) {
-		FrankDocGroup group = new FrankDocGroup(name);
-		model.getGroups().add(group);
-		return group;
-	}
-
 	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
 		group.getElements().put(clazz.getName(), model.frankElement(clazz));
 	}

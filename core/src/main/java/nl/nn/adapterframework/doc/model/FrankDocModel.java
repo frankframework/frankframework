@@ -19,6 +19,12 @@ public class FrankDocModel implements FrankElement.FrankElementStore {
 		return FrankElement.frankElement(clazz, this);
 	}
 
+	public FrankDocGroup addGroup(String name) {
+		FrankDocGroup group = new FrankDocGroup(name);
+		groups.add(group);
+		return group;
+	}
+
 	@Override
 	public boolean hasFrankElement(String name) {
 		return allElements.containsKey(name);

@@ -36,7 +36,7 @@ public class ModelBuilderTest {
 	@Test
 	public void whenChildElementAddedBeforeParentThenCorrectModel() {
 		ModelBuilder builder = new ModelBuilder();
-		FrankDocGroup group = builder.addGroup("Listeners");
+		FrankDocGroup group = builder.getModel().addGroup("Listeners");
 		builder.addElementsToGroup(ModelBuilder.getClass(CHILD), group);
 		builder.addElementsToGroup(ModelBuilder.getClass(PARENT), group);
 		checkModelAfterChildAndParentAdded(builder.getModel());
@@ -45,7 +45,7 @@ public class ModelBuilderTest {
 	@Test
 	public void whenParentElementAddedBeforeChildThenCorrectModel() {
 		ModelBuilder builder = new ModelBuilder();
-		FrankDocGroup group = builder.addGroup("Listeners");
+		FrankDocGroup group = builder.getModel().addGroup("Listeners");
 		builder.addElementsToGroup(ModelBuilder.getClass(PARENT), group);
 		builder.addElementsToGroup(ModelBuilder.getClass(CHILD), group);
 		checkModelAfterChildAndParentAdded(builder.getModel());
