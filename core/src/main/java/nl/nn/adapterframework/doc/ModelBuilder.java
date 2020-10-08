@@ -98,6 +98,9 @@ public class ModelBuilder {
 				String attributeName = setterToAttributeName.get(method.getName());
 				if(getterAttributes.containsKey(attributeName)) {
 					compareGetterWithSetter(method, getterAttributes.get(attributeName), frankElement);
+				} else {
+					log.warn(String.format("FrankElement %s and attribute %s: no getter method",
+							frankElement.getSimpleName(), attributeName));
 				}
 				FrankAttribute attribute = new FrankAttribute(attributeName);
 				attribute.setDescribingElement(frankElement);
