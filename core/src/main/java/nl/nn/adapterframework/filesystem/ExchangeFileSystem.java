@@ -35,11 +35,13 @@ import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.WebProxy;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
+import microsoft.exchange.webservices.data.core.enumeration.misc.error.ServiceError;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
 import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
 import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceVersionException;
+import microsoft.exchange.webservices.data.core.exception.service.remote.ServiceResponseException;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
@@ -271,37 +273,37 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		throw new NotImplementedException("Cannot make item for ["+filename+"] file in Exchange folder ["+folder+"]");
 	}
 
-
-	@Override
-	public boolean exists(Item f) throws FileSystemException {
+	private boolean itemExistsInFolder(FolderId folderId, String itemId) throws FileSystemException{
 		try {
 			ItemView view = new ItemView(1);
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
-			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, f.getId().toString());
+			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, itemId);
 			FindItemsResults<Item> findResults;
-			findResults = exchangeService.findItems(basefolderId,searchFilter, view);
+			findResults = exchangeService.findItems(folderId,searchFilter, view);
 			return findResults.getTotalCount()!=0;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	public Item extractNestedItem(Item item) throws Exception {
-		Iterator<Attachment> attachments = listAttachments(item);
-		if (attachments!=null) {
-			while (attachments.hasNext()) {
-				Attachment attachment=attachments.next();
-				if (attachment instanceof ItemAttachment) {
-					ItemAttachment itemAttachment = (ItemAttachment)attachment;
-					itemAttachment.load();
-					return itemAttachment.getItem();
-				}
+	@Override
+	public boolean exists(Item f) throws FileSystemException {
+		try {
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			return itemExistsInFolder(emailMessage.getParentFolderId(), f.getId().toString());
+		} catch (ServiceResponseException e) {
+			ServiceError errorCode = e.getErrorCode();
+			if (errorCode == ServiceError.ErrorItemNotFound) {
+				return false;
 			}
+			throw new FileSystemException(e);
+		} catch (Exception e) {
+			throw new FileSystemException(e);
 		}
-		return null;
 	}
-	
-	
+
+
+
 	@Override
 	public Iterator<Item> listFiles(String folder) throws FileSystemException {
 		try {
@@ -374,9 +376,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	}
 	@Override
 	public Item moveFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		EmailMessage emailMessage;
 		try {
-			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
@@ -386,9 +387,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 
 	@Override
 	public Item copyFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		EmailMessage emailMessage;
 		try {
-			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.copy(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
@@ -599,7 +599,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 			folder.setDisplayName(folderName);
 			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
 		}
 	}
 

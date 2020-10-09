@@ -5,9 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Iterator;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -35,24 +36,34 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		return new LocalFileSystemTestHelper(folder);
 	}
 	
-	@Ignore
-	@Override
+
 	@Test
-	public void writableFileSystemTestRenameTo() throws Exception {
-		// Ignored because cannot rename temporary file
-		super.writableFileSystemTestRenameTo();
+	public void writableFileSystemTestCreateNewFileAbsolute() throws Exception {
+		String filename = "createFileAbsolute" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		deleteFile(null, filename);
+		waitForActionToFinish();
+		
+		File file = fileSystem.toFile(fileSystem.getRoot()+"/"+filename);
+		OutputStream out = fileSystem.createFile(file);
+		PrintWriter pw = new PrintWriter(out);
+		pw.println(contents);
+		pw.close();
+		out.close();
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+		
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(contents.trim(), actual.trim());
+
 	}
-	
-	@Ignore
-	@Override
-	@Test
-	public void writableFileSystemTestRenameToExisting() throws Exception {
-		// Ignored because foreach test different temp folder is created
-		// create file creates destination file in different folder 
-		// so that renameTo method returns false in exists file check
-		// and does not throw the exception. 
-		super.writableFileSystemTestRenameToExisting();
-	}
+
 
 	@Test
 	public void localFileSystemTestListWildcard() throws Exception {

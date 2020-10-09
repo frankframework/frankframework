@@ -308,35 +308,17 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
-		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			if (exists(newName) && !force) {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
-			}
-			file.rename(newName, force);
+	public String renameFile(String source, String destination) throws FileSystemException {
+		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			file.rename(destination, true);
 		}
-		return newName;
-	}
-
-	protected String getDestinationFile(String f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		if (exists(destinationFolder)) {
-			if (!isFolder(destinationFolder)) {
-				throw new FileSystemException("Cannot "+action+" file. Destination ["+destinationFolder+"] is not a folder.");
-			}
-		} else {
-			if (createFolder) {
-				createFolder(destinationFolder);
-			} else {
-				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
-			}
-		}
-		return destinationFolder+"\\"+f;
+		return destination;
 	}
 
 	@Override
 	public String moveFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = getDestinationFile(f, destinationFolder, createFolder, "move");
+			String destination = toFile(destinationFolder, f);
 			file.rename(destination, false);
 			return destination;
 		}
@@ -345,7 +327,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	@Override
 	public String copyFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = getDestinationFile(f, destinationFolder, createFolder, "copy");
+			String destination = toFile(destinationFolder, f);
 			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
 				file.remoteCopyTo(destinationFile);
 			} catch (TransportException | BufferException e) {
