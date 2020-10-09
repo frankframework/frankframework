@@ -2,6 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -139,7 +140,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testSleepWhenEqualsToPrevious() throws Exception {
-		long sleep = 1000;
+		long sleep = 100;
 		pipe.setSleepWhenEqualToPrevious(sleep);
 		configureAndStartPipe();
 
@@ -157,7 +158,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 		long timeDifference = second.getTime()-first.getTime();
 
-		assertFalse("Date difference cannot be bigger than "+sleep, timeDifference > sleep);
+		assertTrue("Timestamps should be different", timeDifference != 0);
 	}
 
 }

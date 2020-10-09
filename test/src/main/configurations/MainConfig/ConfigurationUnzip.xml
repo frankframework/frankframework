@@ -1,0 +1,26 @@
+<Adapter name="UnzipPipe"
+	description="Unzips a file. If it is successful exits the pipeline otherwise follows the exception forward.">
+
+	<Receiver name="ZipFilePathReceiver">
+		<JavaListener name="ibis4test-ZipFilePathListener"
+			serviceName="ibis4test-ZipFilePathListener" />
+	</Receiver>
+
+	<Pipeline firstPipe="unzipFile">
+
+		<UnzipPipe name="unzipFile"
+			directory="${testdata.dir}/unzip/" getInputFromSessionKey="stream">
+
+			<Forward name="success" path="EXIT" />
+			<Forward name="exception" path="CreateErrorMessage" />
+		</UnzipPipe>
+
+		<XsltPipe name="CreateErrorMessage"
+			xpathExpression="/errorMessage/@message">
+			<Forward name="success" path="EXIT" />
+		</XsltPipe>
+
+		<Exit path="EXIT" state="success" />
+
+	</Pipeline>
+</Adapter>

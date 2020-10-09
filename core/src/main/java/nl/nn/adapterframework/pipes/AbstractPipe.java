@@ -25,11 +25,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -80,6 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
+ * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself<p>
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>

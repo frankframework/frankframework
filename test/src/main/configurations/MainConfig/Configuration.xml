@@ -55,6 +55,7 @@
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
+	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -113,4 +114,5 @@
 	&BlockEnabledSenders;
 	&Validators;
 	&ApiWsdlGenerator;
+	&Unzip;
 </configuration>
