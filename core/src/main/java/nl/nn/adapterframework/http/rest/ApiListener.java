@@ -230,7 +230,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		}
 	}
 
-	public AuthenticationMethods getAuthenticationMethod() {
+	public AuthenticationMethods getAuthenticationMethodEnum() {
 		if(authenticationMethod == null) {
 			authenticationMethod = AuthenticationMethods.NONE;
 		}
@@ -252,7 +252,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.authenticationRoles = roles;
 	}
-	public List<String> getAuthenticationRoles() {
+	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
 	}
 
