@@ -600,6 +600,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	@IbisDoc({"9", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
+	@Deprecated
 	public void setBase64(String base64) {
 		this.base64 = base64;
 	}

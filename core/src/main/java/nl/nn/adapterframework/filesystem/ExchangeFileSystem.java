@@ -302,16 +302,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		}
 	}
 
-	//	@Override
-//	public boolean filenameExistsInFolder(String folder, String filename) throws FileSystemException{
-//		try {
-//			FolderId folderId = findFolder(folder);
-//			return itemExistsInFolder(folderId, filename);
-//		} catch (Exception e) {
-//			throw new FileSystemException(e);
-//		}
-//	}
-
 
 
 	@Override

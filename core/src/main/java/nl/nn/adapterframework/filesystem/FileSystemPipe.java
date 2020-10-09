@@ -213,6 +213,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@IbisDocRef({"9", FILESYSTEMACTOR})
+	@Deprecated
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
