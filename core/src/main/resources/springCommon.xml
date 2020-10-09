@@ -278,7 +278,7 @@
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.
 	Bean names are prefixed with 'proto-' so that autowiring by
-	name doesn't create unnecessarily instances.
+	name doesn't create instances unnecessarily.
 	-->
 	<bean
 		name="proto-adapter"

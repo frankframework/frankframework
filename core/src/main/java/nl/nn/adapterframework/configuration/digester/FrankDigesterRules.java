@@ -31,6 +31,12 @@ import nl.nn.adapterframework.configuration.ListenerFactory;
 import nl.nn.adapterframework.configuration.RecordHandlingFlowFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Custom implementation that replaces the old digester-rules.xml file.
+ * Where previously you had to specify a 'create', 'set-properties' and a 'set-next-rule'
+ * In this implementation you only have to call 'createRule(rulesBinder, PATTERN, NEXT-RULE')
+ *
+ */
 public class FrankDigesterRules implements RulesModule {
 
 	private final Logger log = LogUtil.getLogger(this);
@@ -116,27 +122,28 @@ public class FrankDigesterRules implements RulesModule {
 	}
 
 	/**
-	 * Create a generic parser to create the object, set the properties, add the attributeChecker on a per pattern basis.
+	 * Create a generic parser to create the object, set the properties (set-properties-rule), 
+	 * set the register method (set-next-rule) add the attributeCheckerRule on a per pattern basis.
 	 */
 	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, Class<?> clazz, ObjectCreationFactory<Object> factory, String next, Class<?> parameterType) {
 		if(log.isTraceEnabled()) log.trace(String.format("adding digesterRule pattern [%s] class [%s] factory [%s] next-rule [%s] parameterType [%s]", pattern, clazz, factory, next, parameterType));
 
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
-		if(clazz != null) {
+		if(clazz != null) { //If a class is specified, load the class through the digester create-object-rule
 			ruleBuilder.createObject().ofType(clazz);
 		} else {
 			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
-			ruleBuilder.factoryCreate().usingFactory(factory);
+			ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 		}
-		ruleBuilder.setProperties();
-		if(next != null) {
+		ruleBuilder.setProperties(); //set the set-properties-rule
+		if(next != null) { //set the register method (set-next-rule)
 			if(parameterType != null) {
 				ruleBuilder.setNext(next).withParameterType(parameterType);
 			} else {
 				ruleBuilder.setNext(next);
 			}
 		}
-		ruleBuilder.addRule(attributeChecker);
+		ruleBuilder.addRule(attributeChecker); //Add the attribute checker
 		return ruleBuilder;
 	}
 }
