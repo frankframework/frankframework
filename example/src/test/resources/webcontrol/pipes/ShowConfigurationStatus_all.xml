@@ -13,11 +13,11 @@
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_Util] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] LiquiBase applying change [Ibis4Example:1:Niels Meijer] description [insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE] tag [Ibis4Example:1:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] startup in 0 ms</configurationMessage>
-         <configurationMessage date="0000-00-00 00:00:00.000" level="ERROR">Configuration [NotExistingConfig]  exception: error during unmarshalling configuration from file [Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: Configuration.xml</configurationMessage>
+         <configurationMessage date="0000-00-00 00:00:00.000" level="ERROR">Configuration [NotExistingConfig]  exception: error during unmarshalling configuration from file [Configuration.xml] in element []: Configuration file not found: Configuration.xml</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Application [Ibis4Example] startup in 0 ms</configurationMessage>
       </configurationMessages>
       <exceptions>
-         <exception config="NotExistingConfig">error during unmarshalling configuration from file [Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: Configuration.xml</exception>
+         <exception config="NotExistingConfig">error during unmarshalling configuration from file [Configuration.xml] in element []: Configuration file not found: Configuration.xml</exception>
       </exceptions>
       <warnings>
          <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>

@@ -115,6 +115,9 @@ public class FrankDigesterRules implements RulesModule {
 		return createRule(rulesBinder, pattern, null, factory, next, null);
 	}
 
+	/**
+	 * Create a generic parser to create the object, set the properties, add the attributeChecker on a per pattern basis.
+	 */
 	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, Class<?> clazz, ObjectCreationFactory<Object> factory, String next, Class<?> parameterType) {
 		if(log.isTraceEnabled()) log.trace(String.format("adding digesterRule pattern [%s] class [%s] factory [%s] next-rule [%s] parameterType [%s]", pattern, clazz, factory, next, parameterType));
 
