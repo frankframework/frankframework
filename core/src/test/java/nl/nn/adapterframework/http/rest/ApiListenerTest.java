@@ -197,13 +197,13 @@ public class ApiListenerTest {
 			listener.setAuthenticationMethod("unknown$df");
 		}
 		finally {
-			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethod());
+			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethodEnum());
 		}
 	}
 
 	@Test
 	public void testAuthRoleMethod() throws ConfigurationException {
 		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE.name());
-		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
+		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethodEnum());
 	}
 }
