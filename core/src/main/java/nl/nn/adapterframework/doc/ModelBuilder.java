@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.Getter;
-import nl.nn.adapterframework.doc.model.FrankDocGroup;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 
@@ -36,10 +35,6 @@ public class ModelBuilder {
 			}
 		}
 		return result;
-	}
-
-	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
-		group.getElements().put(clazz.getName(), model.findOrCreateFrankElement(clazz));
 	}
 
 	public static Class<?> getClass(final String name) {

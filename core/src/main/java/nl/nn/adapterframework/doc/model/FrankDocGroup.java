@@ -13,4 +13,8 @@ public class FrankDocGroup {
 		this.name = name;
 		this.elements = new HashMap<>();
 	}
+
+	public void addAsElement(Class<?> clazz, FrankDocModel model) {
+		elements.put(clazz.getName(), model.findOrCreateFrankElement(clazz));
+	}
 }
