@@ -53,7 +53,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 	private WebServiceSender sender = null;
 
-	public WebServiceSender createWebSeriveSender(InputStream responseStream, String contentType, int statusCode) throws IOException {
+	public WebServiceSender createWebServiceSender(InputStream responseStream, String contentType, int statusCode) throws IOException {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
 		StatusLine statusLine = mock(StatusLine.class);
@@ -86,25 +86,9 @@ public class WebServiceSenderResultTest extends Mockito {
 		return sender;
 	}
 
-	public WebServiceSender createWebServiceSenderFromFile(String testFile, int statusCode) throws IOException {
+	public WebServiceSender createWebServiceSenderFromFile(String testFile, String contentType, int statusCode) throws IOException {
 		InputStream file = getFile(testFile);
-		byte[] fileArray = Misc.streamToBytes(file);
-		String contentType = null;
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileArray)));
-		for (String line = null; null != (line = reader.readLine());) {
-			if(line.startsWith("Content-Type")) {
-				contentType = line.substring(line.indexOf(":") + 1).trim();
-				break;
-			}
-		}
-		reader.close();
-
-		if(contentType != null)
-			System.out.println("found Content-Type ["+contentType+"]");
-
-		InputStream dummyXmlString = new ByteArrayInputStream(fileArray);
-		return createWebSeriveSender(dummyXmlString, contentType, statusCode);
+		return createWebServiceSender(file, contentType, statusCode);
 	}
 
 	@After
@@ -126,7 +110,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 	@Test
 	public void simpleSoapMultiPartResponseMocked() throws Exception {
-		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", 200);
+		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 200);
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 
@@ -153,7 +137,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	@Test
 	public void simpleSoapMultiPartResponseMocked500StatusCode() throws Exception {
 		thrown.expect(SenderException.class);
-		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", 500);
+		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 
@@ -167,7 +151,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	public void simpleInvalidMultipartResponse() throws Exception {
 		thrown.expectMessage("Missing start boundary");
 
-		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", 200);
+		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 
@@ -179,7 +163,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 	@Test
 	public void simpleMtomResponseMockedHttpGet() throws Exception {
-		WebServiceSender sender = createWebServiceSenderFromFile("mtom-multipart2.txt", 200);
+		WebServiceSender sender = createWebServiceSenderFromFile("mtom-multipart2.txt", "multipart/related", 200);
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 
