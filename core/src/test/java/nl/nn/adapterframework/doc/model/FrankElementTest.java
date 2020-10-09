@@ -17,11 +17,11 @@ public class FrankElementTest {
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
 	private static final String REFERRED_PARENT = IBISDOCREF + ".ParentTarget";
 
-	private FrankElement.FrankElementStore store;
+	private FrankDocModel model;
 
 	@Before
 	public void setUp() {
-		store = new FrankDocModel();
+		model = new FrankDocModel();
 	}
 
 	@Test
@@ -47,9 +47,10 @@ public class FrankElementTest {
 	 * to creating the enclosing FrankElement of the attributes.
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) {
-		final List<FrankAttribute> attributes = new FrankElement("dummy.Dummy", "Dummy")
-				.createAttributes(
-						ModelBuilder.getClass(className).getDeclaredMethods(), store);
+		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
+		final List<FrankAttribute> attributes = 
+				model.createAttributes(
+						ModelBuilder.getClass(className).getDeclaredMethods(), dummy);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
@@ -79,7 +80,7 @@ public class FrankElementTest {
 	}
 
 	Map<String, String> getAttributeNameMap(String prefix) {
-		Map<String, Method> attributeToMethodMap = FrankElement.getAttributeToMethodMap(
+		Map<String, Method> attributeToMethodMap = FrankDocModel.getAttributeToMethodMap(
 				ModelBuilder.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
 					.getDeclaredMethods(),
 				prefix);
@@ -146,10 +147,10 @@ public class FrankElementTest {
 	@Test
 	public void testIbisDocRefAddsFrankElementsForReferredClassHierarchy() {
 		checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
-		Assert.assertEquals(3, store.numFrankElements());
-		Assert.assertTrue(store.hasFrankElement(REFERRED_CHILD));
-		Assert.assertTrue(store.hasFrankElement(REFERRED_PARENT));
-		Assert.assertTrue(store.hasFrankElement("java.lang.Object"));
+		Assert.assertEquals(3, model.getAllElements().size());
+		Assert.assertTrue(model.getAllElements().containsKey(REFERRED_CHILD));
+		Assert.assertTrue(model.getAllElements().containsKey(REFERRED_PARENT));
+		Assert.assertTrue(model.getAllElements().containsKey("java.lang.Object"));
 	}
 
 	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) {
@@ -189,7 +190,7 @@ public class FrankElementTest {
 	public void whenIbisDocRefThenDescribingElementAdjusted() {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		Assert.assertSame(
-				store.getFrankElement(REFERRED_PARENT),
+				model.getAllElements().get(REFERRED_PARENT),
 				actual.getDescribingElement());		
 	}
 }

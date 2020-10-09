@@ -39,7 +39,7 @@ public class ModelBuilder {
 	}
 
 	void addElementsToGroup(Class<?> clazz, FrankDocGroup group) {
-		group.getElements().put(clazz.getName(), model.frankElement(clazz));
+		group.getElements().put(clazz.getName(), model.findOrCreateFrankElement(clazz));
 	}
 
 	public static Class<?> getClass(final String name) {
