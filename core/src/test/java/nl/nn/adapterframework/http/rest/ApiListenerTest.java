@@ -26,14 +26,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ApiListenerTest {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private ApiListener listener;
 
@@ -196,17 +191,19 @@ public class ApiListenerTest {
 		assertTrue("accepts JSON", listener.accepts(acceptHeader));
 	}
 
-	@Test
+	@Test(expected = ConfigurationException.class)
 	public void testFaultyAuthMethod() throws ConfigurationException {
-		thrown.expectMessage("Unknown authenticationMethod");
-
-		listener.setAuthenticationMethod("unknown$df");
-		listener.configure();
+		try{
+			listener.setAuthenticationMethod("unknown$df");
+		}
+		finally {
+			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethod());
+		}
 	}
 
 	@Test
 	public void testAuthRoleMethod() throws ConfigurationException {
 		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE.name());
-		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethodType());
+		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
 	}
 }

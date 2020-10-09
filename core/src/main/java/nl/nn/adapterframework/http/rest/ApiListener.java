@@ -45,8 +45,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private String method;
 	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
 
-	private String authenticationMethod = null;
-	private String authenticationRoles = null;
+	private AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
+	private List<String> authenticationRoles = null;
 
 	private MediaTypes consumes = MediaTypes.ANY;
 	private MediaTypes produces = MediaTypes.ANY;
@@ -83,14 +83,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		producedContentType = new ContentType(produces);
 		if(charset != null) {
 			producedContentType.setCharset(charset);
-		}
-		if(authenticationMethod != null) {
-			try {
-				AuthenticationMethods.valueOf(authenticationMethod);
-			}
-			catch (IllegalArgumentException iae) {
-				throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
-			}
 		}
 	}
 
@@ -229,20 +221,39 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	//TODO add authenticationType
 
 	@IbisDoc({"7", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
-	public void setAuthenticationMethod(String authenticationMethod) {
-		this.authenticationMethod = authenticationMethod;
+	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
+		try {
+			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
+		}
+		catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
+		}
 	}
 
-	public AuthenticationMethods getAuthenticationMethodType() {
+	public AuthenticationMethods getAuthenticationMethod() {
 		if(authenticationMethod == null) {
-			return AuthenticationMethods.NONE;
+			authenticationMethod = AuthenticationMethods.NONE;
 		}
-		return AuthenticationMethods.valueOf(authenticationMethod);
+
+		return this.authenticationMethod;
 	}
 
 	@IbisDoc({"8", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
 	public void setAuthenticationRoles(String authRoles) {
-		this.authenticationRoles = authRoles;
+		List<String> roles = new ArrayList<String>();
+		if (StringUtils.isNotEmpty(authRoles)) {
+			StringTokenizer st = new StringTokenizer(authRoles, ",;");
+			while (st.hasMoreTokens()) {
+				String authRole = st.nextToken();
+				if(!roles.contains(authRole))
+					roles.add(authRole);
+			}
+		}
+
+		this.authenticationRoles = roles;
+	}
+	public List<String> getAuthenticationRoles() {
+		return authenticationRoles;
 	}
 
 	@IbisDoc({"9", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
@@ -275,19 +286,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();
-	}
-
-	public List<String> parseAuthenticationRoles() {
-		List<String> roles = new ArrayList<String>();
-		if (StringUtils.isNotEmpty(authenticationRoles)) {
-			StringTokenizer st = new StringTokenizer(authenticationRoles, ",;");
-			while (st.hasMoreTokens()) {
-				String authRole = st.nextToken();
-				if(!roles.contains(authRole))
-					roles.add(authRole);
-			}
-		}
-		return roles;
 	}
 
 	@Override

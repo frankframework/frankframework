@@ -197,12 +197,11 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			ApiPrincipal userPrincipal = null;
 
-			AuthenticationMethods listenerAuthMethod = listener.getAuthenticationMethodType();
-			if(!AuthenticationMethods.NONE.equals(listenerAuthMethod)) {
+			if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethod())) {
 				String authorizationToken = null;
 				Cookie authorizationCookie = null;
 
-				switch (listenerAuthMethod) {
+				switch (listener.getAuthenticationMethod()) {
 				case COOKIE:
 					Cookie[] cookies = request.getCookies();
 					if(cookies != null) {
@@ -219,7 +218,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					authorizationToken = request.getHeader("Authorization");
 					break;
 				case AUTHROLE:
-					List<String> roles = listener.parseAuthenticationRoles();
+					List<String> roles = listener.getAuthenticationRoles();
 					if(roles != null) {
 						for (String role : roles) {
 							if(request.isUserInRole(role)) {
