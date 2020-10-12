@@ -102,6 +102,11 @@ public class FrankDocModelTest {
 	}
 
 	@Test
+	public void whenSetterTakesNoValuesThenNoSetter() {
+		Assert.assertFalse(getAttributeNameMap("set").containsKey("invalidSetterNoParams"));
+	}
+
+	@Test
 	public void testIbisDockedOnlyDescription() {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
 		Assert.assertEquals(Integer.MAX_VALUE, actual.getOrder());

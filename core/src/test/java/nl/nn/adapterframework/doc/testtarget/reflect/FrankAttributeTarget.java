@@ -40,6 +40,9 @@ public class FrankAttributeTarget {
 	public void setInvalidSetter(String s, int i) {
 	}
 
+	public void setInvalidSetterNoParams() {
+	}
+
 	@IbisDoc("Description of ibisDockedOnlyDescription")
 	public void setIbisDockedOnlyDescription(String value) {
 	}

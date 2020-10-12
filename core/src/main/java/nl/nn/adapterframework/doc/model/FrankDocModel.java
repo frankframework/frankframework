@@ -101,7 +101,8 @@ public class FrankDocModel {
 				&& (method.getParameterTypes()[0].isPrimitive()
 						|| method.getParameterTypes()[0].getName().equals(JAVA_STRING));
 		boolean isGetter = (
-					method.getReturnType().isPrimitive()
+					(method.getReturnType().isPrimitive()
+							&& !method.getReturnType().getName().equals("void"))
 					|| method.getReturnType().getName().equals(JAVA_STRING)
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
