@@ -6,9 +6,16 @@
 			serviceName="ibis4test-ZipFilePathListener" />
 	</Receiver>
 
-	<Pipeline firstPipe="unzipFile">
+	<Pipeline firstPipe="createOutputFolder">
 
-		<UnzipPipe name="unzipFile"
+		<LocalFileSystemPipe 
+			name="createOutputFolder" 
+			action="list"
+			createFolder="true"
+			inputFolder="${testdata.dir}/unzip/"
+		/>
+		
+		<UnzipPipe name="unzipFile" assumeDirectoryExists="true"
 			directory="${testdata.dir}/unzip/" getInputFromSessionKey="stream">
 
 			<Forward name="success" path="EXIT" />
