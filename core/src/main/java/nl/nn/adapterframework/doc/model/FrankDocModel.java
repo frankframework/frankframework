@@ -4,8 +4,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -44,23 +46,16 @@ public class FrankDocModel {
 	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
-		Map<String, String> setterToAttributeName = new HashMap<>();
-		for(String attributeName: setterAttributes.keySet()) {
-			setterToAttributeName.put(setterAttributes.get(attributeName).getName(), attributeName);
-		}
 		List<FrankAttribute> result = new ArrayList<>();
-		// We iterate over methods instead of setterAttributes. This way, we preserve method order within
-		// the list of attributes. This makes sense when the order field of an attribute is not unique.
-		for(Method method: methods) {
-			if(setterToAttributeName.containsKey(method.getName())) {
-				String attributeName = setterToAttributeName.get(method.getName());
-				if(getterAttributes.containsKey(attributeName)) {
-					checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
-				}
-				FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-				documentAttribute(attribute, method, attributeOwner);
-				result.add(attribute);
+		for(Entry<String, Method> entry: setterAttributes.entrySet()) {
+			String attributeName = entry.getKey();
+			Method method = entry.getValue();
+			if(getterAttributes.containsKey(attributeName)) {
+				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
+			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
+			documentAttribute(attribute, method, attributeOwner);
+			result.add(attribute);
 		}
 		return result;
 	}
@@ -79,13 +74,17 @@ public class FrankDocModel {
 		return getterAttributes;
 	}
 
+	/**
+     * The original order of the methods is preserved, which you get when you iterate
+     * over the entrySet() of the returned Map.
+	 */
 	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
 				.filter(FrankDocModel::isGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());		
-		Map<String, Method> result = new HashMap<>();
+		Map<String, Method> result = new LinkedHashMap<>();
 		for(Method method: methodList) {
 			String strippedName = method.getName().substring(prefix.length());
 			String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);

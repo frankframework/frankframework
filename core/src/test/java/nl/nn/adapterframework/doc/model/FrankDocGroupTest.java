@@ -1,8 +1,12 @@
 package nl.nn.adapterframework.doc.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import nl.nn.adapterframework.doc.ModelBuilder;
@@ -31,35 +35,35 @@ public class FrankDocGroupTest {
 	}
 
 	private void checkModelAfterChildAndParentAdded(FrankDocModel model) {
-		Assert.assertEquals(1, model.getGroups().size());
+		assertEquals(1, model.getGroups().size());
 		FrankDocGroup actualGroup = model.getGroups().get(0);
 		Map<String, FrankElement> actualAllElements = model.getAllElements();
-		Assert.assertTrue(actualGroup.getElements().containsKey(PARENT));
-		Assert.assertTrue(actualGroup.getElements().containsKey(CHILD));
+		assertTrue(actualGroup.getElements().containsKey(PARENT));
+		assertTrue(actualGroup.getElements().containsKey(CHILD));
 		for(String elementInGroup: actualGroup.getElements().keySet()) {
 			FrankElement groupElement = actualGroup.getElements().get(elementInGroup);
 			FrankElement allElement = actualAllElements.get(elementInGroup);
-			Assert.assertSame(
+			assertSame(
 					"Different objects for group element and all element for element name: " + elementInGroup,
 					groupElement, allElement);
 		}
 		FrankElement actualObject = model.getAllElements().get("java.lang.Object");
-		Assert.assertNull(actualObject.getParent());
+		assertNull(actualObject.getParent());
 		FrankElement actualParent = actualGroup.getElements().get(PARENT);
-		Assert.assertSame(actualObject, actualParent.getParent());
-		Assert.assertEquals(PARENT, actualParent.getFullName());
-		Assert.assertEquals("ListenerParent", actualParent.getSimpleName());
-		Assert.assertEquals(1, actualParent.getAttributes().size());
+		assertSame(actualObject, actualParent.getParent());
+		assertEquals(PARENT, actualParent.getFullName());
+		assertEquals("ListenerParent", actualParent.getSimpleName());
+		assertEquals(1, actualParent.getAttributes().size());
 		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
-		Assert.assertEquals("parentAttribute", actualParentAttribute.getName());
-		Assert.assertSame(actualParent, actualParentAttribute.getDescribingElement());
+		assertEquals("parentAttribute", actualParentAttribute.getName());
+		assertSame(actualParent, actualParentAttribute.getDescribingElement());
 		FrankElement actualChild = actualGroup.getElements().get(CHILD);
-		Assert.assertSame(actualParent, actualChild.getParent());
-		Assert.assertEquals(CHILD, actualChild.getFullName());
-		Assert.assertEquals("ListenerChild", actualChild.getSimpleName());
-		Assert.assertEquals(1, actualChild.getAttributes().size());
+		assertSame(actualParent, actualChild.getParent());
+		assertEquals(CHILD, actualChild.getFullName());
+		assertEquals("ListenerChild", actualChild.getSimpleName());
+		assertEquals(1, actualChild.getAttributes().size());
 		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
-		Assert.assertEquals("childAttribute", actualChildAttribute.getName());
-		Assert.assertSame(actualChild, actualChildAttribute.getDescribingElement());
+		assertEquals("childAttribute", actualChildAttribute.getName());
+		assertSame(actualChild, actualChildAttribute.getDescribingElement());
 	}
 }
