@@ -57,6 +57,7 @@ public class IbisConsoleTest {
 		ibisTester = new IbisTester();
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
+		System.setProperty("strutsConsole.enabled", "true"); //Enable the old adapters
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 
 		ibisTester.initTest();
