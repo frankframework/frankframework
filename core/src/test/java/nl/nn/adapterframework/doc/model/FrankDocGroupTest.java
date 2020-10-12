@@ -8,7 +8,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.doc.ModelBuilder;
 
 public class FrankDocGroupTest {
-	public static final String SIMPLE = "nl.nn.adapterframework.doc.target.simple";
+	public static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
 	private static final String PARENT = SIMPLE + ".ListenerParent";
 	private static final String CHILD = SIMPLE + ".ListenerChild";
 

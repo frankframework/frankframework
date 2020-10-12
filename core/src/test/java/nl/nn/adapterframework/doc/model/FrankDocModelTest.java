@@ -13,7 +13,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.doc.ModelBuilder;
 
 public class FrankDocModelTest {
-	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.target.ibisdocref";
+	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.testtarget.ibisdocref";
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
 	private static final String REFERRED_PARENT = IBISDOCREF + ".ParentTarget";
 
@@ -37,7 +37,7 @@ public class FrankDocModelTest {
 	}
 
 	private Map<String, FrankAttribute> getReflectInvestigatedFrankAttributes() {
-		return getAttributesOfClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget");
+		return getAttributesOfClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget");
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class FrankDocModelTest {
 
 	Map<String, String> getAttributeNameMap(String prefix) {
 		Map<String, Method> attributeToMethodMap = FrankDocModel.getAttributeToMethodMap(
-				ModelBuilder.getClass("nl.nn.adapterframework.doc.target.reflect.FrankAttributeTarget")
+				ModelBuilder.getClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget")
 					.getDeclaredMethods(),
 				prefix);
 		Map<String, String> result = new HashMap<>();
@@ -155,7 +155,7 @@ public class FrankDocModelTest {
 
 	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) {
 		Map<String, FrankAttribute> attributeMap =
-				getAttributesOfClass("nl.nn.adapterframework.doc.target.ibisdocref.Referrer");
+				getAttributesOfClass("nl.nn.adapterframework.doc.testtarget.ibisdocref.Referrer");
 		Assert.assertTrue(attributeMap.containsKey(attributeName));
 		return attributeMap.get(attributeName);
 	}
