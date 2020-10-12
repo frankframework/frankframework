@@ -15,6 +15,16 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
+import java.io.IOException;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
 import org.apache.commons.digester3.Rule;
@@ -22,14 +32,17 @@ import org.apache.commons.digester3.binder.LinkedRuleBuilder;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.digester3.binder.RulesModule;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
-import nl.nn.adapterframework.configuration.ConfigurationDigesterFactory;
 import nl.nn.adapterframework.configuration.GenericFactory;
-import nl.nn.adapterframework.configuration.JmsRealmsFactory;
-import nl.nn.adapterframework.configuration.ListenerFactory;
-import nl.nn.adapterframework.configuration.RecordHandlingFlowFactory;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 
 /**
  * Custom implementation that replaces the old digester-rules.xml file.
@@ -38,100 +51,71 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class FrankDigesterRules implements RulesModule {
+	public static final String DIGESTER_RULES_FILE = "digester-rules.xml";
 
 	private final Logger log = LogUtil.getLogger(this);
 	private GenericFactory factory = new GenericFactory();
 	private Rule attributeChecker = new AttributeCheckingRule();
 	private Digester digester;
+	private Resource digesterRules = null;
 
 	public FrankDigesterRules(Digester digester) {
+		this(digester, null);
+	}
+
+	public FrankDigesterRules(Digester digester, Resource digesterRules) {
 		this.digester = digester;
+		this.digesterRules = digesterRules;
 	}
 
 	@Override
 	public void configure(RulesBinder rulesBinder) {
-		rulesBinder.forPattern("IOS-Adaptering");
-		rulesBinder.forPattern("configuration");
-
-		createRule(rulesBinder, "*/include", new ConfigurationDigesterFactory(), "include");
-
-		createRule(rulesBinder, "*/jmsRealms", new JmsRealmsFactory());
-		createRule(rulesBinder, "*/jmsRealm", "registerJmsRealm");
-
-		createRule(rulesBinder, "*/sapSystem", "nl.nn.adapterframework.extensions.sap.SapSystem", "registerItem");
-
-		createRule(rulesBinder, "*/adapter", "registerAdapter");
-		createRule(rulesBinder, "*/pipeline", "registerPipeLine");
-		createRule(rulesBinder, "*/errorMessageFormatter", "setErrorMessageFormatter");
-
-		createRule(rulesBinder, "*/receiver", "registerReceiver");
-		createRule(rulesBinder, "*/sender", "setSender");
-		createRule(rulesBinder, "*/postboxSender", "setSender");
-		createRule(rulesBinder, "*/listener", new ListenerFactory(), "setListener");
-		createRule(rulesBinder, "*/postboxListener", "setListener");
-		createRule(rulesBinder, "*/errorSender", "setErrorSender");
-		createRule(rulesBinder, "*/messageLog", "setMessageLog");
-		createRule(rulesBinder, "*/inProcessStorage", "setInProcessStorage");
-		createRule(rulesBinder, "*/errorStorage", "setErrorStorage");
-		createRule(rulesBinder, "*/inputValidator", "setInputValidator");
-		createRule(rulesBinder, "*/outputValidator", "setOutputValidator");
-		createRule(rulesBinder, "*/inputWrapper", "setInputWrapper");
-		createRule(rulesBinder, "*/outputWrapper", "setOutputWrapper");
-
-		createRule(rulesBinder, "*/pipe", "addPipe");
-		createRule(rulesBinder, "*/forward", "registerForward");
-		createRule(rulesBinder, "*/child", "registerChild");
-		createRule(rulesBinder, "*/pipeline/exits/exit", "registerPipeLineExit");
-
-		createRule(rulesBinder, "*/scheduler/job", "registerScheduledJob");
-		createRule(rulesBinder, "*/locker", "setLocker");
-		createRule(rulesBinder, "*/param", "addParameter");
-		createRule(rulesBinder, "*/directoryCleaner", "addDirectoryCleaner");
-		createRule(rulesBinder, "*/readerFactory", "setReaderFactory");
-
-		createRule(rulesBinder, "*/manager", "registerManager");
-		createRule(rulesBinder, "*/manager/flow", new RecordHandlingFlowFactory(), "addHandler");
-		createRule(rulesBinder, "*/recordHandler", "registerRecordHandler");
-		createRule(rulesBinder, "*/resultHandler", "registerResultHandler");
-
-		createRule(rulesBinder, "*/statisticsHandlers", "registerStatisticsHandler");
-		createRule(rulesBinder, "*/statisticsHandler", "registerStatisticsHandler");
-		createRule(rulesBinder, "*/cache", "registerCache");
-	}
-
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, String next) {
-		return createRule(rulesBinder, pattern, null, factory, next, null);
-	}
-	//This is here to be able to load classes (through reflection) that are not in the core module
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, String objectClassName, String next) {
-		try {
-			Class<?> clazz = this.getClass().getClassLoader().loadClass(objectClassName);
-			return createRule(rulesBinder, pattern, clazz, next);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("class ["+objectClassName+"] not found", e);
+		if(digester == null) {
+			throw new IllegalStateException("Digester not set, unable to initialize ["+this.getClass().getSimpleName()+"]");
 		}
-	}
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, Class<?> clazz, String next) {
-		return createRule(rulesBinder, pattern, clazz, null, next, null);
-	}
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, ObjectCreationFactory<Object> factory) {
-		return createRule(rulesBinder, pattern, factory, null);
-	}
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, ObjectCreationFactory<Object> factory, String next) {
-		return createRule(rulesBinder, pattern, null, factory, next, null);
+		if(digesterRules == null) {
+			digesterRules = Resource.getResource(digester.getClassLoader(), DIGESTER_RULES_FILE);
+		}
+
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(DigesterRule.class);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			DocumentBuilderFactory documentFactory = XmlUtils.getDocumentBuilderFactory();
+			documentFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilder builder = documentFactory.newDocumentBuilder();
+			builder.setEntityResolver(new NonResolvingExternalEntityResolver());
+
+			Document document = builder.parse(digesterRules.asInputSource());
+			Node rules = document.getFirstChild(); //get the <digester-rules/> tag
+			for(Node ruleNode : XmlUtils.getChildTags((Element)rules, "rule")) {
+				DigesterRule rule = (DigesterRule) jaxbUnmarshaller.unmarshal(ruleNode);
+				createRule(rulesBinder, rule.getPattern(), rule.getObject(), rule.getFactory(), rule.getNext(), rule.getParameterType());
+			}
+		} catch (JAXBException e) {
+			throw new IllegalStateException("unable to unmarshal a xml node", e);
+		} catch (IOException e) {
+			throw new IllegalStateException("digesterRules file cannot be found", e);
+		} catch (ParserConfigurationException e) {
+			throw new IllegalStateException("documentBuilder cannot be initialized", e);
+		} catch (SAXException e) {
+			throw new IllegalStateException("unable to parse digesterRules file", e);
+		}
 	}
 
 	/**
 	 * Create a generic parser to create the object, set the properties (set-properties-rule), 
 	 * set the register method (set-next-rule) add the attributeCheckerRule on a per pattern basis.
 	 */
-	private LinkedRuleBuilder createRule(RulesBinder rulesBinder, String pattern, Class<?> clazz, ObjectCreationFactory<Object> factory, String next, Class<?> parameterType) {
+	protected void createRule(RulesBinder rulesBinder, String pattern, String clazz, ObjectCreationFactory<Object> factory, String next, Class<?> parameterType) {
 		if(log.isTraceEnabled()) log.trace(String.format("adding digesterRule pattern [%s] class [%s] factory [%s] next-rule [%s] parameterType [%s]", pattern, clazz, factory, next, parameterType));
 
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 		if(clazz != null) { //If a class is specified, load the class through the digester create-object-rule
 			ruleBuilder.createObject().ofType(clazz);
 		} else {
+			if(factory == null) {
+				factory = this.factory;
+			}
 			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
 			ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 		}
@@ -144,6 +128,5 @@ public class FrankDigesterRules implements RulesModule {
 			}
 		}
 		ruleBuilder.addRule(attributeChecker); //Add the attribute checker
-		return ruleBuilder;
 	}
 }

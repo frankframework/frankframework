@@ -92,6 +92,7 @@ public class ConfigurationDigester {
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
+	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 	private boolean configLogAppend = false;
 
 	String lastResolvedEntity = null;
@@ -129,8 +130,10 @@ public class ConfigurationDigester {
 		digester.push(configuration);
 
 		ClassLoader configurationClassLoader = configuration.getClassLoader();
+		Resource digesterRulesResource = Resource.getResource(configurationClassLoader, getDigesterRules());
 
-		DigesterLoader loader = DigesterLoader.newLoader(new FrankDigesterRules(digester));
+		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
+		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
 		loader.addRules(digester);
 
 		if (MonitorManager.getInstance().isEnabled()) {
@@ -198,9 +201,9 @@ public class ConfigurationDigester {
 			if (digester != null ) {
 				currentElementName = digester.getCurrentElementName();
 			}
-			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
-				"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-			throw e;
+
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
+				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 		}
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().configure(configuration);
@@ -243,5 +246,13 @@ public class ConfigurationDigester {
 				configWarnings.addDefaultValueExceptions(mergedKey);
 			}
 		}
+	}
+
+	public void setDigesterRules(String string) {
+		digesterRulesFile = string;
+	}
+
+	public String getDigesterRules() {
+		return digesterRulesFile;
 	}
 }
