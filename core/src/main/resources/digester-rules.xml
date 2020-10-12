@@ -1,57 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <digester-rules>
 	<!-- Rules are parsed with the DigesterRuleParser. Objects will be created with the Spring Beans Factory. -->
+	<!-- See DigesterRule for more information -->
 
-	<rule pattern="IOS-Adaptering"/><!-- deprecated, use configuration or module instead -->
-	<rule pattern="configuration"/>
+	<rule pattern="IOS-Adaptering" factory="null"/><!-- deprecated, use configuration or module instead -->
+	<rule pattern="configuration" factory="null"/>
 
-	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.ConfigurationDigesterFactory" top="include"/>
+	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
 
 
 	<rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
-	<rule pattern="*/jmsRealm" next="registerJmsRealm"/>
+	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm"/>
 
-	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" top="registerItem"/>
+	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
-	<rule pattern="*/adapter" next="registerAdapter"/>
-	<rule pattern="*/pipeline" next="registerPipeLine"/>
-	<rule pattern="*/errorMessageFormatter" next="setErrorMessageFormatter"/>
+	<rule pattern="*/adapter" registerMethod="registerAdapter" />
+	<rule pattern="*/pipeline" registerMethod="registerPipeLine"/>
+	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter"/>
 
-	<rule pattern="*/receiver" next="registerReceiver"/>
-	<rule pattern="*/sender" next="setSender"/>
-	<rule pattern="*/postboxSender" next="setSender"/>
-	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" next="setListener"/>
-	<rule pattern="*/postboxListener" next="setListener"/>
-	<rule pattern="*/errorSender" next="setErrorSender"/>
-	<rule pattern="*/messageLog" next="setMessageLog"/>
-	<rule pattern="*/inProcessStorage" next="setInProcessStorage"/>
-	<rule pattern="*/errorStorage" next="setErrorStorage"/>
-	<rule pattern="*/inputValidator" next="setInputValidator"/>
-	<rule pattern="*/outputValidator" next="setOutputValidator"/>
-	<rule pattern="*/inputWrapper" next="setInputWrapper"/>
-	<rule pattern="*/outputWrapper" next="setOutputWrapper"/>
+	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
+	<rule pattern="*/sender" registerMethod="setSender"/>
+	<rule pattern="*/postboxSender" registerMethod="setSender"/>
+	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" registerMethod="setListener"/>
+	<rule pattern="*/postboxListener" registerMethod="setListener"/>
+	<rule pattern="*/errorSender" registerMethod="setErrorSender"/>
+	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
+	<rule pattern="*/inProcessStorage" registerMethod="setInProcessStorage"/>
+	<rule pattern="*/errorStorage" registerMethod="setErrorStorage"/>
+	<rule pattern="*/inputValidator" registerMethod="setInputValidator"/>
+	<rule pattern="*/outputValidator" registerMethod="setOutputValidator"/>
+	<rule pattern="*/inputWrapper" registerMethod="setInputWrapper"/>
+	<rule pattern="*/outputWrapper" registerMethod="setOutputWrapper"/>
 
-	<rule pattern="*/pipe" next="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
+	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
-	<rule pattern="*/forward" next="registerForward"/>
-	<rule pattern="*/child" next="registerChild"/>
-	<rule pattern="*/pipeline/exits/exit" next="registerPipeLineExit"/>
+	<rule pattern="*/forward" registerMethod="registerForward"/>
+	<rule pattern="*/child" registerMethod="registerChild"/>
+	<rule pattern="*/pipeline/exits/exit" registerMethod="registerPipeLineExit"/>
 
-	<rule pattern="*/scheduler/job" next="registerScheduledJob"/>
-	<rule pattern="*/locker" next="setLocker"/>
-	<rule pattern="*/param" next="addParameter" />
-	<rule pattern="*/directoryCleaner" next="addDirectoryCleaner" />
+	<rule pattern="*/scheduler/job" registerMethod="registerScheduledJob"/>
+	<rule pattern="*/locker" registerMethod="setLocker"/>
+	<rule pattern="*/param" registerMethod="addParameter" />
+	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" />
 
 	<!-- batch related rules -->
-	<rule pattern="*/readerFactory" next="setReaderFactory"/>
-	<rule pattern="*/manager" next="registerManager"/>
-	<rule pattern="*/manager/flow" factory="nl.nn.adapterframework.configuration.RecordHandlingFlowFactory" next="addHandler"/>
-	<rule pattern="*/recordHandler" next="registerRecordHandler"/>
-	<rule pattern="*/resultHandler" next="registerResultHandler"/>
+	<rule pattern="*/readerFactory" registerMethod="setReaderFactory"/>
+	<rule pattern="*/manager" registerMethod="registerManager"/>
+	<rule pattern="*/manager/flow" factory="nl.nn.adapterframework.configuration.RecordHandlingFlowFactory" registerMethod="addHandler"/>
+	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
+	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
 
-	<rule pattern="*/statisticsHandlers" next="registerStatisticsHandler"/>
-	<rule pattern="*/statisticsHandler" next="registerStatisticsHandler"/>
-	<rule pattern="*/cache" next="registerCache"/>
+	<rule pattern="*/statisticsHandlers" registerMethod="registerStatisticsHandler"/>
+	<rule pattern="*/statisticsHandler" registerMethod="registerStatisticsHandler"/>
+	<rule pattern="*/cache" registerMethod="registerCache"/>
 </digester-rules>

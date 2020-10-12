@@ -15,43 +15,32 @@
 */
 package nl.nn.adapterframework.doc;
 
-import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class DigesterRulesParser extends DefaultHandler {
-	private String currentIbisBeanName;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.configuration.digester.DigesterRule;
+import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
+import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+
+public class IbisBeanMappingParser extends DigesterRulesHandler {
 	private List<ChildIbisBeanMapping> childIbisBeanMappings = new ArrayList<>();
 
 	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		if("rule".equals(qName)) {
-			String pattern = attributes.getValue("pattern");
-			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
-			while(tokenizer.hasMoreElements()) {
-				String token = tokenizer.nextToken();
-				if(!"*".equals(token)) {
-					currentIbisBeanName = token;
-				}
-			}
-			String methodName = attributes.getValue("next");
-			if(StringUtils.isNotEmpty(methodName)) {
-				childIbisBeanMappings.add(getChildIbisBeanMapping(methodName, currentIbisBeanName));
+	protected void handle(DigesterRule rule) {
+		String pattern = rule.getPattern();
+		StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
+		String currentIbisBeanName = null;
+		while(tokenizer.hasMoreElements()) {
+			String token = tokenizer.nextToken();
+			if(!"*".equals(token)) {
+				currentIbisBeanName = token;
 			}
 		}
-	}
-
-	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if("pattern".equals(qName)) {
-			currentIbisBeanName = null;
+		if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
+			childIbisBeanMappings.add(getChildIbisBeanMapping(rule.getRegisterMethod(), currentIbisBeanName));
 		}
 	}
 

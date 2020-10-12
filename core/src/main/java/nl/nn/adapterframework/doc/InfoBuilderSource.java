@@ -340,7 +340,7 @@ class InfoBuilderSource {
 	}
 
 	static List<ChildIbisBeanMapping> getChildIbisBeanMappings() throws IOException, SAXException {
-		DigesterRulesParser digesterRulesParser = new DigesterRulesParser();
+		IbisBeanMappingParser digesterRulesParser = new IbisBeanMappingParser();
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {

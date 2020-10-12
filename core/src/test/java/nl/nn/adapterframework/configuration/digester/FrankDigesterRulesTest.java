@@ -1,60 +1,60 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreationFactory;
-import org.apache.commons.digester3.binder.LinkedRuleBuilder;
-import org.apache.commons.digester3.binder.RulesBinder;
-import org.apache.commons.digester3.binder.RulesModule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDigesterRulesTest extends Mockito {
-	private class DummyRulesBinder implements RulesBinder {
+	private class DummyDigesterRulesParser extends DigesterRulesHandler {
+		List<DigesterRule> rules = new ArrayList<>();
 
 		@Override
-		public void install(RulesModule rulesModule) {
-			//Package private rulesModule which we cannot implement
+		protected void handle(DigesterRule rule) {
+			rules.add(rule);
 		}
 
-		@Override
-		public ClassLoader getContextClassLoader() {
-			return null; //We don't need/use the classloader?
+		public int size() {
+			return rules.size();
 		}
-
-		@Override
-		public LinkedRuleBuilder forPattern(String pattern) {
-			return null; //Since this is a package private final we cant stub it...
-		}
-
-		@Override
-		public void addError(String messagePattern, Object... arguments) {
-			//Ignore parse errors
-		}
-
-		@Override
-		public void addError(Throwable t) {
-			//Ignore parse errors
-		}
-	};
+	}
 
 	@Test
 	public void parseDigesterRulesXml() {
-		Digester digester = new Digester();
-		List<String> patterns = new ArrayList<>();
-		FrankDigesterRules digesterRules = new FrankDigesterRules(digester) {
-			@Override
-			protected void createRule(RulesBinder rulesBinder, String pattern, String clazz, ObjectCreationFactory<Object> factory, String next, Class<?> parameterType) {
-				patterns.add(pattern);
-			}
-		};
+		DummyDigesterRulesParser handler = new DummyDigesterRulesParser();
+		Resource digesterRules = Resource.getResource("digester-rules.xml");
 
-		digesterRules.configure(mock(DummyRulesBinder.class));
+		try {
+			XmlUtils.parseXml(digesterRules.asInputSource(), handler);
+		} catch (IOException e) {
+			throw new IllegalStateException("unable to open digesterRules file", e);
+		} catch (SAXException e) {
+			throw new IllegalStateException("unable to parse digesterRules file", e);
+		}
 
-		assertTrue("must at least have 33 patterns", patterns.size() >= 33);
+		assertTrue("must at least have 33 patterns", handler.size() >= 33);
 	}
 }
