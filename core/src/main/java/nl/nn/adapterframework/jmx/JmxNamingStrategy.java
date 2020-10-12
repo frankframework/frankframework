@@ -64,7 +64,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 				} else {
 					version = Integer.toHexString(this.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
 				}
-				properties.put("type", String.format("%s-%s", config.getName(), version));
+				properties.put("type", String.format("%s-%s", config.getName(), version).replaceAll("[=:,]", "_"));
 			} else { //if configuration is null (for whatever reason) we need to be able to differentiate adapters in between reloads.
 				properties.put("identity", Integer.toHexString(adapter.hashCode()));
 			}
