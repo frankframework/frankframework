@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDigesterRulesTest extends Mockito {
 	private class DummyDigesterRulesParser extends DigesterRulesHandler {
-		List<DigesterRule> rules = new ArrayList<>();
+		private List<DigesterRule> rules = new ArrayList<>();
 
 		@Override
 		protected void handle(DigesterRule rule) {
