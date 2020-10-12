@@ -177,7 +177,7 @@ public class ConfigurationDigester {
 			String original = XmlUtils.identityTransform(configurationResource);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
-			List<String> propsToHide = new ArrayList<String>();
+			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));

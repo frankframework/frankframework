@@ -57,7 +57,6 @@ public class IbisConsoleTest {
 		ibisTester = new IbisTester();
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
-		System.setProperty("strutsConsole.enabled", "true"); //Enable the old adapters
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 
 		ibisTester.initTest();
@@ -84,7 +83,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -102,7 +101,7 @@ public class IbisConsoleTest {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -120,7 +119,7 @@ public class IbisConsoleTest {
 		ShowEnvironmentVariables showEnvironmentVariables = new ShowEnvironmentVariables();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowEnvironmentVariables");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showEnvironmentVariables.registerForward(createPipeSuccessForward());
 		showEnvironmentVariables.configure(pipeLine);
