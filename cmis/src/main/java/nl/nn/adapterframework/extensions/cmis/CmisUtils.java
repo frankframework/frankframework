@@ -685,16 +685,17 @@ public class CmisUtils {
 				repositoryXml.addAttribute("changesCapability", capabilities.getChangesCapability().name());
 			if(capabilities.getContentStreamUpdatesCapability() != null)
 				repositoryXml.addAttribute("contentStreamUpdatesCapability", capabilities.getContentStreamUpdatesCapability().name());
-			repositoryXml.addSubElement(CmisUtils.creatablePropertyTypes2xml(capabilities.getCreatablePropertyTypes()));
 			if(capabilities.getJoinCapability() != null)
-			repositoryXml.addAttribute("joinCapability", capabilities.getJoinCapability().name());
-			repositoryXml.addSubElement(CmisUtils.newTypeSettableAttributes2xml(capabilities.getNewTypeSettableAttributes()));
+				repositoryXml.addAttribute("joinCapability", capabilities.getJoinCapability().name());
 			if(capabilities.getOrderByCapability() != null)
 				repositoryXml.addAttribute("orderByCapability", capabilities.getOrderByCapability().name());
 			if(capabilities.getQueryCapability() != null)
-			repositoryXml.addAttribute("queryCapability", capabilities.getQueryCapability().name());
+				repositoryXml.addAttribute("queryCapability", capabilities.getQueryCapability().name());
 			if(capabilities.getRenditionsCapability() != null)
-			repositoryXml.addAttribute("renditionsCapability", capabilities.getRenditionsCapability().name());
+				repositoryXml.addAttribute("renditionsCapability", capabilities.getRenditionsCapability().name());
+
+			repositoryXml.addSubElement(CmisUtils.creatablePropertyTypes2xml(capabilities.getCreatablePropertyTypes()));
+			repositoryXml.addSubElement(CmisUtils.newTypeSettableAttributes2xml(capabilities.getNewTypeSettableAttributes()));
 		}
 		return repositoryXml;
 	}

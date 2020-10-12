@@ -121,10 +121,8 @@ public class CmisEventDispatcher {
 			messageContext.put("CmisEvent", event.name());
 
 			try {
-				listener.processRequest(null, event.name(), messageContext);
-				// Nothing is done with the result, it's purely to check if the event should be bridged or not. If not, an execption should be thrown.
-
-				return true; //return true, if the event cannot be found it will throw an exception in trigger(CmisEvent, String, IPipeLineSession)
+				String result = listener.processRequest(null, event.name(), messageContext);
+				return Boolean.parseBoolean(result); // Result should determine if we should proceed, an exception may be thrown.
 			} catch (ListenerException e) {
 				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); //Append the message so it becomes visible in the soap-fault (when using WS)
 			}
