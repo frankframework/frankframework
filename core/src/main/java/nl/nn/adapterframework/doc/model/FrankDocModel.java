@@ -49,14 +49,15 @@ public class FrankDocModel {
 			setterToAttributeName.put(setterAttributes.get(attributeName).getName(), attributeName);
 		}
 		List<FrankAttribute> result = new ArrayList<>();
+		// We iterate over methods instead of setterAttributes. This way, we preserve method order within
+		// the list of attributes. This makes sense when the order field of an attribute is not unique.
 		for(Method method: methods) {
 			if(setterToAttributeName.containsKey(method.getName())) {
 				String attributeName = setterToAttributeName.get(method.getName());
 				if(getterAttributes.containsKey(attributeName)) {
-					compareGetterWithSetter(method, getterAttributes.get(attributeName), attributeOwner);
+					checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 				}
-				FrankAttribute attribute = new FrankAttribute(attributeName);
-				attribute.setDescribingElement(attributeOwner);
+				FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
 				documentAttribute(attribute, method, attributeOwner);
 				result.add(attribute);
 			}
@@ -69,7 +70,7 @@ public class FrankDocModel {
 		Map<String, Method> isserAttributes = getAttributeToMethodMap(methods, "is");
 		for(String isserAttributeName : isserAttributes.keySet()) {
 			if(getterAttributes.containsKey(isserAttributeName)) {
-				log.warn(String.format("For FrankElement %s, attribute %s has both a getX and an isX method",
+				log.warn(String.format("For FrankElement [%s], attribute [%s] has both a getX and an isX method",
 						attributeOwner.getSimpleName(), isserAttributeName));
 			} else {
 				getterAttributes.put(isserAttributeName, isserAttributes.get(isserAttributeName));
@@ -106,27 +107,23 @@ public class FrankDocModel {
 		return isSetter || isGetter;
 	}
 
-	private void compareGetterWithSetter(Method setter, Method getter, FrankElement attributeOwner) {
+	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
 		if(! getterType.equals(setterType)) {
-			log.warn(String.format("In Frank element %s: setter %s has type %s while the getter has type %s",
+			log.warn(String.format("In Frank element [%s]: setter [%s] has type [%s] while the getter has type [%s]",
 					attributeOwner.getSimpleName(), setter.getName(), setterType, getterType));
 		}
 	}
 
-	private void documentAttribute(
-			FrankAttribute attribute,
-			Method method,
-			FrankElement attributeOwner) {
+	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
 			if(ibisDoc != null) {
-				attribute.setDescribingElement(findOrCreateFrankElement(
-						parsed.getReferredMethod().getDeclaringClass()));
+				attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
 				attribute.parseIbisDocAnnotation(ibisDoc);
 				if(parsed.hasOrder) {
 					attribute.setOrder(parsed.getOrder());
@@ -139,7 +136,7 @@ public class FrankDocModel {
 			attribute.parseIbisDocAnnotation(ibisDoc);
 		}
 		else {
-			log.warn(String.format("No documentation available for FrankElement %s, attribute %s",
+			log.warn(String.format("No documentation available for FrankElement [%s], attribute [%s]",
 					attributeOwner.getSimpleName(), attribute.getName()));
 		}
 	}
@@ -163,12 +160,11 @@ public class FrankDocModel {
 				result.setOrder(Integer.parseInt(ibisDocRef.value()[0]));
 				result.setHasOrder(true);
 			} catch (Throwable t) {
-				log.warn(String.format("Could not parse order in @IbisDocRef annotation: "
-						+ Integer.parseInt(ibisDocRef.value()[0])));
+				log.warn(String.format("Could not parse order in @IbisDocRef annotation: [%s]", ibisDocRef.value()[0]));
 			}
 		}
 		else {
-			log.warn(String.format(String.format("Too many or zero parameters in @IbisDocRef annotation on method: %s.%s",
+			log.warn(String.format(String.format("Too many or zero parameters in @IbisDocRef annotation on method: [%s].[%s]",
 					originalMethod.getDeclaringClass().getName(), originalMethod.getName())));
 			return null;
 		}

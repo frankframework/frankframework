@@ -22,8 +22,9 @@ public class FrankAttribute {
 	private @Getter String defaultValue;
 	private @Getter @Setter boolean isDeprecated;
 
-	public FrankAttribute(String name) {
+	public FrankAttribute(String name, FrankElement attributeOwner) {
 		this.name = name;
+		this.describingElement = attributeOwner;
 	}
 
 	void parseIbisDocAnnotation(IbisDoc ibisDoc) {
@@ -34,7 +35,7 @@ public class FrankAttribute {
 			order = Integer.parseInt(ibisDocValues[0]);
 			isIbisDocHasOrder = true;
 		} catch (NumberFormatException e) {
-			log.warn(String.format("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]));
+			log.warn(String.format("Could not parse order in @IbisDoc annotation: [%s]", ibisDocValues[0]));
 		}
 		if (isIbisDocHasOrder) {
 			description = ibisDocValues[1];
