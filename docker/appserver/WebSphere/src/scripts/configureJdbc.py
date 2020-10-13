@@ -41,7 +41,7 @@ def createDatasource(datasourceName, providerName, authAlias, properties):
 	datasourceId = AdminJDBC.createDataSource(node, server, providerName, datasourceName, attributes)
 	return(datasourceId)
 
-	
+
 #p0 = AdminConfig.listTemplates('JDBCProvider')
 #print 'JDBCProvider templates: ', p0
 #p1 = AdminConfig.listTemplates('DataSource')

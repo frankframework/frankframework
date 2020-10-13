@@ -4,9 +4,9 @@ server = 'server1'
 
 def installApp( ear, module, war ):
 	print "installing app:",ear
-	appId = AdminApp.install('/work/app/'+ear,
-		[ '-nopreCompileJSPs', '-distributeApp', '-nouseMetaDataFromBinary', '-nodeployejb', 
-		  '-appname', ear, 
+	AdminApp.install('/work/app/'+ear,
+		[ '-nopreCompileJSPs', '-distributeApp', '-nouseMetaDataFromBinary', '-nodeployejb',
+		  '-appname', ear,
 		  '-createMBeansForResources', '-noreloadEnabled', '-nodeployws', '-validateinstall', 'warn', '-processEmbeddedConfig',
 		  '-filepermission', '.*\.dll=755#.*\.so=755#.*\.a=755#.*\.sl=755', '-noallowDispatchRemoteInclude', '-noallowServiceRemoteInclude',
 		  '-asyncRequestDispatchType', 'DISABLED', '-nouseAutoLink', '-noenableClientModule', '-clientMode', 'isolated', '-novalidateSchema',
