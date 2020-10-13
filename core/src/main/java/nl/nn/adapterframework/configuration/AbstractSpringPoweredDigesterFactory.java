@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.digester3.AbstractObjectCreationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -58,7 +58,7 @@ import java.util.Map;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> {
 	protected Logger log = LogUtil.getLogger(this);
 
     private static IbisContext ibisContext;
@@ -277,7 +277,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addConfigWarning(Object currObj, String name, String message) {
-		Locator loc = digester.getDocumentLocator();
+		Locator loc = getDigester().getDocumentLocator();
 		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
 		ConfigurationWarnings.add(null, log, msg);
 	}
@@ -365,9 +365,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
-		Map<String, String> map = new HashMap<String, String>(attrs.getLength());
+		Map<String, String> map = new HashMap<>(attrs.getLength());
 		for (int i = 0; i < attrs.getLength(); ++i) {
-            String value = attrs.getValue(i);
+			String value = attrs.getValue(i);
 			map.put(attrs.getQName(i), value);
 		}
 		return map;

@@ -116,14 +116,8 @@
 			<artifactId>commons-pool</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-digester</groupId>
-			<artifactId>commons-digester</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-digester3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.doc.objects;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +25,12 @@ import lombok.Setter;
  *
  */
 public class ChildIbisBeanMapping {
-    private @Getter @Setter String methodName; // E.g. registerAdapter
-    private @Getter @Setter String childIbisBeanName; // E.g. adapter
-    private @Getter @Setter int maxOccurs;
+	private @Getter @Setter String methodName; // E.g. registerAdapter
+	private @Getter @Setter String childIbisBeanName; // E.g. adapter
+	private @Getter @Setter int maxOccurs;
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

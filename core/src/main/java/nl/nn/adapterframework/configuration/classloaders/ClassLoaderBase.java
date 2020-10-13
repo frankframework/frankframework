@@ -229,6 +229,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		if(name == null) {
+			throw new IllegalArgumentException("classname to load may not be null");
+		}
+
 		Throwable throwable = null;
 		try {
 			return getParent().loadClass(name); // First try to load the class natively
