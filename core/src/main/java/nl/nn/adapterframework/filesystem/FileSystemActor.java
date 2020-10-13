@@ -206,7 +206,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder())) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && !getAction().equals(ACTION_MKDIR)) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder ["+getInputFolder()+"]");
 				fileSystem.createFolder(getInputFolder());
