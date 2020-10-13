@@ -2,9 +2,9 @@ FROM tomcat:7.0.93-jre8
 
 WORKDIR /usr/local/tomcat
 
+RUN mkdir -p log/larvatest/testdata
 RUN sed -i -e 's|Connector port=\"8080\"|Connector port=\"80\"|g' conf/server.xml
 RUN echo "dtap.stage=LOC" >> conf/catalina.properties
-RUN mkdir -p log/larvatest/testdata/fxf
 RUN echo "log.dir=/usr/local/tomcat/log/larvatest" >> conf/catalina.properties
 RUN echo "log.dir.match=(?i)(([cd]:[\\\\/]temp)|(/usr/local/tomcat/log/larvatest))" >> conf/catalina.properties
 RUN echo "jdbc.dbms.default=oracle-docker" >> conf/catalina.properties

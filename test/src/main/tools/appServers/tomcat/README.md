@@ -7,7 +7,7 @@ This subdirectory of the IAF Git repository lets you run Ibis4Test within a Dock
 
       mvn -DdatabaseHost=192.168.178.11 -P oracle,tomcat clean install
 
-- Copy `iaf/test/target/ibis-adapterframework-test-<your version>.war to `iaf/test/src/main/tools/appServers/tomcat/iaf-test.war`.
+- Copy `iaf/test/target/ibis-adapterframework-test-<your version>.war` to `iaf/test/src/main/tools/appServers/tomcat/iaf-test.war`.
 - Run a dockerized Oracle database. You find instructions in subdirectory `iaf/test/src/main/tools/setupDB/Oracle`.
 - In the mean time, build your ibis4test container of the Frank!Framework for using an Oracle database. Within the directory of this `README.md` file, please enter the following command:
 
