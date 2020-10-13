@@ -120,10 +120,8 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
 			}
-			if(isCreateFolder() && !new File(fxfDir).exists()) {
-				if(!new File(fxfDir).mkdirs()) {
-					throw new ConfigurationException(" Cannot create fxf.dir in the path '" + fxfDir + "'");
-				}
+			if(isCreateFolder() && !new File(fxfDir).exists() && !new File(fxfDir).mkdirs()) {
+				throw new ConfigurationException(" Cannot create fxf.dir in the path '" + fxfDir + "'");
 			}
 			if(!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
@@ -314,11 +312,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return fxfVersion;
 	}
 
-	public boolean isCreateFolder() {
-		return createFolder;
-	}
 	@IbisDoc({"when set to <code>true</code>, the folder corresponding fxf.dir property will be created in case it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
+	}
+	public boolean isCreateFolder() {
+		return createFolder;
 	}
 }

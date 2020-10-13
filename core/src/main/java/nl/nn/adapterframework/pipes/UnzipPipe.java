@@ -36,6 +36,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -339,10 +340,16 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"if set <code>true</code>, validation of directory is ignored", "false"})
+	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
+		this.assumeDirectoryExists = assumeDirectoryExists;
+	}
 	public boolean isAssumeDirectoryExists() {
 		return assumeDirectoryExists;
 	}
-	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
-		this.assumeDirectoryExists = assumeDirectoryExists;
+
+	@Deprecated
+	@ConfigurationWarning("the attribute 'checkDirectory' has been renamed to 'assumeDirectoryExists'")
+	public void setCheckDirectory(boolean checkDirectory) {
+		this.assumeDirectoryExists = checkDirectory;
 	}
 }

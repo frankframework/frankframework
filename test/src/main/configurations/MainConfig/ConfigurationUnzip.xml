@@ -6,7 +6,7 @@
 			serviceName="ibis4test-ZipFilePathListener" />
 	</Receiver>
 
-	<Pipeline firstPipe="createOutputFolder">
+	<Pipeline>
 
 		<LocalFileSystemPipe 
 			name="createOutputFolder" 
