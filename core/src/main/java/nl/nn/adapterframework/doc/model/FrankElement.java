@@ -19,9 +19,6 @@ public class FrankElement {
 	/**
 	 * Constructor for testing purposes. We want to test attribute construction in isolation,
 	 * in which case we do not have a parent.
-	 *
-	 * @param fullName
-	 * @param simpleName
 	 */
 	FrankElement(final String fullName, final String simpleName) {
 		this.fullName = fullName;
