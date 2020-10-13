@@ -37,10 +37,11 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Add this dependency -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>test</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
