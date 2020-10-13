@@ -1,0 +1,14 @@
+version: "3"
+services:
+  websphere:
+    image: iaf-test-as-websphere
+    restart: always
+    environment:
+      active.jms: "false"
+      active.tibco: "false"
+      active.ifsa: "false"
+      jdbc.dbms.default: "mssql"
+    ports:
+      - 9043:9043
+      - 9443:9443
+      - 9080:9080
