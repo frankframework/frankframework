@@ -7,10 +7,21 @@
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
 
+	<fileSets>
+		<fileSet>
+			<includes>
+				<include>*.py</include>
+			</includes>
+			<outputDirectory>/</outputDirectory>
+			<directory>src/scripts</directory>
+			<filtered>true</filtered>
+		</fileSet>
+	</fileSets>	
+
 	<dependencySets>
 		<dependencySet>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 		</dependencySet>
+	</dependencySets>
 
-	</dependencySets>	
 </assembly>

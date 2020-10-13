@@ -14,6 +14,17 @@
 		<version>7.6-SNAPSHOT</version>
 	</parent>
 
+	<properties>
+		<iaf.version>7.6-SNAPSHOT</iaf.version>
+		<h2.version>1.4.200</h2.version>
+		<oracle.version>12.2.0.1</oracle.version>
+		<oracle.jdkversion>8</oracle.jdkversion>
+		<mssql.version>7.2.2.jre8</mssql.version>
+		<mysql.version>8.0.21</mysql.version>
+		<mariadb.version>2.6.2</mariadb.version>
+		<postgresql.version>42.2.16</postgresql.version>
+	</properties>
+
 	<modules>
 		<module>appserver</module>
 <!-- 		<module>dbms</module> -->

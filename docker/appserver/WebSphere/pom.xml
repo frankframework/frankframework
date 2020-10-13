@@ -12,15 +12,6 @@
 		<version>7.6-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<m2eclipse.wtp.contextRoot>ibis4testiaf</m2eclipse.wtp.contextRoot>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<iaf.version>7.6-SNAPSHOT</iaf.version>
-
-		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -30,33 +21,33 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc8</artifactId>
-			<version>12.2.0.1</version>
+			<artifactId>ojdbc${oracle.jdkversion}</artifactId>
+			<version>${oracle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.200</version>
+			<version>${h2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
-			<version>7.2.2.jre8</version>
+			<version>${mssql.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.21</version>
+			<version>${mysql.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
-			<version>2.6.2</version>
+			<version>${mariadb.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.2.16</version>
+			<version>${postgresql.version}</version>
 		</dependency>
 	</dependencies>
 
