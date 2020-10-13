@@ -121,10 +121,10 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
 			}
 			if(isCreateFolder() && !new File(fxfDir).exists() && !new File(fxfDir).mkdirs()) {
-				throw new ConfigurationException("cannot create fxf.dir in the path ['" + fxfDir + "]'");
+				throw new ConfigurationException(" Cannot create fxf.dir in the path '" + fxfDir + "'");
 			}
 			if(!new File(fxfDir).isDirectory()) {
-				throw new ConfigurationException("fxf.dir ['" + fxfDir + "'] doesn't exist or is not a directory");
+				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
 			}
 			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
 			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/ClientFilename", "text", false, getParameterList());
