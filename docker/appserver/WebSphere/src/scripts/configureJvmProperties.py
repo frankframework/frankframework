@@ -6,7 +6,7 @@ server = 'server1'
 
 def setJvmProperty( name, value ):
 	print "Setting JVM property:",name,"=",value
-	propertyId = AdminTask.setJVMSystemProperties([ '-serverName', server, '-nodeName', node, '-propertyName', name, '-propertyValue', value ]) 
+	propertyId = AdminTask.setJVMSystemProperties([ '-serverName', server, '-nodeName', node, '-propertyName', name, '-propertyValue', value ])
 	return(propertyId)
 
 setJvmProperty( 'log.dir', '${SERVER_LOG_ROOT}')

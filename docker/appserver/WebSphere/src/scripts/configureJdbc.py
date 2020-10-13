@@ -20,12 +20,12 @@ def createTemplatedProvider(templateName, implementationClass, classpath):
 	providerName = templateName
 	attributes = 'classpath='+classpath
 	providerTemplate = AdminConfig.listTemplates('JDBCProvider', templateName)
-	providerId = AdminJDBC.createJDBCProviderUsingTemplate(node, server, providerTemplate, providerName, implementationClass, attributes) 
+	providerId = AdminJDBC.createJDBCProviderUsingTemplate(node, server, providerTemplate, providerName, implementationClass, attributes)
 	return(providerId)
 
 def createProvider(providerName, implementationClass, attributes):
 	print "Creating JDBC Provider: ", providerName
-	providerId = AdminJDBC.createJDBCProvider(node, server, providerName, implementationClass, attributes) 
+	providerId = AdminJDBC.createJDBCProvider(node, server, providerName, implementationClass, attributes)
 	return(providerId)
 
 def createTemplatedDatasource(datasourceName, providerName, templateName, authAlias, properties):
@@ -34,7 +34,7 @@ def createTemplatedDatasource(datasourceName, providerName, templateName, authAl
 	template = AdminConfig.listTemplates('DataSource', templateName)
 	datasourceId = AdminJDBC.createDataSourceUsingTemplate(node, server, providerName, template, datasourceName, attributes)
 	return(datasourceId)
-	
+
 def createDatasource(datasourceName, providerName, authAlias, properties):
 	print "Creating Datasource: ", datasourceName
 	attributes = [ [ 'jndiName','jdbc/'+datasourceName ],[ 'datasourceHelperClassname','com.ibm.websphere.rsadapter.GenericDataStoreHelper' ],['authDataAlias',authAlias ], ['propertySet', [[ 'resourceProperties', properties ]]] ]
