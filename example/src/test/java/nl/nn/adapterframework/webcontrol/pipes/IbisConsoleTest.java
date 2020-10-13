@@ -3,6 +3,7 @@ package nl.nn.adapterframework.webcontrol.pipes;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -36,6 +37,8 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class IbisConsoleTest {
+	private static boolean TEST_ENABLED = "true".equals(System.getProperty("ibisTester.enabled"));
+
 	private static String SHOW_CONFIGURATION_STATUS_XSLT = "webcontrol/pipes/xsl/ShowConfigurationStatus.xsl";
 	private static String SHOW_ENVIRONMENT_VARIABLES_XSLT = "webcontrol/pipes/xsl/ShowEnvironmentVariables.xsl";
 	private static Transformer showConfigurationStatusTransformer;
@@ -54,6 +57,8 @@ public class IbisConsoleTest {
 
 	@BeforeClass
 	public static void initTest() throws ConfigurationException, TransformerConfigurationException, IOException {
+		assumeTrue(TEST_ENABLED);
+
 		ibisTester = new IbisTester();
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
@@ -80,10 +85,12 @@ public class IbisConsoleTest {
 
 	@Test
 	public void ShowConfigurationStatus_all() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
+		assumeTrue(TEST_ENABLED);
+
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -98,10 +105,12 @@ public class IbisConsoleTest {
 
 	@Test
 	public void ShowConfigurationStatus_single() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
+		assumeTrue(TEST_ENABLED);
+
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -116,10 +125,12 @@ public class IbisConsoleTest {
 
 	@Test
 	public void showEnvironmentVariables() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
+		assumeTrue(TEST_ENABLED);
+
 		ShowEnvironmentVariables showEnvironmentVariables = new ShowEnvironmentVariables();
 		PipeLine pipeLine = new PipeLine();
 		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowEnvironmentVariables");
-		assertNotNull("adapter is null", adapter);
+		assertNotNull("adapter is null. registered adapters ["+ibisContext.getIbisManager().getRegisteredAdapters()+"]", adapter);
 		pipeLine.setAdapter(adapter);
 		showEnvironmentVariables.registerForward(createPipeSuccessForward());
 		showEnvironmentVariables.configure(pipeLine);

@@ -521,7 +521,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorWriteActionWithBackup() throws Exception {
-		String filename = "uploadedwithString" + FILE1;
+		String filename = "writeAndBackupTest.txt";
 		String contents = "text content:";
 		int numOfBackups=3;
 		int numOfWrites=5;
@@ -535,7 +535,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("contents");
-		p.setSessionKey("uploadActionTargetwString");
+		p.setSessionKey("fileSystemActorWriteActionWithBackupKey");
 
 		params.add(p);
 		actor.setAction("write");
@@ -546,7 +546,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message= new Message(filename);
 		for (int i=0;i<numOfWrites;i++) {
-			session.put("uploadActionTargetwString", contents+i);
+			session.put("fileSystemActorWriteActionWithBackupKey", contents+i);
 			ParameterValueList pvl= params.getValues(message, session);
 			Object result = actor.doAction(message, pvl, null);
 
@@ -555,13 +555,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		
-		String actualContents = readFile(null, filename);
-		assertEquals(contents.trim()+(numOfWrites-1), actualContents.trim());
+		assertFileExistsWithContents(null, filename, contents.trim()+(numOfWrites-1));
 		
 		for (int i=1;i<=numOfBackups;i++) {
-			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
+			assertFileExistsWithContents(null, filename+"."+i, contents.trim()+(numOfWrites-1-i));
+//			String actualContentsi = readFile(null, filename+"."+i);
+//			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
 		}
 	}
 
@@ -576,7 +575,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if(_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
-		createFile(null, filename, "thanos car ");
+		createFile(null, filename, contents);
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		ParameterList params = new ParameterList();
@@ -808,8 +807,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorRenameActionTest(boolean destinationExists) throws Exception {
-		String filename = "toberenamed" + FILE1;
-		String dest = "renamed" + FILE1;
+		String filename = "toberenamed.txt";
+		String dest = "renamed.txt";
 		
 		if (!_fileExists(filename)) {
 			createFile(null, filename, "is not empty");

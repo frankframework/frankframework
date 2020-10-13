@@ -28,6 +28,12 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
  * Interface to represent a basic filesystem, in which files can be 
  * listed, read, deleted or moved to a folder.
  * 
+ * For Basic filesystems, filenames could be more or less globally unique IDs. In such a case:
+ * - moving or copying a file to a folder might change its name
+ * - moving or copying a file to a folder will never 'overwrite' a file already present in the folder
+ * and therefore for basic filesystems:
+ * - toFile(folder, filename) may return always the same result as toFile(filename)
+ * - rollover and overwrite protection is not supported
  * 
  * @author Gerrit van Brakel
  *
@@ -56,13 +62,26 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
 	public F toFile(String filename) throws FileSystemException;
-	public F toFile(String folder, String filename) throws FileSystemException;
+	/**
+	 * Creates a reference to a file. If filename is not absolute, it will be created in 'defaultFolder'.
+	 */
+	public F toFile(String defaultFolder, String filename) throws FileSystemException;
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;
 	public InputStream readFile(F f) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
+
+	/**
+	 * Moves the file to a another folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 */
 	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
+
+	/**
+	 * Copies the file to a another folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 */
 	public F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	public void createFolder(String folder) throws FileSystemException;

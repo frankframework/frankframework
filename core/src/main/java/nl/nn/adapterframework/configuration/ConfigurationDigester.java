@@ -30,9 +30,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.Rule;
-import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
@@ -42,6 +41,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
+import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -87,14 +87,12 @@ public class ConfigurationDigester {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
-
 	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
-	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
+	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 	private boolean configLogAppend = false;
 
 	String lastResolvedEntity = null;
@@ -102,15 +100,15 @@ public class ConfigurationDigester {
 	private class XmlErrorHandler implements ErrorHandler  {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			configWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 
@@ -120,57 +118,24 @@ public class ConfigurationDigester {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
-				return SaxException.createSaxException(message, locator, e);
+				return SaxException.createSaxException(message, getDocumentLocator(), e);
 			}
 			@Override
 			public SAXException createSAXException(Exception e) {
-				return SaxException.createSaxException(null, locator, e);
+				return SaxException.createSaxException(null, getDocumentLocator(), e);
 			}
 		};
 
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		URL digesterRulesURL = ClassUtils.getResourceURL(configuration.getClassLoader(), getDigesterRules());
-		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
-		digester.addRuleSet(ruleSet);
+		ClassLoader configurationClassLoader = configuration.getClassLoader();
+		Resource digesterRulesResource = Resource.getResource(configurationClassLoader, getDigesterRules());
 
-		Rule attributeChecker = new AttributeCheckingRule();
-		digester.addRule("*/jmsRealms", attributeChecker);
-		digester.addRule("*/jmsRealm", attributeChecker);
-		digester.addRule("*/sapSystem", attributeChecker);
-		digester.addRule("*/adapter", attributeChecker);
-		digester.addRule("*/pipeline", attributeChecker);
-		digester.addRule("*/errorMessageFormatter", attributeChecker);
-		digester.addRule("*/receiver", attributeChecker);
-		digester.addRule("*/sender", attributeChecker);
-		digester.addRule("*/listener", attributeChecker);
-		digester.addRule("*/postboxSender", attributeChecker);
-		digester.addRule("*/postboxListener", attributeChecker);
-		digester.addRule("*/errorSender", attributeChecker);
-		digester.addRule("*/messageLog", attributeChecker);
-		digester.addRule("*/inProcessStorage", attributeChecker);
-		digester.addRule("*/errorStorage", attributeChecker);
-		digester.addRule("*/pipe", attributeChecker);
-		digester.addRule("*/readerFactory", attributeChecker);
-		digester.addRule("*/manager", attributeChecker);
-		digester.addRule("*/manager/flow", attributeChecker);
-		digester.addRule("*/recordHandler", attributeChecker);
-		digester.addRule("*/resultHandler", attributeChecker);
-		digester.addRule("*/forward", attributeChecker);
-		digester.addRule("*/child", attributeChecker);
-		digester.addRule("*/param", attributeChecker);
-		digester.addRule("*/pipeline/exits/exit", attributeChecker);
-		digester.addRule("*/scheduler/job", attributeChecker);
-		digester.addRule("*/locker", attributeChecker);
-		digester.addRule("*/directoryCleaner", attributeChecker);
-		digester.addRule("*/statistics", attributeChecker);
-		digester.addRule("*/handler", attributeChecker);
-		digester.addRule("*/cache", attributeChecker);
-		digester.addRule("*/inputValidator", attributeChecker);
-		digester.addRule("*/outputValidator", attributeChecker);
-		digester.addRule("*/inputWrapper", attributeChecker);
-		digester.addRule("*/outputWrapper", attributeChecker);
+		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
+		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
+		loader.addRules(digester);
+
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().setDigesterRules(digester);
 		}
@@ -180,7 +145,7 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassUtils.getResourceURL(this, CONFIGURATION_VALIDATION_SCHEMA);
+			URL xsdUrl = ClassUtils.getResourceURL(configurationClassLoader, CONFIGURATION_VALIDATION_SCHEMA);
 			if (xsdUrl==null) {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
@@ -202,10 +167,6 @@ public class ConfigurationDigester {
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
-			URL digesterRulesURL = ClassUtils.getResourceURL(classLoader, getDigesterRules());
-			if (digesterRulesURL == null) {
-				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
-			}
 
 			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
 			if (configurationResource == null) {
@@ -216,7 +177,7 @@ public class ConfigurationDigester {
 			String original = XmlUtils.identityTransform(configurationResource);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
-			List<String> propsToHide = new ArrayList<String>();
+			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
@@ -240,9 +201,9 @@ public class ConfigurationDigester {
 			if (digester != null ) {
 				currentElementName = digester.getCurrentElementName();
 			}
-			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
+
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-			throw e;
 		}
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().configure(configuration);
@@ -290,8 +251,8 @@ public class ConfigurationDigester {
 	public void setDigesterRules(String string) {
 		digesterRulesFile = string;
 	}
+
 	public String getDigesterRules() {
 		return digesterRulesFile;
 	}
-
 }

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.cmis.server;
 
+import java.io.File;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
@@ -23,22 +24,40 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
- * Implementation of a repository factory that proxies all requests to a CMIS Bridge adapter
+ * Implementation of a repository factory that proxies all requests to a CmisEventListener
+ * When no EventListeners have been defined, all requests will be blocked.
  */
 public class RepositoryConnectorFactory extends AbstractServiceFactory {
+	public static final String CMIS_BRIDGE_PROPERTY_PREFIX = "cmisbridge.";
+	public static final boolean CMIS_BRIDGE_ENABLED = AppConstants.getInstance().getBoolean(CMIS_BRIDGE_PROPERTY_PREFIX+"active", true);
 
 	private static final Logger LOG = LogUtil.getLogger(RepositoryConnectorFactory.class);
-	private ThreadLocal<CallContextAwareCmisService> threadLocalService = new ThreadLocal<CallContextAwareCmisService>();
+	private ThreadLocal<CallContextAwareCmisService> threadLocalService = new ThreadLocal<>();
+	private File tempDirectory = null;
 
 	@Override
 	public void init(Map<String, String> parameters) {
 		LOG.info("Initialized proxy repository service");
+
+		String ibisTempDir = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+		File baseDir = null;
+		if(StringUtils.isNotEmpty(ibisTempDir)) {
+			baseDir = new File(ibisTempDir);
+		} else {
+			baseDir = super.getTempDirectory();
+		}
+		tempDirectory = new File(baseDir, "cmis");
+		if(!tempDirectory.mkdir()) {
+			tempDirectory = super.getTempDirectory(); //fall back to default java.io.tmpdir
+		}
 	}
 
 	@Override
@@ -48,6 +67,13 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
 	@Override
 	public CmisService getService(CallContext context) {
+		if(!CMIS_BRIDGE_ENABLED) {
+			throw new CmisRuntimeException("CMIS bridge not enabled");
+		}
+		if(!CmisEventDispatcher.getInstance().hasEventListeners()) {
+			throw new CmisRuntimeException("no CMIS bridge events registered");
+		}
+
 		LOG.debug("Retrieve proxy repository service");
 
 		CallContextAwareCmisService service = threadLocalService.get();
@@ -72,5 +98,10 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		}
 
 		return service;
+	}
+
+	@Override
+	public File getTempDirectory() {
+		return tempDirectory;
 	}
 }
