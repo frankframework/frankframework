@@ -1,14 +1,26 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception: (UnexpectedRollbackException) Transaction rolled back because it has been marked as rollback-only</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception: Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception</message>
       <cause>
         <throwable>
-          <class>org.springframework.transaction.UnexpectedRollbackException</class>
-          <message>Transaction rolled back because it has been marked as rollback-only</message>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+              <cause>
+                <throwable>
+                  <class>java.lang.InterruptedException</class>
+                  <message>sleep interrupted</message>
+                </throwable>
+              </cause>
+            </throwable>
+          </cause>
         </throwable>
       </cause>
     </throwable>
