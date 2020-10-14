@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -67,6 +68,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 
 	@Test
 	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
+		assumeTrue(System.getProperty("os.name").startsWith("Windows"));
 		String filename = "FileInLongRoot.txt";
 		String contents = "regeltje tekst";
 		
