@@ -450,9 +450,19 @@
         <module>larva</module>
         <module>ladybug</module>
         <module>test</module>
-        <module>docker</module>
         <module>akamai</module>
         <module>ear-test</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <property>
+          <name>docker</name>
+        </property>
+      </activation>
+      <modules>
+        <module>docker</module>
       </modules>
     </profile>
     <profile>

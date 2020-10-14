@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<artifactId>ibis-adapterframework-docker-as</artifactId>
-	<name>IAF Docker Aplication Server images</name>
+	<name>Ibis AdapterFramework Docker Aplication Server images</name>
 
 	<parent>
 		<groupId>org.ibissource</groupId>

@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>ibis-adapterframework-docker-as-was</artifactId>
-	<name>WebSphere Docker image for iaf-test</name>
+	<name>Ibis AdapterFramework Docker image for WebSphere</name>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
@@ -21,8 +21,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc${oracle.jdkversion}</artifactId>
-			<version>${oracle.version}</version>
+			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
+			<version>${oracle.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -32,22 +32,22 @@
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
-			<version>${mssql.version}</version>
+			<version>${mssql.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.version}</version>
+			<version>${mysql.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
-			<version>${mariadb.version}</version>
+			<version>${mariadb.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>${postgresql.version}</version>
+			<version>${postgresql.driver.version}</version>
 		</dependency>
 	</dependencies>
 
