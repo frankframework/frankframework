@@ -50,8 +50,8 @@ def createDatasource(datasourceName, providerName, authAlias, properties):
 
 
 
-createTemplatedProvider('Oracle JDBC Driver (XA)', 		 'oracle.jdbc.xa.client.OracleXADataSource', 		'/work/drivers/ojdbc${oracle.jdkversion}-${oracle.version}.jar')
-createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.sqlserver.jdbc.SQLServerXADataSource',  '/work/drivers/mssql-jdbc-${mssql.version}.jar')
+createTemplatedProvider('Oracle JDBC Driver (XA)', 		 'oracle.jdbc.xa.client.OracleXADataSource', 		'/work/drivers/ojdbc${oracle.driver.jdkversion}-${oracle.driver.version}.jar')
+createTemplatedProvider('Microsoft SQL Server JDBC Driver (XA)', 'com.microsoft.sqlserver.jdbc.SQLServerXADataSource',  '/work/drivers/mssql-jdbc-${mssql.driver.version}.jar')
 createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=/work/drivers/h2-${h2.version}.jar,xa=true')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [

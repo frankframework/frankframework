@@ -62,6 +62,15 @@
 						<descriptor>src/assembly/dockerAssembly.xml</descriptor>
 					</descriptors>
 				</configuration>
+				<executions>
+					<execution>
+						<id>prepare-as-dependencies</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
