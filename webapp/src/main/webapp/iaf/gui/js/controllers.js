@@ -1696,7 +1696,7 @@ angular.module('iaf.beheerconsole')
 		Api.Put("schedules", {action: "start"});
 	};
 
-	$scope.pause = function() {
+	$scope.pauseScheduler = function() {
 		Api.Put("schedules", {action: "pause"});
 	};
 

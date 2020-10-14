@@ -429,6 +429,20 @@ public final class ShowScheduler extends Base {
 				scheduler.pauseJob(jobKey);
 			}
 			else if("resume".equals(action)) {
+				SchedulerHelper sh = ((DefaultIbisManager) getIbisManager()).getSchedulerHelper();
+				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+				// TODO this part can be more generic in case multiple triggers 
+				// can be configurable
+				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+				if(triggers != null) {
+					for (Trigger trigger : triggers) {
+						if(trigger instanceof CronTrigger) {
+							sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
+						} else if(trigger instanceof SimpleTrigger) {
+							sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+						}
+					}
+				}
 				scheduler.resumeJob(jobKey);
 			}
 			else if("trigger".equals(action)) {
