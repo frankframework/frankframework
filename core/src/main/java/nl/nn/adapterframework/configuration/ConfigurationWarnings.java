@@ -19,6 +19,7 @@ package nl.nn.adapterframework.configuration;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
 	private Configuration activeConfiguration = null;
+	
 
 	/**
 	 * Add configuration independent warning
@@ -52,6 +54,15 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	 */
 	public static void add(INamedObject object, Logger log, String message) {
 		add(object, log, message, null);
+	}
+
+	/**
+	 * Adds configuration warning in case warning is not suppressed
+	 */
+	public static void add(IConfigurable object, Logger log, String message, String suppressionKey, IAdapter adapter) {
+		if(!isSuppressed(suppressionKey, adapter, object.getConfigurationClassLoader())) {
+			add(object, log, message, null);
+		}
 	}
 
 	/**
@@ -76,7 +87,6 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 			addConfigurationIndependentWarning(log, msg, t, (t==null));
 		}
 	}
-
 
 	@Override
 	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {

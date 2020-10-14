@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -64,8 +65,10 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled, HasStatistics {
-	
+public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDestination, IXAEnabled, HasStatistics {
+
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
 	private String name;
 	private String authAlias = null;
 	private String username = null;
@@ -274,7 +277,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 		}
 	}
 
-
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		hski.handleStatisticsKeeper(data, connectionStatistics);
@@ -300,7 +302,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 		}
 		return result;
 	}
-
 
 	@IbisDoc({"1", "Name of the sender", ""})
 	@Override
@@ -362,5 +363,4 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
 	}
-	
 }
