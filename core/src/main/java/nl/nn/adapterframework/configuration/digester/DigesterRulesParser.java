@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.digester3.ObjectCreationFactory;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
@@ -27,7 +28,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(rule.getPattern());
 		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
-			ruleBuilder.createObject().ofType(rule.getObject());
+//			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
+			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
 		} else {
 			ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
 			if(factory != null) {
