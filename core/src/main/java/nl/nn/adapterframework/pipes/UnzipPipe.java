@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -104,7 +105,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	private File dir; // File representation of directory
 	private List<String> base64Extensions;
 
-	private boolean checkDirectory=false;
+	private boolean assumeDirectoryExists=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -115,7 +116,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		} else {
 			dir = new File(getDirectory());
-			if(!isCheckDirectory()) {
+			if(!isAssumeDirectoryExists()) {
 				if (!dir.exists()) {
 					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
 				}
@@ -281,7 +282,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	public String getDirectory() {
 		return directory;
 	}
-	
+
 	@IbisDoc({"sessionkey with a directory value to extract the archive to", ""})
 	public void setDirectorySessionKey(String directorySessionKey) {
 		this.directorySessionKey = directorySessionKey;
@@ -289,7 +290,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	public String getDirectorySessionKey() {
 		return directorySessionKey;
 	}
-	
+
 	@IbisDoc({"when true, file is automatically deleted upon normal jvm termination", "true"})
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
@@ -337,14 +338,18 @@ public class UnzipPipe extends FixedForwardPipe {
 	public boolean isCreateSubdirectories() {
 		return createSubdirectories;
 	}
-	
-	@IbisDoc({"if set <code>true</code>, validation on directory is ignored", "false"})
-	public boolean isCheckDirectory()
-	{
-		return checkDirectory;
+
+	@IbisDoc({"if set <code>true</code>, validation of directory is ignored", "false"})
+	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
+		this.assumeDirectoryExists = assumeDirectoryExists;
 	}
-	public void setCheckDirectory(boolean checkDirectory)
-	{
-		this.checkDirectory = checkDirectory;
+	public boolean isAssumeDirectoryExists() {
+		return assumeDirectoryExists;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("the attribute 'checkDirectory' has been renamed to 'assumeDirectoryExists'")
+	public void setCheckDirectory(boolean checkDirectory) {
+		this.assumeDirectoryExists = checkDirectory;
 	}
 }
