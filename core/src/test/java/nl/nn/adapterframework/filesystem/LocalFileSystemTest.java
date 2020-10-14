@@ -68,7 +68,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 
 	@Test
 	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
-		assumeTrue(System.getProperty("os.name").startsWith("Windows"));
+		assumeTrue("Test is for long and short filename compatibility, which is a Windows only thing", System.getProperty("os.name").startsWith("Windows"));
 		String filename = "FileInLongRoot.txt";
 		String contents = "regeltje tekst";
 		
