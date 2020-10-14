@@ -569,6 +569,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	/**
+	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
+	 * Since this method is used when handling other exceptions thrown by {@link WebServiceSender} and {@link HttpSender} , silently return null, to avoid npe's, ioexceptions etc.
+	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
 		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
