@@ -2,6 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 	
 
 	@Test
-	public void writableFileSystemTestCreateNewFileAbsolute() throws Exception {
+	public void localFileSystemTestCreateNewFileAbsolute() throws Exception {
 		String filename = "createFileAbsolute" + FILE1;
 		String contents = "regeltje tekst";
 		
@@ -64,6 +65,41 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 
 	}
 
+	@Test
+	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
+		String filename = "FileInLongRoot.txt";
+		String contents = "regeltje tekst";
+		
+		String rootFolderLongName = "VeryLongRootFolderName";
+		String rootFolderShortName = "VERYLO~1";
+		_createFolder(rootFolderLongName);
+		createFile(rootFolderLongName, filename, contents);
+		
+		LocalFileSystem fsLong = new LocalFileSystem();
+		fsLong.setRoot(folder.getRoot().getAbsolutePath()+"\\"+rootFolderLongName);
+		fsLong.configure();
+		fsLong.open();
+
+		LocalFileSystem fsShort = new LocalFileSystem();
+		fsShort.setRoot(folder.getRoot().getAbsolutePath()+"\\"+rootFolderShortName);
+		fsShort.configure();
+		fsShort.open();
+		
+		File fLong = fsLong.toFile(filename);
+		File fShort = fsShort.toFile(filename);
+		
+		System.out.println("Flong ["+fLong.getName()+"] absolute path ["+fLong.getAbsolutePath()+"]");
+		System.out.println("Fshort ["+fShort.getName()+"] absolute path ["+fShort.getAbsolutePath()+"]");
+		
+		assertTrue(fsLong.exists(fLong));
+		assertTrue(fsShort.exists(fShort));
+		
+		assertTrue(fsLong.exists(fsLong.toFile(fLong.getAbsolutePath())));
+		assertTrue(fsShort.exists(fsShort.toFile(fShort.getAbsolutePath())));
+
+		assertTrue("LocalFileSystem with short path root must accept absolute filename with long path root", fsShort.exists(fsShort.toFile(fLong.getAbsolutePath())));
+		assertTrue("LocalFileSystem with long path root must accept absolute filename with short path root", fsLong.exists(fsLong.toFile(fShort.getAbsolutePath())));
+	}
 
 	@Test
 	public void localFileSystemTestListWildcard() throws Exception {

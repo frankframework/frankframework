@@ -100,10 +100,14 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
 			filename = folder +"/" + filename;
 		}
-		if (StringUtils.isEmpty(getRoot()) || filename.startsWith(getRoot())) {
-			return new File(filename);
+		if (StringUtils.isNotEmpty(getRoot())) {
+			File result = new File(filename);
+			if (result.isAbsolute()) {
+				return result;
+			}
+			filename = getRoot()+"/"+ filename;
 		}
-		return new File(getRoot()+"/"+ filename);
+		return new File(filename);
 	}
 
 	@Override
