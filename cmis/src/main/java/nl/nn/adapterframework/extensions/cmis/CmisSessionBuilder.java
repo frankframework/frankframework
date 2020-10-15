@@ -329,7 +329,7 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setProxyUserName(String string) {
+	public CmisSessionBuilder setProxyUsername(String string) {
 		proxyUserName = string;
 		return this;
 	}

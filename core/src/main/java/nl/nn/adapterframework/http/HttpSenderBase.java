@@ -894,7 +894,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@IbisDoc({"33", "proxy username", " "})
-	public void setProxyUserName(String string) {
+	public void setProxyUsername(String string) {
 		proxyUserName = string;
 	}
 	public String getProxyUserName() {

@@ -308,8 +308,8 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
-	public void setProxyUserName(String string) {
-		httpclient.setProxyUserName(string);
+	public void setProxyUsername(String string) {
+		httpclient.setProxyUsername(string);
 	}
 
 	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})

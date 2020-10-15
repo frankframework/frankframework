@@ -1052,8 +1052,8 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"Proxy Username", ""})
-	public void setProxyUserName(String proxyUserName) {
-		sessionBuilder.setProxyUserName(proxyUserName);
+	public void setProxyUsername(String proxyUserName) {
+		sessionBuilder.setProxyUsername(proxyUserName);
 	}
 
 	@IbisDoc({"Proxy Password", ""})

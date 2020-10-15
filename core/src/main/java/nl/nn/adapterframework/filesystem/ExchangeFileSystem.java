@@ -739,7 +739,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	}
 
 	@IbisDoc({"12", "proxy username", ""})
-	public void setProxyUserName(String proxyUsername) {
+	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
 	public String getProxyUsername() {

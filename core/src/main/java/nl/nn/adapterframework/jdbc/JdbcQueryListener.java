@@ -53,13 +53,11 @@ public class JdbcQueryListener extends JdbcListener {
 	
 
 	@Override
-	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
 	@Override
-	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}

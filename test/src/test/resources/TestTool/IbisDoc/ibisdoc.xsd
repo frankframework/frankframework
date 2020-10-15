@@ -6313,7 +6313,7 @@
         <xs:documentation>Proxy host port (default: 80)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy Username</xs:documentation>
       </xs:annotation>
@@ -6523,7 +6523,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -6733,7 +6733,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -6950,7 +6950,7 @@
         <xs:documentation>Proxy host port (default: 80)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy Username</xs:documentation>
       </xs:annotation>
@@ -13127,7 +13127,7 @@
         <xs:documentation>proxy port</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username</xs:documentation>
       </xs:annotation>
@@ -13257,7 +13257,7 @@
         <xs:documentation>proxy port</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username</xs:documentation>
       </xs:annotation>
@@ -13404,7 +13404,7 @@
         <xs:documentation>proxy port</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username</xs:documentation>
       </xs:annotation>
@@ -20831,7 +20831,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -21117,7 +21117,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -24005,8 +24005,16 @@
     </xs:attribute>
     <xs:attribute name="jndiContextPrefix" type="xs:string" />
     <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute name="keyField" type="xs:string" />
-    <xs:attribute name="messageField" type="xs:string" />
+    <xs:attribute name="keyField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Primary key field of the table, used to identify messages</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Optional) field containing the message data (default: &lt;i&gt;same as keyField&lt;/i&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="messageFieldType" type="xs:string">
       <xs:annotation>
         <xs:documentation>Type of the field containing the message data: either String, clob or blob (default: &lt;i&gt;String&lt;/i&gt;)</xs:documentation>
@@ -29343,8 +29351,16 @@
     </xs:attribute>
     <xs:attribute name="jndiContextPrefix" type="xs:string" />
     <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute name="keyField" type="xs:string" />
-    <xs:attribute name="messageField" type="xs:string" />
+    <xs:attribute name="keyField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Primary key field of the table, used to identify messages</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Optional) field containing the message data (default: &lt;i&gt;same as keyField&lt;/i&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="messageFieldType" type="xs:string">
       <xs:annotation>
         <xs:documentation>Type of the field containing the message data: either String, clob or blob (default: &lt;i&gt;String&lt;/i&gt;)</xs:documentation>
@@ -30124,7 +30140,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -30396,7 +30412,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -30652,7 +30668,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -30902,7 +30918,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -34001,7 +34017,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -34340,7 +34356,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -37416,7 +37432,7 @@
         <xs:documentation>realm used for proxy authentication</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>username used to obtain credentials for proxy authentication</xs:documentation>
       </xs:annotation>
@@ -37616,7 +37632,7 @@
         <xs:documentation>realm used for proxy authentication</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>username used to obtain credentials for proxy authentication</xs:documentation>
       </xs:annotation>
@@ -43564,7 +43580,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>
@@ -44046,7 +44062,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
       </xs:annotation>

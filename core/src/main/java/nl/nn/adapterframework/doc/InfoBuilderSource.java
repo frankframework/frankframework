@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -43,8 +42,8 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -267,7 +266,6 @@ class InfoBuilderSource {
 				result.add(new SpringBean(beans[i], clazz));
 			}
 		}
-		System.out.println(result.stream().map(b -> b.getClazz().getName()).filter(s -> s.contains("Ifsa")).collect(Collectors.joining(", ")));
 		return result;
 	}
 
