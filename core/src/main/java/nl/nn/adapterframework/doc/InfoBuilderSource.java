@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -266,6 +267,7 @@ class InfoBuilderSource {
 				result.add(new SpringBean(beans[i], clazz));
 			}
 		}
+		System.out.println(result.stream().map(b -> b.getClazz().getName()).filter(s -> s.contains("Ifsa")).collect(Collectors.joining(", ")));
 		return result;
 	}
 

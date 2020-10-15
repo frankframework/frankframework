@@ -58,7 +58,6 @@
     <dependency>
       <groupId>com.ing</groupId>
       <artifactId>ifsa-jms-xa</artifactId>
-      <version>22.10.055</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

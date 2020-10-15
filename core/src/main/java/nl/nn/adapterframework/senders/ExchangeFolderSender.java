@@ -90,7 +90,7 @@ public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSyst
 
 	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
 	public void setProxyUserName(String proxyUsername) {
-		getFileSystem().setProxyUsername(proxyUsername);
+		getFileSystem().setProxyUserName(proxyUsername);
 	}
 
 	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
