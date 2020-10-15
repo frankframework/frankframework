@@ -33,7 +33,9 @@ import nl.nn.adapterframework.util.ClassUtils;
 public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
 	private Configuration activeConfiguration = null;
-	
+	public static final String sqlInjectionSuppressKey = "warnings.suppress.sqlInjections";
+	public static final String deprecationSuppressKey="warnings.suppress.deprecated";
+	public static final String defaultValueSuppressKey = "warnings.suppress.defaultvalue";
 
 	/**
 	 * Add configuration independent warning

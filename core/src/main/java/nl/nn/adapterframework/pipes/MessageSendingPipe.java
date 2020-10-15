@@ -57,6 +57,7 @@ import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -296,8 +297,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
-					boolean suppressSqlWarning = ConfigurationWarnings.isSuppressed("warnings.suppress.sqlInjections", getAdapter(), getConfigurationClassLoader());
-					((DirectQuerySender) getSender()).configure(suppressSqlWarning);
+					String msg = "has ["+ClassUtils.nameOf(DirectQuerySender.class)+"] in adapter ["+getAdapter().getName()+"]. Please change to ["+ClassUtils.nameOf(FixedQuerySender.class)+"] to avoid potential SQL injections!";
+					ConfigurationWarnings.add(this, log, msg, ConfigurationWarnings.sqlInjectionSuppressKey, getAdapter());
+					((DirectQuerySender) getSender()).configure(true);
 				} else {
 					getSender().configure();
 				}
