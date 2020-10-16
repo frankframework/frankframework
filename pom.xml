@@ -448,11 +448,21 @@
       <modules>
         <module>core</module>
         <module>larva</module>
-        <module>akamai</module>
-        <module>webapp</module>
-        <module>test</module>
-        <module>ear-test</module>
         <module>ladybug</module>
+        <module>test</module>
+        <module>akamai</module>
+        <module>ear-test</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <property>
+          <name>docker</name>
+        </property>
+      </activation>
+      <modules>
+        <module>docker</module>
       </modules>
     </profile>
     <profile>
