@@ -1035,6 +1035,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		TransactionStatus txStatus = itx.getStatus();
 		Serializable msg=null;
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+		threadContext.put("retry", "true");
 		try {
 			try {
 				msg = errorStorage.getMessage(storageMessageId);
