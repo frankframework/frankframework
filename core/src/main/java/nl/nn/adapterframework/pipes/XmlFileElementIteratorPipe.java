@@ -162,7 +162,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if (sElem) {
-				elementBuffer.append(XmlUtils.encodeChars(ch, start, length, false));
+				elementBuffer.append(XmlUtils.encodeChars(ch, start, length));
 			}
 		}
 

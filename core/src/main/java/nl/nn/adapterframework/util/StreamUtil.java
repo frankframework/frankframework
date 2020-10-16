@@ -193,7 +193,7 @@ public class StreamUtil {
 						}
 					} else {
 						if (xmlEncode) {
-							writer.write(XmlUtils.encodeChars(buffer,0,charsRead,false));
+							writer.write(XmlUtils.encodeChars(buffer,0,charsRead));
 						} else {
 							writer.write(buffer,0,charsRead);
 						}

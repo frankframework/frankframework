@@ -1161,6 +1161,10 @@ public class XmlUtils {
 		return encodeChars(replaceNonValidXmlCharacters(string));
 	}
 
+	public static String encodeChars(char[] chars, int offset, int length) {
+		return encodeChars(chars, 0, length, false);
+	}
+
 	/**
 	 * Translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
