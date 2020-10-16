@@ -50,7 +50,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	public void configure(boolean trust) throws ConfigurationException {
 		super.configure();
 		if (!trust) {
-			ConfigurationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] to avoid potential SQL injections!");
+			ConfigurationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
 		}
 	}
 
