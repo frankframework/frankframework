@@ -68,12 +68,6 @@
         <version>7.6-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>com.ing</groupId>
-        <artifactId>ifsa-jms-xa</artifactId>
-        <version>22.10.055</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
         <version>7.6-SNAPSHOT</version>

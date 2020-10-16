@@ -3,6 +3,7 @@
 	<name>iaf</name>
 	<comment></comment>
 	<projects>
+		<project>iaf-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

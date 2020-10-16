@@ -154,15 +154,5 @@
 				</dependency>
 		 </dependencies>
 		</profile>
-		<profile>
-			<id>proprietary</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.ing</groupId>
-					<artifactId>ifsa-jms-xa</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-			</dependencies>
-		</profile>
 	</profiles>
 </project>
