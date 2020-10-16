@@ -1016,16 +1016,16 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	
-	public void retryMessage(String messageId) throws ListenerException {
+	public void retryMessage(String storageMessageId) throws ListenerException {
 		if (getErrorStorageBrowser()==null) {
-			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
+			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+storageMessageId+"]");
 		}
 		Map<String,Object>threadContext = new HashMap<>();
 		if (getErrorStorage()==null) {
 			// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 			// then the management of the errorStorage is left to the listener.
 			IMessageBrowser errorStorageBrowser = getErrorStorageBrowser();
-			Object msg = errorStorageBrowser.browseMessage(messageId);
+			Object msg = errorStorageBrowser.browseMessage(storageMessageId);
 			processRawMessage(msg, threadContext, -1, true);
 			return;
 		}
@@ -1037,7 +1037,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		try {
 			try {
-				msg = errorStorage.getMessage(messageId);
+				msg = errorStorage.getMessage(storageMessageId);
 				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
 				txStatus.setRollbackOnly();
@@ -1060,7 +1060,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 						log.warn(getLogPrefix()+IPipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
-						errorStorage.deleteMessage(messageId);
+						errorStorage.deleteMessage(storageMessageId);
 						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
 					}
 				} else {
