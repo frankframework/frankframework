@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.GDate;
 

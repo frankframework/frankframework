@@ -20,7 +20,6 @@ import java.io.IOException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**

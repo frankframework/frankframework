@@ -24,13 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.jmx.export.naming.ObjectNamingStrategy;
+import org.springframework.jmx.export.naming.IdentityNamingStrategy;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class JmxNamingStrategy implements ObjectNamingStrategy, InitializingBean {
+public class JmxNamingStrategy extends IdentityNamingStrategy implements InitializingBean {
 
 	private final Logger log = LogUtil.getLogger(this);
 	private String jmxDomain = null;
@@ -64,17 +64,19 @@ public class JmxNamingStrategy implements ObjectNamingStrategy, InitializingBean
 				} else {
 					version = Integer.toHexString(this.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
 				}
-				properties.put("type", String.format("%s-%s", config.getName(), version));
+				properties.put("type", String.format("%s-%s", config.getName(), version).replaceAll("[=:,]", "_"));
 			} else { //if configuration is null (for whatever reason) we need to be able to differentiate adapters in between reloads.
 				properties.put("identity", Integer.toHexString(adapter.hashCode()));
 			}
-			properties.put("name", adapter.getName().replace(":", "_"));
+			properties.put("name", adapter.getName().replaceAll("[=:,]", "_"));
 
 			ObjectName name = new ObjectName(jmxDomain, properties);
 			if(log.isDebugEnabled()) log.debug("determined ObjectName ["+name+"] for MBean ["+managedBean+"]");
 			return name;
 		} else {
-			throw new MalformedObjectNameException("currently only MBeans of type [Adapter] are supported");
+			ObjectName name = super.getObjectName(managedBean, beanKey);
+			log.warn("currently only MBeans of type [Adapter] are supported, falling back to IdentityNamingStrategy converting key ["+beanKey+"] bean ["+managedBean+"] to ObjectName ["+name+"]");
+			return name;
 		}
 	}
 }

@@ -12,7 +12,7 @@
 				className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
 				direction="receive" />
 			<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
-				direction="unwrap" />
+				direction="unwrap" createFolder="true"/>
 			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe" />
 		</pipeline>
 	</adapter>
@@ -29,7 +29,7 @@
 			<pipe name="EchoSender"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
-					flowId="NNX01234" />
+					flowId="NNX01234" createFolder="true"/>
 				<inputValidator
 					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator" />
 				<sender className="nl.nn.adapterframework.senders.EchoSender" />
@@ -50,7 +50,7 @@
 			<pipe name="EchoSender"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
-					flowId="NNX01234" fxfVersion="3.2" cmhVersion="2" />
+					flowId="NNX01234" fxfVersion="3.2" cmhVersion="2" createFolder="true"/>
 				<inputValidator
 					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
 					fxfVersion="3.2" />

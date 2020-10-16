@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -240,9 +241,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
-		Object exitState = context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		String exitState = (String)context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && !exitState.equals("success")) {
+		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
@@ -262,7 +263,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.webservicelistener webservicelistener} that should be called", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -283,7 +284,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called", ""})
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
@@ -292,7 +293,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called (will be ignored when javalistenersessionkey is set)", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -311,7 +312,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.javalistener javalistener} is opened", "true"})
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}
@@ -340,7 +341,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
-	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find javalistener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
+	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}

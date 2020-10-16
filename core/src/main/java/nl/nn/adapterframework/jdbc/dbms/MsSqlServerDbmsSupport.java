@@ -47,6 +47,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
 	}
@@ -97,6 +102,16 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
+	@Override
+	public String emptyBlobValue() {
+		return "0x";
+	}
+
+	@Override
+	public String getClobFieldType() {
+		return "VARCHAR(MAX)";
+	}
+	
 
 	@Override
 	public String getTextFieldType() {
@@ -246,4 +261,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	
+	@Override
+	public String getBooleanFieldType() {
+		return "BIT";
+	}
+	
+	@Override
+	public String getBooleanValue(boolean value) {
+		return value? "1":"0";
+	}
+
 }

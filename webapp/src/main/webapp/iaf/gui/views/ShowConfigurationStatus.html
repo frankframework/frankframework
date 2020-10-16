@@ -277,6 +277,10 @@
                                         <td ng-if="adapter.lastMessage"><span to-date time="{{adapter.lastMessage}}"></span></td>
                                         <td ng-if="!adapter.lastMessage">-</td>
                                     </tr>
+                                    <tr>
+                                        <td>Configuration</td>
+                                        <td>{{::adapter.configuration}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -339,14 +343,19 @@
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
 
-                                                    <span class="text-danger">
-                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
-                                                        </button>
-                                                    </span>
-                                                    <span class="text-success">
+                                                    <span class="text-success" title="View Messages Processed">
                                                         <button ng-show="{{::receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
+                                                        </button>
+                                                    </span>
+                                                    <span class="text-success" title="View Messages in Process">
+                                                        <button ng-show="{{::receiver.hasInProcessLog}}" ui-sref="pages.inprocesslog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-share"></i> ({{::receiver.inProcessLogCount}})
+                                                        </button>
+                                                    </span>
+                                                    <span class="text-danger" title="View Messages in Error">
+                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
                                                         </button>
                                                     </span>
                                                 </span>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
@@ -56,7 +57,7 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 	}
 
 	@Override
-	protected IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException {
+	protected IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException {
 		return new ResultStreamIterator(conn, rs, getReader(rs));
 	}
 

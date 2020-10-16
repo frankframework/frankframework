@@ -123,6 +123,30 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");
 	}
+	
+	@Test
+	public void storeForwardInSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
+		pipe.setSessionKey("selectKey");
+		String forwardName = "forwardName";
+		pipe.setStoreForwardInSessionKey(forwardName);
+		session=new PipeLineSessionBase();
+		session.put("selectKey", "selectValue");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"selectValue");
+		assertEquals("selectValue", session.get(forwardName).toString());
+	}
+
+	@Test
+	public void basicSelectionWithStylesheet() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
+		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
+		pipe.setNamespaceAware(false);
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"SetRequest");
+	}
 
 
 }

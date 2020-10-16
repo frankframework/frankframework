@@ -1,0 +1,33 @@
+<root>
+	<delete>
+		<tableName>IBISTEMP</tableName>
+	</delete>
+	<select>
+		<tableName>DUAL</tableName>
+		<columns>
+			<column>
+				<name>SEQ_IBISTEMP.NEXTVAL AS NEXTVAL</name>
+				<type>function</type>
+			</column>
+		</columns>
+	</select>
+	<insert>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>tkey</name>
+				<value>SEQ_IBISTEMP.NEXTVAL</value>
+				<type>function</type>
+			</column>
+			<column>
+				<name>tblob1</name>
+				<value>EMPTY_BLOB()</value>
+				<type>function</type>
+			</column>
+		</columns>
+	</insert>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<order>tkey</order>
+	</select>
+</root>

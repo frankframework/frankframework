@@ -63,6 +63,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = f.getOwner();
+		if (folder==null) {
+			throw new FileSystemException("file ["+f.getName()+"] has no owner");
+		}
 		String folderName = folder instanceof MockFileSystem ? null : folder.getName();
 		checkOpenAndExists(folderName, f);
 	}
@@ -84,6 +87,10 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(String filename) throws FileSystemException {
 		checkOpen();
+		int slashPos = filename.lastIndexOf('/');
+		if (slashPos>=0) {
+			return toFile(filename.substring(0,slashPos),filename.substring(slashPos+1));
+		}
 		M result = (M)getFiles().get(filename);
 		if (result!=null) {
 			return result;
@@ -94,7 +101,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(String folderName, String filename) throws FileSystemException {
 		checkOpen();
-		MockFolder destFolder= folderName==null?this:getFolders().get(folderName);
+		MockFolder destFolder= folderName==null || folderName.equals("MOCKFILESYSTEM")?this:getFolders().get(folderName);
 		if (destFolder==null) {
 			throw new FileSystemException("folder ["+folderName+"] does not exist");
 		}
@@ -157,19 +164,17 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public void deleteFile(MockFile f) throws FileSystemException {
 		checkOpenAndExists(f);
 		f.getOwner().getFiles().remove(f.getName());
-		f.setOwner(null);
 	}
 
 	@Override
-	public M renameFile(M f, String newName, boolean force) throws FileSystemException {
-		checkOpenAndExists(f);
-		if (f.getOwner().getFiles().containsKey(newName)) {
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		}
-		
-		f.getOwner().getFiles().put(newName,f.getOwner().getFiles().remove(f.getName()));
-		f.setName(newName);
-		return f;
+	public M renameFile(M source, M destination) throws FileSystemException {
+		checkOpenAndExists(source);
+		String sourceName = source.getName();
+		String destinationName = destination.getName();
+		source.getOwner().getFiles().remove(sourceName);
+		destination.getOwner().getFiles().put(destinationName,destination);
+		destination.setContents(source.getContents());
+		return destination;
 	}
 
 	@Override
@@ -228,7 +233,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public String getCanonicalName(M f) throws FileSystemException {
 		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
-		return f.getName();
+		return f.getOwner().getName()+"/"+f.getName();
 	}
 
 	@Override

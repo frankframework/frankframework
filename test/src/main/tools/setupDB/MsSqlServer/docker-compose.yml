@@ -1,12 +1,11 @@
 version: "3"
 services:
     ms-sqlserver:
-        build: .
+        image: iaf-test-db-mssql
         volumes:
           - db_data:/var/opt/mssql
         ports:
             - "1433:1433"
-        container_name: iaf-test-ms-sqlserver
         hostname: ms-sqlserver
 volumes:
   db_data:

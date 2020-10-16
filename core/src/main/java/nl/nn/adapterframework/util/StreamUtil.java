@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
@@ -38,8 +40,9 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
-	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
-
+	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
+	
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {

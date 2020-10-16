@@ -1,7 +1,7 @@
 version: "3"
 services:
   mariadbserver:
-    build: .
+    image: iaf-test-db-mariadb
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
@@ -12,4 +12,3 @@ services:
       wait_timeout: 10
     ports:
       - 3306:3306
-    container_name: iaf-test-mariadb

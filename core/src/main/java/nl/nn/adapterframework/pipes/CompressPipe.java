@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -66,7 +67,16 @@ public class CompressPipe extends FixedForwardPipe {
 	private boolean compress;
 	private boolean convert2String;
 	private String fileFormat;
-	
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		if(!resultIsContent && !messageIsContent && outputDirectory == null) {
+			throw new ConfigurationException("outputDirectory must be set");
+		}
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {

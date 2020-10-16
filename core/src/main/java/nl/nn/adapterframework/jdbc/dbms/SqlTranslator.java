@@ -42,6 +42,7 @@ public class SqlTranslator implements ISqlTranslator {
 
 	private Map<String,Pattern> sources;
 	private Map<String,String>  targets;
+	private String target;
 	
 	private boolean configured=false;
 
@@ -59,12 +60,13 @@ public class SqlTranslator implements ISqlTranslator {
 		} catch (Exception e) {
 			throw new JdbcException("cannot create SqlTranslator",e);
 		}
+		this.target = target;
 		configured = true;
 	}
 
 	@Override
 	public boolean canConvert(String from, String to) {
-		return configured;
+		return configured && to.equals(target);
 	}
 	
 	/**

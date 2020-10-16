@@ -22,7 +22,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +33,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
 import org.apache.commons.lang.StringUtils;
@@ -525,8 +523,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery)) {
 			if (!selectKeyQueryIsDbmsSupported) {
 				int paramPos=applyStandardParameters(stmt, true, false);
-				stmt.setString(paramPos++,messageId);
-				stmt.setString(paramPos++,correlationId);
+				JdbcUtil.setParameter(stmt, paramPos++, messageId, getDbmsSupport().isParameterTypeMatchRequired());
+				JdbcUtil.setParameter(stmt, paramPos++, correlationId, getDbmsSupport().isParameterTypeMatchRequired());
 				stmt.setTimestamp(paramPos++, receivedDateTime);
 			}
 	
@@ -586,7 +584,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	
 			if (!isStoreFullMessage()) {
 				if (isOnlyStoreWhenMessageIdUnique()) {
-					stmt.setString(++parPos, messageId);
+					JdbcUtil.setParameter(stmt, ++parPos, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 					stmt.setString(++parPos, getSlotId());
 				}
 				stmt.execute();
@@ -713,7 +711,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		
 		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)){
 			stmt.clearParameters();
-			stmt.setString(++paramPosition, messageId);
+			JdbcUtil.setParameter(stmt, ++paramPosition, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 			// executing query, getting message as response in a result set.
 			try (ResultSet rs = stmt.executeQuery()) {
 				// if rs.next() needed as you can not simply call rs.
@@ -820,23 +818,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		InputStream blobStream=null;
-		try {
-			Blob blob = rs.getBlob(columnIndex);
-			if (blob==null) {
+		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
+			if (blobInputStream==null) {
 				return null;
 			}
-			if (compressed) {
-				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex)));
-			} else {
-				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
-			}
-			try (ObjectInputStream ois = new ObjectInputStream(blobStream)) {
+			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
 				return (S)ois.readObject();
-			}
-		} finally {
-			if (blobStream!=null) {
-				blobStream.close();
 			}
 		}
 	}
@@ -1026,9 +1013,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		return active;
 	}
 
+	@Override
 	@IbisDoc({"the name of the column that stores the hostname of the server", "host"})
 	public void setHostField(String hostField) {
-		this.hostField = hostField;
+		super.setHostField(hostField);
 	}
 
 

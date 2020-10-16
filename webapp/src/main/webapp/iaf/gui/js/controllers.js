@@ -24,7 +24,6 @@ angular.module('iaf.beheerconsole')
 				var serverTime = Date.parse(new Date(data.serverTime).toUTCString());
 				var localTime  = Date.parse(new Date().toUTCString());
 				appConstants.timeOffset = serverTime - localTime;
-				//setTime(appConstants.timeOffset);
 
 				function updateTime() {
 					var serverDate = new Date();
@@ -1697,7 +1696,7 @@ angular.module('iaf.beheerconsole')
 		Api.Put("schedules", {action: "start"});
 	};
 
-	$scope.pause = function() {
+	$scope.pauseScheduler = function() {
 		Api.Put("schedules", {action: "pause"});
 	};
 
@@ -2284,6 +2283,11 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
 			$scope.processingMessage = false;
+			if($scope.file != null) {
+				angular.element(".form-file")[0].value = null;
+				$scope.file = null;
+				formData.message = returnData.message;
+			}
 		}, function(returnData) {
 			$scope.result = "";
 			$scope.processingMessage = false;

@@ -808,7 +808,7 @@ public class Misc {
 		try {
 			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
 		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString("application.server.type", ""))) {
+			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
 				throw new IOException(e);
 			}
 			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());

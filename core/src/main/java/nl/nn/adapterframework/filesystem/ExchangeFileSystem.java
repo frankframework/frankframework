@@ -35,11 +35,13 @@ import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.WebProxy;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
+import microsoft.exchange.webservices.data.core.enumeration.misc.error.ServiceError;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
 import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
 import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceVersionException;
+import microsoft.exchange.webservices.data.core.exception.service.remote.ServiceResponseException;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
@@ -67,6 +69,7 @@ import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -75,18 +78,15 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBaseFolder(String) basefolder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ * 
+ * To obtain an accessToken:
+ * <ol>
+ * 	<li>follow the steps in {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
+ *  <li>request an Authorization-Code for scope https://outlook.office.com/EWS.AccessAsUser.All</li>
+ *  <li>exchange the Authorization-Code for an accessToken</li>
+ *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
+ * </ol>
+ * 
  * 
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
@@ -96,6 +96,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
 	private String url;
+	private String accessToken;
 	private String authAlias;
 	private String username;
 	private String password;
@@ -127,16 +128,27 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		}
 	}
 	
-	
 	@Override
 	public void open() throws FileSystemException {
 		try {
 			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-			String usernameToUse=StringUtils.isNotEmpty(getUsername())?getUsername():getMailAddress();
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), usernameToUse, getPassword());
-			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(credentials);
+			
+			String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
+			String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
 
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
+			if (StringUtils.isEmpty(cf.getUsername())) {
+				// use OAuth Bearer token authentication
+				exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
+			} else {
+				// use deprecated Basic Authentication. Support will end 2021-Q3!
+				log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
+				ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
+				exchangeService.setCredentials(credentials);
+			}
+
+			
+			
 			if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
 				CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 				WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
@@ -261,37 +273,37 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		throw new NotImplementedException("Cannot make item for ["+filename+"] file in Exchange folder ["+folder+"]");
 	}
 
-
-	@Override
-	public boolean exists(Item f) throws FileSystemException {
+	private boolean itemExistsInFolder(FolderId folderId, String itemId) throws FileSystemException{
 		try {
 			ItemView view = new ItemView(1);
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
-			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, f.getId().toString());
+			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, itemId);
 			FindItemsResults<Item> findResults;
-			findResults = exchangeService.findItems(basefolderId,searchFilter, view);
+			findResults = exchangeService.findItems(folderId,searchFilter, view);
 			return findResults.getTotalCount()!=0;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	public Item extractNestedItem(Item item) throws Exception {
-		Iterator<Attachment> attachments = listAttachments(item);
-		if (attachments!=null) {
-			while (attachments.hasNext()) {
-				Attachment attachment=attachments.next();
-				if (attachment instanceof ItemAttachment) {
-					ItemAttachment itemAttachment = (ItemAttachment)attachment;
-					itemAttachment.load();
-					return itemAttachment.getItem();
-				}
+	@Override
+	public boolean exists(Item f) throws FileSystemException {
+		try {
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			return itemExistsInFolder(emailMessage.getParentFolderId(), f.getId().toString());
+		} catch (ServiceResponseException e) {
+			ServiceError errorCode = e.getErrorCode();
+			if (errorCode == ServiceError.ErrorItemNotFound) {
+				return false;
 			}
+			throw new FileSystemException(e);
+		} catch (Exception e) {
+			throw new FileSystemException(e);
 		}
-		return null;
 	}
-	
-	
+
+
+
 	@Override
 	public Iterator<Item> listFiles(String folder) throws FileSystemException {
 		try {
@@ -364,9 +376,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	}
 	@Override
 	public Item moveFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		EmailMessage emailMessage;
 		try {
-			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
@@ -376,9 +387,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 
 	@Override
 	public Item copyFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		EmailMessage emailMessage;
 		try {
-			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
 			emailMessage = (EmailMessage) emailMessage.copy(getFolderIdByFolderName(destinationFolder));
 			return emailMessage;
 		} catch (Exception e) {
@@ -589,7 +599,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 			folder.setDisplayName(folderName);
 			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
 		}
 	}
 
@@ -641,7 +651,17 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return url;
 	}
 
-	@IbisDoc({"4", "Username for authentication to exchange mail server", ""})
+	@IbisDoc({"4", "AccessToken for authentication to Exchange mail server", ""})
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
+	}
+	public String getAccessToken() {
+		return accessToken;
+	}
+
+	@IbisDoc({"5", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -649,15 +669,20 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return username;
 	}
 
-	@IbisDoc({"5", "Password for authentication to exchange mail server", ""})
+	@IbisDoc({"6", "Password for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
 	public void setPassword(String password) {
 		this.password = password;
 	}
 	public String getPassword() {
 		return password;
 	}
-	
-	@IbisDoc({"6", "Alias used to obtain credentials for authentication to exchange mail server", ""})
+
+
+	@IbisDoc({"7", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
+			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
+			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -665,8 +690,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return authAlias;
 	}
 
-	
-	@IbisDoc({"7", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
+
+	@IbisDoc({"8", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
 	}
@@ -674,7 +699,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return basefolder;
 	}
 
-	@IbisDoc({"8", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	@IbisDoc({"9", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
@@ -697,7 +722,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
 	}
 
-	@IbisDoc({"9", "proxy host", ""})
+	@IbisDoc({"10", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
@@ -705,7 +730,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return proxyHost;
 	}
 
-	@IbisDoc({"10", "proxy port", ""})
+	@IbisDoc({"11", "proxy port", ""})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
@@ -713,7 +738,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return proxyPort;
 	}
 
-	@IbisDoc({"11", "proxy username", ""})
+	@IbisDoc({"12", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
@@ -721,7 +746,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return proxyUsername;
 	}
 
-	@IbisDoc({"12", "proxy password", ""})
+	@IbisDoc({"13", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
@@ -729,7 +754,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return proxyPassword;
 	}
 
-	@IbisDoc({"12", "proxy authAlias", ""})
+	@IbisDoc({"14", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
@@ -737,7 +762,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 		return proxyAuthAlias;
 	}
 
-	@IbisDoc({"13", "proxy domain", ""})
+	@IbisDoc({"15", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}

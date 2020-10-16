@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -40,6 +42,8 @@ public interface IDbmsSupport {
 	Dbms getDbms(); 
 	String getDbmsName();
 	
+	boolean isParameterTypeMatchRequired();
+	boolean hasSkipLockedFunctionality();
 	/**
 	 * SQL String returning current date and time of dbms.
 	 */
@@ -73,6 +77,8 @@ public interface IDbmsSupport {
 	Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
+	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
+	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
 
 	String getBlobFieldType();
 	boolean mustInsertEmptyBlobBeforeData();
@@ -84,6 +90,8 @@ public interface IDbmsSupport {
 	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
+	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
+	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
 
 	String getTextFieldType();
 

@@ -95,7 +95,7 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
-		boolean avoidLocking = false;
+		boolean avoidLocking = false, trimSpaces=false;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -112,6 +112,9 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 			if(key.equalsIgnoreCase("avoidLocking")) {
 				avoidLocking = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("trimSpaces")) {
+				trimSpaces = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
@@ -149,6 +152,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
+			qs.setTrimSpaces(trimSpaces);
 			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
 			qs.configure(true);

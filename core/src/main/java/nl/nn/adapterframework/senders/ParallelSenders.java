@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -48,9 +51,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class ParallelSenders extends SenderSeries {
+public class ParallelSenders extends SenderSeries implements ApplicationContextAware {
 
 	private int maxConcurrentThreads = 0;
+	private ApplicationContext applicationContext;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -133,12 +137,12 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
+		ThreadPoolTaskExecutor executor = applicationContext.getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
 		executor.setCorePoolSize(getMaxConcurrentThreads());
 		return executor;
 	}
 
-	@IbisDoc({"sets and upper limit to the amount of concurrent threads that can be run simultaneously. use 0 to disable.", "0"})
+	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
@@ -147,5 +151,10 @@ public class ParallelSenders extends SenderSeries {
 	}
 	public int getMaxConcurrentThreads() {
 		return maxConcurrentThreads;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

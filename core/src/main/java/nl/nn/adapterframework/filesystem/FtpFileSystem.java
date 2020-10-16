@@ -177,31 +177,18 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFile renameFile(FTPFile f, String newName, boolean force) throws FileSystemException {
-		if(exists(toFile(newName))) {
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		}
+	public FTPFile renameFile(FTPFile source, FTPFile destination) throws FileSystemException {
 		try {
-			ftpClient.rename(f.getName(), newName);
+			ftpClient.rename(source.getName(), destination.getName());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return toFile(newName);
-	}
-
-	protected String getDestinationFilename(FTPFile f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		if(!folderExists(destinationFolder)) {
-			if(createFolder) {
-				createFolder(destinationFolder);
-			}
-			throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
-		}
-		return destinationFolder+"/"+f.getName();
+		return destination;
 	}
 
 	@Override
 	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String destinationFilename = getDestinationFilename(f, destinationFolder, createFolder, "move");
+		String destinationFilename = destinationFolder+"/"+f.getName();
 		try {
 			ftpClient.rename(f.getName(), destinationFilename);
 		} catch (IOException e) {

@@ -104,10 +104,9 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 	@Override
 	public CmisBinding createCmisBinding() {
 		AppConstants APP_CONSTANTS = AppConstants.getInstance();
-		final String PROPERTY_PREFIX = "cmisbridge.";
 
 		//Make sure cmisbridge properties are defined
-		if(APP_CONSTANTS.getResolvedProperty(PROPERTY_PREFIX+"url") == null)
+		if(APP_CONSTANTS.getResolvedProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
 			throw new CmisConnectionException("no bridge properties found");
 
 		CmisSessionBuilder sessionBuilder = new CmisSessionBuilder();
@@ -117,13 +116,13 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 			//Remove set from the method name
 			String setter = firstCharToLower(method.getName().substring(3));
-			String value = APP_CONSTANTS.getResolvedProperty(PROPERTY_PREFIX+setter);
+			String value = APP_CONSTANTS.getResolvedProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
 			if(value == null)
 				continue;
 
 			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = getCastValue(method.getParameterTypes()[0], value);
-			log.debug("trying to set property ["+PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
+			log.debug("trying to set property ["+RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
 
 			try {
 				method.invoke(sessionBuilder, castValue);

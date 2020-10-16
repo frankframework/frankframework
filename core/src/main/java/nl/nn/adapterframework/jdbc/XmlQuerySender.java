@@ -43,6 +43,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -83,9 +84,6 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_DATETIME = "datetime";
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
-
-	private boolean lockRows=false;
-	private int lockWait=-1;
 
 	public class Column {
 		private String name = null;
@@ -153,7 +151,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
 				}
 				if (value.indexOf('.') >= 0) {
-					parameter = new Float(n.floatValue());
+					parameter = new Double(n.doubleValue());
 				} else {
 					parameter = new Integer(n.intValue());
 				}
@@ -290,8 +288,8 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private Message selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
+		String query = "SELECT ";
 		try {
-			String query = "SELECT ";
 			if (columns != null) {
 				Iterator<Column> iter = columns.iterator();
 				boolean firstColumn = true;
@@ -320,13 +318,14 @@ public class XmlQuerySender extends DirectQuerySender {
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e);
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command ["+query+"]", e);
 		}
 	}
 
 	private Message insertQuery(Connection connection, String tableName, Vector<Column> columns) throws SenderException {
+		String query=null;
 		try {
-			String query = "INSERT INTO " + tableName + " (";
+			query = "INSERT INTO " + tableName + " (";
 			Iterator<Column> iter = columns.iterator();
 			String queryColumns = null;
 			String queryValues = null;
@@ -346,28 +345,29 @@ public class XmlQuerySender extends DirectQuerySender {
 			query = query + queryColumns + ") VALUES (" + queryValues + ")";
 			return executeUpdate(connection, tableName, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command", t);
+			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command ["+query+"]", t);
 		}
 	}
 
 	private Message deleteQuery(Connection connection, String tableName, String where) throws SenderException, JdbcException {
+		String query=null;
 		try {
-			String query = "DELETE FROM " + tableName;
+			query = "DELETE FROM " + tableName;
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
 			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, "delete", null);
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null, null);
+			return executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
+			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command ["+query+"]", e);
 		}
 	}
 
 	private Message updateQuery(Connection connection, String tableName, Vector<Column> columns, String where) throws SenderException {
+		String query = "UPDATE " + tableName + " SET ";
 		try {
-			String query = "UPDATE " + tableName + " SET ";
 			Iterator<Column> iter = columns.iterator();
 			String querySet = null;
 			while (iter.hasNext()) {
@@ -385,7 +385,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 			return executeUpdate(connection, tableName, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command", t);
+			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command ["+query+"]", t);
 		}
 	}
 
@@ -408,7 +408,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, statement, q, null, null, null, null));
+						result.append(executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null));
 					}
 				}
 				return new Message(result.toString());
@@ -416,7 +416,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command ["+query+"]", e);
 		}
 	}
 
@@ -459,7 +459,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null, null);
+			return executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
@@ -570,6 +570,10 @@ public class XmlQuerySender extends DirectQuerySender {
 					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
 					statement.setBoolean(var, new Boolean(column.getParameter().toString()));
 					var++;
+				} else if (column.getParameter() instanceof Double) {
+					log.debug("parm [" + var + "] is a Double with value [" + column.getParameter().toString() + "]");
+					statement.setDouble(var, Double.parseDouble(column.getParameter().toString()));
+					var++;
 				} else if (column.getParameter() instanceof Float) {
 					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter().toString() + "]");
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
@@ -579,34 +583,17 @@ public class XmlQuerySender extends DirectQuerySender {
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
 					var++;
 				} else if (column.getParameter() instanceof byte[]) {
-					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "] = [" + new String((byte[]) column.getParameter()) + "]");
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
 					//if (column.getParameter() instanceof String) 
 					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
-					statement.setString(var, (String) column.getParameter());
+					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
 					var++;
 				}
 			}
 		}
 	}
 
-	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
-	public void setLockRows(boolean b) {
-		lockRows = b;
-	}
-
-	public boolean isLockRows() {
-		return lockRows;
-	}
-
-	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
-	public void setLockWait(int i) {
-		lockWait = i;
-	}
-
-	public int getLockWait() {
-		return lockWait;
-	}
 }

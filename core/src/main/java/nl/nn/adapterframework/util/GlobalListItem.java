@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.INamedObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 /**

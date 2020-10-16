@@ -22,7 +22,7 @@
 				name="UnZip"
 				className="nl.nn.adapterframework.pipes.UnzipPipe" 
 				directory="${testdata.dir}/zip"
-				checkDirectory="true"
+				assumeDirectoryExists="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>

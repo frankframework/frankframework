@@ -21,11 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -45,6 +43,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -80,6 +79,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
+ * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself<p>
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
@@ -334,7 +334,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The <code>toString()</code> method retrieves its value
 	 * by reflection, so overriding this method is mostly not
-	 * usefull.
+	 * useful.
 	 * @see ToStringBuilder#reflectionToString
 	 *
 	 **/

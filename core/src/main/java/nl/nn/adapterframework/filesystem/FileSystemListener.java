@@ -216,7 +216,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 				}
-				if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
+				if (!processResult.isSuccessful()) {
 					if (StringUtils.isNotEmpty(getErrorFolder())) {
 						FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 						return;
@@ -284,6 +284,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
 		}
+	}
+
+	@Override
+	public IMessageBrowser<F> getInProcessBrowser() {
+		if (StringUtils.isEmpty(getInProcessFolder())) {
+			return null;
+		}
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
 	}
 
 	@Override

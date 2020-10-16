@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,6 +125,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String base64;
 	private int rotateDays=0;
 	private int rotateSize=0;
+	private boolean overwrite=false;
 	private int numberOfBackups=0;
 	
 
@@ -204,7 +206,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder())) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && !getAction().equals(ACTION_MKDIR)) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder ["+getInputFolder()+"]");
 				fileSystem.createFolder(getInputFolder());
@@ -242,14 +244,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	private String determineDestination(ParameterValueList pvl) {
+	private String determineDestination(ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getDestination())) {
 			return getDestination();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_DESTINATION)) {
-			return pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			if (StringUtils.isEmpty(destination)) {
+				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
+			}
+			return destination;
 		}
-		return null;
+		throw new FileSystemException("no destination specified");
 	}
 
 	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
@@ -282,9 +288,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return fileSystem.getName(file);
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
+				FileSystemUtils.checkSource(fileSystem, file, "inspect");
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
@@ -349,8 +353,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return dirXml.toXML();
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
-				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
-					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, file, getNumberOfBackups());
+				if (fileSystem.exists(file)) {
+					FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), ACTION_WRITE1);
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -380,34 +384,28 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				fileSystem.removeFolder(folder);
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
-				F file=getFile(input, pvl);
-				String destination = determineDestination(pvl);
-				if (destination == null) {
-					throw new FileSystemException("unknown destination [" + destination + "]");
+				F source=getFile(input, pvl);
+				String destinationName = determineDestination(pvl);
+				F destination;
+				if (destinationName.contains("/") || destinationName.contains("\\")) {
+					destination = fileSystem.toFile(destinationName);
+				} else {
+					String sourceName = fileSystem.getCanonicalName(source);
+					File sourceAsFile = new File(sourceName);
+					String folderPath = sourceAsFile.getParent();
+					destination = fileSystem.toFile(folderPath,destinationName);
 				}
-				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
-				return destination;
+				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
+				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file to move ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
+				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(moved);
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file to copy ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
+				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(copied);
 			}
 		} catch (Exception e) {
@@ -544,7 +542,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-	@IbisDoc({"3", "when set to <code>true</code>, the folder to move to is created if it does not exist", "false"})
+	@IbisDoc({"3", "when set to <code>true</code>, the folder to move or copy to is created if it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
@@ -552,20 +550,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return createFolder;
 	}
 
-//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
-//	public void setForce(boolean force) {
-//		this.force = force;
-//	}
-//	public boolean isForce() {
-//		return force;
-//	}
-
-	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
-	public void setBase64(String base64) {
-		this.base64 = base64;
+	@IbisDoc({"4", "when set to <code>true</code>, for actions "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
 	}
-	public String getBase64() {
-		return base64;
+	public boolean isOverwrite() {
+		return overwrite;
 	}
 
 	@IbisDoc({"5", "filename to operate on. When not set, the parameter "+PARAMETER_FILENAME+" is used. When that is not set either, the input is used", ""})
@@ -607,6 +597,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	public int getNumberOfBackups() {
 		return numberOfBackups;
+	}
+
+	@IbisDoc({"9", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
+	@Deprecated
+	public void setBase64(String base64) {
+		this.base64 = base64;
+	}
+	public String getBase64() {
+		return base64;
 	}
 
 }

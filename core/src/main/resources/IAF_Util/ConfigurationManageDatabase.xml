@@ -5,7 +5,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ManageDatabase" serviceName="${manageDatabase.serviceName}" />
 		</receiver>
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ManageDatabase-ws" active="${manageDatabase.webServiceListener.active}">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="ManageDatabase-ws" serviceNamespaceURI="http://managedatabase.ibissource.org/" />
+			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="ManageDatabase-ws" address="ManageDatabase-ws" serviceNamespaceURI="http://managedatabase.ibissource.org/" />
 		</receiver>
 		<pipeline firstPipe="Query" transactionAttribute="Required">
 			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="ManageDatabase/xsd/ManageDatabase.xsd" root="manageDatabaseREQ">

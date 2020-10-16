@@ -128,28 +128,29 @@ public class MessageStoreListener extends JdbcTableListener {
 		return rawMessage;
 	}
 
-	@Override
-	public IMessageBrowser<Object> getMessageLogBrowser() {
-		IMessageBrowser<Object> result = super.getMessageLogBrowser();
-		if (result!=null && result instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
+	protected IMessageBrowser<Object> augmentMessageBrowser(IMessageBrowser<Object> browser) {
+		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
+			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
 			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+			jtmb.setHostField("HOST");
 		}
-		return result;
+		return browser;
+	}
+	
+	@Override
+	public IMessageBrowser<Object> getInProcessBrowser() {
+		return augmentMessageBrowser(super.getInProcessBrowser());
+	}
+
+	@Override
+	public IMessageBrowser<Object> getMessageLogBrowser() {
+		return augmentMessageBrowser(super.getMessageLogBrowser());
 	}
 
 	@Override
 	public IMessageBrowser<Object> getErrorStoreBrowser() {
-		IMessageBrowser<Object> result = super.getErrorStoreBrowser();
-		if (result!=null && result instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
-			jtmb.setCommentField("COMMENTS");
-			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
-		}
-		return result;
+		return augmentMessageBrowser(super.getErrorStoreBrowser());
 	}
 
 

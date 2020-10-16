@@ -314,7 +314,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	protected Message executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			if ("select".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				Object blobSessionVar=null;
 				Object clobSessionVar=null;
@@ -470,11 +470,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
 					if (response==null) {
 						if (blobSessionVar!=null) {
-							JdbcUtil.streamBlob(resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
+							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
 							return new Message("");
 						}
 					} else {
-						InputStream inputStream = JdbcUtil.getBlobInputStream(resultset, 1, isBlobsCompressed());
+						InputStream inputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), resultset, 1, isBlobsCompressed());
 						if (StringUtils.isNotEmpty(contentType)) {
 							response.setHeader("Content-Type", contentType); 
 						}
@@ -498,10 +498,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 				if (clobSessionVar!=null && JdbcUtil.isClobType(resultset, 1, rsmeta)) {
-					JdbcUtil.streamClob(resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
+					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 					return new Message("");
 				}
-				result = JdbcUtil.getValue(resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), StringUtils.isEmpty(getBlobCharset()));
+				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), StringUtils.isEmpty(getBlobCharset()));
 				if (resultset.wasNull()) {
 					if (isScalarExtended()) {
 						result = "[null]";
@@ -528,7 +528,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			db2xml.setBlobCharset(getBlobCharset());
 			db2xml.setDecompressBlobs(isBlobsCompressed());
 			db2xml.setGetBlobSmart(isBlobSmartGet());
-			result = db2xml.getXML(resultset, getMaxRows(), isIncludeFieldDefinition());
+			result = db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition());
 		}
 		return new Message(result);
 	}
@@ -656,7 +656,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			if (queryExecutionContext.getParameterList() != null) {
-				JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), next) {
@@ -808,7 +808,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				int ri = 1;
 				if (parameterList != null) {
 					ParameterValueList parameters = parameterList.getValues(message, session);
-					JdbcUtil.applyParameters(cstmt, parameters);
+					JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
 					ri = parameters.size() + 1;
 				}
 				cstmt.registerOutParameter(ri, Types.VARCHAR);

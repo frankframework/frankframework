@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -60,6 +62,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public Dbms getDbms() {
 		return Dbms.GENERIC;
+	}
+
+	@Override
+	public boolean isParameterTypeMatchRequired() {
+		return false;
+	}
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return false;
 	}
 
 	@Override
@@ -131,7 +142,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String getClobFieldType() {
-		return "LONG BINARY";
+		return "CLOB";
 	}
 	@Override
 	public boolean mustInsertEmptyClobBeforeData() {
@@ -143,24 +154,16 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 	@Override
 	public String emptyClobValue() {
-		return null;
+		return "''";
 	}
 
 	@Override
 	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Clob clob = rs.getClob(column);
-		if (clob==null) {
-			throw new JdbcException("no clob found in column ["+column+"]");
-		}
-		return clob;
+		return rs.getClob(column);
 	}
 	@Override
 	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Clob clob = rs.getClob(column);
-		if (clob==null) {
-			throw new JdbcException("no clob found in column ["+column+"]");
-		}
-		return clob;
+		return rs.getClob(column);
 	}
 	
 	@Override
@@ -185,10 +188,27 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 
-	
+	@Override
+	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			return null;
+		}
+		return clob.getCharacterStream();
+	}
+	@Override
+	public Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			return null;
+		}
+		return clob.getCharacterStream();
+	}
+
+
 	@Override
 	public String getBlobFieldType() {
-		return "LONG BINARY";
+		return "BLOB";
 	}
 	@Override
 	public boolean mustInsertEmptyBlobBeforeData() {
@@ -200,14 +220,14 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 	@Override
 	public String emptyBlobValue() {
-		return null;
+		return "''";
 	}
 
 	@Override
 	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		Blob blob = rs.getBlob(column);
 		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+column+"]");
+			return null;
 		}
 		return blob;
 	}
@@ -215,7 +235,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		Blob blob = rs.getBlob(column);
 		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+column+"]");
+			return null;
 		}
 		return blob;
 	}
@@ -243,6 +263,23 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
 		// updateBlob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+
+	@Override
+	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			return null;
+		}
+		return blob.getBinaryStream();
+	}
+	@Override
+	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			return null;
+		}
+		return blob.getBinaryStream();
 	}
 
 	
@@ -462,7 +499,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
-			ISqlTranslator translator = sqlTranslators.get(sqlDialectFrom);
+			String translatorKey = sqlDialectFrom+"->"+getDbmsName();
+			ISqlTranslator translator = sqlTranslators.get(translatorKey);
 			if (translator==null) {
 				if (sqlTranslators.containsKey(sqlDialectFrom)) {
 					// if translator==null, but the key is present in the map, 
@@ -475,7 +513,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 					translator = createTranslator(sqlDialectFrom, getDbmsName());
 				} catch (IllegalArgumentException e) {
 					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(sqlDialectFrom, null);
+					sqlTranslators.put(translatorKey, null);
 					return;
 				} catch (Exception e) {
 					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
@@ -485,7 +523,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
 					return;
 				}
-				sqlTranslators.put(sqlDialectFrom, translator);
+				sqlTranslators.put(translatorKey, translator);
 			}
 			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
 			StringBuilder convertedQueries = null;

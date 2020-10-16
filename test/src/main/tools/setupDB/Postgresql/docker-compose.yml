@@ -1,7 +1,7 @@
 version: "3.1"
 services:
   db:
-    image: postgres
+    image: iaf-test-db-postgres
     restart: always
     environment:
       POSTGRES_PASSWORD: testiaf_user00
@@ -9,4 +9,3 @@ services:
       POSTGRES_DB: testiaf
     ports:
       - 5432:5432
-    container_name: iaf-test-postgres
