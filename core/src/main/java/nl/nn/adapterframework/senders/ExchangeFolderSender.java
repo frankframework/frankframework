@@ -92,7 +92,11 @@ public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSyst
 	public void setProxyUsername(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
-
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String proxyUsername) {
+		setProxyUsername(proxyUsername);
+	}
 	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);

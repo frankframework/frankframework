@@ -71,6 +71,7 @@ import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -896,6 +897,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	@IbisDoc({"33", "proxy username", " "})
 	public void setProxyUsername(String string) {
 		proxyUserName = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use \"setProxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
 	}
 	public String getProxyUserName() {
 		return proxyUserName;
