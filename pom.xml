@@ -447,6 +447,7 @@
       </activation>
       <modules>
         <module>core</module>
+        <module>webapp</module>
         <module>larva</module>
         <module>ladybug</module>
         <module>test</module>

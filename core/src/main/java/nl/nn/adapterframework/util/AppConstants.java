@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,6 +140,14 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
 	private String getSystemProperty(String key) {
+		try {
+			String result = System.getenv().get(key);
+			if (result!=null) {
+				return result;
+			}
+		} catch (Throwable e) {
+			log.warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+		}
 		try {
 			return System.getProperty(key);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
