@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>iaf-core</project>
-		<project>ibis-adapterframework-ifsa</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
