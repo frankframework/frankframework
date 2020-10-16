@@ -71,4 +71,20 @@ public class XmlWriterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test
+	public void testDisableOutputEscaping() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/ConfigNewLine.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/ParsedXmlNewLine.xml");
+		XmlWriter xmlWriter = new XmlWriter();
+		
+		InputSource inputSource = new InputSource(new StringReader(input));
+		XMLReader xmlReader = XmlUtils.getXMLReader(xmlWriter);
+		// lexical handling is automatically set, when the contentHandler (xmlWriter in this case) implements  the interface LexicalHandler.
+		// To test the output of the XmlWriter without lexical handling, it must be switched off explicitly in the XmlReader
+		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
+
+		xmlReader.parse(inputSource);
+		assertEquals(expected,xmlWriter.toString());
+	}
+
 }
