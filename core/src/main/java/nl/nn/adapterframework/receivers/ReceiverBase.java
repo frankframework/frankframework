@@ -945,7 +945,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		}
 
 		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
-		String messageId = (String) context.get("id");
+		String messageId = (String) context.get(IPipeLineSession.originalMessageIdKey);
 		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, waitingTime, false);
 	}
 
@@ -1002,12 +1002,14 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, threadContext);
 		} catch (Exception e) {
 			if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				technicalCorrelationId = ((MessageWrapper)rawMessageOrWrapper).getId();
+				MessageWrapper wrapper = (MessageWrapper)rawMessageOrWrapper;
+				technicalCorrelationId = wrapper.getId();
+				threadContext.putAll(wrapper.getContext());
 			} else {
 				throw new ListenerException(e);
 			}
 		}
-		String messageId = (String)threadContext.get("id");
+		String messageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
 		long endExtractingMessage = System.currentTimeMillis();
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
@@ -1041,12 +1043,17 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				txStatus.setRollbackOnly();
 				throw new ListenerException(t);
 			} finally {
-				txManager.commit(txStatus);
+				if (txStatus.isRollbackOnly()) {
+					txManager.rollback(txStatus);
+				} else {
+					txManager.commit(txStatus);
+				}
 			}
 		} catch (ListenerException e) {
 			txStatus = txManager.getTransaction(TXNEW_CTRL);
 			try {	
 				if (msg instanceof Serializable) {
+					String originalMessageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
 					String correlationId = (String)threadContext.get(IPipeLineSession.businessCorrelationIdKey);
 					String receivedDateStr = (String)threadContext.get(IPipeLineSession.tsReceivedKey);
 					if (receivedDateStr==null) {
@@ -1054,7 +1061,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(messageId);
-						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
+						errorStorage.storeMessage(originalMessageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);	
 					}
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");

@@ -67,7 +67,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	 */
 	public static void setListenerParameters(Map<String, Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
-			map.put("id", messageId);
+			map.put(originalMessageIdKey, messageId);
 		}
 		if (technicalCorrelationId!=null) {
 			map.put(technicalCorrelationIdKey, technicalCorrelationId);

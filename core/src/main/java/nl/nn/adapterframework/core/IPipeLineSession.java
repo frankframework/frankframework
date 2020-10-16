@@ -35,6 +35,7 @@ import java.util.Map;
  */
 public interface IPipeLineSession extends Map<String,Object> {
 	public static final String originalMessageKey="originalMessage";
+	public static final String originalMessageIdKey="id";
 	public static final String messageIdKey="messageId";
 	public static final String businessCorrelationIdKey="cid";
 	public static final String technicalCorrelationIdKey="tcid";
