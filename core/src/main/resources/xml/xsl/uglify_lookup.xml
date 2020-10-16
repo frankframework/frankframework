@@ -50,11 +50,6 @@
     <ClassName>nl.nn.adapterframework.http.HttpListener</ClassName>
   </Element>
   <Element>
-    <Name>IfsaProviderListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.jms.IfsaProviderListener</ClassName>
-  </Element>
-  <Element>
     <Name>IfsaSimulatorJmsListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener</ClassName>
@@ -95,19 +90,9 @@
     <ClassName>nl.nn.adapterframework.extensions.mqtt.MqttListener</ClassName>
   </Element>
   <Element>
-    <Name>PullingIfsaProviderListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.jms.PullingIfsaProviderListener</ClassName>
-  </Element>
-  <Element>
     <Name>PullingJmsListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.jms.PullingJmsListener</ClassName>
-  </Element>
-  <Element>
-    <Name>PushingIfsaProviderListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener</ClassName>
   </Element>
   <Element>
     <Name>PushingJmsListener</Name>
@@ -268,11 +253,6 @@
     <Name>IbisWebServiceSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
-  </Element>
-  <Element>
-    <Name>IfsaRequesterSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.jms.IfsaRequesterSender</ClassName>
   </Element>
   <Element>
     <Name>IfsaSimulatorJmsSender</Name>
@@ -1138,11 +1118,6 @@
     <Name>IbisWebServiceErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
-  </Element>
-  <Element>
-    <Name>IfsaRequesterErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.jms.IfsaRequesterSender</ClassName>
   </Element>
   <Element>
     <Name>IfsaSimulatorJmsErrorSender</Name>

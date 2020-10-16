@@ -4682,7 +4682,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -5733,7 +5732,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -6523,6 +6521,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -6733,6 +6732,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -13568,7 +13568,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -15554,7 +15553,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -16012,7 +16010,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -20831,6 +20828,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -21117,6 +21115,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -22055,42 +22054,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="xs:string" />
-  </xs:complexType>
-  <xs:complexType name="IfsaProviderListenerType">
-    <xs:attribute name="ackMode" type="xs:string" />
-    <xs:attribute name="applicationId" type="xs:string" />
-    <xs:attribute name="cacheMode" type="xs:string" />
-    <xs:attribute name="listenerPort" type="xs:string" />
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="serviceId" type="xs:string" />
-    <xs:attribute name="timeOut" type="xs:string" />
-  </xs:complexType>
-  <xs:complexType name="IfsaRequesterErrorSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="ackMode" type="xs:string" />
-    <xs:attribute name="applicationId" type="xs:string" />
-    <xs:attribute name="bifNameSessionKey" type="xs:string" />
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="serviceId" type="xs:string" />
-    <xs:attribute name="throwExceptions" type="xs:string" />
-    <xs:attribute name="timeOut" type="xs:string" />
-  </xs:complexType>
-  <xs:complexType name="IfsaRequesterSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="ackMode" type="xs:string" />
-    <xs:attribute name="applicationId" type="xs:string" />
-    <xs:attribute name="bifNameSessionKey" type="xs:string" />
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="serviceId" type="xs:string" />
-    <xs:attribute name="throwExceptions" type="xs:string" />
-    <xs:attribute name="timeOut" type="xs:string" />
   </xs:complexType>
   <xs:complexType name="IfsaSimulatorJmsErrorSenderType">
     <xs:sequence>
@@ -23104,7 +23067,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -23214,7 +23176,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -30140,6 +30101,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -30412,6 +30374,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -30668,6 +30631,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -30918,6 +30882,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -31201,7 +31166,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -31935,7 +31899,6 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
-        <xs:element name="IfsaProviderListener" type="IfsaProviderListenerType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
@@ -31944,9 +31907,7 @@
         <xs:element name="JmsListener" type="JmsListenerType" minOccurs="0" />
         <xs:element name="MessageStoreListener" type="MessageStoreListenerType" minOccurs="0" />
         <xs:element name="MqttListener" type="MqttListenerType" minOccurs="0" />
-        <xs:element name="PullingIfsaProviderListener" type="PullingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PullingJmsListener" type="PullingJmsListenerType" minOccurs="0" />
-        <xs:element name="PushingIfsaProviderListener" type="PushingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PushingJmsListener" type="PushingJmsListenerType" minOccurs="0" />
         <xs:element name="PushingListenerAdapterListener" type="PushingListenerAdapterListenerType" minOccurs="0" />
         <xs:element name="RestListener" type="RestListenerType" minOccurs="0" />
@@ -32088,14 +32049,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="xs:string" />
-  </xs:complexType>
-  <xs:complexType name="PullingIfsaProviderListenerType">
-    <xs:attribute name="ackMode" type="xs:string" />
-    <xs:attribute name="applicationId" type="xs:string" />
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="serviceId" type="xs:string" />
-    <xs:attribute name="timeOut" type="xs:string" />
   </xs:complexType>
   <xs:complexType name="PullingJmsListenerType">
     <xs:sequence>
@@ -32271,16 +32224,6 @@
         <xs:documentation>comma separated list of all xpath keys that need to be logged. (overrides &lt;code&gt;msg.log.keys&lt;/code&gt; property)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="PushingIfsaProviderListenerType">
-    <xs:attribute name="ackMode" type="xs:string" />
-    <xs:attribute name="applicationId" type="xs:string" />
-    <xs:attribute name="cacheMode" type="xs:string" />
-    <xs:attribute name="listenerPort" type="xs:string" />
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="serviceId" type="xs:string" />
-    <xs:attribute name="timeOut" type="xs:string" />
   </xs:complexType>
   <xs:complexType name="PushingJmsListenerType">
     <xs:sequence>
@@ -32916,7 +32859,6 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
-        <xs:element name="IfsaProviderListener" type="IfsaProviderListenerType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
@@ -32925,9 +32867,7 @@
         <xs:element name="JmsListener" type="JmsListenerType" minOccurs="0" />
         <xs:element name="MessageStoreListener" type="MessageStoreListenerType" minOccurs="0" />
         <xs:element name="MqttListener" type="MqttListenerType" minOccurs="0" />
-        <xs:element name="PullingIfsaProviderListener" type="PullingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PullingJmsListener" type="PullingJmsListenerType" minOccurs="0" />
-        <xs:element name="PushingIfsaProviderListener" type="PushingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PushingJmsListener" type="PushingJmsListenerType" minOccurs="0" />
         <xs:element name="PushingListenerAdapterListener" type="PushingListenerAdapterListenerType" minOccurs="0" />
         <xs:element name="RestListener" type="RestListenerType" minOccurs="0" />
@@ -32961,7 +32901,6 @@
         <xs:element name="IbisJavaErrorSender" type="IbisJavaErrorSenderType" minOccurs="0" />
         <xs:element name="IbisLocalErrorSender" type="IbisLocalErrorSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceErrorSender" type="IbisWebServiceErrorSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterErrorSender" type="IfsaRequesterErrorSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsErrorSender" type="IfsaSimulatorJmsErrorSenderType" minOccurs="0" />
         <xs:element name="JavascriptErrorSender" type="JavascriptErrorSenderType" minOccurs="0" />
         <xs:element name="JmsErrorSender" type="JmsErrorSenderType" minOccurs="0" />
@@ -33032,7 +32971,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -34017,6 +33955,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -34356,6 +34295,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -35007,7 +34947,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -37747,7 +37686,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -37797,7 +37735,6 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
-        <xs:element name="IfsaProviderListener" type="IfsaProviderListenerType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
@@ -37806,9 +37743,7 @@
         <xs:element name="JmsListener" type="JmsListenerType" minOccurs="0" />
         <xs:element name="MessageStoreListener" type="MessageStoreListenerType" minOccurs="0" />
         <xs:element name="MqttListener" type="MqttListenerType" minOccurs="0" />
-        <xs:element name="PullingIfsaProviderListener" type="PullingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PullingJmsListener" type="PullingJmsListenerType" minOccurs="0" />
-        <xs:element name="PushingIfsaProviderListener" type="PushingIfsaProviderListenerType" minOccurs="0" />
         <xs:element name="PushingJmsListener" type="PushingJmsListenerType" minOccurs="0" />
         <xs:element name="PushingListenerAdapterListener" type="PushingListenerAdapterListenerType" minOccurs="0" />
         <xs:element name="RestListener" type="RestListenerType" minOccurs="0" />
@@ -38131,7 +38066,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -38226,7 +38160,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -38320,7 +38253,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -38430,7 +38362,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -40787,7 +40718,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -41600,7 +41530,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -43580,6 +43509,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -44062,6 +43992,7 @@
         <xs:documentation>proxy realm (default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="proxyUserName" type="xs:string" />
     <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy username (default:  )</xs:documentation>
@@ -45967,7 +45898,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
@@ -48576,7 +48506,6 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
-        <xs:element name="IfsaRequesterSender" type="IfsaRequesterSenderType" minOccurs="0" />
         <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JavascriptSender" type="JavascriptSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
