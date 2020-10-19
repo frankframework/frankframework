@@ -968,13 +968,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				throw new ListenerException(e);
 			}
 		}
-		String messageId = (String)threadContext.get("id");
+		String messageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
 		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
 	public void retryMessage(String storageKey) throws ListenerException {
 		if (getErrorStorage()==null) {
-			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+storageKey+"]");
+			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry storageKey ["+storageKey+"]");
 		}
 		PlatformTransactionManager txManager = getTxManager(); 
 		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
@@ -997,7 +997,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			txStatus = txManager.getTransaction(TXNEW_CTRL);
 			try {	
 				if (msg instanceof Serializable) {
-					String originalMessageId = (String)threadContext.get("id");
+					String originalMessageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
 					String correlationId = (String)threadContext.get(IPipeLineSession.businessCorrelationIdKey);
 					String receivedDateStr = (String)threadContext.get(IPipeLineSession.tsReceivedKey);
 					if (receivedDateStr==null) {
