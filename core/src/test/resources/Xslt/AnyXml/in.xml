@@ -3,6 +3,7 @@
 	<data1>&lt;RDB&gt;
  &lt;P volgnummer="1"&gt;
    &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
+   &lt;LF&gt;&#xa;&lt;/LF&gt;
    &lt;SOMKOOPSOM&gt;€ 7648.00&lt;/SOMKOOPSOM&gt;
    &lt;PREMIERESTITUTIEBEDRAG&gt;0.00&lt;/PREMIERESTITUTIEBEDRAG&gt;
    &lt;ASRESTITUTIEBEDRAG&gt;0.00&lt;/ASRESTITUTIEBEDRAG&gt;
@@ -36,10 +37,11 @@
 			</f2>
 		</f1>
 	</f>
-	<g attr="Euro € single quote ' double quote escaped &quot; ">Euro € single quote ' double quote "</g>
+	<g attr="Euro € single quote ' double quote escaped &quot; newline escaped &#10;">Euro € single quote ' double quote " newline &#10;</g>
 	<data2><![CDATA[<RDB>
  <P volgnummer="1">
    <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
+   <LF>&#xa;</LF>
    <SOMKOOPSOM>€ 7648.00</SOMKOOPSOM>
    <PREMIERESTITUTIEBEDRAG>0.00</PREMIERESTITUTIEBEDRAG>
    <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>

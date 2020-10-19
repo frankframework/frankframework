@@ -20,6 +20,8 @@ public class XmlWriterTest {
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
 		XmlUtils.parseXml(input, xmlWriter);
+		/* parseXml method will resolve new line*/
+		expected = expected.replace("newline &#10;", "newline \n").replace("&lt;LF&gt;&#xa;&lt;/LF&gt;", "&lt;LF&gt;\n&lt;/LF&gt;");
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -51,6 +53,8 @@ public class XmlWriterTest {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(true);
 		XmlUtils.parseXml(input, xmlWriter);
+		/* parseXml method will resolve new line*/
+		expected = expected.replace("newline &#10;", "newline \n").replace("&lt;LF&gt;&#xa;&lt;/LF&gt;", "&lt;LF&gt;\n&lt;/LF&gt;");
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -59,22 +63,6 @@ public class XmlWriterTest {
 	public void testNoLexicalHandling() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/NoComments.xml");
-		XmlWriter xmlWriter = new XmlWriter();
-		
-		InputSource inputSource = new InputSource(new StringReader(input));
-		XMLReader xmlReader = XmlUtils.getXMLReader(xmlWriter);
-		// lexical handling is automatically set, when the contentHandler (xmlWriter in this case) implements  the interface LexicalHandler.
-		// To test the output of the XmlWriter without lexical handling, it must be switched off explicitly in the XmlReader
-		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
-
-		xmlReader.parse(inputSource);
-		assertEquals(expected,xmlWriter.toString());
-	}
-
-	@Test
-	public void testDisableOutputEscaping() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/ConfigNewLine.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/ParsedXmlNewLine.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		
 		InputSource inputSource = new InputSource(new StringReader(input));
