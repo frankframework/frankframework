@@ -1053,8 +1053,8 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"Proxy Username", ""})
-	public void setProxyUsername(String proxyUserName) {
-		sessionBuilder.setProxyUsername(proxyUserName);
+	public void setProxyUsername(String proxyUsername) {
+		sessionBuilder.setProxyUsername(proxyUsername);
 	}
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
