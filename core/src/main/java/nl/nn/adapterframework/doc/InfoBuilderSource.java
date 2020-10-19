@@ -122,13 +122,6 @@ class InfoBuilderSource {
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.jms\\.IfsaFacade");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.jms\\.IfsaRequesterSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaRequesterSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.jms\\.PullingIfsaProviderListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.jms\\.PushingIfsaProviderListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.jms.IfsaProviderListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");

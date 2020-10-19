@@ -68,8 +68,8 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setProxyHost((String) session.get("proxyHost"));
 				if(session.get("proxyPort") != null)
 					sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
-				if(session.get("proxyUserName") != null)
-					sender.setProxyUsername((String) session.get("proxyUserName"));
+				if(session.get("proxyUsername") != null)
+					sender.setProxyUsername((String) session.get("proxyUsername"));
 				if(session.get("proxyPassword") != null)
 					sender.setProxyPassword((String) session.get("proxyPassword"));
 			}

@@ -210,7 +210,7 @@ public class CmisSessionBuilder {
 			CredentialFactory pcf = new CredentialFactory(proxyAuthAlias, proxyUserName, proxyPassword);
 			parameterMap.put("proxyHost", proxyHost);
 			parameterMap.put("proxyPort", "" + proxyPort);
-			parameterMap.put("proxyUserName", pcf.getUsername());
+			parameterMap.put("proxyUsername", pcf.getUsername());
 			parameterMap.put("proxyPassword", pcf.getPassword());
 		}
 
