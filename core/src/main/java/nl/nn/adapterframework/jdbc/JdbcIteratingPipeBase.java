@@ -53,7 +53,12 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
-		
+
+		@Override
+		public void configure() throws ConfigurationException {
+			super.configure(query!=null);
+		}
+
 		@Override
 		protected String getQuery(Message message) throws SenderException {
 			if (query!=null) {
@@ -66,15 +71,14 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			this.query = query;
 		}
 	}
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		try {
@@ -153,7 +157,6 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-
 
 	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {

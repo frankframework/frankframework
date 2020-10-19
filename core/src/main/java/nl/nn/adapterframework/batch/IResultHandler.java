@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.batch;
 
-import java.util.List;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -28,10 +25,9 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
-public interface IResultHandler extends INamedObject {
+public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
-	public void configure() throws ConfigurationException;
 	public void open() throws SenderException;
 	public void close() throws SenderException;
 	

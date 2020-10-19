@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -98,7 +99,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
+public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing, IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -170,6 +171,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (pipeForwards.isEmpty()) {
+			//TODO pipe will follow the next forward no need to show warning
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
@@ -403,6 +405,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
 	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
 	 */
+	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return configurationClassLoader;
 	}
