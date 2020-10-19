@@ -961,7 +961,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		} catch (Exception e) {
 			if(rawMessage instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				technicalCorrelationId = ((MessageWrapper)rawMessage).getId();
+				MessageWrapper wrapper = (MessageWrapper)rawMessage;
+				technicalCorrelationId = wrapper.getId();
+				threadContext.putAll(wrapper.getContext());
 			} else {
 				throw new ListenerException(e);
 			}
@@ -970,9 +972,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
-	public void retryMessage(String messageId) throws ListenerException {
+	public void retryMessage(String storageKey) throws ListenerException {
 		if (getErrorStorage()==null) {
-			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
+			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+storageKey+"]");
 		}
 		PlatformTransactionManager txManager = getTxManager(); 
 		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
@@ -983,7 +985,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		try {
 			try {
 				ITransactionalStorage errorStorage = getErrorStorage();
-				msg = errorStorage.getMessage(messageId);
+				msg = errorStorage.getMessage(storageKey);
 				processRawMessage(getListener(), msg, threadContext, -1, true);
 			} catch (Throwable t) {
 				txStatus.setRollbackOnly();
@@ -995,14 +997,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			txStatus = txManager.getTransaction(TXNEW_CTRL);
 			try {	
 				if (msg instanceof Serializable) {
+					String originalMessageId = (String)threadContext.get("id");
 					String correlationId = (String)threadContext.get(IPipeLineSession.businessCorrelationIdKey);
 					String receivedDateStr = (String)threadContext.get(IPipeLineSession.tsReceivedKey);
 					if (receivedDateStr==null) {
 						log.warn(getLogPrefix()+IPipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
-						errorStorage.deleteMessage(messageId);
-						errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null,(Serializable)msg);	
+						errorStorage.deleteMessage(storageKey);
+						errorStorage.storeMessage(originalMessageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null,(Serializable)msg);	
 					}
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
