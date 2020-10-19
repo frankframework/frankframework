@@ -298,7 +298,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
 					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"] in adapter ["+getAdapter().getName()+"]. This may cause potential SQL injections!";
-					ConfigurationWarnings.add(this, log, msg, ConfigurationWarnings.sqlInjectionSuppressKey, getAdapter());
+					ConfigurationWarnings.add(this, log, msg, ConfigurationWarnings.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
 					((DirectQuerySender) getSender()).configure(true);
 				} else {
 					getSender().configure();

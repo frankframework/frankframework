@@ -63,8 +63,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-	private boolean suppressDefaultValueWarnings = AppConstants.getInstance().getBoolean(ConfigurationWarnings.defaultValueSuppressKey, false);
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(ConfigurationWarnings.deprecationSuppressKey, false);
+	private boolean suppressDefaultValueWarnings = AppConstants.getInstance().getBoolean(ConfigurationWarnings.DEFAULT_VALUE_SUPPRESS_KEY, false);
+	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, false);
 
     public AbstractSpringPoweredDigesterFactory() {
         super();
