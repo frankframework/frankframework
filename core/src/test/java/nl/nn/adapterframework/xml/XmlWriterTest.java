@@ -20,8 +20,6 @@ public class XmlWriterTest {
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
 		XmlUtils.parseXml(input, xmlWriter);
-		/* parseXml method will resolve new line*/
-		expected = expected.replace("newline &#10;", "newline \n").replace("&lt;LF&gt;&#xa;&lt;/LF&gt;", "&lt;LF&gt;\n&lt;/LF&gt;");
 		assertEquals(expected,xmlWriter.toString());
 	}
 	
@@ -53,8 +51,6 @@ public class XmlWriterTest {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(true);
 		XmlUtils.parseXml(input, xmlWriter);
-		/* parseXml method will resolve new line*/
-		expected = expected.replace("newline &#10;", "newline \n").replace("&lt;LF&gt;&#xa;&lt;/LF&gt;", "&lt;LF&gt;\n&lt;/LF&gt;");
 		assertEquals(expected,xmlWriter.toString());
 	}
 	

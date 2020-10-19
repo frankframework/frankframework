@@ -353,7 +353,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void xpathNodeXml() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \" newline \n</g>";
+		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
 		setXpathExpression("request/g");
 		setOutputType("xml");
