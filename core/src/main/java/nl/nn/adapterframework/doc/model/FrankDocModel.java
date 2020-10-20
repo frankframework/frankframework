@@ -221,10 +221,4 @@ public class FrankDocModel {
 			return null;
 		}
 	}
-
-	public FrankDocGroup addGroup(String name) {
-		FrankDocGroup group = new FrankDocGroup(name);
-		groups.add(group);
-		return group;
-	}
 }
