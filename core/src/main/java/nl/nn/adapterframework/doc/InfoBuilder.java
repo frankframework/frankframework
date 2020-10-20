@@ -231,6 +231,9 @@ public class InfoBuilder {
 	}
 
 	private static FromAnnotations parseIbisDocAndIbisDocRef(Method method, boolean isJson) {
+		if(!InfoBuilderSource.isGetterOrSetter(method)) {
+			return null;
+		}
 		String referredClassName = "";
 		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);

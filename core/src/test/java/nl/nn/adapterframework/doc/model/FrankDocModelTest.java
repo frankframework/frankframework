@@ -68,6 +68,36 @@ public class FrankDocModelTest {
 		checkReflectAttributeCreated("attributeOnlySetter");
 	}
 
+	@Test
+	public void whenSetterHasPrimitiveTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterInt");
+	}
+
+	@Test
+	public void whenSetterHasBoxedIntTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterIntBoxed");
+	}
+
+	@Test
+	public void whenSetterHasBoxedBoolTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterBoolBoxed");
+	}
+
+	@Test
+	public void whenSetterHasBoxedLongTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterLongBoxed");
+	}
+
+	@Test
+	public void whenSetterHasBoxedByteTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterByteBoxed");
+	}
+
+	@Test
+	public void whenSetterHasBoxedShortTypeThenAttribute() {
+		checkReflectAttributeCreated("attributeOnlySetterShortBoxed");
+	}
+
 	private void checkReflectAttributeOmitted(String attributeName) {
 		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		assertFalse(actual.containsKey(attributeName));

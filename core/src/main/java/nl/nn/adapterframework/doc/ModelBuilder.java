@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,5 +40,9 @@ public class ModelBuilder {
 
 	public static Class<?> getClass(final String name) {
 		return InfoBuilderSource.getClass(name);
+	}
+
+	public static boolean isGetterOrSetter(Method method) {
+		return InfoBuilderSource.isGetterOrSetter(method);
 	}
 }

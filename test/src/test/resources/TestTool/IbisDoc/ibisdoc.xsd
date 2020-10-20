@@ -29,11 +29,6 @@
         <xs:documentation>description of the adapter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="errorMessageFormatter" type="xs:string">
-      <xs:annotation>
-        <xs:documentation />
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="errorState" type="xs:string" />
     <xs:attribute name="messageKeeperSize" type="xs:string">
       <xs:annotation>
@@ -31841,11 +31836,16 @@
         <xs:documentation>forces that each pipe in the pipeline is not automatically added to the globalforwards table (default: application default)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="inputValidator" type="xs:string" />
+    <xs:attribute name="inputWrapper" type="xs:string" />
+    <xs:attribute name="locker" type="xs:string" />
     <xs:attribute name="messageSizeWarn" type="xs:string">
       <xs:annotation>
         <xs:documentation>if messagesizewarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged (default: application default (3mb))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="outputValidator" type="xs:string" />
+    <xs:attribute name="outputWrapper" type="xs:string" />
     <xs:attribute name="storeOriginalMessageWithoutNamespaces" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; the original message without namespaces (and prefixes) is stored under the session key originalmessagewithoutnamespaces (default: false)</xs:documentation>

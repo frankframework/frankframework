@@ -17,11 +17,10 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ModelBuilder;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocModel {
-	private static final String JAVA_STRING = "java.lang.String";
-
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 
 	private @Getter List<FrankDocGroup> groups;
@@ -81,7 +80,7 @@ public class FrankDocModel {
 	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
-				.filter(FrankDocModel::isGetterOrSetter)
+				.filter(ModelBuilder::isGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());		
 		Map<String, Method> result = new LinkedHashMap<>();
@@ -91,20 +90,6 @@ public class FrankDocModel {
 			result.put(attributeName, method);
 		}
 		return result;
-	}
-
-	static boolean isGetterOrSetter(Method method) {
-		boolean isSetter = method.getReturnType().isPrimitive()
-				&& method.getReturnType().getName().equals("void")
-				&& (method.getParameterTypes().length == 1)
-				&& (method.getParameterTypes()[0].isPrimitive()
-						|| method.getParameterTypes()[0].getName().equals(JAVA_STRING));
-		boolean isGetter = (
-					(method.getReturnType().isPrimitive()
-							&& !method.getReturnType().getName().equals("void"))
-					|| method.getReturnType().getName().equals(JAVA_STRING)
-				) && (method.getParameterTypes().length == 0);
-		return isSetter || isGetter;
 	}
 
 	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {

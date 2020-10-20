@@ -334,7 +334,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * The <code>toString()</code> method retrieves its value
 	 * by reflection, so overriding this method is mostly not
 	 * usefull.
-	 * @see ToStringBuilder#reflectionToString
+	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
 	@Override
@@ -400,7 +400,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	/**
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 * @return returns the ClassLoader created by the {@link nl.nn.adapterframework.configuration.ClassLoaderManager ClassLoaderManager}.
 	 */
 	public ClassLoader getConfigurationClassLoader() {
 		return configurationClassLoader;

@@ -751,6 +751,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Register a receiver for this Adapter
 	 * @see IReceiver
 	 */
+	@IbisDoc("100")
 	public void registerReceiver(IReceiver receiver) {
 		boolean receiverActive=true;
 		if (receiver instanceof ReceiverBase) {
@@ -780,7 +781,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * for this <code>adapter</code>
 	 * @see IErrorMessageFormatter
 	 */
-	@IbisDoc({" ", ""})
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
