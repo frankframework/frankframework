@@ -20,7 +20,7 @@ public class ModelBuilder {
 	 * @param interfaceName The interface for which we want SpringBean objects.
 	 * @return All classes implementing interfaceName, ordered by their full class name.
 	 */
-	static List<SpringBean> getSpringBeans(final String interfaceName) {
+	public static List<SpringBean> getSpringBeans(final String interfaceName) {
 		Class<?> interfaze = getClass(interfaceName);
 		if(interfaze == null) {
 			throw new NullPointerException("Class or interface is not available on the classpath: " + interfaceName);

@@ -25,9 +25,45 @@ public class FrankDocModel {
 
 	private @Getter List<FrankDocGroup> groups;
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
+	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
 	public FrankDocModel() {
 		groups = new ArrayList<>();
+	}
+
+	public ElementType findOrCreateElementType(Class<?> clazz) {
+		if(allTypes.containsKey(clazz.getName())) {
+			return allTypes.get(clazz.getName());
+		}
+		ElementType result = null;
+		if(clazz.isInterface()) {
+			result = createElementTypeFromInterface(clazz);
+		} else {
+			result = createSingletonElementType(clazz);
+		}
+		allTypes.put(result.getFullName(), result);
+		return result;
+	}
+
+	private ElementType createElementTypeFromInterface(Class<?> clazz) {
+		ElementType result = new ElementType(clazz);
+		List<Class<?>> memberClasses = ModelBuilder.getSpringBeans(clazz.getName()).stream()
+				.map(b -> b.getClazz()).collect(Collectors.toList());
+		for(Class<?> memberClass: memberClasses) {
+			result.addMember(findOrCreateFrankElement(memberClass));
+		}
+		return result;
+	}
+
+	private ElementType createSingletonElementType(Class<?> clazz) {
+		ElementType result = new ElementType(clazz);
+		FrankElement member = findOrCreateFrankElement(clazz);
+		result.addMember(member);
+		return result;
+	}
+
+	public boolean hasType(String typeName) {
+		return allTypes.containsKey(typeName);
 	}
 
 	public FrankElement findOrCreateFrankElement(Class<?> clazz) {

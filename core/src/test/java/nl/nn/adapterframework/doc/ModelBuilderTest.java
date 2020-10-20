@@ -7,14 +7,14 @@ import java.util.List;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.model.FrankDocGroupTest;
 import nl.nn.adapterframework.doc.objects.SpringBean;
  
 public class ModelBuilderTest {
-	
+	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
+
 	@Test
 	public void testGetSpringBeans() {
-		List<SpringBean> actual = ModelBuilder.getSpringBeans(FrankDocGroupTest.SIMPLE + ".IListener");
+		List<SpringBean> actual = ModelBuilder.getSpringBeans(SIMPLE + ".IListener");
 		actual.sort((b1, b2) -> b1.compareTo(b2));
 		assertEquals(2, actual.size());
 		for(SpringBean a: actual) {
@@ -22,8 +22,8 @@ public class ModelBuilderTest {
 		}
 		Iterator<SpringBean> it = actual.iterator();
 		SpringBean first = it.next();
-		assertEquals(FrankDocGroupTest.SIMPLE + ".ListenerChild", first.getName());
+		assertEquals(SIMPLE + ".ListenerChild", first.getName());
 		SpringBean second = it.next();
-		assertEquals(FrankDocGroupTest.SIMPLE + ".ListenerParent", second.getName());
+		assertEquals(SIMPLE + ".ListenerParent", second.getName());
 	}
 }

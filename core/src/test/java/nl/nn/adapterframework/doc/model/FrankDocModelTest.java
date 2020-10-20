@@ -18,6 +18,11 @@ import org.junit.Test;
 import nl.nn.adapterframework.doc.ModelBuilder;
 
 public class FrankDocModelTest {
+	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
+	private static final String LISTENER = SIMPLE + ".IListener";
+	private static final String SIMPLE_PARENT = SIMPLE + ".ListenerParent";
+	private static final String SIMPLE_CHILD = SIMPLE + ".ListenerChild";
+
 	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.testtarget.ibisdocref";
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
 	private static final String REFERRED_PARENT = IBISDOCREF + ".ParentTarget";
@@ -27,6 +32,83 @@ public class FrankDocModelTest {
 	@Before
 	public void setUp() {
 		instance = new FrankDocModel();
+	}
+
+	@Test
+	public void whenInterfaceTypeAndSingletonTypeThenCorrectElements() {
+		ElementType listenerType = instance.findOrCreateElementType(ModelBuilder.getClass(LISTENER));
+		ElementType childType = instance.findOrCreateElementType(ModelBuilder.getClass(SIMPLE_CHILD));
+		checkModelTypes(listenerType, childType);
+	}
+
+	@Test
+	public void whenSingletonTypeAndInterfaceTypeThenCorrectElements() {
+		ElementType childType = instance.findOrCreateElementType(ModelBuilder.getClass(SIMPLE_CHILD));
+		ElementType listenerType = instance.findOrCreateElementType(ModelBuilder.getClass(LISTENER));
+		checkModelTypes(listenerType, childType);		
+	}
+
+	private void checkModelTypes(ElementType actualListener, ElementType actualChild) {
+		assertTrue(instance.hasType(actualListener.getFullName()));
+		assertTrue(instance.hasType(actualChild.getFullName()));
+		assertSame(instance.getAllTypes().get(LISTENER), actualListener);
+		assertSame(instance.getAllTypes().get(SIMPLE_CHILD), actualChild);
+		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
+		assertEquals(2, listenerMembers.size());
+		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
+		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
+		Map<String, FrankElement> childMembers = actualChild.getMembers();
+		assertEquals(1, childMembers.size());
+		assertTrue(childMembers.containsKey(SIMPLE_CHILD));
+		assertEquals(LISTENER, actualListener.getFullName());
+		assertEquals("IListener", actualListener.getSimpleName());
+		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
+		assertEquals("ListenerChild", actualChild.getSimpleName());
+	}
+
+	@Test
+	public void whenTypeRequestedTwiceThenSameInstanceReturned() {
+		ElementType first = instance.findOrCreateElementType(ModelBuilder.getClass(SIMPLE_CHILD));
+		ElementType second = instance.findOrCreateElementType(ModelBuilder.getClass(SIMPLE_CHILD));
+		assertSame(first, second);
+	}
+
+	@Test
+	public void whenChildElementAddedBeforeParentThenCorrectModel() {
+		FrankElement child = instance.findOrCreateFrankElement(ModelBuilder.getClass(SIMPLE_CHILD));
+		FrankElement parent = instance.findOrCreateFrankElement(ModelBuilder.getClass(SIMPLE_PARENT));
+		checkModelAfterChildAndParentAdded(parent, child);
+	}
+
+	@Test
+	public void whenParentElementAddedBeforeChildThenCorrectModel() {
+		FrankElement parent = instance.findOrCreateFrankElement(ModelBuilder.getClass(SIMPLE_PARENT));
+		FrankElement child = instance.findOrCreateFrankElement(ModelBuilder.getClass(SIMPLE_CHILD));
+		checkModelAfterChildAndParentAdded(parent, child);
+	}
+
+	private void checkModelAfterChildAndParentAdded(FrankElement actualParent, FrankElement actualChild) {
+		Map<String, FrankElement> actualAllElements = instance.getAllElements();
+		assertTrue(actualAllElements.containsKey(actualParent.getFullName()));
+		assertTrue(actualAllElements.containsKey(actualChild.getFullName()));
+		assertSame(actualAllElements.get(actualParent.getFullName()), actualParent);
+		assertSame(actualAllElements.get(actualChild.getFullName()), actualChild);
+		FrankElement actualObject = actualAllElements.get("java.lang.Object");
+		assertNull(actualObject.getParent());
+		assertSame(actualObject, actualParent.getParent());
+		assertEquals(SIMPLE_PARENT, actualParent.getFullName());
+		assertEquals("ListenerParent", actualParent.getSimpleName());
+		assertEquals(1, actualParent.getAttributes().size());
+		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
+		assertEquals("parentAttribute", actualParentAttribute.getName());
+		assertSame(actualParent, actualParentAttribute.getDescribingElement());
+		assertSame(actualParent, actualChild.getParent());
+		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
+		assertEquals("ListenerChild", actualChild.getSimpleName());
+		assertEquals(1, actualChild.getAttributes().size());
+		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
+		assertEquals("childAttribute", actualChildAttribute.getName());
+		assertSame(actualChild, actualChildAttribute.getDescribingElement());
 	}
 
 	@Test
