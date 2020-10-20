@@ -35,7 +35,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 
 	@Override
 	public String getUrlMapping() {
-		return "/proxy/cmis/webservices/*";
+		return "/cmis/proxy/webservices/*";
 	}
 
 	@Override
