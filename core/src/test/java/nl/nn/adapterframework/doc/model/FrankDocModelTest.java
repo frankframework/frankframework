@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +54,8 @@ public class FrankDocModelTest {
 		assertTrue(instance.hasType(actualChild.getFullName()));
 		assertSame(instance.getAllTypes().get(LISTENER), actualListener);
 		assertSame(instance.getAllTypes().get(SIMPLE_CHILD), actualChild);
+		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
+		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
 		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
 		assertEquals(2, listenerMembers.size());
 		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
