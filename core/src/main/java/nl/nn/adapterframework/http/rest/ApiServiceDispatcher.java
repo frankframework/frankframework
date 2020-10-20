@@ -154,7 +154,7 @@ public class ApiServiceDispatcher {
 		List<ApiDispatchConfig> clientList = Arrays.asList(client);
 		return generateOpenApiJsonSchema(clientList);
 	}
-		
+
 	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients) {
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
@@ -213,15 +213,15 @@ public class ApiServiceDispatcher {
 		PipeLine pipeline = adapter.getPipeLine();
 		Json2XmlValidator validator = getJsonValidator(pipeline);
 		JsonObjectBuilder schema = null;
+		String ref = null;
 		if(validator != null) {
 			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
 			if(jsonSchema != null) {
 				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
 					schemas.add(entry.getKey(), entry.getValue());
 				}
-				String ref = validator.getMessageRoot(true);
+				ref = validator.getMessageRoot(true);
 				schema = Json.createObjectBuilder();
-				schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 			}
 		}
 
@@ -242,6 +242,7 @@ public class ApiServiceDispatcher {
 				if(schema == null) {
 					content.addNull(contentType.getContentType());
 				} else {
+					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);
