@@ -99,6 +99,7 @@ public class FileHandler {
 	protected String fileNameSessionKey;
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
+	protected boolean testExists = true;
 	protected boolean testCanWrite = true;
 	protected boolean skipBOM = false;
 	protected boolean deleteEmptyDirectory = false;
@@ -432,7 +433,7 @@ public class FileHandler {
 						throw new ConfigurationException(directory + " could not be created");
 					}
 				}
-				if (! (file.exists() && file.isDirectory() && file.canRead())) {
+				if (isTestExists() && ! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
@@ -484,9 +485,9 @@ public class FileHandler {
 	private class FileDeleter implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
-				if (file.exists() && !file.isDirectory()) {
+				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
 			}
@@ -535,7 +536,7 @@ public class FileHandler {
 	private class FileLister implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -570,7 +571,7 @@ public class FileHandler {
 	private class FileInfoProvider implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -712,6 +713,14 @@ public class FileHandler {
 	}
 	public String getFileNameSessionKey() {
 		return fileNameSessionKey;
+	}
+
+	@IbisDoc({"test if the specified directory exists at configure()", "true"})
+	public void setTestExists(boolean testExists) {
+		this.testExists = testExists;
+	}
+	public boolean isTestExists() {
+		return testExists;
 	}
 
 	@IbisDoc({"when set to <code>true</code>, the directory to read from or write to is created if it does not exist", "false"})

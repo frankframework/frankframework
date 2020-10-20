@@ -117,6 +117,10 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setWriteLineSeparator(b);
 	}
 
+	public void setTestExists(boolean b) {
+		fileHandler.setTestExists(b);
+	}
+
 	public void setTestCanWrite(boolean b) {
 		fileHandler.setTestCanWrite(b);
 	}
