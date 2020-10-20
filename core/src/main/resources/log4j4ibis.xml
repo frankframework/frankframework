@@ -91,6 +91,26 @@
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 
+		<!-- Put some loggers of special interest on DEBUG level -->
+		<!-- Logger name="org.apache.activemq" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.springframework" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="bitronix.tm" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.quartz" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.apache.http" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.apache.cxf" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+
 		<Root level="WARN">
 			<AppenderRef ref="file"/>
 			<AppenderRef ref="XML"/>
