@@ -18,7 +18,7 @@ def installApp( ear, module, war ):
 
 
 def setClassloaderMode( ear, mode ):
-	deployments = AdminConfig.getid('/Deployment:ibis-adapterframework-test.ear/')
+	deployments = AdminConfig.getid('/Deployment:'+ear+'/')
 	print "deployments:", deployments
 	deployedObject = AdminConfig.showAttribute(deployments, 'deployedObject')
 	print "deploymentObject:", deployedObject
@@ -36,11 +36,11 @@ def setClassloaderMode( ear, mode ):
 	return
 
 
-installApp('ibis-adapterframework-test.ear', 'IBIS AdapterFramework', 'adapterframework.war')
+installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war')
 
 AdminConfig.save()
 
-setClassloaderMode('ibis-adapterframework-test.ear', 'PARENT_LAST')
+setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
 
 AdminConfig.save()

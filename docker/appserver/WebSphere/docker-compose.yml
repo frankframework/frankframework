@@ -7,7 +7,7 @@ services:
       active.jms: "false"
       active.tibco: "false"
       active.ifsa: "false"
-      jdbc.dbms.default: "mssql"
+      # jdbc.dbms.default: "mssql"
     ports:
       - 9043:9043
       - 9443:9443

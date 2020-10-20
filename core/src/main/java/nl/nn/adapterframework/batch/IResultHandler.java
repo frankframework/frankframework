@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.batch;
 
+import java.util.List;
+
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;

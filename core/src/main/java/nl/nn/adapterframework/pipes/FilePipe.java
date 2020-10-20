@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  */
 @Deprecated
+@ConfigurationWarning("Please use LocalFileSystemPipe instead")
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
@@ -51,7 +53,11 @@ public class FilePipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		fileHandler.configure();
+		try { 
+			fileHandler.configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(null)+"could not configure",e);
+		}
 	}
 	
 	/** 

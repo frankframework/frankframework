@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -308,7 +308,7 @@ public class Wsdl {
             wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
         }
         if (StringUtils.isEmpty(getDocumentation())) {
-    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getIsoTimeStamp() + ".";
+    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getTimeStamp() + ".";
         }
 		if (inputValidator.getDocumentation() != null) {
 			documentation = documentation + inputValidator.getDocumentation();
