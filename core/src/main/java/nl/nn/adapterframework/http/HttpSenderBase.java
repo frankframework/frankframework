@@ -406,7 +406,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
 				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
 
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
 					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
@@ -899,11 +899,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		proxyUserName = string;
 	}
 	@Deprecated
-	@ConfigurationWarning("Please use \"setProxyUsername\" instead")
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	public String getProxyUserName() {
+	public String getProxyUsername() {
 		return proxyUserName;
 	}
 
