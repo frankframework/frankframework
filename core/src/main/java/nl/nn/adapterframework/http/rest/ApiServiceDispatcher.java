@@ -242,6 +242,7 @@ public class ApiServiceDispatcher {
 				if(schema == null) {
 					content.addNull(contentType.getContentType());
 				} else {
+					// JsonObjectBuilder add method consumes the schema
 					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 					content.add(contentType.getContentType(), schema);
 				}
