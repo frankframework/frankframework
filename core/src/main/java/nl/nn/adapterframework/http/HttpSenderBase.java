@@ -71,6 +71,7 @@ import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -405,7 +406,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
 				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
 
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
 					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
@@ -894,10 +895,15 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@IbisDoc({"33", "proxy username", " "})
-	public void setProxyUserName(String string) {
+	public void setProxyUsername(String string) {
 		proxyUserName = string;
 	}
-	public String getProxyUserName() {
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
+	}
+	public String getProxyUsername() {
 		return proxyUserName;
 	}
 

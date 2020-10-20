@@ -42,8 +42,8 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.ChildIbisBeanMapping;
+import nl.nn.adapterframework.doc.objects.IbisBean;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -122,8 +122,6 @@ class InfoBuilderSource {
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaRequesterSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");

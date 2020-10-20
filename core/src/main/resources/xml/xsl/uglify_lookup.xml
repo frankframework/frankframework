@@ -50,11 +50,6 @@
     <ClassName>nl.nn.adapterframework.http.HttpListener</ClassName>
   </Element>
   <Element>
-    <Name>IfsaProviderListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.ejb.IfsaProviderListener</ClassName>
-  </Element>
-  <Element>
     <Name>IfsaSimulatorJmsListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener</ClassName>
