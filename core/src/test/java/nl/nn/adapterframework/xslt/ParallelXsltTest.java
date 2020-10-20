@@ -119,7 +119,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 //		super.assertResultsAreCorrect(combinedExpected, actual, session);
 
-		/* Parallel sender uses toXml mehtod which escapes the new line char. In the comparison we need unescaped char.*/
+		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
 		actual = actual.replace("&#xA;", "&#10;");
 		if (stripAllWhitespace) {
 			super.assertResultsAreCorrect(combinedExpected.replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
