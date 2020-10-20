@@ -98,7 +98,7 @@
       <id>cmis</id>
       <activation>
         <property>
-          <name>!cmis</name>
+          <name>cmis</name>
         </property>
       </activation>
       <dependencies>

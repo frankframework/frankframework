@@ -442,7 +442,7 @@
       <id>default-modules</id>
       <activation>
         <property>
-          <name>!default-modules</name>
+          <name>!default-modules</name> <!-- Defaults to ON, when set it will turn off -->
         </property>
       </activation>
       <modules>
@@ -452,7 +452,6 @@
         <module>ladybug</module>
         <module>test</module>
         <module>akamai</module>
-        <module>ear-test</module>
       </modules>
     </profile>
     <profile>
@@ -470,7 +469,7 @@
       <id>cmis</id>
       <activation>
         <property>
-          <name>!cmis</name>
+          <name>cmis</name>
         </property>
       </activation>
       <modules>
@@ -478,15 +477,15 @@
       </modules>
     </profile>
     <profile>
-      <id>example</id>
+      <id>ear-modules</id>
       <activation>
         <property>
-          <name>!example</name>
+          <name>ear-modules</name>
         </property>
       </activation>
       <modules>
-        <module>example</module>
         <module>ear-example</module>
+        <module>ear-test</module>
       </modules>
     </profile>
     <profile>
