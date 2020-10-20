@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -84,6 +85,10 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			log.debug(jmsFacade.getLogPrefix()+"looking up proxied connection factory ["+cfName+"]");
 			connectionFactory = jmsFacade.getProxiedConnectionFactories().get(cfName);
 		} else {
+			if (jmsFacade.getProxiedConnectionFactories() != null ) {
+				ConfigurationWarnings.add(jmsFacade, log, "connection factory '" + cfName
+						+ "' isn't part of proxiedConnectionFactories and is therefore probably not known to the transaction manager");
+			}
 			String prefixedCfName=jmsFacade.getJndiContextPrefix()+cfName;
 			log.debug(jmsFacade.getLogPrefix()+"looking up connection factory ["+prefixedCfName+"]");
 			if (StringUtils.isNotEmpty(jmsFacade.getJndiContextPrefix())) {
