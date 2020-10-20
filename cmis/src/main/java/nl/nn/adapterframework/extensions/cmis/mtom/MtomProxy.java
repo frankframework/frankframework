@@ -12,20 +12,24 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.DependsOn;
 
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 @IbisInitializer
-public class Proxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
+@DependsOn({"webServices10", "webServices11"})
+public class MtomProxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
 
-	private Logger log = LogUtil.getLogger(this);
-	private static final long serialVersionUID = 1L;
+	private final Logger log = LogUtil.getLogger(this);
+	private static final long serialVersionUID = 3L;
 
-	private String proxyServlet = AppConstants.getInstance().getProperty("http.proxy.servlet", "webServices11");
+	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomproxy.active", false);
+	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "webServices11");
 	private Servlet cmisWebServiceServlet = null;
 
 	@Override
@@ -44,19 +48,25 @@ public class Proxy extends HttpServletBase implements InitializingBean, Applicat
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(cmisWebServiceServlet == null) {
-			log.warn("unable to find servlet [" + proxyServlet + "]");
-			throw new Exception("proxied servlet not found");
+		if(ACTIVE && cmisWebServiceServlet == null) {
+			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
+			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
 		}
-		if(cmisWebServiceServlet.loadOnStartUp() < 0) {
-			throw new Exception("proxied servlet must have load on startup enabled!");
+		if(ACTIVE && cmisWebServiceServlet.loadOnStartUp() < 0) {
+			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] must have load on startup enabled!");
 		}
 	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		Map<String, Servlet> dynamicServlets = applicationContext.getBeansOfType(DynamicRegistration.Servlet.class);
-		cmisWebServiceServlet = dynamicServlets.get(proxyServlet);
+		cmisWebServiceServlet = dynamicServlets.get(PROXY_SERVLET);
 	}
 
+	@Override
+	public void setServletManager(ServletManager servletManager) {
+		if(ACTIVE) {
+			super.setServletManager(servletManager);
+		}
+	}
 }

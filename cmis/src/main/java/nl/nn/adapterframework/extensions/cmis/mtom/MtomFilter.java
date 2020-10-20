@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.AppConstants;
 @DependsOn({"webServices10", "webServices11"})
 public class MtomFilter implements Filter, InitializingBean, ServletContextAware {
 	private ServletContext servletContext;
-	private final static boolean ACTIVE = AppConstants.getInstance().getBoolean("cmisfilter.active", true);
+	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomfilter.active", false);
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
