@@ -36,7 +36,7 @@
 			</f2>
 		</f1>
 	</f>
-	<g attr="Euro € single quote ' double quote escaped &quot; ">Euro € single quote ' double quote "</g>
+	<g attr="Euro € single quote ' double quote escaped &quot; newline escaped &#10;">Euro € single quote ' double quote "</g>
 	<data2>&lt;RDB&gt;
  &lt;P volgnummer="1"&gt;
    &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
