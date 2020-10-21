@@ -174,7 +174,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
 		}
 
 		return serverProperties;
