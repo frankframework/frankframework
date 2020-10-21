@@ -280,7 +280,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 			if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 				response.setStatus(415);
-				if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+				if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
 				return;
 			}
 
@@ -497,7 +497,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
 			String contentType = listener.getContentType();
-			if(listener.getProduces().equals("ANY")) {
+			if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 				contentType = messageContext.get("contentType", contentType);
 			}
 			response.setHeader("Content-Type", contentType);

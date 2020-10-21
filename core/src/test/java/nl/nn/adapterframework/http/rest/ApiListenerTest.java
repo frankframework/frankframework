@@ -45,7 +45,7 @@ public class ApiListenerTest {
 		listener.setProduces("xml");
 		listener.configure();
 
-		assertEquals("XML", listener.getProduces());
+		assertEquals(MediaTypes.XML, listener.getProducesEnum());
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class ApiListenerTest {
 		listener.setProduces("XML");
 		listener.configure();
 
-		assertEquals("XML", listener.getProduces());
+		assertEquals(MediaTypes.XML, listener.getProducesEnum());
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class ApiListenerTest {
 		listener.setCharacterEncoding("utf-8");
 		listener.configure();
 
-		assertEquals("TEXT", listener.getProduces());
+		assertEquals(MediaTypes.TEXT, listener.getProducesEnum());
 		assertEquals("text/plain;charset=UTF-8", listener.getContentType());
 	}
 
@@ -76,7 +76,7 @@ public class ApiListenerTest {
 		listener.setConsumes("xml");
 		listener.configure();
 
-		assertEquals("XML", listener.getConsumes());
+		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
 	}
 
 	@Test
@@ -84,7 +84,7 @@ public class ApiListenerTest {
 		listener.setConsumes("XML");
 		listener.configure();
 
-		assertEquals("XML", listener.getConsumes());
+		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
 	}
 
 	@Test(expected=IllegalArgumentException.class)

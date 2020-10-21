@@ -71,7 +71,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
-		if(!getConsumes().equals("ANY")) {
+		if(!getConsumesEnum().equals(MediaTypes.ANY)) {
 			if(getMethod().equals("GET"))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
 			if(getMethod().equals("DELETE"))
@@ -113,9 +113,9 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public String getPhysicalDestinationName() {
 		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
-			destinationName += "; consumes: "+getConsumes();
+			destinationName += "; consumes: "+getConsumesEnum().name();
 		if(!MediaTypes.ANY.equals(produces))
-			destinationName += "; produces: "+getProduces();
+			destinationName += "; produces: "+getProducesEnum().name();
 
 		return destinationName;
 	}
@@ -182,8 +182,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.consumes = MediaTypes.valueOf(consumes);
 	}
-	public String getConsumes() {
-		return consumes.name();
+	public MediaTypes getConsumesEnum() {
+		return consumes;
 	}
 
 	@IbisDoc({"4", "the specified contentType on response", "ANY"})
@@ -196,8 +196,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.produces = MediaTypes.valueOf(produces);
 	}
-	public String getProduces() {
-		return produces.name();
+	public MediaTypes getProducesEnum() {
+		return produces;
 	}
 
 	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
@@ -281,8 +281,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		final StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
 		builder.append(" uriPattern["+getUriPattern()+"]");
-		builder.append(" produces["+getProduces()+"]");
-		builder.append(" consumes["+getConsumes()+"]");
+		builder.append(" produces["+getProducesEnum().name()+"]");
+		builder.append(" consumes["+getConsumesEnum().name()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();

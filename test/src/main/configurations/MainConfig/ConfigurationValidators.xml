@@ -67,6 +67,9 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API">
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" method="GET"/>
 		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API-POST">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST"/>
+		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
 				<exit path="EXIT" state="success" code="200"/>
