@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.ModelBuilder;
+import nl.nn.adapterframework.doc.Utils;
 
 public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER = "nl.nn.adapterframework.doc.testtarget.children.Container";
@@ -24,7 +24,7 @@ public class FrankDocModelConfigChildrenTest {
 		dictionary.setMethodNameOrder("setChildNoDoc", 20);
 		instance = new FrankDocModel();
 		instance.findOrCreateElementType(
-				ModelBuilder.getClass(CONTAINER), dictionary);
+				Utils.getClass(CONTAINER), dictionary);
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren();
 	}
 

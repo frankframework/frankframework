@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
-import nl.nn.adapterframework.doc.ModelBuilder;
+import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocModel {
@@ -40,7 +40,7 @@ public class FrankDocModel {
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
 		if(clazz.isInterface()) {
-			ModelBuilder.getSpringBeans(clazz.getName()).stream()
+			Utils.getSpringBeans(clazz.getName()).stream()
 					.map(b -> b.getClazz())
 					.map(cl -> findOrCreateFrankElement(cl, dictionary))
 					.forEach(result::addMember);
@@ -112,7 +112,7 @@ public class FrankDocModel {
 	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
-				.filter(ModelBuilder::isGetterOrSetter)
+				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());		
 		Map<String, Method> result = new LinkedHashMap<>();
@@ -223,7 +223,7 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(
 			Method[] methods, FrankElement parent, final ConfigChildDictionary dictionary) {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
-				.filter(ModelBuilder::isConfigChildSetter)
+				.filter(Utils::isConfigChildSetter)
 				.filter(m -> dictionary.getDictionaryItem(m.getName()) != null)
 				.collect(Collectors.toList());
 		List<ConfigChild> result = new ArrayList<>();

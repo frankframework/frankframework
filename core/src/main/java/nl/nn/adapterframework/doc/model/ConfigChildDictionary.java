@@ -21,6 +21,16 @@ class ConfigChildDictionary {
 
 	public static final ConfigChildDictionary EMPTY = new ConfigChildDictionary();
 
+	/**
+	 * This class is similar to {@link ConfigChild}, but it is not the same. As an example,
+	 * consider a digester rule that links setter {@code setAbc()} to a syntax 1 name {@code abc}.
+	 * This rule is represented by an instance of this class, {@code Item}. If there are
+	 * two classes {@code X} and {@code Y} with method {@code setAbc()}, then two
+	 * different instances of {@link ConfigChild} are needed. The reason is that
+	 * {@code X.setAbc()} and {@code Y.setAbc()} can have a different {@code sequenceInConfig}.
+	 * That field is obtained from an {@code IbisDoc} annotation.
+	 *
+	 */
 	class Item {
 		private @Getter String methodName;
 		private @Getter boolean mandatory;

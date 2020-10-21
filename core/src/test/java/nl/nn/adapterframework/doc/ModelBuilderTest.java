@@ -14,7 +14,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void testGetSpringBeans() {
-		List<SpringBean> actual = ModelBuilder.getSpringBeans(SIMPLE + ".IListener");
+		List<SpringBean> actual = Utils.getSpringBeans(SIMPLE + ".IListener");
 		actual.sort((b1, b2) -> b1.compareTo(b2));
 		assertEquals(2, actual.size());
 		for(SpringBean a: actual) {

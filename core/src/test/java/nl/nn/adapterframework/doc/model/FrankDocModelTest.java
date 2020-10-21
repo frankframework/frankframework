@@ -16,7 +16,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.ModelBuilder;
+import nl.nn.adapterframework.doc.Utils;
 
 public class FrankDocModelTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
@@ -38,18 +38,18 @@ public class FrankDocModelTest {
 	@Test
 	public void whenInterfaceTypeAndSingletonTypeThenCorrectElements() {
 		ElementType listenerType = instance.findOrCreateElementType(
-				ModelBuilder.getClass(LISTENER), ConfigChildDictionary.EMPTY);
+				Utils.getClass(LISTENER), ConfigChildDictionary.EMPTY);
 		ElementType childType = instance.findOrCreateElementType(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		checkModelTypes(listenerType, childType);
 	}
 
 	@Test
 	public void whenSingletonTypeAndInterfaceTypeThenCorrectElements() {
 		ElementType childType = instance.findOrCreateElementType(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		ElementType listenerType = instance.findOrCreateElementType(
-				ModelBuilder.getClass(LISTENER), ConfigChildDictionary.EMPTY);
+				Utils.getClass(LISTENER), ConfigChildDictionary.EMPTY);
 		checkModelTypes(listenerType, childType);		
 	}
 
@@ -76,27 +76,27 @@ public class FrankDocModelTest {
 	@Test
 	public void whenTypeRequestedTwiceThenSameInstanceReturned() {
 		ElementType first = instance.findOrCreateElementType(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		ElementType second = instance.findOrCreateElementType(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		assertSame(first, second);
 	}
 
 	@Test
 	public void whenChildElementAddedBeforeParentThenCorrectModel() {
 		FrankElement child = instance.findOrCreateFrankElement(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		FrankElement parent = instance.findOrCreateFrankElement(
-				ModelBuilder.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
 	@Test
 	public void whenParentElementAddedBeforeChildThenCorrectModel() {
 		FrankElement parent = instance.findOrCreateFrankElement(
-				ModelBuilder.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
 		FrankElement child = instance.findOrCreateFrankElement(
-				ModelBuilder.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
@@ -149,7 +149,7 @@ public class FrankDocModelTest {
 		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
 		final List<FrankAttribute> attributes = 
 				instance.createAttributes(
-						ModelBuilder.getClass(className).getDeclaredMethods(), dummy, ConfigChildDictionary.EMPTY);
+						Utils.getClass(className).getDeclaredMethods(), dummy, ConfigChildDictionary.EMPTY);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
@@ -210,7 +210,7 @@ public class FrankDocModelTest {
 
 	Map<String, String> getAttributeNameMap(String prefix) {
 		Map<String, Method> attributeToMethodMap = FrankDocModel.getAttributeToMethodMap(
-				ModelBuilder.getClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget")
+				Utils.getClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget")
 					.getDeclaredMethods(),
 				prefix);
 		Map<String, String> result = new HashMap<>();

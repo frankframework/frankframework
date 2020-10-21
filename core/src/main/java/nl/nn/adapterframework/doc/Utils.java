@@ -5,15 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Getter;
-import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.objects.SpringBean;
 
-public class ModelBuilder {
-	private @Getter FrankDocModel model;
-
-	public ModelBuilder() {
-		model = new FrankDocModel();
+public final class Utils {
+	private Utils() {
 	}
 
 	/**
@@ -42,7 +37,7 @@ public class ModelBuilder {
 		return InfoBuilderSource.getClass(name);
 	}
 
-	public static boolean isGetterOrSetter(Method method) {
+	public static boolean isAttributeGetterOrSetter(Method method) {
 		return InfoBuilderSource.isGetterOrSetter(method);
 	}
 
