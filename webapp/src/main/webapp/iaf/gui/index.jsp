@@ -48,9 +48,6 @@
 
 <div ui-view style="display:none;" class="main"></div>
 
-<div general-data-protection-regulation></div>
-
-
 <script src="js/jquery/jquery-2.1.1.min.js"></script>
 <script src="js/plugins/jquery-ui/jquery-ui.js"></script>
 <script src="js/bootstrap/bootstrap.min.js"></script>
@@ -58,7 +55,6 @@
 <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
 <script data-pace-options='{ "ajax": false }' src="js/plugins/pace/pace.min.js"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-111373008-1"></script>
 
 <script src="js/main.js"></script>
 

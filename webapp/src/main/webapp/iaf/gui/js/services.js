@@ -453,7 +453,7 @@ angular.module('iaf.beheerconsole')
 	}])
 	.service('GDPR', ['$cookies', '$rootScope', 'Debug', function($cookies, $rootScope, Debug) {
 		this.settings = null;
-		this.defaults = {necessary: true, functional: false, analytical: false, personalization: false};
+		this.defaults = { necessary: true, functional: true, personalization: true };
 		var date = new Date();
 		date.setFullYear(date.getFullYear() +10);
 
@@ -490,95 +490,15 @@ angular.module('iaf.beheerconsole')
 		this.allowFunctional = function() {
 			return this.getSettings().functional;
 		};
-		this.allowAnalytical = function() {
-			return this.getSettings().analytical;
-		};
 		this.allowPersonalization = function() {
 			return this.getSettings().personalization;
 		};
-		this.setSettings = function(settings){
+		this.setSettings = function(settings) {
 			this.settings = settings;
 			$cookies.putObject(this.cookieName, settings, this.options);
 
 			$rootScope.$broadcast('GDPR');
 		};
-	}])
-	.service('gTag', ['Debug', 'GDPR', '$rootScope', function(Debug, GDPR, $rootScope) {
-		window.dataLayer = window.dataLayer || [];
-		this.trackingId = "";
-		this.configured = false;
-
-		//Push something to the dataLayer
-		this.add = function() {
-			if(this.configured)
-				dataLayer.push(arguments);
-		};
-		//Set the gTag trackingId
-		this.setTrackingId = function(id) {
-			this.trackingId = id;
-			this.configure();
-		};
-		//Setup the gTag service
-		this.configure = function() {
-			if(!GDPR.allowAnalytical()) {
-				Debug.log("unable to configure gTag due to GDPR settings");
-				window.dataLayer = [];
-				this.configured = false;
-				return ;
-			}
-
-			if(this.configured == false) {
-				if(this.trackingId) {
-					this.add('js', new Date());
-					this.config({
-						'send_page_view': false,
-						'anonymize_ip': true,
-						'custom_map': {
-							'dimension1': 'application.version'
-						}
-					});
-					this.configured = true;
-					Debug.info("succesfully configured gTag with trackingId["+this.trackingId+"]");
-				}
-				else
-					Debug.warn("unable to configure gTag, no trackingId specified");
-			}
-			else
-				Debug.warn("can only configure gTag Analytics once");
-		};
-
-		//Not to confuse with configure, this method allows you to push gTag config events
-		this.config = function(object) {
-			if(typeof object == "object")
-				this.add('config', this.trackingId, object);
-		};
-		//Push events to the dataLayer
-		this.event = function(name, label, value, non_interaction) {
-			this.add('event', name, {
-				'event_label': label,
-				'value': (value == undefined || value < 0) ? 1 : value,
-				'non_interaction': (non_interaction == undefined || non_interaction == false) ? false : true
-			});
-		};
-
-		var gTag = this;
-		$rootScope.$on('GDPR', function() {
-			gTag.configure();
-		});
-
-		$rootScope.$on("$stateChangeStart", function(_, state) {
-			Debug.log("triggered state change to ["+state.name+"]");
-			var url = state.url;
-			if(url && url.indexOf("?") > 0)
-				url = url.substring(0, url.indexOf("?"));
-
-			if(state.data && state.data.pageTitle) {
-				gTag.config({
-					'page_path': url,
-					'page_title': state.data.pageTitle
-				});
-			}
-		});
 	}])
 	.service('Debug', function() {
 		var level = 0; //ERROR
