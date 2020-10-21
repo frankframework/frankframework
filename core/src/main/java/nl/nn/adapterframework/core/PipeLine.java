@@ -161,7 +161,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
-	@IbisDoc("60")
+	@IbisDoc("80")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -758,7 +758,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return transactionAttribute;
 	}
 
-	@IbisDoc("90")
+	@IbisDoc("60")
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -766,7 +766,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return locker;
 	}
 
-	@IbisDoc("80")
+	@IbisDoc("10")
 	public void setInputValidator(IPipe inputValidator) {
 		this.inputValidator = inputValidator;
 	}
@@ -774,7 +774,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return inputValidator;
 	}
 
-	@IbisDoc("30")
+	@IbisDoc("20")
 	public void setOutputValidator(IPipe outputValidator) {
 		this.outputValidator = outputValidator;
 	}
@@ -782,7 +782,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return outputValidator;
 	}
 
-	@IbisDoc("70")
+	@IbisDoc("30")
 	public void setInputWrapper(IPipe inputWrapper) {
 		this.inputWrapper = inputWrapper;
 	}
@@ -847,7 +847,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	}
 
 	@Override
-	@IbisDoc("100")
+	@IbisDoc("70")
 	public void registerCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
