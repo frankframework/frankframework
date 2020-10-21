@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug
+labels: Bug
 assignees: ''
 
 ---
@@ -17,7 +17,7 @@ Please state your name. If we don't know who is reporting, a solution of the iss
 Use following Tags to categorize your bug report
  - Frank Console
  - Frank Framework
-* - Ladybug (debugging tool) --> also is a separate project with own issues*
+ - Ladybug (debugging tool) --> This project has it's own repository. Please report issues in [ibissource/ibis-ladybug](https://github.com/ibissource/ibis-ladybug/issues)
  - Larva (unit test tool)
  - Performance
 
