@@ -215,7 +215,6 @@ public class OpenApiTestBase extends Mockito {
 				case 500:
 					ple.setCode("500");
 					ple.setState("error");
-					ple.setEmpty("true");
 				default:
 					break;
 				}
