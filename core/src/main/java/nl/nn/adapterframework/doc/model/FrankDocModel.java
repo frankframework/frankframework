@@ -35,30 +35,18 @@ public class FrankDocModel {
 		if(allTypes.containsKey(clazz.getName())) {
 			return allTypes.get(clazz.getName());
 		}
-		ElementType result = null;
-		if(clazz.isInterface()) {
-			result = createElementTypeFromInterface(clazz, dictionary);
-		} else {
-			result = createSingletonElementType(clazz, dictionary);
-		}
+		final ElementType result = new ElementType(clazz);
+		// If a containing FrankElement contains the type being created, we do not
+		// want recursion.
 		allTypes.put(result.getFullName(), result);
-		return result;
-	}
-
-	private ElementType createElementTypeFromInterface(Class<?> clazz, ConfigChildDictionary dictionary) {
-		ElementType result = new ElementType(clazz);
-		List<Class<?>> memberClasses = ModelBuilder.getSpringBeans(clazz.getName()).stream()
-				.map(b -> b.getClazz()).collect(Collectors.toList());
-		for(Class<?> memberClass: memberClasses) {
-			result.addMember(findOrCreateFrankElement(memberClass, dictionary));
+		if(clazz.isInterface()) {
+			ModelBuilder.getSpringBeans(clazz.getName()).stream()
+					.map(b -> b.getClazz())
+					.map(cl -> findOrCreateFrankElement(cl, dictionary))
+					.forEach(result::addMember);
+		} else {
+			result.addMember(findOrCreateFrankElement(clazz, dictionary));
 		}
-		return result;
-	}
-
-	private ElementType createSingletonElementType(Class<?> clazz, ConfigChildDictionary dictionary) {
-		ElementType result = new ElementType(clazz);
-		FrankElement member = findOrCreateFrankElement(clazz, dictionary);
-		result.addMember(member);
 		return result;
 	}
 
@@ -72,11 +60,18 @@ public class FrankDocModel {
 		}
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass, dictionary);
-		FrankElement current = new FrankElement(clazz, parent);
-		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, dictionary));
-		current.setConfigChildren(createConfigChildren(clazz.getMethods(), current, dictionary));
-		allElements.put(current.getFullName(), current);
-		return current;
+		if(allElements.containsKey(clazz.getName())) {
+			// This can happen when element C inherits from element P, while P can have
+			// C as a configuration child.
+			return allElements.get(clazz.getName());
+		}
+		else {
+			FrankElement current = new FrankElement(clazz, parent);
+			current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, dictionary));
+			current.setConfigChildren(createConfigChildren(clazz.getMethods(), current, dictionary));
+			allElements.put(current.getFullName(), current);
+			return current;
+		}
 	}
 
 	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner, ConfigChildDictionary dictionary) {
