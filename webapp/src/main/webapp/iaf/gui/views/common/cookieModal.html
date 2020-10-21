@@ -24,11 +24,6 @@
 				<li>Columns you have hidden on the ErrorStorage</li>
 			</ul>
 		</p>
-		<h3>Analytical Cookies</h3>
-		<p>
-			This site uses Google Analytics to track the framework version, how long you spend on the console and the pages that you use.
-			If you do not agree to use Analytical Cookies, no data will be shared with Google Analytics.
-		</p>
 	</div>
 	<div class="modal-footer">
 		<div class="actions">
@@ -45,13 +40,9 @@
 					<input type="checkbox" icheck ng-model="cookies.personalization" id="personalization"/> 
 					<label for="personalization">Personalization</label>
 				</div>
-				<div class="selection">
-					<input type="checkbox" icheck ng-model="cookies.analytical" id="analytical"/> 
-					<label for="analytical">Analytical</label>
-				</div>
 			</div>
 			<button title="OK" class="btn btn-primary" type="button" ng-click="savePreferences(cookies)">Save Preferences</button>
+			<button type="button" class="btn btn-white" ng-click="close()">Close</button>
 		</div>
-<!-- 		<button type="button" class="btn btn-white" ng-click="close()">Close</button> -->
 	</div>
 </div>
