@@ -31,33 +31,33 @@ public class FrankDocModel {
 		groups = new ArrayList<>();
 	}
 
-	public ElementType findOrCreateElementType(Class<?> clazz) {
+	public ElementType findOrCreateElementType(Class<?> clazz, ConfigChildDictionary dictionary) {
 		if(allTypes.containsKey(clazz.getName())) {
 			return allTypes.get(clazz.getName());
 		}
 		ElementType result = null;
 		if(clazz.isInterface()) {
-			result = createElementTypeFromInterface(clazz);
+			result = createElementTypeFromInterface(clazz, dictionary);
 		} else {
-			result = createSingletonElementType(clazz);
+			result = createSingletonElementType(clazz, dictionary);
 		}
 		allTypes.put(result.getFullName(), result);
 		return result;
 	}
 
-	private ElementType createElementTypeFromInterface(Class<?> clazz) {
+	private ElementType createElementTypeFromInterface(Class<?> clazz, ConfigChildDictionary dictionary) {
 		ElementType result = new ElementType(clazz);
 		List<Class<?>> memberClasses = ModelBuilder.getSpringBeans(clazz.getName()).stream()
 				.map(b -> b.getClazz()).collect(Collectors.toList());
 		for(Class<?> memberClass: memberClasses) {
-			result.addMember(findOrCreateFrankElement(memberClass));
+			result.addMember(findOrCreateFrankElement(memberClass, dictionary));
 		}
 		return result;
 	}
 
-	private ElementType createSingletonElementType(Class<?> clazz) {
+	private ElementType createSingletonElementType(Class<?> clazz, ConfigChildDictionary dictionary) {
 		ElementType result = new ElementType(clazz);
-		FrankElement member = findOrCreateFrankElement(clazz);
+		FrankElement member = findOrCreateFrankElement(clazz, dictionary);
 		result.addMember(member);
 		return result;
 	}
@@ -66,19 +66,20 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	public FrankElement findOrCreateFrankElement(Class<?> clazz) {
+	public FrankElement findOrCreateFrankElement(Class<?> clazz, ConfigChildDictionary dictionary) {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
 		Class<?> superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
+		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass, dictionary);
 		FrankElement current = new FrankElement(clazz, parent);
-		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
+		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, dictionary));
+		current.setConfigChildren(createConfigChildren(clazz.getMethods(), current, dictionary));
 		allElements.put(current.getFullName(), current);
 		return current;
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
+	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner, ConfigChildDictionary dictionary) {
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
@@ -89,7 +90,7 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-			documentAttribute(attribute, method, attributeOwner);
+			documentAttribute(attribute, method, attributeOwner, dictionary);
 			result.add(attribute);
 		}
 		return result;
@@ -137,14 +138,16 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) {
+	private void documentAttribute(
+			FrankAttribute attribute, Method method, FrankElement attributeOwner, ConfigChildDictionary dictionary) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
 			if(ibisDoc != null) {
-				attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
+				attribute.setDescribingElement(findOrCreateFrankElement(
+						parsed.getReferredMethod().getDeclaringClass(), dictionary));
 				attribute.parseIbisDocAnnotation(ibisDoc);
 				if(parsed.hasOrder) {
 					attribute.setOrder(parsed.getOrder());
@@ -220,5 +223,44 @@ public class FrankDocModel {
 			log.warn("Super class [" + className + "] was not found!");
 			return null;
 		}
+	}
+
+	private List<ConfigChild> createConfigChildren(
+			Method[] methods, FrankElement parent, final ConfigChildDictionary dictionary) {
+		List<Method> configChildSetters = Arrays.asList(methods).stream()
+				.filter(ModelBuilder::isConfigChildSetter)
+				.filter(m -> dictionary.getDictionaryItem(m.getName()) != null)
+				.collect(Collectors.toList());
+		List<ConfigChild> result = new ArrayList<>();
+		for(Method m: configChildSetters) {
+			ConfigChild configChild = new ConfigChild(parent);
+			ConfigChildDictionary.Item dictItem = dictionary.getDictionaryItem(m.getName());
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
+			Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
+			if(optionalOrder != null) {
+				configChild.setSequenceInConfig(optionalOrder);
+			} else {
+				configChild.setSequenceInConfig(dictItem.getDefaultOrder());
+			}
+			Class<?> elementClass = m.getParameterTypes()[0];
+			configChild.setElementType(findOrCreateElementType(elementClass, dictionary));
+			configChild.setAllowMultiple(dictItem.isAllowMultiple());
+			configChild.setMandatory(dictItem.isMandatory());
+			configChild.setSyntax1Name(dictItem.getSyntax1Name());
+			result.add(configChild);
+		}
+		return result;
+	}
+
+	private static Integer parseIbisDocAnnotation(IbisDoc ibisDoc) {
+		Integer result = null;
+		if((ibisDoc != null) && (ibisDoc.value().length == 1)) {
+			try {
+				result = Integer.valueOf(ibisDoc.value()[0]);
+			} catch(Exception e) {
+				log.warn(String.format("@IbisDoc for config children has a non-integer order [%s], ignored", ibisDoc.value()[0]));
+			}
+		}
+		return result;
 	}
 }

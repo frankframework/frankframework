@@ -45,4 +45,8 @@ public class ModelBuilder {
 	public static boolean isGetterOrSetter(Method method) {
 		return InfoBuilderSource.isGetterOrSetter(method);
 	}
+
+	public static boolean isConfigChildSetter(Method method) {
+		return InfoBuilderSource.isConfigChildSetter(method);
+	}
 }

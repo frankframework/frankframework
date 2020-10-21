@@ -410,4 +410,12 @@ class InfoBuilderSource {
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
 	}
+
+	public static boolean isConfigChildSetter(Method method) {
+		return (method.getParameterTypes().length == 1)
+				&& (! method.getParameterTypes()[0].isPrimitive())
+				&& (! JAVA_BOXED.contains(method.getParameterTypes()[0].getName()))
+				&& (method.getReturnType().isPrimitive())
+				&& (method.getReturnType().getName().equals("void"));
+	}
 }

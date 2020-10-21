@@ -10,6 +10,7 @@ public class FrankElement {
 	private final @Getter String simpleName;
 	private @Getter FrankElement parent;
 	private @Getter @Setter List<FrankAttribute> attributes;
+	private @Getter @Setter List<ConfigChild> configChildren;
 
 	FrankElement(Class<?> clazz, FrankElement parent) {
 		this(clazz.getName(), clazz.getSimpleName());

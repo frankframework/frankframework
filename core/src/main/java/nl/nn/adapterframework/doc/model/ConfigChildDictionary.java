@@ -19,11 +19,14 @@ import nl.nn.adapterframework.util.XmlUtils;
 class ConfigChildDictionary {
 	private static Logger log = LogUtil.getLogger(ConfigChildDictionary.class);
 
+	public static final ConfigChildDictionary EMPTY = new ConfigChildDictionary();
+
 	class Item {
 		private @Getter String methodName;
 		private @Getter boolean mandatory;
 		private @Getter boolean allowMultiple;
 		private @Getter String syntax1Name;
+		private @Getter Integer defaultOrder;
 
 		Item(String methodName, String syntax1Name, String path) {
 			this.methodName = methodName;
@@ -99,7 +102,21 @@ class ConfigChildDictionary {
 		return null;
 	}
 
+	void setMethodNameOrder(String methodName, int order) {
+		Item item = getDictionaryItem(methodName);
+		if(item == null) {
+			throw new IllegalArgumentException(String.format(
+					"Cannot set default order for method [%s] because it is not in the config child dictionary",
+					methodName));
+		}
+		item.defaultOrder = order;
+	}
+
 	int size() {
 		return dictionary.size();
+	}
+
+	private ConfigChildDictionary() {
+		dictionary = new HashMap<>();
 	}
 }
