@@ -403,7 +403,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	/**
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link nl.nn.adapterframework.configuration.ClassLoaderManager ClassLoaderManager}.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
 	 */
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
