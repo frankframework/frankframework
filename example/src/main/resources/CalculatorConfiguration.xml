@@ -1,0 +1,24 @@
+<module>
+	<adapter name="Calculator" active="${HelloWorld.active}">
+		<receiver
+			name="HelloWorld"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="HelloWorld"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<pipeline firstPipe="HelloWorld">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe
+				name="HelloWorld"
+				className="nl.nn.adapterframework.pipes.CalculatorPipe"
+				>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

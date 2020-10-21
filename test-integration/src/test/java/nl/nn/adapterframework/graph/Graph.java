@@ -79,7 +79,7 @@ public class Graph {
         // Sort results by createdDateTime, get newest first
 //        options.add(new QueryOption("orderby", "createdDateTime DESC"));
 
-        // GET /me/events
+        // GET /me/messages
         IMailFolderCollectionPage foldersPage = graphClient
             .me()
             .mailFolders()

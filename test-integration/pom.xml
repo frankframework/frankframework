@@ -1,14 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.ibissource</groupId>
-    <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.6-SNAPSHOT</version>
-  </parent>
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>7.6-SNAPSHOT</version>
+	</parent>
 
-  <artifactId>ibis-adapterframework-test-integration</artifactId>
-  <name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
+	<artifactId>ibis-adapterframework-test-integration</artifactId>
+	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
 
 	<dependencies>
 		<dependency>
@@ -28,7 +30,28 @@
 		</dependency>
 
 		<dependency>
-		<groupId>org.hamcrest</groupId>
+			<groupId>com.microsoft.graph</groupId>
+			<artifactId>microsoft-graph</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>msal4j</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.10.0.pr3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
 			<version>1.3</version>
 		</dependency>
@@ -40,7 +63,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version> 
+			<version>4.12</version>
 		</dependency>
 	</dependencies>
 

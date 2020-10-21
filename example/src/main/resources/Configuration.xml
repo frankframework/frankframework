@@ -2,6 +2,7 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
+	<!ENTITY Calculator SYSTEM "CalculatorConfiguration.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -11,4 +12,5 @@
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;
+	&Calculator;
 </configuration>
