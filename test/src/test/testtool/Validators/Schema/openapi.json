@@ -9,6 +9,15 @@
         "/soapvalidator/item":{
             "get":{
                 "operationId":"SoapValidator",
+                "requestBody":{
+                    "content":{
+                        "*/*":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Envelope"
+                            }
+                        }
+                    }
+                },
                 "responses":{
                     "200":{
                         "description":"OK",

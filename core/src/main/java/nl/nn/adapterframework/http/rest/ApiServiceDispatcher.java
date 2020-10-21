@@ -180,7 +180,12 @@ public class ApiServiceDispatcher {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
 					methodBuilder.add("operationId", adapter.getName());
-
+					PipeLine pipeline = adapter.getPipeLine();
+					Json2XmlValidator validator = getJsonValidator(pipeline);
+					if(validator != null && StringUtils.isNotEmpty(validator.getRoot())) {
+						MediaTypes consumes = MediaTypes.valueOf(listener.getConsumes());
+						methodBuilder.add("requestBody", mapRequest(consumes, validator.getRoot()));
+					}
 					//ContentType may have more parameters such as charset and formdata-boundry
 					MediaTypes produces = MediaTypes.valueOf(listener.getProduces());
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
@@ -194,6 +199,13 @@ public class ApiServiceDispatcher {
 		root.add("components", Json.createObjectBuilder().add("schemas", schemas));
 
 		return root.build();
+	}
+
+	private JsonObjectBuilder mapRequest(MediaTypes consumes, String requestRoot) {
+		JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
+		JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+requestRoot));
+		requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
+		return requestBodyContent;
 	}
 
 	public static Json2XmlValidator getJsonValidator(PipeLine pipeline) {
