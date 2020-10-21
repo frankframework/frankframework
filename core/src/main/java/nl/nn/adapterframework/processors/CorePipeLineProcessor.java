@@ -211,7 +211,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						if ((outputValidator !=null)) {
+						if ((outputValidator !=null) && !plExit.getEmptyResult()) {
 							if (outputValidationFailed) {
 								log.debug("validating error message after PipeLineResult validation failed");
 							} else {
