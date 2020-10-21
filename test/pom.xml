@@ -18,6 +18,7 @@
 	</properties>
 
 	<dependencies>
+		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
@@ -27,15 +28,6 @@
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
-
-<!-- 	Only runs on Java7 or higher!
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-cmis</artifactId>
-			<version>${iaf.version}</version>
-		</dependency>
--->
-
 	</dependencies>
 
 	<build>
