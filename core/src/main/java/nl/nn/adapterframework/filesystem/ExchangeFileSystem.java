@@ -87,8 +87,13 @@ import nl.nn.adapterframework.util.StreamUtil;
  *  <li>configure the accessToken directly, or as the password of a JAAS entry referred to by authAlias</li>
  * </ol>
  * 
+ * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &#x3;
+ * To work around these problems, a special streaming XMLInputFactory is configured in 
+ * METAINF/services/javax.xml.stream.XMLInputFactory as nl.nn.adapterframework.xml.StaxParserFactory
  * 
- * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh (as {@link ExchangeMailListener})
+ * @author Gerrit van Brakel
+ *
  */
 public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	protected Logger log = LogUtil.getLogger(this);
