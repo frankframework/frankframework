@@ -416,8 +416,8 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 
 		this.qop = qop;
 	}
-	public String getSncQop() {
-		return qop+"";
+	public int getSncQop() {
+		return qop;
 	}
 
 	@Override
