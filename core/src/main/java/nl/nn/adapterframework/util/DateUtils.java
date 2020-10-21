@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,32 +34,32 @@ public class DateUtils {
 	
 
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
-    public static final String shortIsoFormat         = "yyyy-MM-dd";
+	public static final String shortIsoFormat         = "yyyy-MM-dd";
 
 	/**
 	 * Format for "yyyy-MM-dd HH:mm:ss.SSS"
 	 */
 	public static final String FORMAT_FULL_GENERIC      = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    /**
-     * Format for "######.###"
-     */
-    public final static String FORMAT_MILLISECONDS	   ="######.###";
+	/**
+	 * Format for "######.###"
+	 */
+	public final static String FORMAT_MILLISECONDS	   ="######.###";
 
-    /**
-     * Format for "dd-MM-yy HH:mm"
-     */
+	/**
+	 * Format for "dd-MM-yy HH:mm"
+	 */
 	public final static String FORMAT_GENERICDATETIME  ="yyyy-MM-dd HH:mm:ss";
 
 
-    /**
-     * Format for "dd-MM-yy"
-     */
+	/**
+	 * Format for "dd-MM-yy"
+	 */
 	public final static String FORMAT_DATE             ="dd-MM-yy";
 
-    /**
-     * Format for "HH:mm:ss"
-     */
+	/**
+	 * Format for "HH:mm:ss"
+	 */
 	public final static String FORMAT_TIME_HMS         ="HH:mm:ss";	
 
 	
@@ -81,33 +81,37 @@ public class DateUtils {
 
 
 
-    /**
-     * Method getIsoTimeStamp.
-     * 
-     * Get current date-time timestamp in ISO 8601 format.
-     * @return String
-     */
-    public static String getIsoTimeStamp() {
-        return format(new Date(), fullIsoFormat);
-    }
-    /**
-     * Parses a string to a Date, according to the pattern
-     */
-    static public Date parseToDate(String s, String dateFormat) {
-        SimpleDateFormat df = new SimpleDateFormat(dateFormat);
-        ParsePosition p = new ParsePosition(0);
-        Date result = df.parse(s, p);
-        return result;
-    }
+	/**
+	 * Get current date-time timestamp in ISO 8601 format.
+	 */
+	public static String getIsoTimeStamp() {
+		return format(new Date(), fullIsoFormat);
+	}
+	/**
+	 * Get current date-time timestamp in generic format.
+	 */
+	public static String getTimeStamp() {
+		return format(new Date(), FORMAT_GENERICDATETIME);
+	}
 
-    /**
-     * Parses a string to a Date, according to the XML Schema dateTime data type
-     */
-    static public Date parseXmlDateTime(String s) {
-    	GDate gdate = new org.apache.xmlbeans.GDate(s);
-        Date result = gdate.getDate();
+	/**
+	 * Parses a string to a Date, according to the pattern
+	 */
+	static public Date parseToDate(String s, String dateFormat) {
+		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
+		ParsePosition p = new ParsePosition(0);
+		Date result = df.parse(s, p);
 		return result;
-    }
+	}
+
+	/**
+	 * Parses a string to a Date, according to the XML Schema dateTime data type
+	 */
+	static public Date parseXmlDateTime(String s) {
+		GDate gdate = new org.apache.xmlbeans.GDate(s);
+		Date result = gdate.getDate();
+		return result;
+	}
 
 	/**
 	 * Parses a string to a Date, according to many possible conventions

@@ -44,7 +44,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	public void configure() throws ConfigurationException;
 
 	/**
-	 * Store the message, returns new messageId.
+	 * Store the message, returns storageKey.
 	 * 
 	 * The messageId should be unique.
 	 */
@@ -53,7 +53,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	public S getMessage(String messageId) throws ListenerException;
+	public S getMessage(String storageKey) throws ListenerException;
 
 
 	/**

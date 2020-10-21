@@ -414,12 +414,14 @@ public class CmisUtils {
 
 	private static XmlBuilder typeMutability2xml(TypeMutability typeMutability) {
 		XmlBuilder xmlBuilder = new XmlBuilder("typeMutability");
-		if(typeMutability.canCreate() != null)
-			xmlBuilder.addAttribute("create", typeMutability.canCreate());
-		if(typeMutability.canDelete() != null)
-			xmlBuilder.addAttribute("delete", typeMutability.canDelete());
-		if(typeMutability.canUpdate() != null)
-			xmlBuilder.addAttribute("update", typeMutability.canUpdate());
+		if(typeMutability != null) {
+			if(typeMutability.canCreate() != null)
+				xmlBuilder.addAttribute("create", typeMutability.canCreate());
+			if(typeMutability.canDelete() != null)
+				xmlBuilder.addAttribute("delete", typeMutability.canDelete());
+			if(typeMutability.canUpdate() != null)
+				xmlBuilder.addAttribute("update", typeMutability.canUpdate());
+		}
 		return xmlBuilder;
 	}
 

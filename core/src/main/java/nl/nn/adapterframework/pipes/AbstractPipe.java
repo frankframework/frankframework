@@ -21,19 +21,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -43,6 +44,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -97,7 +99,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
+public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing, IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -169,6 +171,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (pipeForwards.isEmpty()) {
+			//TODO pipe will follow the next forward no need to show warning
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
@@ -333,8 +336,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The <code>toString()</code> method retrieves its value
 	 * by reflection, so overriding this method is mostly not
-	 * usefull.
-	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 * useful.
+	 * @see ToStringBuilder#reflectionToString
 	 *
 	 **/
 	@Override
@@ -402,6 +405,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
 	 * @return returns the ClassLoader created by the {@link nl.nn.adapterframework.configuration.ClassLoaderManager ClassLoaderManager}.
 	 */
+	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return configurationClassLoader;
 	}

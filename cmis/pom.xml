@@ -37,6 +37,14 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version> 

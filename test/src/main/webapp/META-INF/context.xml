@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
+	<!-- 
+		Support for XA using BTM requires JDBC datasources to be configured via
+		factory="org.apache.naming.factory.BeanFactory" and a proper XADataSource classname.
+		Configuration via driverClassName only works for the standard transaction manager.
+	-->
+
+
 	<Resource
 		name="jdbc/ibis4test-h2"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -22,26 +29,21 @@
 
 	<Resource
 		name="jdbc/ibis4test-oracle-docker"
-		type="javax.sql.DataSource"
-		driverClassName="oracle.jdbc.driver.OracleDriver"
-		url="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
-		username="testiaf_user"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="oracle.jdbc.xa.client.OracleXADataSource"
+		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		user="testiaf_user"
 		password="testiaf_user00"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
 	/>
 
 	<Resource 
 		name="jdbc/ibis4test-mssql" 
-		type="javax.sql.DataSource"
-		driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-		url="jdbc:sqlserver://localhost:1433;database=testiaf"
-		username="testiaf_user"
+		auth="Container" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		user="testiaf_user"
 		password="testiaf_user00"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
 		sendStringParametersAsUnicode="false"
 		sendTimeAsDatetime="true"
 		selectMethod="direct"
@@ -59,14 +61,11 @@
 
 	<Resource
 		name="jdbc/ibis4test-mysql"
-		type="javax.sql.DataSource"
-		driverClassName="com.mysql.cj.jdbc.Driver"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
 		url="jdbc:mysql://localhost:3307/testiaf"
-		username="testiaf_user"
+		user="testiaf_user"
 		password="testiaf_user00"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
@@ -78,14 +77,11 @@
 	<!-- Use MySQL driver for MariaDB for proper XA support. -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
-		type="javax.sql.DataSource"
-		driverClassName="com.mysql.cj.jdbc.Driver"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
 		url="jdbc:mysql://localhost:3306/testiaf"
-		username="testiaf_user"
+		user="testiaf_user"
 		password="testiaf_user00"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
