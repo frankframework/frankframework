@@ -79,7 +79,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		actor.configure(fileSystem, getParameterList(), this);
+		try { 
+			actor.configure(fileSystem, getParameterList(), this);
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(null),e);
+		}
 	}
 	
 	@Override
