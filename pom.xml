@@ -439,10 +439,10 @@
       </repositories>
     </profile>
     <profile>
-      <id>default-modules</id>
+      <id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
       <activation>
         <property>
-          <name>!default-modules</name> <!-- Defaults to ON, when set it will turn off -->
+          <name>!no-default-modules</name>
         </property>
       </activation>
       <modules>

@@ -58,6 +58,9 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 		}
 	}
 
+	/**
+	 * TODO: Change this to a OutputStreamBuffer which, while being written do, directly changes the headers and bodypart boundaries.
+	 */
 	private class MtomOutputStream extends FilterOutputStream {
 		private ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
 

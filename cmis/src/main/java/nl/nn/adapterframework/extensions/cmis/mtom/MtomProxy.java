@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.DependsOn;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
+@Deprecated // remove this class, use default webservices endpoints in combination with the CmisFilter
 public class MtomProxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
 
 	private final Logger log = LogUtil.getLogger(this);
@@ -69,6 +71,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	public void setServletManager(ServletManager servletManager) {
 		if(ACTIVE) {
 			super.setServletManager(servletManager);
+			ConfigurationWarnings.add(log, "CmisProxy has been deprecated. Please enable the MtomFilter [cmis.mtomfilter.active=true] and use default cmis endpoints instead!");
 		}
 	}
 }
