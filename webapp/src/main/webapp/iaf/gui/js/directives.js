@@ -286,58 +286,6 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', 'appConstants', '$rootScope', function($uibModal, GDPR, appConstants, $rootScope) {
-	return {
-		restrict: 'A',
-		require: 'icheck',
-		templateUrl: 'views/common/cookie.html',
-		controller: function ($scope) {
-			$scope.bottomNotification = false;
-			$scope.cookies = GDPR.defaults;
-
-			$rootScope.$on('appConstants', function() {
-				$scope.cookies = {
-						necessary: true,
-						personalization: appConstants.getBoolean("console.cookies.personalization", true),
-						analytical: appConstants.getBoolean("console.cookies.analytical", true),
-						functional: appConstants.getBoolean("console.cookies.functional", true)
-				};
-
-				$scope.bottomNotification = GDPR.showCookie();
-			});
-
-			$scope.savePreferences = function(cookies) {
-				GDPR.setSettings(cookies);
-				$scope.bottomNotification = false;
-			};
-			$scope.consentAllCookies = function() {
-				$scope.savePreferences({
-					necessary: true,
-					personalization: true,
-					analytical: true,
-					functional: true
-				});
-			};
-
-			$scope.openModal = function() {
-				$scope.bottomNotification = false;
-
-				$uibModal.open({
-					templateUrl: 'views/common/cookieModal.html',
-					size: 'lg',
-					backdrop: 'static',
-					controller: function($uibModalInstance) {
-						$scope.savePreferences = function(cookies) {
-							GDPR.setSettings(cookies);
-							$uibModalInstance.close();
-						};
-					}
-				});
-			};
-		}
-	};
-}])
-
 .directive('icheck', ['$timeout', '$parse', function($timeout, $parse) {
 	return {
 		restrict: 'A',

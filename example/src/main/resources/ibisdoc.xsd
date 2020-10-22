@@ -15406,7 +15406,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
@@ -15681,7 +15681,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
@@ -24865,7 +24865,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
@@ -25188,7 +25188,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
@@ -31597,7 +31597,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
@@ -32064,7 +32064,7 @@
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyUserName" type="xs:string">
+    <xs:attribute name="proxyUsername" type="xs:string">
       <xs:annotation>
         <xs:documentation>(default:  )</xs:documentation>
       </xs:annotation>

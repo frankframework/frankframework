@@ -42,6 +42,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IConfigurable;
@@ -68,7 +69,9 @@ import nl.nn.adapterframework.util.DateUtils;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDestination, IXAEnabled {
+
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String MODE_PERSISTENT     = "PERSISTENT";
 	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";

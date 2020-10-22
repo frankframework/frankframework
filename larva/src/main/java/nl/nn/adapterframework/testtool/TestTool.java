@@ -1412,7 +1412,7 @@ public class TestTool {
 					if (preDelete != null) {
 						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setDatasourceName(datasourceName);
 						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
@@ -1443,7 +1443,7 @@ public class TestTool {
 					if (prePostQuery != null) {
 						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						prePostFixedQuerySender.setDatasourceName(datasourceName);
 						//prePostFixedQuerySender.setUsername(username);
 						//prePostFixedQuerySender.setPassword(password);
 						prePostFixedQuerySender.setQueryType("select");
@@ -1488,7 +1488,7 @@ public class TestTool {
 					if (readQuery != null) {
 						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						readQueryFixedQuerySender.setDatasourceName(datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);
 						//readQueryFixedQuerySender.setPassword(password);
 						

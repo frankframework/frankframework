@@ -457,7 +457,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', 'Debug', 'gTag', function($rootScope, $state, Debug, gTag) {
+}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
 	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")
 		Debug.setLevel(3);
@@ -480,6 +480,4 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$rootScope.setLogLevel = function(level) {
 		Debug.setLevel(level);
 	};
-
-	gTag.setTrackingId("UA-111373008-1");
 }]);

@@ -75,7 +75,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		actor.configure(fileSystem, getParameterList(), this);
+		try { 
+			actor.configure(fileSystem, getParameterList(), this);
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(),e);
+		}
 	}
 	
 	@Override

@@ -289,10 +289,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	
 
 	@Override
-	public void deleteMessage(String messageId) throws ListenerException {
+	public void deleteMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				stmt.execute();
 			}
 		} catch (Exception e) {
@@ -353,14 +353,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
+	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 					}
 					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
 				}
@@ -371,14 +371,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
+	public M browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
 					return retrieveObject(rs,1);
 				}

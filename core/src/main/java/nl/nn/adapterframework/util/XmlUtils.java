@@ -1136,24 +1136,33 @@ public class XmlUtils {
 		return factory;
 	}
 
+	
+	public static String encodeChars(String string) {
+		return encodeChars(string, false);
+	}
+
 	/**
 	 * Translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
-	public static String encodeChars(String string) {
+	public static String encodeChars(String string, boolean escapeNewLines) {
 		if (string==null) {
 			return null;
 		}
 		int length = string.length();
 		char[] characters = new char[length];
 		string.getChars(0, length, characters, 0);
-		return encodeChars(characters,0,length);
+		return encodeChars(characters, 0, length, escapeNewLines);
 	}
 
 	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
 		return encodeChars(replaceNonValidXmlCharacters(string));
+	}
+
+	public static String encodeChars(char[] chars, int offset, int length) {
+		return encodeChars(chars, offset, length, false);
 	}
 
 	/**
@@ -1162,7 +1171,7 @@ public class XmlUtils {
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
-	public static String encodeChars(char[] chars, int offset, int length) {
+	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
 
 		if (length<=0) {
 			return "";
@@ -1171,7 +1180,7 @@ public class XmlUtils {
 		String escape;
 		for (int i = 0; i < length; i++) {
 			char c=chars[offset+i];
-			escape = escapeChar(c);
+			escape = escapeChar(c, escapeNewLines);
 			if (escape == null)
 				encoded.append(c);
 			else
@@ -1223,7 +1232,7 @@ public class XmlUtils {
 	   * are not changed, hence you might want to use
 	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	   **/
-	private static String escapeChar(char c) {
+	private static String escapeChar(char c, boolean escapeNewLines) {
 		switch (c) {
 			case ('<') :
 				return "&lt;";
@@ -1236,6 +1245,9 @@ public class XmlUtils {
 			case ('\'') :
 				// return "&apos;"; // apos does not work in Internet Explorer
 				return "&#39;";
+			case ('\n')  :
+				if(escapeNewLines)
+					return "&#10;";
 		}
 		return null;
 	}

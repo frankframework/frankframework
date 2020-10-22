@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.stream.Message;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Wrapper for messages that are not serializable.
@@ -30,31 +30,33 @@ import java.util.Map;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class MessageWrapper implements Serializable, IMessageWrapper {
+public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
 
-	private Map context = new HashMap();
+	private Map<String,Object> context = new LinkedHashMap<>();
 	private Message message;
 	private String id;
 
 	public MessageWrapper()  {
 		super();
 	}
-	public MessageWrapper(Object rawMessage, IListener listener) throws ListenerException  {
+	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException  {
 		this();
 		message = listener.extractMessage(rawMessage, context);
 		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		id = listener.getIdFromRawMessage(rawMessage, context);
 	}
 
-	public Map getContext() {
+	@Override
+	public Map<String,Object> getContext() {
 		return context;
 	}
 
 	public void setId(String string) {
 		id = string;
 	}
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -62,6 +64,7 @@ public class MessageWrapper implements Serializable, IMessageWrapper {
 	public void setMessage(Message message) {
 		this.message = message;
 	}
+	@Override
 	public Message getMessage() {
 		return message;
 	}

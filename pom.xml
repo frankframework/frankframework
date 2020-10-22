@@ -439,27 +439,38 @@
       </repositories>
     </profile>
     <profile>
-      <id>default-modules</id>
+      <id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
       <activation>
         <property>
-          <name>!default-modules</name>
+          <name>!no-default-modules</name>
         </property>
       </activation>
       <modules>
         <module>core</module>
-        <module>larva</module>
-        <module>akamai</module>
         <module>webapp</module>
-        <module>test</module>
-        <module>ear-test</module>
+        <module>larva</module>
         <module>ladybug</module>
+        <module>test</module>
+        <module>akamai</module>
+        <module>example</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <property>
+          <name>docker</name>
+        </property>
+      </activation>
+      <modules>
+        <module>docker</module>
       </modules>
     </profile>
     <profile>
       <id>cmis</id>
       <activation>
         <property>
-          <name>!cmis</name>
+          <name>cmis</name>
         </property>
       </activation>
       <modules>
@@ -467,15 +478,15 @@
       </modules>
     </profile>
     <profile>
-      <id>example</id>
+      <id>ear-modules</id>
       <activation>
         <property>
-          <name>!example</name>
+          <name>ear-modules</name>
         </property>
       </activation>
       <modules>
-        <module>example</module>
         <module>ear-example</module>
+        <module>ear-test</module>
       </modules>
     </profile>
     <profile>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 - 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,22 +37,22 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	
-	private final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
-	private final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
-	
+
+	public static final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
+	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
+
 	private Writer writer;
 	private boolean includeXmlDeclaration=false;
 	private boolean newlineAfterXmlDeclaration=false;
 	private boolean includeComments=true;
 	private boolean textMode=false;
-	
+
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
 	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
-	
+
 	private class PrefixMapping {
 
 		public String prefix;
@@ -67,11 +67,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public XmlWriter() {
 		writer=new StringWriter();
 	}
-	
+
 	public XmlWriter(Writer writer) {
 		this.writer=writer;
 	}
-	
+
 	public XmlWriter(OutputStream stream) {
 		try {
 			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -120,13 +120,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		prefixMappingList.add(prefixMapping);
 	}
 
-
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		storePrefixMapping(namespaceDefinitions, prefix, uri);
 	}
-
-
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -137,7 +134,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			if (!textMode) {
 				writer.append("<"+qName);
 				for (int i=0; i<attributes.getLength(); i++) {
-					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
+					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i), true).replace("&#39;", "'")+"\"");
 				}
 				for (int i=0; i<namespaceDefinitions.size(); i++) {
 					writePrefixMapping(namespaceDefinitions.get(i));
@@ -283,7 +280,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		return writer.toString();
 	}
 
-	
 	public void setIncludeXmlDeclaration(boolean includeXmlDeclaration) {
 		this.includeXmlDeclaration = includeXmlDeclaration;
 	}
