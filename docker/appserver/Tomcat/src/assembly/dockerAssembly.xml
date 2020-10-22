@@ -16,7 +16,7 @@
 			<directory>src/tomcat</directory>
 			<filtered>true</filtered>
 		</fileSet>
-	</fileSets>	
+	</fileSets>
 
 	<dependencySets>
 		<dependencySet>
