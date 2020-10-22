@@ -38,7 +38,7 @@ class ConfigChildDictionary {
 		private @Getter String syntax1Name;
 		private @Getter Integer defaultOrder;
 
-		Item(String methodName, String syntax1Name, String path) {
+		Item(String methodName, String syntax1Name) throws SAXException {
 			this.methodName = methodName;
 			this.syntax1Name = syntax1Name;
 			mandatory = false;
@@ -47,8 +47,8 @@ class ConfigChildDictionary {
 			} else if((methodName.startsWith("add")) || methodName.startsWith("register")) {
 				allowMultiple = true;
 			} else {
-				throw new RuntimeException(String.format(
-						"Do not know how many elements go in method [%s], digester rules from [%s]", methodName, path));
+				throw new SAXException(
+						String.format("Do not know how many elements go in method [%s]", methodName));
 			}
 		}
 	}
@@ -61,7 +61,7 @@ class ConfigChildDictionary {
 		}
 
 		@Override
-		protected void handle(DigesterRule rule) {
+		protected void handle(DigesterRule rule) throws SAXException {
 			String pattern = rule.getPattern();
 			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
 			String syntax1Name = null;
@@ -76,8 +76,8 @@ class ConfigChildDictionary {
 			}			
 		}
 
-		private void add(String registerMethod, String syntax1Name) {
-			Item item = new Item(registerMethod, syntax1Name, path);
+		private void add(String registerMethod, String syntax1Name) throws SAXException {
+			Item item = new Item(registerMethod, syntax1Name);
 			if(dictionary.containsKey(item.getMethodName())) {
 				ConfigChildDictionary.log.warn(String.format("In digester rules [%s], duplicate method name [%s]", path, registerMethod));
 			} else {

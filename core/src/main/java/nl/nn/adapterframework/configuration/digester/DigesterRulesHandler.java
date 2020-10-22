@@ -50,5 +50,5 @@ public abstract class DigesterRulesHandler extends DefaultHandler {
 		}
 	}
 
-	protected abstract void handle(DigesterRule rule);
+	protected abstract void handle(DigesterRule rule) throws SAXException;
 }
