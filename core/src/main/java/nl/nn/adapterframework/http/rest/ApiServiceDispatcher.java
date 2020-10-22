@@ -179,7 +179,7 @@ public class ApiServiceDispatcher {
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
-					methodBuilder.add("operationId", adapter.getName());
+					methodBuilder.add("operationId", listener.getName());
 					// GET and DELETE methods cannot have a requestBody according to the specs.
 					if(!method.equals("GET") && !method.equals("DELETE")) {
 						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
@@ -256,8 +256,19 @@ public class ApiServiceDispatcher {
 				if(schema == null) {
 					content.addNull(contentType.getContentType());
 				} else if(StringUtils.isNotEmpty(ref)){
+					String reference = null;
+					if(StringUtils.isNotEmpty(ple.getElementName())) {
+						reference = ple.getElementName();
+					} else {
+						List<String> references = Arrays.asList(ref.split(","));
+						if(exitCode == 200) {
+							reference = references.get(0);
+						} else {
+							reference = references.get(references.size()-1);
+						}
+					}
 					// JsonObjectBuilder add method consumes the schema
-					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
+					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+reference));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);

@@ -50,13 +50,14 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author Niels Meijer
  */
 public class PipeLineExit implements IForwardTarget {
-	
+
 	public static final String EXIT_STATE_SUCCESS = "success";
-	
+
 	private String path;
 	private String state;
 	private int exitCode = 0;
 	private boolean emptyResult = false;
+	private String elementName;
 
 	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
@@ -72,30 +73,35 @@ public class PipeLineExit implements IForwardTarget {
 		return getPath();
 	}
 
-
-	public String getState() {
-		return state;
-	}
-
 	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", ""})
 	public void setState(String newState) {
 		state = newState;
 	}
-
-	public int getExitCode() {
-		return exitCode;
+	public String getState() {
+		return state;
 	}
 
 	@IbisDoc({"http statuscode e.g. <code>500</code>", "200"})
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}
-	public boolean getEmptyResult() {
-		return emptyResult;
+	public int getExitCode() {
+		return exitCode;
 	}
 
 	@IbisDoc({"when using restlistener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
 	public void setEmpty(String b) {
 		emptyResult = Boolean.parseBoolean(b);
+	}
+	public boolean getEmptyResult() {
+		return emptyResult;
+	}
+
+	@IbisDoc({"Name of the element that the exit expects. In case the responseRoot attribute is set in the validator, for the exit code 200 it will use the first element in the responseRoot and for the other codes last element of the responseRoot will be used. (Remark: Only for OpenApi schema generation. The output will not be validated by looking at this attribute.)", ""})
+	public void setElementName(String elementName) {
+		this.elementName = elementName;
+	}
+	public String getElementName() {
+		return elementName;
 	}
 }

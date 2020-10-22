@@ -9,7 +9,7 @@
         "/users":{
             "get":{
                 "summary":"description4simple-get",
-                "operationId":"myAdapterName",
+                "operationId":"listener of [receiver]",
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -26,7 +26,7 @@
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/user"
+                                    "$ref":"#/components/schemas/Error"
                                 }
                             }
                         }

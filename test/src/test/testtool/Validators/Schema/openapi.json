@@ -8,16 +8,7 @@
     "paths":{
         "/soapvalidator/item":{
             "get":{
-                "operationId":"SoapValidator",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/Envelope"
-                            }
-                        }
-                    }
-                },
+                "operationId":"listener of [SoapValidator-API]",
                 "responses":{
                     "200":{
                         "description":"OK",

@@ -9,7 +9,7 @@
         "/pets":{
             "post":{
                 "summary":"Create a pet",
-                "operationId":"createPets",
+                "operationId":"listener of [receiver]",
                 "requestBody":{
                     "content":{
                         "*/*":{
@@ -28,7 +28,7 @@
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/Pet"
+                                    "$ref":"#/components/schemas/Error"
                                 }
                             }
                         }
@@ -37,7 +37,7 @@
             },
             "get":{
                 "summary":"List all pets",
-                "operationId":"listPets",
+                "operationId":"listener of [receiver]",
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -54,7 +54,7 @@
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/Pets"
+                                    "$ref":"#/components/schemas/Error"
                                 }
                             }
                         }
@@ -65,7 +65,7 @@
         "/pets/*":{
             "get":{
                 "summary":"Info for a specific pet",
-                "operationId":"showPetById",
+                "operationId":"listener of [receiver]",
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -82,7 +82,7 @@
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/Pet"
+                                    "$ref":"#/components/schemas/Error"
                                 }
                             }
                         }
@@ -101,6 +101,18 @@
                 "items":{
                     "$ref":"#/components/schemas/petType"
                 }
+            },
+            "Error":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "message":{
+                        "type":"string"
+                    }
+                },
+                "required":[
+                    "message"
+                ]
             },
             "petType":{
                 "type":"object",
