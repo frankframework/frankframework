@@ -13,10 +13,16 @@
 		<version>7.6-SNAPSHOT</version>
 	</parent>
 
-
 	<modules>
 		<module>WebSphere</module>
 	</modules>
 
-
+	<profiles>
+		<profile>
+			<id>tomcat</id>
+			<modules>
+				<module>Tomcat</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>
