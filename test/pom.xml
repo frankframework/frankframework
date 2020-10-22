@@ -158,6 +158,12 @@
 			</dependencies>
 		</profile>
 		<profile>
+			<id>docker</id>
+			<properties>
+				<databaseHost>host.docker.internal</databaseHost>
+			</properties>
+		</profile>
+		<profile>
 			<id>tomcat</id>
 			<dependencies>
 				<dependency>

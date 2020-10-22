@@ -2,10 +2,9 @@
 
 This subdirectory of the IAF Git repository lets you run Ibis4Test within a Docker container. To run this project, please do the following:
 
-- Find the IP address of your host, for example using `ifconfig` or `ipconfig`. You may have multiple IP addresses. This project was tested for IP address `192.168.178.11`. In the remainder of this file, read your own IP address for `192.168.178.11`.
 - Run the Maven build of the IAF project with the following command:
 
-      mvn -DdatabaseHost=192.168.178.11 -P oracle,tomcat clean install
+      mvn -P oracle,tomcat,docker clean install
 
 - Copy `iaf/test/target/ibis-adapterframework-test-<your version>.war` to `iaf/test/src/main/tools/appServers/tomcat/iaf-test.war`.
 - Run a dockerized Oracle database. You find instructions in subdirectory `iaf/test/src/main/tools/setupDB/Oracle`.
