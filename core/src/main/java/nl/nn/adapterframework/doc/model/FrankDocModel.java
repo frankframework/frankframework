@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,31 +8,89 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.digester.DigesterRule;
+import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 
+	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
 	private @Getter List<FrankDocGroup> groups;
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
 	public FrankDocModel() {
+		configChildDescriptors = new HashMap<>();
 		groups = new ArrayList<>();
 	}
 
-	public ElementType findOrCreateElementType(Class<?> clazz, ConfigChildDictionary dictionary) {
+	public void createConfigChildDescriptorsFrom(String path) {
+		Resource resource = Resource.getResource(path);
+		if(resource == null) {
+			throw new RuntimeException(String.format("Cannot find resource on the classpath: [%s]", path));
+		}
+		try {
+			XmlUtils.parseXml(resource.asInputSource(), new Handler(path));
+		}
+		catch(IOException e) {
+			throw new RuntimeException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
+		}
+		catch(SAXException e) {
+			throw new RuntimeException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
+		}
+	}
+
+	private class Handler extends DigesterRulesHandler {
+		private final String path;
+
+		Handler(String path) {
+			this.path = path;
+		}
+
+		@Override
+		protected void handle(DigesterRule rule) throws SAXException {
+			String pattern = rule.getPattern();
+			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
+			String syntax1Name = null;
+			while(tokenizer.hasMoreElements()) {
+				String token = tokenizer.nextToken();
+				if(!"*".equals(token)) {
+					syntax1Name = token;
+				}
+			}
+			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
+				add(rule.getRegisterMethod(), syntax1Name);
+			}			
+		}
+
+		private void add(String registerMethod, String syntax1Name) throws SAXException {
+			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, syntax1Name);
+			if(configChildDescriptors.containsKey(item.getMethodName())) {
+				log.warn(String.format("In digester rules [%s], duplicate method name [%s]", path, registerMethod));
+			} else {
+				configChildDescriptors.put(item.getMethodName(), item);
+			}
+		}
+	}
+
+	public ElementType findOrCreateElementType(Class<?> clazz) {
 		if(allTypes.containsKey(clazz.getName())) {
 			return allTypes.get(clazz.getName());
 		}
@@ -42,10 +101,10 @@ public class FrankDocModel {
 		if(clazz.isInterface()) {
 			Utils.getSpringBeans(clazz.getName()).stream()
 					.map(b -> b.getClazz())
-					.map(cl -> findOrCreateFrankElement(cl, dictionary))
+					.map(cl -> findOrCreateFrankElement(cl))
 					.forEach(result::addMember);
 		} else {
-			result.addMember(findOrCreateFrankElement(clazz, dictionary));
+			result.addMember(findOrCreateFrankElement(clazz));
 		}
 		return result;
 	}
@@ -54,12 +113,12 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	public FrankElement findOrCreateFrankElement(Class<?> clazz, ConfigChildDictionary dictionary) {
+	public FrankElement findOrCreateFrankElement(Class<?> clazz) {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
 		Class<?> superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass, dictionary);
+		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
 		if(allElements.containsKey(clazz.getName())) {
 			// This can happen when element C inherits from element P, while P can have
 			// C as a configuration child.
@@ -67,14 +126,14 @@ public class FrankDocModel {
 		}
 		else {
 			FrankElement current = new FrankElement(clazz, parent);
-			current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, dictionary));
-			current.setConfigChildren(createConfigChildren(clazz.getMethods(), current, dictionary));
+			current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
+			current.setConfigChildren(createConfigChildren(clazz.getMethods(), current));
 			allElements.put(current.getFullName(), current);
 			return current;
 		}
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner, ConfigChildDictionary dictionary) {
+	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
@@ -85,7 +144,7 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-			documentAttribute(attribute, method, attributeOwner, dictionary);
+			documentAttribute(attribute, method, attributeOwner);
 			result.add(attribute);
 		}
 		return result;
@@ -134,7 +193,7 @@ public class FrankDocModel {
 	}
 
 	private void documentAttribute(
-			FrankAttribute attribute, Method method, FrankElement attributeOwner, ConfigChildDictionary dictionary) {
+			FrankAttribute attribute, Method method, FrankElement attributeOwner) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
@@ -142,7 +201,7 @@ public class FrankDocModel {
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
 			if(ibisDoc != null) {
 				attribute.setDescribingElement(findOrCreateFrankElement(
-						parsed.getReferredMethod().getDeclaringClass(), dictionary));
+						parsed.getReferredMethod().getDeclaringClass()));
 				attribute.parseIbisDocAnnotation(ibisDoc);
 				if(parsed.hasOrder) {
 					attribute.setOrder(parsed.getOrder());
@@ -221,27 +280,29 @@ public class FrankDocModel {
 	}
 
 	private List<ConfigChild> createConfigChildren(
-			Method[] methods, FrankElement parent, final ConfigChildDictionary dictionary) {
+			Method[] methods, FrankElement parent) {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
 				.filter(Utils::isConfigChildSetter)
-				.filter(m -> dictionary.getDictionaryItem(m.getName()) != null)
+				.filter(m -> configChildDescriptors.get(m.getName()) != null)
 				.collect(Collectors.toList());
 		List<ConfigChild> result = new ArrayList<>();
 		for(Method m: configChildSetters) {
 			ConfigChild configChild = new ConfigChild(parent);
-			ConfigChildDictionary.Item dictItem = dictionary.getDictionaryItem(m.getName());
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
 			Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
 			if(optionalOrder != null) {
 				configChild.setSequenceInConfig(optionalOrder);
 			} else {
-				configChild.setSequenceInConfig(dictItem.getDefaultOrder());
+				log.warn(String.format("No config child order for method [%s] of Frank element [%s]",
+						m.getName(), parent.getSimpleName()));
+				configChild.setSequenceInConfig(Integer.MAX_VALUE);
 			}
 			Class<?> elementClass = m.getParameterTypes()[0];
-			configChild.setElementType(findOrCreateElementType(elementClass, dictionary));
-			configChild.setAllowMultiple(dictItem.isAllowMultiple());
-			configChild.setMandatory(dictItem.isMandatory());
-			configChild.setSyntax1Name(dictItem.getSyntax1Name());
+			configChild.setElementType(findOrCreateElementType(elementClass));
+			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
+			configChild.setMandatory(configChildDescriptor.isMandatory());
+			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
 		}
 		return result;

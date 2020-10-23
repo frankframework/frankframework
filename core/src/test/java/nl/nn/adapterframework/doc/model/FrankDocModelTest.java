@@ -37,19 +37,15 @@ public class FrankDocModelTest {
 
 	@Test
 	public void whenInterfaceTypeAndSingletonTypeThenCorrectElements() {
-		ElementType listenerType = instance.findOrCreateElementType(
-				Utils.getClass(LISTENER), ConfigChildDictionary.EMPTY);
-		ElementType childType = instance.findOrCreateElementType(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+		ElementType listenerType = instance.findOrCreateElementType(Utils.getClass(LISTENER));
+		ElementType childType = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		checkModelTypes(listenerType, childType);
 	}
 
 	@Test
 	public void whenSingletonTypeAndInterfaceTypeThenCorrectElements() {
-		ElementType childType = instance.findOrCreateElementType(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
-		ElementType listenerType = instance.findOrCreateElementType(
-				Utils.getClass(LISTENER), ConfigChildDictionary.EMPTY);
+		ElementType childType = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
+		ElementType listenerType = instance.findOrCreateElementType(Utils.getClass(LISTENER));
 		checkModelTypes(listenerType, childType);		
 	}
 
@@ -75,28 +71,22 @@ public class FrankDocModelTest {
 
 	@Test
 	public void whenTypeRequestedTwiceThenSameInstanceReturned() {
-		ElementType first = instance.findOrCreateElementType(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
-		ElementType second = instance.findOrCreateElementType(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+		ElementType first = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
+		ElementType second = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		assertSame(first, second);
 	}
 
 	@Test
 	public void whenChildElementAddedBeforeParentThenCorrectModel() {
-		FrankElement child = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
-		FrankElement parent = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
+		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
+		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
 	@Test
 	public void whenParentElementAddedBeforeChildThenCorrectModel() {
-		FrankElement parent = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE_PARENT), ConfigChildDictionary.EMPTY);
-		FrankElement child = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE_CHILD), ConfigChildDictionary.EMPTY);
+		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
+		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
@@ -148,8 +138,7 @@ public class FrankDocModelTest {
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) {
 		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
 		final List<FrankAttribute> attributes = 
-				instance.createAttributes(
-						Utils.getClass(className).getDeclaredMethods(), dummy, ConfigChildDictionary.EMPTY);
+				instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), dummy);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 

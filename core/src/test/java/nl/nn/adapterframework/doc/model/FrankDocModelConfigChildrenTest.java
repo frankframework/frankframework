@@ -20,11 +20,10 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Before
 	public void setUp() {
-		ConfigChildDictionary dictionary = new ConfigChildDictionary("doc/simple-digester-rules.xml");
-		dictionary.setMethodNameOrder("setChildNoDoc", 20);
 		instance = new FrankDocModel();
+		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(
-				Utils.getClass(CONTAINER), dictionary);
+				Utils.getClass(CONTAINER));
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren();
 	}
 
@@ -70,18 +69,7 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
-	public void whenNoIbisDocThenDefaultOrderTaken() {
-		ConfigChild actual = selectChild("syntax1NameChildNoDoc");
-		assertEquals("syntax1NameChildNoDoc", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
-		assertEquals("ChildNoDoc", actual.getElementType().getSimpleName());
-		assertEquals(20, actual.getSequenceInConfig());
-		assertFalse(actual.isAllowMultiple());
-		assertFalse(actual.isMandatory());		
-	}
-
-	@Test
 	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(4, configChildren.size());
+		assertEquals(3, configChildren.size());
 	}
 }

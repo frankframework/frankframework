@@ -18,9 +18,6 @@ public class Container extends ContainerParent {
 		super.setInheritedChildDocOnDerived(child);
 	}
 
-	public void setChildNoDoc(ChildNoDoc childNoDoc) {
-	}
-
 	public void setNoChildNotInDictionary(NoChild noChild) {
 	}
 
