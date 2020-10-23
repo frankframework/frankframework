@@ -161,6 +161,9 @@
 							<xsl:when test="@className='nl.nn.adapterframework.compression.ZipWriterSender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>
+							<xsl:when test="@className='nl.nn.adapterframework.senders.LocalFileSystemSender'">
+								<xsl:call-template name="copy" />
+							</xsl:when>
 							<xsl:otherwise>
 								<xsl:element name="sender">
 									<xsl:if test="string-length(@name)&gt;0">
