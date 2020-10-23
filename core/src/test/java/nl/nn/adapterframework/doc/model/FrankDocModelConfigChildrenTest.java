@@ -69,7 +69,16 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
+	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
+		ConfigChild actual = selectChild("syntax1NameInheritedChildDocWithOrderOverride");
+		assertEquals("syntax1NameInheritedChildDocWithOrderOverride", actual.getSyntax1Name());
+		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
+		assertEquals(10, actual.getSequenceInConfig());
+	}
+
+	@Test
 	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(3, configChildren.size());
+		assertEquals(4, configChildren.size());
 	}
 }
