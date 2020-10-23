@@ -137,8 +137,7 @@ public class FrankDocModelTest {
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) {
 		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
-		final List<FrankAttribute> attributes = 
-				instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), dummy);
+		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), dummy);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
