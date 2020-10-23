@@ -277,8 +277,7 @@ public class FrankDocModel {
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(
-			Method[] methods, FrankElement parent) {
+	private List<ConfigChild> createConfigChildren(	Method[] methods, FrankElement parent) {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
 				.filter(Utils::isConfigChildSetter)
 				.filter(m -> configChildDescriptors.get(m.getName()) != null)
