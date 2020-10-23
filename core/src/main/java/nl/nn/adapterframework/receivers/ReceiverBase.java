@@ -580,7 +580,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			if (getListener() instanceof ITransactionRequirements) {
 				ITransactionRequirements tr=(ITransactionRequirements)getListener();
 				if (tr.transactionalRequired() && !isTransacted()) {
-					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing");
+					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", ConfigurationWarnings.TRANSACTION_SUPPRESS_KEY, getAdapter());
 					//throw new ConfigurationException(msg);
 				}
 			}
@@ -660,7 +660,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
+					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", ConfigurationWarnings.TRANSACTION_SUPPRESS_KEY, getAdapter());
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
@@ -1910,10 +1910,10 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		if (transacted) {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required", ConfigurationWarnings.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports", ConfigurationWarnings.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
@@ -2305,4 +2305,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return hideMethod;
 	}
 
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
+	}
 }

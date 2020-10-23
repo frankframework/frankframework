@@ -36,7 +36,8 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	public static final String SQL_INJECTION_SUPPRESS_KEY = "warnings.suppress.sqlInjections";
 	public static final String DEPRECATION_SUPPRESS_KEY="warnings.suppress.deprecated";
 	public static final String DEFAULT_VALUE_SUPPRESS_KEY = "warnings.suppress.defaultvalue";
-
+	public static final String TRANSACTION_SUPPRESS_KEY = "warnings.suppress.transaction";
+	
 	/**
 	 * Add configuration independent warning
 	 */

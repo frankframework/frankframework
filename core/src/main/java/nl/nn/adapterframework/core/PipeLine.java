@@ -681,10 +681,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		if (transacted) {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required");
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required", ConfigurationWarnings.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports");
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports");
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
