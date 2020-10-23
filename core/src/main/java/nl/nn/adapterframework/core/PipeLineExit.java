@@ -97,7 +97,7 @@ public class PipeLineExit implements IForwardTarget {
 		return emptyResult;
 	}
 
-	@IbisDoc({"Name of the element that the exit expects. In case the responseRoot attribute is set in the validator, for the exit code 200 it will use the first element in the responseRoot and for the other codes last element of the responseRoot will be used. (Remark: Only for OpenApi schema generation. The output will not be validated by looking at this attribute.)", ""})
+	@IbisDoc({"Name of the element that the exit expects. In case elementName is not set, but the responseRoot attribute is set in the validator, for the exit code 200 it will use the first element in the responseRoot and for the other codes last element of the responseRoot will be used. (Remark: Only for OpenApi schema generation. The output will not be validated by looking at this attribute.)", ""})
 	public void setElementName(String elementName) {
 		this.elementName = elementName;
 	}
