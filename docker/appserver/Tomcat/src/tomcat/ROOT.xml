@@ -1,5 +1,0 @@
-<Context 
-  docBase="/usr/local/tomcat/ibis-adapterframework-test-${iaf.version}.war" 
-  path="" 
-  reloadable="true" 
-/>

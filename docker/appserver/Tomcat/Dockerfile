@@ -14,7 +14,7 @@ RUN echo "web.port=80" >> conf/catalina.properties
 RUN echo "file.separator.regex=/" >> conf/catalina.properties
 RUN echo 'testdata.dir.match=${log.dir.match}[\\/]testdata' >> conf/catalina.properties
 RUN echo 'log.level=DEBUG' >> conf/catalina.properties
-COPY target/ibis-adapterframework-docker-as-tomcat-*-dependencies/tomcat/* conf/Catalina/localhost/
+COPY target/ibis-adapterframework-docker-as-tomcat-*-dependencies/tomcat/* conf/
 
 # We deploy the Frank!Framework to the root context of the application server.
 # See https://stackoverflow.com/questions/7276989/how-to-set-the-context-path-of-a-web-application-in-tomcat-7-0
