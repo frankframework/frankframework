@@ -14,7 +14,7 @@ public class TestDigesterRulesParser {
 	@Test
 	public void testParser() throws Exception {
 		List<ChildIbisBeanMapping> beanList = InfoBuilderSource.getChildIbisBeanMappings();
-		assertTrue(beanList.size() >= 33); //Expect to find at least 33 pattern mappings
+		assertTrue(beanList.size() >= 30); //Expect to find at least 33 pattern mappings
 
 		ChildIbisBeanMapping mapping = beanList.get(0);
 		assertNotNull(mapping.getMethodName()); //Should never be null
