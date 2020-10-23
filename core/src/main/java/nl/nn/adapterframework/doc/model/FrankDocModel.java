@@ -192,8 +192,7 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(
-			FrankAttribute attribute, Method method, FrankElement attributeOwner) {
+	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
