@@ -199,8 +199,7 @@ public class FrankDocModel {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
 			if(ibisDoc != null) {
-				attribute.setDescribingElement(findOrCreateFrankElement(
-						parsed.getReferredMethod().getDeclaringClass()));
+				attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
 				attribute.parseIbisDocAnnotation(ibisDoc);
 				if(parsed.hasOrder) {
 					attribute.setOrder(parsed.getOrder());
