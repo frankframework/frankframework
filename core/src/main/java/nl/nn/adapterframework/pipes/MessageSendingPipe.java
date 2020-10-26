@@ -246,17 +246,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		propagateName();
 	}
 
-	@Override
-	public void addParameter(Parameter p){
-		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
-			if (p.getName().equals(STUBFILENAME)) {
-				super.addParameter(p);
-			} else {
-				((ISenderWithParameters)getSender()).addParameter(p);
-			}
-		}
-	}
-
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
@@ -284,6 +273,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
 			}
 	
+			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+			// because sender might not have been set when addPipe() is called.
+			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
+				for (Parameter p:getParameterList()) {
+					if (!p.getName().equals(STUBFILENAME)) {
+						((ISenderWithParameters)getSender()).addParameter(p);
+					}
+				}
+
+			}
+			
 			try {
 				if (getSender() instanceof ConfigurationAware) {
 					IAdapter adapter=getAdapter();
