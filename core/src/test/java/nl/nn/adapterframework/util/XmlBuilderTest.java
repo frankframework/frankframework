@@ -144,6 +144,18 @@ public class XmlBuilderTest {
 		compareXML(sb.toString(), schema.toXML());
 	}
 
+	@Test
+	public void testAddEmbeddedCdata() throws SAXException, IOException {
+		
+		String value = "<xml>&amp; <![CDATA[cdatastring < > & <tag/> ]]>rest</xml>";
+		
+		XmlBuilder root = new XmlBuilder("root");
+		root.setValue(value);
+		
+		String expected = "<root>"+XmlUtils.encodeChars(value)+"</root>";
+		compareXML(expected, root.toXML(false));
+	}
+
 	private void compareXML(String expected, String actual)
 			throws SAXException, IOException {
 		// System.out.println(expected);
