@@ -7,17 +7,6 @@
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
 
-	<fileSets>
-		<fileSet>
-			<includes>
-				<include>*.xml</include>
-			</includes>
-			<outputDirectory>tomcat</outputDirectory>
-			<directory>src/tomcat</directory>
-			<filtered>true</filtered>
-		</fileSet>
-	</fileSets>
-
 	<dependencySets>
 		<dependencySet>
 			<useTransitiveDependencies>false</useTransitiveDependencies>

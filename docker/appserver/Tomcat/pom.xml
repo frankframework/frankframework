@@ -23,7 +23,19 @@
 
 	<build>
 		<defaultGoal>package</defaultGoal>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.3.0</version>
@@ -54,10 +66,12 @@
 						<configuration>
 							<target>
 								<exec executable="docker">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="iaf-test-as-tomcat:${project.version}"/>
-									<arg value="."/>
+									<arg value="build" />
+									<arg value="-f" />
+									<arg value="target/classes/Dockerfile" />
+									<arg value="-t" />
+									<arg value="iaf-test-as-tomcat:${project.version}" />
+									<arg value="." />
 								</exec>
 							</target>
 						</configuration>
