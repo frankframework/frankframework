@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Test;
@@ -404,5 +405,45 @@ public class MessageTest {
 		fw.write(contents);
 		fw.close();
 	}
-	
+
+	@Test
+	public void testMessageSizeString() {
+		Message message = Message.asMessage("string");
+		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeByteStream() {
+		byte[] byteArr = new String("string").getBytes();
+		Message message = Message.asMessage(new ByteArrayInputStream(byteArr));
+		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeByteArray() {
+		Message message = Message.asMessage( new String("string").getBytes());
+		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeFile() throws Exception {
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		File file = new File(url.toURI());
+		Message message = Message.asMessage(file);
+		assertEquals("size differs or could not be determined", 33, message.size());
+	}
+
+	@Test
+	public void testMessageSizeURL() {
+		Message message = Message.asMessage(this.getClass().getResource("/file.xml"));
+		assertEquals("size differs or could not be determined", -1, message.size());
+	}
+
+	@Test
+	public void testMessageSizeExternalURL() {
+		Message message = Message.asMessage(null);
+		assertEquals(-1, message.size());
+	}
 }

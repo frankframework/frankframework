@@ -30,19 +30,32 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
-	
+
 	@Override
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession ) throws PipeRunException {
-		checkMessageSize(message, pipeLine, pipe, true);
+		checkMessageSize(getMessageLength(message), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+
 		Message result = pipeRunResult.getResult();
-		checkMessageSize(result.asObject(), pipeLine, pipe, false);
+		checkMessageSize(result.size(), pipeLine, pipe, false);
 		return pipeRunResult;
 	}
 
-	private void checkMessageSize(Object message, PipeLine pipeLine, IPipe pipe, boolean input) {
-		if (message!=null && message instanceof String) {
-			int messageLength = message.toString().length();
+	private long getMessageLength(Object message) {
+		long messageLength = -1;
+		if (message != null) {
+			if(message instanceof String) {
+				messageLength = message.toString().length();
+			} else if(message instanceof Message) {
+				messageLength = ((Message) message).size();
+			}
+		}
+
+		return messageLength;
+	}
+
+	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
+		if(messageLength > -1) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
 				StatisticsKeeper sizeStat = null;

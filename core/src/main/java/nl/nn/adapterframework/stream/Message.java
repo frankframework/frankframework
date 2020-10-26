@@ -30,11 +30,12 @@ import java.net.URL;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -414,4 +415,37 @@ public class Message implements Serializable {
 		stream.defaultReadObject();
 	}
 
+	/**
+	 * @return Message size or -1 if it can't determine the size.
+	 */
+	public long size() {
+		if(request == null) {
+			return -1;
+		}
+
+		try {
+			if (request instanceof FileInputStream) {
+				FileInputStream fileStream = (FileInputStream) request;
+				return fileStream.getChannel().size();
+			}
+		} catch (IOException e) {
+			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
+		}
+
+		if (request instanceof ByteArrayInputStream) {
+			return ((ByteArrayInputStream) request).available();
+		}
+		if(request instanceof String) {
+			return ((String) request).length();
+		}
+		if (request instanceof File) {
+			return ((File) request).length();
+		}
+		if (request instanceof byte[]) {
+			return ((byte[]) request).length;
+		}
+
+		log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
+		return -1;
+	}
 }
