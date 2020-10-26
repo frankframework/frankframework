@@ -8,13 +8,12 @@ import lombok.Setter;
 public class FrankElement {
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
-	private @Getter FrankElement parent;
+	private @Getter @Setter FrankElement parent;
 	private @Getter @Setter List<FrankAttribute> attributes;
 	private @Getter @Setter List<ConfigChild> configChildren;
 
-	FrankElement(Class<?> clazz, FrankElement parent) {
+	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName());
-		this.parent = parent;
 	}
 
 	/**

@@ -118,20 +118,14 @@ public class FrankDocModel {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
+		FrankElement current = new FrankElement(clazz);
+		allElements.put(current.getFullName(), current);
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
-		if(allElements.containsKey(clazz.getName())) {
-			// This can happen when element C inherits from element P, while P can have
-			// C as a configuration child.
-			return allElements.get(clazz.getName());
-		}
-		else {
-			FrankElement current = new FrankElement(clazz, parent);
-			current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
-			current.setConfigChildren(createConfigChildren(clazz.getMethods(), current));
-			allElements.put(current.getFullName(), current);
-			return current;
-		}
+		current.setParent(parent);
+		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
+		current.setConfigChildren(createConfigChildren(clazz.getMethods(), current));
+		return current;
 	}
 
 	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
