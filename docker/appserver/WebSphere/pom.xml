@@ -5,13 +5,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>ibis-adapterframework-docker-as-was</artifactId>
 	<name>Ibis AdapterFramework Docker image for WebSphere</name>
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
 		<version>7.6-SNAPSHOT</version>
 	</parent>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -20,7 +20,7 @@
 			<type>ear</type>
 		</dependency>
 		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
+			<groupId>${oracle.driver.groupid}</groupId>
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
 		</dependency>
