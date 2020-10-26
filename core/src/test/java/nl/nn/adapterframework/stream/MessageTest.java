@@ -30,7 +30,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Test;
@@ -414,14 +413,14 @@ public class MessageTest {
 
 	@Test
 	public void testMessageSizeByteStream() {
-		byte[] byteArr = new String("string").getBytes();
+		byte[] byteArr = "string".getBytes();
 		Message message = Message.asMessage(new ByteArrayInputStream(byteArr));
 		assertEquals("size differs or could not be determined", 6, message.size());
 	}
 
 	@Test
 	public void testMessageSizeByteArray() {
-		Message message = Message.asMessage( new String("string").getBytes());
+		Message message = Message.asMessage( "string".getBytes());
 		assertEquals("size differs or could not be determined", 6, message.size());
 	}
 
