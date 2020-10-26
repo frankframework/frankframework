@@ -1040,7 +1040,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return columnsReturnedList;
 	}
 
-	@IbisDoc({"9", "When <code>true</code>, every string in the message which equals <code>"+UNP_START+"paramname+UNP_END+</code> will be replaced by the setter method for the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "false"})
+	@IbisDoc({"9", "When <code>true</code>, every string in the message which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "false"})
 	public void setUseNamedParams(boolean b) {
 		useNamedParams = b;
 	}

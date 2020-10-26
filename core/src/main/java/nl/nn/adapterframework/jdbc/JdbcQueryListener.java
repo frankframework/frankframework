@@ -53,16 +53,6 @@ public class JdbcQueryListener extends JdbcListener {
 	
 
 	@Override
-	public void setKeyField(String fieldname) {
-		super.setKeyField(fieldname);
-	}
-
-	@Override
-	public void setMessageField(String fieldname) {
-		super.setMessageField(fieldname);
-	}
-
-	@Override
 	@IbisDoc({"3", "Query that returns a row to be processed. Must contain a key field and optionally a message field", ""})
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);

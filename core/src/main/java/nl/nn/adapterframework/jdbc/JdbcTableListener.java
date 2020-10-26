@@ -129,16 +129,6 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		return tableName;
 	}
 
-	@Override
-	public void setKeyField(String fieldname) {
-		super.setKeyField(fieldname);
-	}
-
-	@Override
-	public void setMessageField(String fieldname) {
-		super.setMessageField(fieldname);
-	}
-
 	@IbisDoc({"4", "Field containing the status of the message", ""})
 	public void setStatusField(String fieldname) {
 		statusField = fieldname;
