@@ -22,6 +22,7 @@ import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +54,7 @@ import java.util.Map.Entry;
 public final class ExecuteJdbcQuery extends Base {
 
 	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
+	private Logger secLog = LogUtil.getLogger("SEC");
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -139,6 +142,8 @@ public final class ExecuteJdbcQuery extends Base {
 		if(datasource == null || resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
+
+		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		//We have all info we need, lets execute the query!
 		DirectQuerySender qs;
