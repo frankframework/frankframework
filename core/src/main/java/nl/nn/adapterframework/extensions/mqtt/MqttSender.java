@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017 - 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,5 +115,10 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	@Override
 	public boolean isSynchronous() {
 		return false;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return super.getClassLoader();
 	}
 }

@@ -39,7 +39,7 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.deprecated", false);
+	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getValue(), false);
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 

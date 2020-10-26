@@ -41,6 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private IMessageHandler<M> handler;
 	private String name;
@@ -139,6 +140,11 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	}
 	public void setRunning(boolean running) {
 		this.running = running;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
 	}
 
 }

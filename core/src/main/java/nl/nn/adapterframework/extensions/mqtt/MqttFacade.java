@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017 - 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 public class MqttFacade implements HasPhysicalDestination {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
@@ -106,6 +107,10 @@ public class MqttFacade implements HasPhysicalDestination {
 	@Override
 	public String getPhysicalDestinationName() {
 		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
+	}
+
+	public ClassLoader getClassLoader() {
+		return classLoader;
 	}
 
 	@Override

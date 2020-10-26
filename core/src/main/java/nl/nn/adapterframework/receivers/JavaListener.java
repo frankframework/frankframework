@@ -50,6 +50,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String serviceName;
@@ -214,6 +215,11 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	@Override
 	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
 		return new Message(rawMessage);
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
 	}
 
 	@Override

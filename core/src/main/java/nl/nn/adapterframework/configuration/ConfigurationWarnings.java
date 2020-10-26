@@ -33,11 +33,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
 	private Configuration activeConfiguration = null;
-	public static final String SQL_INJECTION_SUPPRESS_KEY = "warnings.suppress.sqlInjections";
-	public static final String DEPRECATION_SUPPRESS_KEY="warnings.suppress.deprecated";
-	public static final String DEFAULT_VALUE_SUPPRESS_KEY = "warnings.suppress.defaultvalue";
-	public static final String TRANSACTION_SUPPRESS_KEY = "warnings.suppress.transaction";
-	
+
 	/**
 	 * Add configuration independent warning
 	 */
@@ -62,7 +58,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	/**
 	 * Adds configuration warning in case warning is not suppressed
 	 */
-	public static void add(IConfigurable object, Logger log, String message, String suppressionKey, IAdapter adapter) {
+	public static void add(IConfigurable object, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		if(!isSuppressed(suppressionKey, adapter, object.getConfigurationClassLoader())) {
 			add(object, log, message, null);
 		}
@@ -133,9 +129,9 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		activeConfiguration = configuration;
 	}
 	
-	public static boolean isSuppressed(String key, IAdapter adapter, ClassLoader cl) {
+	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter, ClassLoader cl) {
 		AppConstants appConstants = AppConstants.getInstance(cl);
-		return appConstants.getBoolean(key, false) // warning is suppressed globally, for all adapters
-				|| adapter!=null && appConstants.getBoolean(key+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return appConstants.getBoolean(key.getValue(), false) // warning is suppressed globally, for all adapters
+				|| adapter!=null && appConstants.getBoolean(key.getValue()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }

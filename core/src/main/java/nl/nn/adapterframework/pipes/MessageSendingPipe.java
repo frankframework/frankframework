@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -297,7 +298,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
 					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"] in adapter ["+getAdapter().getName()+"]. This may cause potential SQL injections!";
-					ConfigurationWarnings.add(this, log, msg, ConfigurationWarnings.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
+					ConfigurationWarnings.add(this, log, msg, SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
 					((DirectQuerySender) getSender()).configure(true);
 				} else {
 					getSender().configure();
@@ -363,7 +364,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
 			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
-				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed("warnings.suppress.integrityCheck", getAdapter(), getConfigurationClassLoader());
+				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
 					if (!legacyCheckMessageLog) {

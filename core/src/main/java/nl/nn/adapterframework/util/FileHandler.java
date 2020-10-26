@@ -284,7 +284,7 @@ public class FileHandler {
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(classLoader, name);
+			return ClassUtils.getResourceURL(getClassLoader(), name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);
@@ -630,6 +630,10 @@ public class FileHandler {
 			return fileXml.toXML().getBytes();
 		}
 
+	}
+
+	public ClassLoader getClassLoader() {
+		return classLoader;
 	}
 
 	protected String getLogPrefix(IPipeLineSession session){

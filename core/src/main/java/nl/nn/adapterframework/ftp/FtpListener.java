@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  */
 @Deprecated
 @ConfigurationWarning("Please replace with FtpFileSystemListener")
-public class FtpListener extends FtpSession implements IPullingListener<String>, INamedObject, RunStateEnquiring {
+public class FtpListener extends FtpSession implements IPullingListener<String>, RunStateEnquiring {
 
 	private LinkedList<String> remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
@@ -169,6 +169,11 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return super.getClassLoader();
 	}
 
 	@Override

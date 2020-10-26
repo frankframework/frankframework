@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
@@ -53,8 +52,9 @@ import nl.nn.adapterframework.util.WildCardFilter;
  */
 @Deprecated
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
-public class FileRecordListener implements IPullingListener, INamedObject {
+public class FileRecordListener implements IPullingListener {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String inputDirectory;
@@ -284,6 +284,11 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return array.iterator();
 	}
 
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
+	}
+
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
@@ -366,4 +371,5 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	public String getStoreFileNameInSessionKey() {
 		return storeFileNameInSessionKey;
 	}
+
 }

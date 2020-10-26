@@ -49,6 +49,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String inputFolder;
@@ -150,6 +151,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		// nothing special here
 	}
 
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
+	}
 	@Override
 	public String getPhysicalDestinationName() {
 		String result=getFileSystem() instanceof HasPhysicalDestination?((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName()+" ":"";

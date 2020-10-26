@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String ibisHost = "localhost";
@@ -129,6 +130,11 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	@IbisDoc({"name of the receiver that should be called", "servicelistener"})
 	public void setServiceName(String serviceName) {
 		this.serviceName=serviceName;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
 	}
 
 }

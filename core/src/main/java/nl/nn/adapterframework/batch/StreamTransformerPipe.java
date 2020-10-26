@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -216,7 +217,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IRecordHandlerManager manager) throws Exception {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerManager(manager);
 	}
 	/**
@@ -242,7 +243,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
 			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
@@ -257,7 +258,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IRecordHandler handler) throws Exception {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerRecordHandler(handler);
 	}
 	/**
@@ -278,7 +279,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void registerChild(IResultHandler handler) throws Exception {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerResultHandler(handler);
 	}
 	/**

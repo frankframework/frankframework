@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  */
 public class FtpSession {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	// types of ftp transports
 	static final int FTP = 1;
@@ -620,6 +621,10 @@ public class FtpSession {
 				closeClient();
 			}
 		}
+	}
+
+	public ClassLoader getClassLoader() {
+		return classLoader;
 	}
 
 	@IbisDoc({"name or ip adres of remote host", ""})

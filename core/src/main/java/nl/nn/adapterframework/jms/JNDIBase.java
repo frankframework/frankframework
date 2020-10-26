@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,11 +73,15 @@ public class JNDIBase {
 		}
 	}
 
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
 	protected Hashtable getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(classLoader, getJndiProperties());
+			URL url = ClassUtils.getResourceURL(getClassLoader(), getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}
