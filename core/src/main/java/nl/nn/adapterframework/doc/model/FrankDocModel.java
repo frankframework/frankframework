@@ -2,14 +2,15 @@ package nl.nn.adapterframework.doc.model;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -287,13 +288,11 @@ public class FrankDocModel {
 			ConfigChild configChild = new ConfigChild(parent);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
-			Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
-			if(optionalOrder != null) {
-				configChild.setSequenceInConfig(optionalOrder);
-			} else {
+			try {
+				configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
+			} catch(ParseException e) {
 				log.warn(String.format("No config child order for method [%s] of Frank element [%s]",
-						m.getName(), parent.getSimpleName()));
-				configChild.setSequenceInConfig(Integer.MAX_VALUE);
+						m.getName(), parent.getSimpleName()), e);
 			}
 			Class<?> elementClass = m.getParameterTypes()[0];
 			configChild.setElementType(findOrCreateElementType(elementClass));
@@ -301,18 +300,6 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
-		}
-		return result;
-	}
-
-	private static Integer parseIbisDocAnnotation(IbisDoc ibisDoc) {
-		Integer result = null;
-		if((ibisDoc != null) && (ibisDoc.value().length == 1)) {
-			try {
-				result = Integer.valueOf(ibisDoc.value()[0]);
-			} catch(Exception e) {
-				log.warn(String.format("@IbisDoc for config children has a non-integer order [%s], ignored", ibisDoc.value()[0]));
-			}
 		}
 		return result;
 	}
