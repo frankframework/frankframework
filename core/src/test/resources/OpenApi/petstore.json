@@ -9,7 +9,6 @@
         "/pets":{
             "post":{
                 "summary":"Create a pet",
-                "operationId":"listener of [receiver]",
                 "requestBody":{
                     "content":{
                         "*/*":{
@@ -37,7 +36,8 @@
             },
             "get":{
                 "summary":"List all pets",
-                "operationId":"listener of [receiver]",
+                "parameters":[
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -62,10 +62,19 @@
                 }
             }
         },
-        "/pets/*":{
+        "/pets/{petId}":{
             "get":{
                 "summary":"Info for a specific pet",
-                "operationId":"listener of [receiver]",
+                "parameters":[
+                    {
+                        "name":"petId",
+                        "in":"path",
+                        "required":true,
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",

@@ -24,8 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -39,6 +42,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -171,27 +175,33 @@ public class ApiServiceDispatcher {
 
 		for (ApiDispatchConfig config : clients) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
+			ApiListener listener = null;
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
-				ApiListener listener = config.getApiListener(method);
+				listener = config.getApiListener(method);
 				if(listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
-					methodBuilder.add("operationId", listener.getName());
+					if(StringUtils.isNotEmpty(listener.getOperationId())) {
+						methodBuilder.add("operationId", listener.getOperationId());
+					}
 					// GET and DELETE methods cannot have a requestBody according to the specs.
 					if(!method.equals("GET") && !method.equals("DELETE")) {
 						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
+					} else if(method.equals("GET")) {
+						mapParamsInRequest(adapter, listener, methodBuilder);
 					}
 					//ContentType may have more parameters such as charset and formdata-boundry
 					MediaTypes produces = listener.getProducesEnum();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
-
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
-			paths.add("/"+config.getUriPattern(), methods);
+			if(listener != null) {
+				paths.add("/"+listener.getCleanPattern(false), methods);
+			}
 		}
 		root.add("paths", paths.build());
 		root.add("components", Json.createObjectBuilder().add("schemas", schemas));
@@ -208,6 +218,35 @@ public class ApiServiceDispatcher {
 			return (Json2XmlValidator) validator;
 		}
 		return null;
+	}
+
+	private void mapParamsInRequest(IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
+		String uriPattern = listener.getUriPattern();
+		JsonArrayBuilder paramBuilder = Json.createArrayBuilder();
+		if(uriPattern.contains("{")) {
+			Pattern p = Pattern.compile("[^{/}]+(?=})");
+			Matcher m = p.matcher(uriPattern);
+			while(m.find()) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", m.group());
+				param.add("in", "path");
+				param.add("required", true);
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+			}
+		}
+		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
+		if(validator != null && !validator.getParameterList().isEmpty()) {
+			for (Parameter parameter : validator.getParameterList()) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", parameter.getName());
+				param.add("in", "query");
+				String parameterType = parameter.getType() != null ? parameter.getType() : "string";
+				param.add("schema", Json.createObjectBuilder().add("type", parameterType));
+				paramBuilder.add(param);
+			}
+		}
+		methodBuilder.add("parameters", paramBuilder);
 	}
 
 	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {

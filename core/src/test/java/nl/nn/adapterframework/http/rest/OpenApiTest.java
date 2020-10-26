@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Rule;
 import org.junit.Test;
 
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
@@ -21,8 +22,10 @@ public class OpenApiTest extends OpenApiTestBase {
 	public void simpleEndpointTest() throws Exception {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
-
-		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "get").setValidator("simple.xsd", null, "user").build(true);
+		Parameter param = new Parameter();
+		param.setName("parameter");
+		param.setValue("parameter");
+		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "get", "operationId4simple-get").setValidator("simple.xsd", null, "user", param).build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.getPatternClients().size());
 		String result = callOpenApi();
@@ -38,9 +41,9 @@ public class OpenApiTest extends OpenApiTestBase {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
-		new AdapterBuilder("listPets", "List all pets").setListener("pets", "get").setValidator("petstore.xsd", null, "Pets").build(true);
-		new AdapterBuilder("createPets", "Create a pet").setListener("pets", "post").setValidator("petstore.xsd", "Pet", "Pet").build(true);
-		new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get").setValidator("petstore.xsd", null, "Pet").build(true);
+		new AdapterBuilder("listPets", "List all pets").setListener("pets", "get", null).setValidator("petstore.xsd", null, "Pets", null).build(true);
+		new AdapterBuilder("createPets", "Create a pet").setListener("pets", "post", null).setValidator("petstore.xsd", "Pet", "Pet", null).build(true);
+		new AdapterBuilder("showPetById", "Info for a specific pet").setListener("pets/{petId}", "get", null).setValidator("petstore.xsd", null, "Pet", null).build(true);
 		//getPets.start(getPets, postPet, getPet); //Async start
 
 		Thread.sleep(1200); //Adding a small timeout to fix async starting issues

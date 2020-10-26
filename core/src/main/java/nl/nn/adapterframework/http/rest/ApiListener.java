@@ -41,6 +41,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private String uriPattern;
 	private boolean updateEtag = true;
+	private String operationId;
 
 	private String method;
 	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
@@ -111,7 +112,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getCleanPattern(false)+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumesEnum().name();
 		if(!MediaTypes.ANY.equals(produces))
@@ -120,11 +121,16 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return destinationName;
 	}
 
+	public String getCleanPattern() {
+		return getCleanPattern(true);
+	}
+
 	/**
-	 * returns the clear pattern, replaces everything between <code>{}</code> to <code>*</code>
+	 * returns the clear pattern, if replacePathParams is true then replaces everything between <code>{}</code> to <code>*</code>
+	 * @param replacePathParams 
 	 * @return null if no pattern is found
 	 */
-	public String getCleanPattern() {
+	public String getCleanPattern(boolean replacePathParams) {
 		String pattern = getUriPattern();
 		if(StringUtils.isEmpty(pattern))
 			return null;
@@ -135,7 +141,10 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(pattern.endsWith("/"))
 			pattern = pattern.substring(0, pattern.length()-1);
 
-		return pattern.replaceAll("\\{.*?}", "*");
+		if(replacePathParams)
+			pattern = pattern.replaceAll("\\{.*?}", "*");
+
+		return pattern;
 	}
 
 	/**
@@ -271,9 +280,16 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
-
 	public String getMessageIdHeader() {
 		return messageIdHeader;
+	}
+
+	@IbisDoc({"11", "Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema", ""})
+	public void setOperationId(String operationId) {
+		this.operationId = operationId;
+	}
+	public String getOperationId() {
+		return operationId;
 	}
 
 	@Override

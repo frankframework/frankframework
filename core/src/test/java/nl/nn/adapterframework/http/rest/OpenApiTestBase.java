@@ -13,6 +13,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.GenericReceiver;
@@ -149,14 +151,17 @@ public class OpenApiTestBase extends Mockito {
 			adapter.setConfiguration(configuration);
 			adapter.setTaskExecutor(getTaskExecutor());
 		}
-		public AdapterBuilder setListener(String uriPattern, String method) {
-			return setListener(uriPattern, method, "json");
+		public AdapterBuilder setListener(String uriPattern, String method, String operationId) {
+			return setListener(uriPattern, method, "json", operationId);
 		}
-		public AdapterBuilder setListener(String uriPattern, String method, String produces) {
+		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
 			listener.setMethod(method);
 			listener.setUriPattern(uriPattern);
 			listener.setProduces(produces);
+			if(StringUtils.isNotEmpty(operationId)) {
+				listener.setOperationId(operationId);
+			}
 			if(method.equalsIgnoreCase("POST")) {
 				exits.add(201);
 			} else {
@@ -166,7 +171,7 @@ public class OpenApiTestBase extends Mockito {
 
 			return this;
 		}
-		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot) {
+		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
 			validator = new Json2XmlValidator();
 			validator.setName(ref);
@@ -179,6 +184,9 @@ public class OpenApiTestBase extends Mockito {
 			}
 			validator.setResponseRoot(responseRoot);
 			validator.setThrowException(true);
+			if(param != null) {
+				validator.addParameter(param);
+			}
 
 			return this;
 		}

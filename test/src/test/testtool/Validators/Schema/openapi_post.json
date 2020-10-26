@@ -8,7 +8,6 @@
     "paths":{
         "/json2xmlvalidator/item/post":{
             "post":{
-                "operationId":"listener of [Json2XmlValidator-API-POST]",
                 "requestBody":{
                     "content":{
                         "*/*":{

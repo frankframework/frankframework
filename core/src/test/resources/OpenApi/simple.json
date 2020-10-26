@@ -9,7 +9,16 @@
         "/users":{
             "get":{
                 "summary":"description4simple-get",
-                "operationId":"listener of [receiver]",
+                "operationId":"operationId4simple-get",
+                "parameters":[
+                    {
+                        "name":"parameter",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",
