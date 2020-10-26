@@ -94,7 +94,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	}
 
 	@Override
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
 		if(!IAF_API_ENABLED) {
 			return;
@@ -148,7 +148,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		 * Pass request down the chain, except for OPTIONS
 		 */
 		if (!method.equals("OPTIONS")) {
-			super.service(request, response);
+			super.invoke(request, response);
 		}
 	}
 
