@@ -1,14 +1,10 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 
-import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import com.unboundid.ldap.sdk.LDAPException;
 
