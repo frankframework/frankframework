@@ -27,6 +27,9 @@ public class ConfigChild {
 
 	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) throws ParseException {
 		sequenceInConfig = Integer.MAX_VALUE;
+		if(ibisDoc == null) {
+			throw new ParseException("No @IbisDoc available", 0);
+		}
 		Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
 		if(optionalOrder != null) {
 			sequenceInConfig = optionalOrder;

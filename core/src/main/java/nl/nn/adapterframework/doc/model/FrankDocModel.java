@@ -31,11 +31,24 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
-
+	private static final String DIGESTER_RULES = "digester-rules.xml";
+	
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
 	private @Getter List<FrankDocGroup> groups;
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
+
+	/**
+	 * Get the FrankDocModel needed in production. This is just a first draft. The
+	 * present version does not have groups yet. It will be improved in future
+	 * pull requests. 
+	 */
+	public static FrankDocModel populate() {
+		FrankDocModel result = new FrankDocModel();
+		result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
+		result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.core.IAdapter"));
+		return result;
+	}
 
 	public FrankDocModel() {
 		configChildDescriptors = new HashMap<>();
@@ -192,14 +205,20 @@ public class FrankDocModel {
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
-			if(ibisDoc != null) {
-				attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
-				attribute.parseIbisDocAnnotation(ibisDoc);
-				if(parsed.hasOrder) {
-					attribute.setOrder(parsed.getOrder());
-				}
-				return;
+			IbisDoc ibisDoc = null;
+			if(parsed.getReferredMethod() != null) {
+				ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
+				if(ibisDoc != null) {
+					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
+					attribute.parseIbisDocAnnotation(ibisDoc);
+					if(parsed.hasOrder) {
+						attribute.setOrder(parsed.getOrder());
+					}
+					return;
+				}				
+			} else {
+				log.warn(String.format(
+						"@IbisDocRef of Frank elelement [%s] attribute [%s] points to non-existent method", attributeOwner.getSimpleName(), attribute.getName()));
 			}
 		}
 		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
