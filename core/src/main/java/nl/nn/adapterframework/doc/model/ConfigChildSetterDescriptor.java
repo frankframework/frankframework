@@ -5,11 +5,17 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 
 /**
- * This class is similar to {@link ConfigChild}, but it is not the same. As an example,
- * consider a digester rule that links setter {@code setAbc()} to a syntax 1 name {@code abc}.
- * This rule is represented by an instance of this class, {@code ConfigChildSetterDescriptor}. If there are
+ * Class {@link nl.nn.adapterframework.doc.model.ConfigChild} specifies what Frank elements
+ * can be contained in another Frank element. The present class {@code ConfigChildSetterDescriptor}
+ * contains some of the information that has to be put in {@link nl.nn.adapterframework.doc.model.ConfigChild}.
+ * The present helper class holds the information that comes from the file {@code digester-rules.xml}.
+ * 
+ * Why don't we create {@link nl.nn.adapterframework.doc.model.ConfigChild} directly without
+ * creating this helper class? As an example, consider a digester rule that links setter
+ * {@code setAbc()} to a syntax 1 name {@code abc}.
+ * This rule is represented by an instance of {@code ConfigChildSetterDescriptor}. If there are
  * two classes {@code X} and {@code Y} with method {@code setAbc()}, then two
- * different instances of {@link ConfigChild} are needed. The reason is that
+ * different instances of {@link nl.nn.adapterframework.doc.model.ConfigChild} are needed. The reason is that
  * {@code X.setAbc()} and {@code Y.setAbc()} can have a different {@code sequenceInConfig}.
  * That field is obtained from an {@code IbisDoc} annotation.
  */
