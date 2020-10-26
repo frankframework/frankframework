@@ -44,7 +44,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		MtomRequestWrapper requestWrapper = new MtomRequestWrapper(request); //Turn every request into an MTOM request
-		MtomResponseWrapper responseWrapper = new MtomResponseWrapper(response); //Is this required?
+		MtomResponseWrapper responseWrapper = new MtomResponseWrapper(response); //Check amount of parts, return either a SWA, MTOM or soap message
 
 		cmisWebServiceServlet.service(requestWrapper, responseWrapper);
 	}

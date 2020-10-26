@@ -154,7 +154,7 @@ public class ApiServiceDispatcher {
 		List<ApiDispatchConfig> clientList = Arrays.asList(client);
 		return generateOpenApiJsonSchema(clientList);
 	}
-		
+
 	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients) {
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
@@ -180,9 +180,12 @@ public class ApiServiceDispatcher {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
 					methodBuilder.add("operationId", adapter.getName());
-
+					// GET and DELETE methods cannot have a requestBody according to the specs.
+					if(!method.equals("GET") && !method.equals("DELETE")) {
+						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
+					}
 					//ContentType may have more parameters such as charset and formdata-boundry
-					MediaTypes produces = MediaTypes.valueOf(listener.getProduces());
+					MediaTypes produces = listener.getProducesEnum();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
 
@@ -207,21 +210,32 @@ public class ApiServiceDispatcher {
 		return null;
 	}
 
+	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
+		PipeLine pipeline = adapter.getPipeLine();
+		Json2XmlValidator validator = getJsonValidator(pipeline);
+		if(validator != null && StringUtils.isNotEmpty(validator.getRoot())) {
+			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+validator.getRoot()));
+			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
+			methodBuilder.add("requestBody", requestBodyContent);
+		}
+	}
+
 	private JsonObjectBuilder mapResponses(IAdapter adapter, MediaTypes contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
 		Json2XmlValidator validator = getJsonValidator(pipeline);
 		JsonObjectBuilder schema = null;
+		String ref = null;
 		if(validator != null) {
 			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
 			if(jsonSchema != null) {
 				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
 					schemas.add(entry.getKey(), entry.getValue());
 				}
-				String ref = validator.getMessageRoot(true);
+				ref = validator.getMessageRoot(true);
 				schema = Json.createObjectBuilder();
-				schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 			}
 		}
 
@@ -241,7 +255,9 @@ public class ApiServiceDispatcher {
 				JsonObjectBuilder content = Json.createObjectBuilder();
 				if(schema == null) {
 					content.addNull(contentType.getContentType());
-				} else {
+				} else if(StringUtils.isNotEmpty(ref)){
+					// JsonObjectBuilder add method consumes the schema
+					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);

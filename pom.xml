@@ -452,6 +452,7 @@
         <module>ladybug</module>
         <module>test</module>
         <module>akamai</module>
+        <module>example</module>
       </modules>
     </profile>
     <profile>

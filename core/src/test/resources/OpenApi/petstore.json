@@ -10,12 +10,28 @@
             "post":{
                 "summary":"Create a pet",
                 "operationId":"createPets",
+                "requestBody":{
+                    "content":{
+                        "*/*":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Pet"
+                            }
+                        }
+                    }
+                },
                 "responses":{
                     "201":{
                         "description":"Created"
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Pet"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -34,7 +50,14 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Pets"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -55,7 +78,14 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Pet"
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -1162,7 +1162,7 @@ public class XmlUtils {
 	}
 
 	public static String encodeChars(char[] chars, int offset, int length) {
-		return encodeChars(chars, 0, length, false);
+		return encodeChars(chars, offset, length, false);
 	}
 
 	/**
