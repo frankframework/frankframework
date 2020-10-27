@@ -112,7 +112,7 @@ public class FrankDocModel {
 		// If a containing FrankElement contains the type being created, we do not
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
-		if(clazz.isInterface()) {
+		if(result.isFromJavaInterface()) {
 			Utils.getSpringBeans(clazz.getName()).stream()
 					.map(b -> b.getClazz())
 					.map(cl -> findOrCreateFrankElement(cl))
