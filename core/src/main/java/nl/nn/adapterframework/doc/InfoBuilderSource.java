@@ -381,6 +381,9 @@ class InfoBuilderSource {
 		try {
 			Method[] methods = clazz.getMethods();
 			for (int i = 0; i < methods.length; i++) {
+				if(!isGetterOrSetter(methods[i])) {
+					continue;
+				}
 				Class<?> returnType = methods[i].getReturnType();
 				if (returnType == String.class || returnType.isPrimitive()) {
 					if (methods[i].getName().startsWith(verb)) {
