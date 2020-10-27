@@ -5,11 +5,13 @@ import static org.junit.Assert.assertEquals;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
@@ -19,6 +21,9 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class JdbcUtilTest {
 	private static final String H2_CONNECTION_STRING = "jdbc:h2:mem:test";
@@ -88,6 +93,37 @@ public class JdbcUtilTest {
 		assertEquals(5, result);
 	}
 
+	@Test
+	public void testWarningsToString() {
+		String expected = "<warnings>\n"+
+							"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n"+
+							"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n"+
+							"</warnings>";
+		String actual = JdbcUtil.warningsToString(getWarnings());
+		assertEquals(expected,actual);
+	}
+
+	@Test
+	public void testWarningsToXml() throws SAXException {
+		String expected = "<warnings>\n"+
+							"	<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\"/>\n"+
+							"	<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\"/>\n"+
+							"</warnings>";
+		XmlWriter writer = new XmlWriter();
+		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
+		try (SaxElementBuilder seb = new SaxElementBuilder(ppf)) {
+			JdbcUtil.warningsToXml(getWarnings(), seb);
+			assertEquals(expected, writer.toString());
+		}
+	}
+	
+	private SQLWarning getWarnings() {
+		SQLWarning warning1 = new SQLWarning("warningReason1", "SQLState 1", 111, new NullPointerException("tja"));
+		SQLWarning warning2 = new SQLWarning("warningReason2", "SQLState 2", 222, new NullPointerException("och"));
+		warning1.setNextWarning(warning2);
+		return warning1;
+	}
+	
 	@After
 	public void closeDatabase() throws SQLException {
 		if (connection != null) {

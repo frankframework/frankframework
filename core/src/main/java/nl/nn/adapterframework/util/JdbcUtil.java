@@ -107,8 +107,7 @@ public class JdbcUtil {
 				warningElem.addAttribute("sqlState",""+warnings.getSQLState());
 				String message=warnings.getMessage();
 				
-				// getCause() geeft unresolvedCompilationProblem (bij Peter Leeuwenburgh?)
- 				Throwable cause=warnings.getCause();
+				Throwable cause=warnings.getCause();
 				if (cause!=null) {
 					warningElem.addAttribute("cause",cause.getClass().getName());
 					if (message==null) {
@@ -397,17 +396,6 @@ public class JdbcUtil {
 		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null,xmlEncode);
 	}
 
-//	/**
-//	 * retrieves an outputstream to a blob column from an updatable resultset.
-//	 */
-//	public static OutputStream getBlobUpdateOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, ResultSet rs, int columnIndex) throws SQLException, JdbcException {
-//		Blob blob = rs.getBlob(columnIndex);
-//		if (blob==null) {
-//			throw new JdbcException("no blob found in column ["+columnIndex+"]");
-//		}
-//		return blob.setBinaryStream(1L);
-//	}
-
 	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
 		OutputStream result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
@@ -620,7 +608,6 @@ public class JdbcUtil {
 	 */
 	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
@@ -649,7 +636,6 @@ public class JdbcUtil {
 
 	public static Properties executePropertiesQuery(Connection connection, String query) throws JdbcException {
 		Properties props = new Properties();
-
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -675,7 +661,6 @@ public class JdbcUtil {
 	 */
 	public static int executeIntQuery(Connection connection, String query, String param1, String param2) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -698,7 +683,6 @@ public class JdbcUtil {
 	
 	public static int executeIntQuery(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2,param3);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -722,7 +706,6 @@ public class JdbcUtil {
 	
 	public static int executeIntQuery(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2,param3,param4);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -755,7 +738,6 @@ public class JdbcUtil {
 	
 	public static void executeStatement(Connection connection, String query, String param1, String param2) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2);
 			stmt.execute();
@@ -773,7 +755,6 @@ public class JdbcUtil {
 	
 	public static void executeStatement(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2,param3);
 			stmt.execute();
@@ -785,8 +766,7 @@ public class JdbcUtil {
 	public static void executeStatement(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
 
-		try {
-			PreparedStatement stmt = connection.prepareStatement(query);
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2,param3,param4);
 			stmt.execute();
 		} catch (Exception e) {
@@ -796,7 +776,6 @@ public class JdbcUtil {
 
 	public static void executeStatement(Connection connection, String query, int param1, int param2, int param3, String param4, String param5) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5));
-
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt,param1,param2,param3,param4,param5);
 			stmt.execute();
@@ -858,7 +837,6 @@ public class JdbcUtil {
 	public static List<List<Object>> executeObjectListListQuery(Connection connection, String query, int columnsCount) throws JdbcException {
 		List<List<Object>> objectListList = new ArrayList<List<Object>>();
 		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
-		
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
@@ -935,11 +913,10 @@ public class JdbcUtil {
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired);
 			}
 		}
-	}	
+	}
 
 
 	public static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired) throws SQLException, JdbcException {
-		
 		String paramName=pv.getDefinition().getName();
 		String paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
@@ -1057,5 +1034,5 @@ public class JdbcUtil {
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
 		}
 	}
-	
+
 }
