@@ -29,15 +29,8 @@
 	<profiles>
 		<profile>
 			<id>legacy-jdbc</id>
-			<repositories>
-				<repository> <!-- repository for oracle ojdbc7-12.1.0.2, that is used by NN -->
-					<id>hand-china-repo</id>
-					<name>HandChinaRepo</name>
-					<url>http://nexus.saas.hand-china.com/content/repositories/rdc/</url>
-				</repository>
-			</repositories>
 			<properties>
-				<oracle.driver.groupid>com.oracle</oracle.driver.groupid>
+				<oracle.driver.groupid>oracle</oracle.driver.groupid>
 				<oracle.driver.version>12.1.0.2</oracle.driver.version>
 				<oracle.driver.jdkversion>7</oracle.driver.jdkversion>
 			</properties>
