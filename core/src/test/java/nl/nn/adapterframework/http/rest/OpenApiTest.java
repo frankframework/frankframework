@@ -38,7 +38,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
-		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "post", null).setValidator("simple.xsd", null, "user", null).addExit("200").build(true);
+		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("simpleEndpointPostTest", "post", null).setValidator("simple.xsd", null, "user", null).addExit("200").build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.getPatternClients().size());
 		String result = callOpenApi();
@@ -53,7 +53,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
-		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("users", "post", null).setValidator("simple.xsd", null, "user", null).addExit("200").addExit("500", null, "true").build(true);
+		new AdapterBuilder("myAdapterName", "description4simple-get").setListener("simpleEndpointPostWithEmptyExitTest", "post", null).setValidator("simple.xsd", null, "user", null).addExit("200").addExit("500", null, "true").build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.getPatternClients().size());
 		String result = callOpenApi();
@@ -68,7 +68,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.getPatternClients().size());
 
-		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("envelope", "get", "operationId").setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null).addExit("200").build(true);
+		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("simpleEndpointWithOperationIdTest", "get", "operationId").setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null).addExit("200").build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.getPatternClients().size());
 		String result = callOpenApi();
@@ -85,10 +85,10 @@ public class OpenApiTest extends OpenApiTestBase {
 		Parameter param = new Parameter();
 		param.setName("parameter");
 		param.setValue("parameter");
-		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("envelope", "get", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").build(true);
-		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("envelope", "post", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").build(true);
+		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("simpleEndpointQueryParamTest", "get", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").build(true);
+		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("simpleEndpointQueryParamTest", "post", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").build(true);
 
-		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findConfigForUri("envelope").getMethods().size());
+		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findConfigForUri("simpleEndpointQueryParamTest").getMethods().size());
 		String result = callOpenApi();
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeQueryParam.json");
@@ -103,10 +103,10 @@ public class OpenApiTest extends OpenApiTestBase {
 		Parameter param = new Parameter();
 		param.setName("parameter");
 		param.setValue("parameter");
-		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("envelope/{pattern}", "get", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").addExit("500").addExit("403").build(true);
-		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("envelope/{pattern}/sub/{path}", "post", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").addExit("500").addExit("403").build(true);
+		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("pathParamQueryParamTest/{pattern}", "get", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").addExit("500").addExit("403").build(true);
+		new AdapterBuilder("myAdapterName", "get envelope adapter description").setListener("pathParamQueryParamTest/{pattern}/sub/{path}", "post", null).setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param).addExit("200").addExit("500").addExit("403").build(true);
 
-		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri("envelope").size());
+		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri("pathParamQueryParamTest").size());
 		String result = callOpenApi();
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");

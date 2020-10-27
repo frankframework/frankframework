@@ -6,7 +6,7 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/envelope":{
+        "/simpleEndpointQueryParamTest":{
             "post":{
                 "summary":"get envelope adapter description",
                 "requestBody":{

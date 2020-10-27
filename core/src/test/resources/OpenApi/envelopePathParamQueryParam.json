@@ -6,7 +6,7 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/envelope/{pattern}":{
+        "/pathParamQueryParamTest/{pattern}":{
             "get":{
                 "summary":"get envelope adapter description",
                 "parameters":[
@@ -60,7 +60,7 @@
                 }
             }
         },
-        "/envelope/{pattern}/sub/{path}":{
+        "/pathParamQueryParamTest/{pattern}/sub/{path}":{
             "post":{
                 "summary":"get envelope adapter description",
                 "requestBody":{

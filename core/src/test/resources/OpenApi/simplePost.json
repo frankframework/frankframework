@@ -6,7 +6,7 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/users":{
+        "/simpleEndpointPostTest":{
             "post":{
                 "summary":"description4simple-get",
                 "parameters":[

@@ -6,7 +6,7 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/envelope":{
+        "/simpleEndpointWithOperationIdTest":{
             "get":{
                 "summary":"get envelope adapter description",
                 "operationId":"operationId",
