@@ -7,7 +7,7 @@
     },
     "paths":{
         "/users":{
-            "get":{
+            "post":{
                 "summary":"description4simple-get",
                 "parameters":[
                 ],
@@ -23,14 +23,7 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/user"
-                                }
-                            }
-                        }
+                        "description":"Internal Server Error"
                     }
                 }
             }

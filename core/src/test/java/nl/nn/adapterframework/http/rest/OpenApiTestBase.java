@@ -138,7 +138,7 @@ public class OpenApiTestBase extends Mockito {
 		private ApiListener listener;
 		private Json2XmlValidator validator;
 		private Adapter adapter;
-		private List<Integer> exits = new ArrayList<Integer>();
+		private List<PipeLineExit> exits = new ArrayList<PipeLineExit>();
 
 //		public static AdapterBuilder create(String name, String description) {
 //			return new AdapterBuilder(name, description);
@@ -162,12 +162,6 @@ public class OpenApiTestBase extends Mockito {
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}
-			if(method.equalsIgnoreCase("POST")) {
-				exits.add(201);
-			} else {
-				exits.add(200);
-			}
-			exits.add(500);
 
 			return this;
 		}
@@ -190,8 +184,27 @@ public class OpenApiTestBase extends Mockito {
 
 			return this;
 		}
-		public AdapterBuilder addExit(int exitCode) {
-			this.exits.add(exitCode);
+		public AdapterBuilder addExit(String exitCode) {
+			return addExit(exitCode, null, "false");
+		}
+		
+		public AdapterBuilder addExit(String exitCode, String elementName, String isEmpty) {
+			PipeLineExit ple = new PipeLineExit();
+			ple.setCode(exitCode);
+			ple.setElementName(elementName);
+			ple.setEmpty(isEmpty);
+			switch (exitCode) {
+				case "200":
+					ple.setState("success");
+					break;
+				case "201":
+					ple.setState("success");
+					break;
+				default:
+					ple.setState("error");
+					break;
+			}
+			this.exits.add(ple);
 			return this;
 		}
 		public Adapter build() throws ConfigurationException {
@@ -207,27 +220,10 @@ public class OpenApiTestBase extends Mockito {
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 			pipeline.setInputValidator(validator);
-			for (Integer exit : exits) {
-				PipeLineExit ple = new PipeLineExit();
-				ple.setPath("success"+exit);
-				ple.setState("success");
+			for (PipeLineExit exit : exits) {
+				exit.setPath("success"+exit.getExitCode());
 
-				switch (exit) {
-				case 200:
-					ple.setCode("200");
-					break;
-				case 201:
-					ple.setCode("201");
-					ple.setEmpty("true");
-					break;
-				case 500:
-					ple.setCode("500");
-					ple.setState("error");
-					ple.setElementName("Error");
-				default:
-					break;
-				}
-				pipeline.registerPipeLineExit(ple);
+				pipeline.registerPipeLineExit(exit);
 			}
 			IPipe pipe = new EchoPipe();
 			pipe.setName("echo");

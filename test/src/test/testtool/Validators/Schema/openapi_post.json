@@ -17,6 +17,36 @@
                         }
                     }
                 },
+                "parameters":[
+                    {
+                        "name":"Status",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"Id",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"Item/Id",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"Attributes/Attribute/Id",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",

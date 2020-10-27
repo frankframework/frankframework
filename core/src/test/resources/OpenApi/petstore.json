@@ -18,6 +18,8 @@
                         }
                     }
                 },
+                "parameters":[
+                ],
                 "responses":{
                     "201":{
                         "description":"Created"

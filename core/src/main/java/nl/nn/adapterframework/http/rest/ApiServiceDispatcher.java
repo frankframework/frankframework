@@ -190,9 +190,9 @@ public class ApiServiceDispatcher {
 					// GET and DELETE methods cannot have a requestBody according to the specs.
 					if(!method.equals("GET") && !method.equals("DELETE")) {
 						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
-					} else if(method.equals("GET")) {
-						mapParamsInRequest(adapter, listener, methodBuilder);
 					}
+					mapParamsInRequest(adapter, listener, methodBuilder);
+
 					//ContentType may have more parameters such as charset and formdata-boundry
 					MediaTypes produces = listener.getProducesEnum();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
