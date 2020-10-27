@@ -34,7 +34,7 @@ public class FrankDocModel {
 	private static final String DIGESTER_RULES = "digester-rules.xml";
 	
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
-	private @Getter List<FrankDocGroup> groups;
+	private @Getter Map<String, FrankDocGroup> groups;
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
@@ -57,7 +57,7 @@ public class FrankDocModel {
 
 	public FrankDocModel() {
 		configChildDescriptors = new HashMap<>();
-		groups = new ArrayList<>();
+		groups = new HashMap<>();
 	}
 
 	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
