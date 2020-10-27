@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 437863352486501445L;
+	private static final long serialVersionUID = 437863352486501446L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -128,7 +128,6 @@ public class Message implements Serializable {
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
 			log.debug("deep preserving as byte[]");
 			request = StreamUtil.streamToByteArray(asInputStream(), false);
-			return;
 		}
 	}
 
@@ -418,9 +417,12 @@ public class Message implements Serializable {
 	/**
 	 * @return Message size or -1 if it can't determine the size.
 	 */
-	public long size() { //TODO implement local file urls
+	public long size() {
 		if(request == null) {
 			return -1;
+		}
+		if(request instanceof InputStream || request instanceof Reader) {
+			return -1; //Unable to determine the size of a Stream
 		}
 
 		try {

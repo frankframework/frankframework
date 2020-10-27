@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class MessageTest {
 		}
 	}
 	
-	protected void testToString(Message adapter, Class clazz) {
+	protected void testToString(Message adapter, Class<?> clazz) {
 		String actual = adapter.toString();
 		assertThat(actual, startsWith(clazz.getSimpleName()));
 		assertEquals(adapter.asObject().getClass().getName(), clazz.getName());
@@ -388,7 +388,7 @@ public class MessageTest {
 		folder.create();
 		File file = folder.newFile();
 		writeContentsToFile(file, testString);
-		URL source = file.toURL();
+		URL source = file.toURI().toURL();
 
 		Message in = new Message(source);
 		byte[] wire = serializationTester.serialize(in);
@@ -429,13 +429,31 @@ public class MessageTest {
 
 	@Test
 	public void testMessageSizeURL() {
-		Message message = Message.asMessage(this.getClass().getResource("/file.xml"));
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		Message message = Message.asMessage(url);
 		assertEquals("size differs or could not be determined", -1, message.size());
 	}
 
 	@Test
-	public void testMessageSizeExternalURL() {
-		Message message = Message.asMessage(null);
+	public void testNullMessage() {
+		Message message = Message.nullMessage();
 		assertEquals(-1, message.size());
+	}
+
+	@Test
+	public void testMessageSizeExternalURL() throws Exception {
+		URL url = new URL("http://www.file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		Message message = Message.asMessage(url);
+		assertEquals(-1, message.size());
+	}
+
+	@Test
+	public void testMessageSizeReader() {
+		Message message = new Message(new StringReader("string"));
+		assertEquals("size differs or could not be determined", -1, message.size());
 	}
 }
