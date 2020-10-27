@@ -6,14 +6,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 public class FrankDocModelConfigChildrenDetailTest {
 	private FrankDocModel instance;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws SAXException, IOException {
 		instance = new FrankDocModel();
 		instance.createConfigChildDescriptorsFrom("doc/fake-digester-rules.xml");
 	}

@@ -4,11 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.doc.Utils;
 
@@ -19,7 +21,7 @@ public class FrankDocModelConfigChildrenTest {
 	private List<ConfigChild> configChildren;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws SAXException, IOException {
 		instance = new FrankDocModel();
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(

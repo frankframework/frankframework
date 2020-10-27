@@ -45,7 +45,12 @@ public class FrankDocModel {
 	 */
 	public static FrankDocModel populate() {
 		FrankDocModel result = new FrankDocModel();
-		result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
+		try {
+			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
+		} catch(Exception e) {
+			log.fatal("Cannot create config child descriptors", e);
+			return null;
+		}
 		result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.core.IAdapter"));
 		return result;
 	}
@@ -55,19 +60,19 @@ public class FrankDocModel {
 		groups = new ArrayList<>();
 	}
 
-	public void createConfigChildDescriptorsFrom(String path) {
+	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
 		Resource resource = Resource.getResource(path);
 		if(resource == null) {
-			throw new RuntimeException(String.format("Cannot find resource on the classpath: [%s]", path));
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
 		}
 		try {
 			XmlUtils.parseXml(resource.asInputSource(), new Handler(path));
 		}
 		catch(IOException e) {
-			throw new RuntimeException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
 		}
 		catch(SAXException e) {
-			throw new RuntimeException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
 		}
 	}
 
