@@ -2,7 +2,6 @@ package nl.nn.adapterframework.doc.model;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -307,15 +306,10 @@ public class FrankDocModel {
 		for(Method m: configChildSetters) {
 			ConfigChild configChild = new ConfigChild(parent);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
-			try {
-				configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
-			} catch(ParseException e) {
-				log.warn(String.format("No config child order for method [%s] of Frank element [%s]",
-						m.getName(), parent.getSimpleName()), e);
-			}
 			Class<?> elementClass = m.getParameterTypes()[0];
 			configChild.setElementType(findOrCreateElementType(elementClass));
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
+			configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());

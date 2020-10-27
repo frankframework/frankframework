@@ -1,9 +1,5 @@
 package nl.nn.adapterframework.doc.model;
 
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -25,27 +21,29 @@ public class ConfigChild {
 		this.configParent = configParent;
 	}
 
-	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) throws ParseException {
+	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) {
 		sequenceInConfig = Integer.MAX_VALUE;
 		if(ibisDoc == null) {
-			throw new ParseException("No @IbisDoc available", 0);
+			log.warn(String.format("No @IbisDoc annotation for config child, parent [%s] and element type [%s]",
+					configParent.getSimpleName(), elementType.getSimpleName()));
+			return;
 		}
 		Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
 		if(optionalOrder != null) {
 			sequenceInConfig = optionalOrder;
-		} else {
-			throw new ParseException(String.format("Could not get order from @IbisDoc annotation with value [%s]",
-					Arrays.asList(ibisDoc.value()).stream().collect(Collectors.joining(", "))), 0);
 		}
 	}
 
-	private static Integer parseIbisDocAnnotation(IbisDoc ibisDoc) {
+	private Integer parseIbisDocAnnotation(IbisDoc ibisDoc) {
 		Integer result = null;
-		if((ibisDoc != null) && (ibisDoc.value().length == 1)) {
+		if(ibisDoc.value().length >= 1) {
 			try {
 				result = Integer.valueOf(ibisDoc.value()[0]);
 			} catch(Exception e) {
-				log.warn(String.format("@IbisDoc for config children has a non-integer order [%s], ignored", ibisDoc.value()[0]));
+				log.warn(String.format("@IbisDoc for config child with parent [%s] and type [%s] has a non-integer order [%s], ignored",
+						configParent.getSimpleName(),
+						elementType.getSimpleName(),
+						ibisDoc.value()[0]));
 			}
 		}
 		return result;
