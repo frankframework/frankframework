@@ -418,7 +418,7 @@ public class Message implements Serializable {
 	/**
 	 * @return Message size or -1 if it can't determine the size.
 	 */
-	public long size() {
+	public long size() { //TODO implement local file urls
 		if(request == null) {
 			return -1;
 		}
@@ -432,9 +432,6 @@ public class Message implements Serializable {
 			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
 		}
 
-		if (request instanceof ByteArrayInputStream) {
-			return ((ByteArrayInputStream) request).available();
-		}
 		if(request instanceof String) {
 			return ((String) request).length();
 		}

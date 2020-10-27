@@ -263,9 +263,16 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
+			String responseBody = null;
+			try { // the responseBody is optional. Make sure no exceptions are thrown when the response cannot be read properly (due to another underlying problem)
+				responseBody = getResponseBody(responseHandler).asString();
+			} catch (IOException e) {
+				log.warn(getLogPrefix()+"unable to parse response", e);
+			}
+
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + responseBody);
 		}
 
 		XmlBuilder result = new XmlBuilder("result");
@@ -276,7 +283,14 @@ public class NetStorageSender extends HttpSenderBase {
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			String responseString = getResponseBodyAsString(responseHandler);
+			String responseString = getResponseBody(responseHandler).asString();
+
+			int rbLength = responseString.length();
+			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+			if (rbLength >= rbSizeWarn) {
+				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+			}
+
 			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
 			responseString = XmlUtils.skipXmlDeclaration(responseString);
 
@@ -314,17 +328,11 @@ public class NetStorageSender extends HttpSenderBase {
 		return Message.asMessage(result.toXML());
 	}
 
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	public Message getResponseBody(HttpResponseHandler responseHandler) {
 		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		String responseBody = responseHandler.getResponseAsString(true);
-		int rbLength = responseBody.length();
-		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-		if (rbLength >= rbSizeWarn) {
-			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-		}
-		return responseBody;
+		return new Message(responseHandler.getResponse(), charset);
 	}
 
 	/**

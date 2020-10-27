@@ -412,13 +412,6 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeByteStream() {
-		byte[] byteArr = "string".getBytes();
-		Message message = Message.asMessage(new ByteArrayInputStream(byteArr));
-		assertEquals("size differs or could not be determined", 6, message.size());
-	}
-
-	@Test
 	public void testMessageSizeByteArray() {
 		Message message = Message.asMessage( "string".getBytes());
 		assertEquals("size differs or could not be determined", 6, message.size());

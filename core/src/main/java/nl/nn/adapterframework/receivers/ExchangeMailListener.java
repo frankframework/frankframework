@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -81,7 +80,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	public final String EMAIL_MESSAGE_TYPE="email";
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 	
-	private String storeEmailAsStreamInSessionKey;
+	private String storeEmailInSessionKey;
 	private boolean simple = false;
 	
 	{
@@ -99,28 +98,28 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, threadContext);
 		}
-		Item item = (Item) rawMessage;
+
 		try {
 			XmlBuilder emailXml = new XmlBuilder("email");
 			EmailMessage emailMessage;
 			PropertySet ps;
 			if (isSimple()) {
 				ps = new PropertySet(EmailMessageSchema.Subject);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), rawMessage.getId(), ps);
 				emailMessage.load();
 				addEmailInfoSimple(emailMessage, emailXml);
 			} else {
 				ps = new PropertySet(EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.Subject, EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), rawMessage.getId(), ps);
 				emailMessage.load();
 				addEmailInfo(emailMessage, emailXml);
 			}
 
-			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
+			if (StringUtils.isNotEmpty(getStoreEmailInSessionKey())) {
 				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
 				MimeContent mc = emailMessage.getMimeContent();
-				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
-				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
+				Message message = new Message(mc.getContent(), mc.getCharacterSet());
+				threadContext.put(getStoreEmailInSessionKey(), message);
 			}
 
 			return new Message(emailXml.toXML());
@@ -329,11 +328,16 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		return simple;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("use storeResultInSessionKey instead")
 	public void setStoreEmailAsStreamInSessionKey(String string) {
-		storeEmailAsStreamInSessionKey = string;
+		setStoreEmailInSessionKey(string);
 	}
-	public String getStoreEmailAsStreamInSessionKey() {
-		return storeEmailAsStreamInSessionKey;
+	public void setStoreEmailInSessionKey(String string) {
+		storeEmailInSessionKey = string;
+	}
+	public String getStoreEmailInSessionKey() {
+		return storeEmailInSessionKey;
 	}
 
 
