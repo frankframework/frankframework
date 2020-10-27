@@ -95,26 +95,27 @@ public class JdbcUtilTest {
 
 	@Test
 	public void testWarningsToString() {
-		String expected = "<warnings>\n"+
-							"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n"+
-							"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n"+
-							"</warnings>";
+		String expected = getExpectedWarningXml();
 		String actual = JdbcUtil.warningsToString(getWarnings());
-		assertEquals(expected,actual);
+		MatchUtils.assertXmlEquals(expected,actual);
 	}
 
 	@Test
 	public void testWarningsToXml() throws SAXException {
-		String expected = "<warnings>\n"+
-							"	<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\"/>\n"+
-							"	<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\"/>\n"+
-							"</warnings>";
+		String expected = getExpectedWarningXml();
 		XmlWriter writer = new XmlWriter();
 		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
 		try (SaxElementBuilder seb = new SaxElementBuilder(ppf)) {
 			JdbcUtil.warningsToXml(getWarnings(), seb);
-			assertEquals(expected, writer.toString());
+			MatchUtils.assertXmlEquals(expected,writer.toString());
 		}
+	}
+	
+	private String getExpectedWarningXml() {
+		return "<warnings>\n"+
+				"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n"+
+				"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n"+
+				"</warnings>";
 	}
 	
 	private SQLWarning getWarnings() {
