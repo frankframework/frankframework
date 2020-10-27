@@ -71,13 +71,6 @@ public class IbisApplicationContext {
 		}
 	}
 
-	public Exception getStartupException() {
-		if(BootState.ERROR.equals(state)) {
-			return startupException;
-		}
-		return null;
-	}
-
 	private AbstractApplicationContext applicationContext;
 	private ApplicationContext parentContext = null;
 
@@ -239,6 +232,13 @@ public class IbisApplicationContext {
 
 	public BootState getBootState() {
 		return state;
+	}
+
+	public Exception getStartupException() {
+		if(BootState.ERROR.equals(state)) {
+			return startupException;
+		}
+		return null;
 	}
 
 	/**
