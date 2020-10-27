@@ -48,7 +48,7 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel();
 		try {
 			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
-			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.core.IAdapter"));
+			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
 			return null;
