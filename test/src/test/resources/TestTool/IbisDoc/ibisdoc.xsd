@@ -4657,8 +4657,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -5707,8 +5705,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -6167,851 +6163,6 @@
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="CmisErrorSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>specifies action to perform. Must be one of 
- * &lt;ul&gt;
- * &lt;li&gt;&lt;code&gt;get&lt;/code&gt;: get the content of a document (and optional the properties)&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;create&lt;/code&gt;: create a document&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;find&lt;/code&gt;: perform a query that returns properties&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;update&lt;/code&gt;: update the properties of an existing document&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;fetch&lt;/code&gt;: get the (meta)data of a folder or document&lt;/li&gt;
- * &lt;/ul&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Accept self signed certificates (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="bindingType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>'atompub', 'webservices' or 'browser' (default: 'atompub')</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Auth Alias used to obtain certificate password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificatePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Certificate Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateUrl" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Path (or resource url) to certificate to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="defaultMediaType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) the mime type used to store the document when it's not set in the input message by a property (default: 'application/octet-stream')</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileContentSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;action=create&lt;/code&gt;: the session key that contains the base64 encoded content of the file to use. when &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getproperties=true&lt;/code&gt;: the session key in which the base64 encoded content of the document is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileInputStreamSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;action=create&lt;/code&gt;: the session key that contains the input stream of the file to use. when &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getproperties=true&lt;/code&gt;: the session key in which the input stream of the document is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileNameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) the session key that contains the name of the file to use. if not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="getDocumentContent" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the attachment for the document is streamed to &lt;code&gt;fileInputStreamSessionKey&lt;/code&gt; otherwise only the properties are returned (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="getProperties" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the content of the document is streamed to &lt;code&gt;fileinputstreamsessionkey&lt;/code&gt; and all document properties are put in the result as a xml string (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Ignore expired certificate exceptions (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keepSession" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>if true, the session is not closed at the end and it will be used in the next call (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>KeyManager Algorithm (default: pkix)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Keystore Type (default: pkcs12)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of concurrent connections (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>name of the sender</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="overrideEntryPointWSDL" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>override entrypoint wsdl by reading it from the classpath, overrides url attribute</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation />
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain credentials for authentication to proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyHost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy host url</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPort" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy host port (default: 80)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy Username</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="repository" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>repository id</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultOnNotFound" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="streamResultToServlet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the content of the document is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string) (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the connection timeout in seconds (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>TrustManager Algorithm (default: pkix)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Path (or resource url) to truststore to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Truststore Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Truststore Type (default: jks)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>url to connect to</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="useRootFolder" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) if true, the document is created in the root folder of the repository. otherwise the document is created in the repository (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userName" type="xs:string" />
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username used in authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Ignore certificate hostname validation (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="CmisEventListenerType">
-    <xs:attribute name="applicationFaultsAsExceptions" type="xs:string" />
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>name of the listener as known to the adapter</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="running" type="xs:string" />
-  </xs:complexType>
-  <xs:complexType name="CmisHttpErrorSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="allowSelfSignedCertificates" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, self signed certificates are accepted (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authDomain" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>domain used in authentication to host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificate" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>resource url to certificate to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain certificate password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificatePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>certificate password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="charSet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>charset of the request. Typically only used on PUT and POST requests. (default: UTF-8)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="contentType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>content-type (superset of mimetype + charset) of the request, for POST and PUT methods (default: text/html)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="disableCookies" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Disables the use of cookies, making the sender completely stateless (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="followRedirects" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, a redirect request will be honoured, e.g. to switch to https (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="headersParams" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>comma separated list of parameter names which should be set as http headers</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the certificateexpiredexception is ignored (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default: pkcs12)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of concurrent connections (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxExecuteRetries" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of times it the execution is retried (default: 1)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="methodType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT' (default: GET)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>name of the sender</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>password used in authentication to host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="protocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used (default: SSL)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyHost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPort" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy port (default: 80)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy realm (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy username (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleChecking" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>controls whether connections checked to be stale, i.e. appear open, but are not. (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleTimeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used when StaleChecking=true. Timeout when stale connections should be closed. (default: 5000)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>&gt;(only used when &lt;code&gt;xhtml=true&lt;/code&gt;) stylesheet to apply to the html response</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>timeout in ms of obtaining a connection/result. 0 means no timeout (default: 10000)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>resource url to truststore to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>truststore password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>type of truststore (default: jks)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>URL or base of URL to be used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="urlParam" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>parameter that is used to obtain url; overrides url-attribute. (default: url)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username used in authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the hostname in the certificate will be checked against the actual hostname (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xhtml" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the html response is transformed to xhtml (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="CmisHttpSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="allowSelfSignedCertificates" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, self signed certificates are accepted (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authDomain" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>domain used in authentication to host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificate" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>resource url to certificate to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain certificate password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificatePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>certificate password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="charSet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>charset of the request. Typically only used on PUT and POST requests. (default: UTF-8)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="contentType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>content-type (superset of mimetype + charset) of the request, for POST and PUT methods (default: text/html)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="disableCookies" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Disables the use of cookies, making the sender completely stateless (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="followRedirects" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, a redirect request will be honoured, e.g. to switch to https (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="headersParams" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>comma separated list of parameter names which should be set as http headers</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the certificateexpiredexception is ignored (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default: pkcs12)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of concurrent connections (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxExecuteRetries" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of times it the execution is retried (default: 1)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="methodType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT' (default: GET)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>name of the sender</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>password used in authentication to host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="protocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used (default: SSL)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyHost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy host (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPort" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy port (default: 80)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy realm (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>proxy username (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleChecking" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>controls whether connections checked to be stale, i.e. appear open, but are not. (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleTimeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Used when StaleChecking=true. Timeout when stale connections should be closed. (default: 5000)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>&gt;(only used when &lt;code&gt;xhtml=true&lt;/code&gt;) stylesheet to apply to the html response</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>timeout in ms of obtaining a connection/result. 0 means no timeout (default: 10000)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>resource url to truststore to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>truststore password (default:  )</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>type of truststore (default: jks)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>URL or base of URL to be used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="urlParam" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>parameter that is used to obtain url; overrides url-attribute. (default: url)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username used in authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the hostname in the certificate will be checked against the actual hostname (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xhtml" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when true, the html response is transformed to xhtml (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  <xs:complexType name="CmisSenderType">
-    <xs:sequence>
-      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>specifies action to perform. Must be one of 
- * &lt;ul&gt;
- * &lt;li&gt;&lt;code&gt;get&lt;/code&gt;: get the content of a document (and optional the properties)&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;create&lt;/code&gt;: create a document&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;find&lt;/code&gt;: perform a query that returns properties&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;update&lt;/code&gt;: update the properties of an existing document&lt;/li&gt;
- * &lt;li&gt;&lt;code&gt;fetch&lt;/code&gt;: get the (meta)data of a folder or document&lt;/li&gt;
- * &lt;/ul&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Accept self signed certificates (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="bindingType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>'atompub', 'webservices' or 'browser' (default: 'atompub')</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Auth Alias used to obtain certificate password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificatePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Certificate Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="certificateUrl" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Path (or resource url) to certificate to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="defaultMediaType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) the mime type used to store the document when it's not set in the input message by a property (default: 'application/octet-stream')</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileContentSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;action=create&lt;/code&gt;: the session key that contains the base64 encoded content of the file to use. when &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getproperties=true&lt;/code&gt;: the session key in which the base64 encoded content of the document is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileInputStreamSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;action=create&lt;/code&gt;: the session key that contains the input stream of the file to use. when &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getproperties=true&lt;/code&gt;: the session key in which the input stream of the document is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileNameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) the session key that contains the name of the file to use. if not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="getDocumentContent" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the attachment for the document is streamed to &lt;code&gt;fileInputStreamSessionKey&lt;/code&gt; otherwise only the properties are returned (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="getProperties" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the content of the document is streamed to &lt;code&gt;fileinputstreamsessionkey&lt;/code&gt; and all document properties are put in the result as a xml string (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Ignore expired certificate exceptions (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keepSession" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>if true, the session is not closed at the end and it will be used in the next call (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>KeyManager Algorithm (default: pkix)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Keystore Type (default: pkcs12)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the maximum number of concurrent connections (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>name of the sender</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="overrideEntryPointWSDL" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>override entrypoint wsdl by reading it from the classpath, overrides url attribute</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation />
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain credentials for authentication to proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyHost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy host url</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPort" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy host port (default: 80)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Proxy Username</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="repository" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>repository id</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultOnNotFound" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="streamResultToServlet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=get&lt;/code&gt;) if true, the content of the document is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string) (default: false)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the connection timeout in seconds (default: 10)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>TrustManager Algorithm (default: pkix)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Path (or resource url) to truststore to be used for authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Truststore Password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Truststore Type (default: jks)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>url to connect to</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="useRootFolder" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;action=create&lt;/code&gt;) if true, the document is created in the root folder of the repository. otherwise the document is created in the repository (default: true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userName" type="xs:string" />
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username used in authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Ignore certificate hostname validation (default: true)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -13506,6 +12657,11 @@
         <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create) (default: true)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="testExists" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>test if the specified directory exists at configure() (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a line separator is written after the content is written (default: false)</xs:documentation>
@@ -13541,8 +12697,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -14193,6 +13347,11 @@
         <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create) (default: true)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="testExists" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>test if the specified directory exists at configure() (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="transactionAttribute" type="xs:string">
       <xs:annotation>
         <xs:documentation>Defines transaction and isolation behaviour.For developers: it is equalto &lt;a href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494"&gt;EJB transaction attribute&lt;/a&gt;.Possible values are:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; (default: Supports)</xs:documentation>
@@ -14315,6 +13474,11 @@
     <xs:attribute name="testCanWrite" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create) (default: true)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="testExists" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>test if the specified directory exists at configure() (default: true)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="xs:string">
@@ -15526,8 +14690,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -15983,8 +15145,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -23038,8 +22198,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -23147,8 +22305,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -31133,8 +30289,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -31836,16 +30990,11 @@
         <xs:documentation>forces that each pipe in the pipeline is not automatically added to the globalforwards table (default: application default)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="inputValidator" type="xs:string" />
-    <xs:attribute name="inputWrapper" type="xs:string" />
-    <xs:attribute name="locker" type="xs:string" />
     <xs:attribute name="messageSizeWarn" type="xs:string">
       <xs:annotation>
         <xs:documentation>if messagesizewarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged (default: application default (3mb))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="outputValidator" type="xs:string" />
-    <xs:attribute name="outputWrapper" type="xs:string" />
     <xs:attribute name="storeOriginalMessageWithoutNamespaces" type="xs:string">
       <xs:annotation>
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; the original message without namespaces (and prefixes) is stored under the session key originalmessagewithoutnamespaces (default: false)</xs:documentation>
@@ -31883,7 +31032,6 @@
       <xs:choice minOccurs="0">
         <xs:element name="ApiListener" type="ApiListenerType" minOccurs="0" />
         <xs:element name="BisJmsListener" type="BisJmsListenerType" minOccurs="0" />
-        <xs:element name="CmisEventListener" type="CmisEventListenerType" minOccurs="0" />
         <xs:element name="DirectoryListener" type="DirectoryListenerType" minOccurs="0" />
         <xs:element name="EsbJmsListener" type="EsbJmsListenerType" minOccurs="0" />
         <xs:element name="ExchangeMailListener" type="ExchangeMailListenerType" minOccurs="0" />
@@ -32843,7 +31991,6 @@
       <xs:choice minOccurs="0">
         <xs:element name="ApiListener" type="ApiListenerType" minOccurs="0" />
         <xs:element name="BisJmsListener" type="BisJmsListenerType" minOccurs="0" />
-        <xs:element name="CmisEventListener" type="CmisEventListenerType" minOccurs="0" />
         <xs:element name="DirectoryListener" type="DirectoryListenerType" minOccurs="0" />
         <xs:element name="EsbJmsListener" type="EsbJmsListenerType" minOccurs="0" />
         <xs:element name="ExchangeMailListener" type="ExchangeMailListenerType" minOccurs="0" />
@@ -32874,8 +32021,6 @@
         <xs:element name="Afm2EdiFactErrorSender" type="Afm2EdiFactErrorSenderType" minOccurs="0" />
         <xs:element name="AmazonS3ErrorSender" type="AmazonS3ErrorSenderType" minOccurs="0" />
         <xs:element name="BisJmsErrorSender" type="BisJmsErrorSenderType" minOccurs="0" />
-        <xs:element name="CmisErrorSender" type="CmisErrorSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpErrorSender" type="CmisHttpErrorSenderType" minOccurs="0" />
         <xs:element name="CommandErrorSender" type="CommandErrorSenderType" minOccurs="0" />
         <xs:element name="DelayErrorSender" type="DelayErrorSenderType" minOccurs="0" />
         <xs:element name="DirectQueryErrorSender" type="DirectQueryErrorSenderType" minOccurs="0" />
@@ -32943,8 +32088,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -34917,8 +34060,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -37656,8 +36797,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -37717,7 +36856,6 @@
       <xs:choice minOccurs="0">
         <xs:element name="ApiListener" type="ApiListenerType" minOccurs="0" />
         <xs:element name="BisJmsListener" type="BisJmsListenerType" minOccurs="0" />
-        <xs:element name="CmisEventListener" type="CmisEventListenerType" minOccurs="0" />
         <xs:element name="DirectoryListener" type="DirectoryListenerType" minOccurs="0" />
         <xs:element name="EsbJmsListener" type="EsbJmsListenerType" minOccurs="0" />
         <xs:element name="ExchangeMailListener" type="ExchangeMailListenerType" minOccurs="0" />
@@ -38036,8 +37174,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -38130,8 +37266,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -38223,8 +37357,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -38332,8 +37464,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -40688,8 +39818,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -41500,8 +40628,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -45866,8 +44992,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
@@ -48474,8 +47598,6 @@
         <xs:element name="Afm2EdiFactSender" type="Afm2EdiFactSenderType" minOccurs="0" />
         <xs:element name="AmazonS3Sender" type="AmazonS3SenderType" minOccurs="0" />
         <xs:element name="BisJmsSender" type="BisJmsSenderType" minOccurs="0" />
-        <xs:element name="CmisHttpSender" type="CmisHttpSenderType" minOccurs="0" />
-        <xs:element name="CmisSender" type="CmisSenderType" minOccurs="0" />
         <xs:element name="CommandSender" type="CommandSenderType" minOccurs="0" />
         <xs:element name="DelaySender" type="DelaySenderType" minOccurs="0" />
         <xs:element name="DirectQuerySender" type="DirectQuerySenderType" minOccurs="0" />
