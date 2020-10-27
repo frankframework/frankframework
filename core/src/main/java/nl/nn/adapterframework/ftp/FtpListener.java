@@ -50,7 +50,6 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	private LinkedList<String> remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
 
-	private String name;
 	private String remoteDirectory;
 	private long responseTime = 3600000; // one hour
 
@@ -172,27 +171,10 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return super.getClassLoader();
-	}
-
-	@Override
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
 
-
-	
-	@Override
-	@IbisDoc({"name of the listener", ""})
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-	
 	@IbisDoc({"time between pollings", "3600000 (one hour)"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;

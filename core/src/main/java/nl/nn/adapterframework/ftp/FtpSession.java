@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -66,7 +67,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * 
  * @author John Dekker
  */
-public class FtpSession {
+public class FtpSession implements IConfigurable{
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -79,7 +80,8 @@ public class FtpSession {
 
 	// indication of ftp-subtype, defines which client
 	private int ftpType;
-	
+	private String name;
+
 	// configuration parameters, global for all types
 	private String host;
 	private int port = 21;
@@ -126,7 +128,8 @@ public class FtpSession {
 	private SshClient sshClient;
 	private SftpClient sftpClient;
 	public FTPClient ftpClient;
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(ftpTypeDescription)) {
 			throw new ConfigurationException("Attribute [ftpTypeDescription] is not set");
@@ -623,10 +626,6 @@ public class FtpSession {
 		}
 	}
 
-	public ClassLoader getClassLoader() {
-		return classLoader;
-	}
-
 	@IbisDoc({"name or ip adres of remote host", ""})
 	public void setHost(String string) {
 		host = string;
@@ -957,5 +956,20 @@ public class FtpSession {
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
+	}
+
+	@Override
+	@IbisDoc({"name of the listener", ""})
+	public void setName(String name) {
+		this.name = name;
+	}
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
 	}
 }

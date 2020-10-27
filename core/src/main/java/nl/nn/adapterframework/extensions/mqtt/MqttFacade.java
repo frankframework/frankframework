@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -30,7 +31,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
-public class MqttFacade implements HasPhysicalDestination {
+public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	protected Logger log = LogUtil.getLogger(this);
@@ -51,7 +52,8 @@ public class MqttFacade implements HasPhysicalDestination {
 	private String username;
 	private String password;
 	private String authAlias;
-
+	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("clientId must be specified");
@@ -107,10 +109,6 @@ public class MqttFacade implements HasPhysicalDestination {
 	@Override
 	public String getPhysicalDestinationName() {
 		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
-	}
-
-	public ClassLoader getClassLoader() {
-		return classLoader;
 	}
 
 	@Override
@@ -232,5 +230,10 @@ public class MqttFacade implements HasPhysicalDestination {
 	}
 	public String getAuthAlias() {
 		return authAlias;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return classLoader;
 	}
 }

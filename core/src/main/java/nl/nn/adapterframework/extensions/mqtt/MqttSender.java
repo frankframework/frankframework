@@ -117,8 +117,4 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		return false;
 	}
 
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return super.getClassLoader();
-	}
 }
