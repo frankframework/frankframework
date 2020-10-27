@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -47,11 +48,11 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel();
 		try {
 			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
+			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.core.IAdapter"));
 		} catch(Exception e) {
-			log.fatal("Cannot create config child descriptors", e);
+			log.fatal("Could not populate FrankDocModel", e);
 			return null;
 		}
-		result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.core.IAdapter"));
 		return result;
 	}
 
@@ -109,7 +110,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public ElementType findOrCreateElementType(Class<?> clazz) {
+	public ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
 		if(allTypes.containsKey(clazz.getName())) {
 			return allTypes.get(clazz.getName());
 		}
@@ -118,10 +119,11 @@ public class FrankDocModel {
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
 		if(result.isFromJavaInterface()) {
-			Utils.getSpringBeans(clazz.getName()).stream()
-					.map(b -> b.getClazz())
-					.map(cl -> findOrCreateFrankElement(cl))
-					.forEach(result::addMember);
+			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			for(SpringBean b: springBeans) {
+				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
+				result.addMember(frankElement);
+			}
 		} else {
 			result.addMember(findOrCreateFrankElement(clazz));
 		}
@@ -132,7 +134,7 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	public FrankElement findOrCreateFrankElement(Class<?> clazz) {
+	public FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
@@ -146,7 +148,7 @@ public class FrankDocModel {
 		return current;
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
+	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) throws ReflectiveOperationException {
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
@@ -205,7 +207,7 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) {
+	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
@@ -296,7 +298,7 @@ public class FrankDocModel {
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(	Method[] methods, FrankElement parent) {
+	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
 				.filter(Utils::isConfigChildSetter)
 				.filter(m -> configChildDescriptors.get(m.getName()) != null)

@@ -36,14 +36,14 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void whenInterfaceTypeAndSingletonTypeThenCorrectElements() {
+	public void whenInterfaceTypeAndSingletonTypeThenCorrectElements() throws ReflectiveOperationException {
 		ElementType listenerType = instance.findOrCreateElementType(Utils.getClass(LISTENER));
 		ElementType childType = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		checkModelTypes(listenerType, childType);
 	}
 
 	@Test
-	public void whenSingletonTypeAndInterfaceTypeThenCorrectElements() {
+	public void whenSingletonTypeAndInterfaceTypeThenCorrectElements() throws ReflectiveOperationException {
 		ElementType childType = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		ElementType listenerType = instance.findOrCreateElementType(Utils.getClass(LISTENER));
 		checkModelTypes(listenerType, childType);		
@@ -70,21 +70,21 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void whenTypeRequestedTwiceThenSameInstanceReturned() {
+	public void whenTypeRequestedTwiceThenSameInstanceReturned() throws ReflectiveOperationException {
 		ElementType first = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		ElementType second = instance.findOrCreateElementType(Utils.getClass(SIMPLE_CHILD));
 		assertSame(first, second);
 	}
 
 	@Test
-	public void whenChildElementAddedBeforeParentThenCorrectModel() {
+	public void whenChildElementAddedBeforeParentThenCorrectModel() throws ReflectiveOperationException {
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
 	@Test
-	public void whenParentElementAddedBeforeChildThenCorrectModel() {
+	public void whenParentElementAddedBeforeChildThenCorrectModel() throws ReflectiveOperationException {
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		checkModelAfterChildAndParentAdded(parent, child);
@@ -115,18 +115,18 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void whenSetterAndGetterThenAttribute() {
+	public void whenSetterAndGetterThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeSetterGetter");
 	}
 
-	private FrankAttribute checkReflectAttributeCreated(String attributeName) {
+	private FrankAttribute checkReflectAttributeCreated(String attributeName) throws ReflectiveOperationException {
 		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		assertTrue(actual.containsKey(attributeName));
 		assertEquals(attributeName, actual.get(attributeName).getName());
 		return actual.get(attributeName);
 	}
 
-	private Map<String, FrankAttribute> getReflectInvestigatedFrankAttributes() {
+	private Map<String, FrankAttribute> getReflectInvestigatedFrankAttributes() throws ReflectiveOperationException {
 		return getAttributesOfClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget");
 	}
 
@@ -135,59 +135,59 @@ public class FrankDocModelTest {
 	 * of a class. A dummy FrankElement is supplied as attribute owner, so the
 	 * describingElement is only correct if it is parsed from an @IbisDocRef annotation.
 	 */
-	private Map<String, FrankAttribute> getAttributesOfClass(final String className) {
+	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws ReflectiveOperationException {
 		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
 		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), dummy);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
 	@Test
-	public void whenSetterAndIsThenAttribute() {
+	public void whenSetterAndIsThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeSetterIs");
 	}
 
 	@Test
-	public void whenOnlySetterThenAttribute() {
+	public void whenOnlySetterThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetter");
 	}
 
 	@Test
-	public void whenSetterHasPrimitiveTypeThenAttribute() {
+	public void whenSetterHasPrimitiveTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterInt");
 	}
 
 	@Test
-	public void whenSetterHasBoxedIntTypeThenAttribute() {
+	public void whenSetterHasBoxedIntTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterIntBoxed");
 	}
 
 	@Test
-	public void whenSetterHasBoxedBoolTypeThenAttribute() {
+	public void whenSetterHasBoxedBoolTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterBoolBoxed");
 	}
 
 	@Test
-	public void whenSetterHasBoxedLongTypeThenAttribute() {
+	public void whenSetterHasBoxedLongTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterLongBoxed");
 	}
 
 	@Test
-	public void whenSetterHasBoxedByteTypeThenAttribute() {
+	public void whenSetterHasBoxedByteTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterByteBoxed");
 	}
 
 	@Test
-	public void whenSetterHasBoxedShortTypeThenAttribute() {
+	public void whenSetterHasBoxedShortTypeThenAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeCreated("attributeOnlySetterShortBoxed");
 	}
 
-	private void checkReflectAttributeOmitted(String attributeName) {
+	private void checkReflectAttributeOmitted(String attributeName) throws ReflectiveOperationException {
 		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		assertFalse(actual.containsKey(attributeName));
 	}
 	
 	@Test
-	public void whenMethodsHaveWrongTypeThenNoAttribute() {
+	public void whenMethodsHaveWrongTypeThenNoAttribute() throws ReflectiveOperationException {
 		checkReflectAttributeOmitted("noAttributeComplexType");
 	}
 
@@ -224,7 +224,7 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testIbisDockedOnlyDescription() {
+	public void testIbisDockedOnlyDescription() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
 		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedOnlyDescription", actual.getDescription());
@@ -233,7 +233,7 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testIbisDockedOrderDescription() {
+	public void testIbisDockedOrderDescription() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescription");
 		assertEquals(3, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
@@ -242,7 +242,7 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testIbisDockedDescriptionDefault() {
+	public void testIbisDockedDescriptionDefault() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDescriptionDefault");
 		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
@@ -251,7 +251,7 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testIbisDockedOrderDescriptionDefault() {
+	public void testIbisDockedOrderDescriptionDefault() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescriptionDefault");
 		assertEquals(5, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
@@ -260,14 +260,14 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testIbisDockedDeprecated() {
+	public void testIbisDockedDeprecated() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDeprecated");
 		assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
 		assertTrue(actual.isDeprecated());
 	}
 
 	@Test
-	public void testIbisDocRefAddsFrankElementsForReferredClassHierarchy() {
+	public void testIbisDocRefAddsFrankElementsForReferredClassHierarchy() throws ReflectiveOperationException {
 		checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
 		assertEquals(3, instance.getAllElements().size());
 		assertTrue(instance.getAllElements().containsKey(REFERRED_CHILD));
@@ -275,7 +275,7 @@ public class FrankDocModelTest {
 		assertTrue(instance.getAllElements().containsKey("java.lang.Object"));
 	}
 
-	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) {
+	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) throws ReflectiveOperationException {
 		Map<String, FrankAttribute> attributeMap =
 				getAttributesOfClass("nl.nn.adapterframework.doc.testtarget.ibisdocref.Referrer");
 		assertTrue(attributeMap.containsKey(attributeName));
@@ -283,19 +283,19 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testReferredIbisDocDescriptionAppearsInFrankAttribute() {
+	public void testReferredIbisDocDescriptionAppearsInFrankAttribute() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
 		assertEquals("Description of ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", actual.getDescription());
 	}
 
 	@Test
-	public void testReferredIbisDocDescriptionOtherMethodAppearsInFrankAttribute() {
+	public void testReferredIbisDocDescriptionOtherMethodAppearsInFrankAttribute() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocReffMethodNoOrderRefersIbisDocOrderDescriptionDefault");
 		assertEquals("Description of otherMethod", actual.getDescription());
 	}
 
 	@Test
-	public void testReferredIbisDocDescriptiondWithOrderAndInheritance() {
+	public void testReferredIbisDocDescriptiondWithOrderAndInheritance() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertEquals(
 				"Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited",
@@ -303,13 +303,13 @@ public class FrankDocModelTest {
 	}
 
 	@Test
-	public void testOrderInsideIbisDocRefHasPreferenceOverReferredIbisDocOrder() {
+	public void testOrderInsideIbisDocRefHasPreferenceOverReferredIbisDocOrder() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertEquals(10, actual.getOrder());
 	}
 
 	@Test
-	public void whenIbisDocRefThenDescribingElementAdjusted() {
+	public void whenIbisDocRefThenDescribingElementAdjusted() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertSame(
 				instance.getAllElements().get(REFERRED_PARENT),

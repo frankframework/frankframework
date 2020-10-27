@@ -15,13 +15,13 @@ public final class Utils {
 	 * @param interfaceName The interface for which we want SpringBean objects.
 	 * @return All classes implementing interfaceName, ordered by their full class name.
 	 */
-	public static List<SpringBean> getSpringBeans(final String interfaceName) {
+	public static List<SpringBean> getSpringBeans(final String interfaceName) throws ReflectiveOperationException {
 		Class<?> interfaze = getClass(interfaceName);
 		if(interfaze == null) {
-			throw new NullPointerException("Class or interface is not available on the classpath: " + interfaceName);
+			throw new ReflectiveOperationException("Class or interface is not available on the classpath: " + interfaceName);
 		}
 		if(!interfaze.isInterface()) {
-			throw new IllegalArgumentException("This exists on the classpath but is not an interface: " + interfaceName);
+			throw new ReflectiveOperationException("This exists on the classpath but is not an interface: " + interfaceName);
 		}
 		Set<SpringBean> unfiltered = InfoBuilderSource.getSpringBeans(interfaze);
 		List<SpringBean> result = new ArrayList<SpringBean>();

@@ -17,7 +17,7 @@ public class UtilsTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
 
 	@Test
-	public void testGetSpringBeans() {
+	public void testGetSpringBeans() throws ReflectiveOperationException {
 		List<SpringBean> actual = Utils.getSpringBeans(SIMPLE + ".IListener");
 		actual.sort((b1, b2) -> b1.compareTo(b2));
 		assertEquals(2, actual.size());

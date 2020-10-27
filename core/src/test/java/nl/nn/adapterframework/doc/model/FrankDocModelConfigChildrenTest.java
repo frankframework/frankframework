@@ -21,7 +21,7 @@ public class FrankDocModelConfigChildrenTest {
 	private List<ConfigChild> configChildren;
 
 	@Before
-	public void setUp() throws SAXException, IOException {
+	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
 		instance = new FrankDocModel();
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(
