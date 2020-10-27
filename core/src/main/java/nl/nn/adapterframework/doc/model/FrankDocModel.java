@@ -132,7 +132,7 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		FrankElement current = new FrankElement(clazz);
-		allElements.put(current.getFullName(), current);
+		allElements.put(clazz.getName(), current);
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
 		current.setParent(parent);
