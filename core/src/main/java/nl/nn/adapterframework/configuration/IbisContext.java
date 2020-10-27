@@ -351,8 +351,9 @@ public class IbisContext extends IbisApplicationContext {
 						databaseMigrator.close();
 					}
 					catch (Exception e) {
-						ConfigurationWarnings.add(LOG, e.getMessage());
-						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
+						String errorMsg = "Error configuring LiquiBase for configuration ["+currentConfigurationName+"]. ";
+						errorMsg += e.getMessage();
+						ConfigurationWarnings.add(LOG, errorMsg, e);
 					}
 				}
 
