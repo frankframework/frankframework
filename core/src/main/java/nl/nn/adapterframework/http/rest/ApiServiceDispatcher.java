@@ -200,7 +200,8 @@ public class ApiServiceDispatcher {
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
 			if(listener != null) {
-				paths.add("/"+listener.getCleanPattern(false), methods);
+				String uriPattern = listener.getUriPattern().startsWith("/") ? listener.getUriPattern() : "/" + listener.getUriPattern();
+				paths.add(uriPattern, methods);
 			}
 		}
 		root.add("paths", paths.build());
@@ -296,11 +297,11 @@ public class ApiServiceDispatcher {
 					content.addNull(contentType.getContentType());
 				} else if(StringUtils.isNotEmpty(ref)){
 					String reference = null;
-					if(StringUtils.isNotEmpty(ple.getElementName())) {
-						reference = ple.getElementName();
+					if(StringUtils.isNotEmpty(ple.getResponseRoot())) {
+						reference = ple.getResponseRoot();
 					} else {
 						List<String> references = Arrays.asList(ref.split(","));
-						if(exitCode == 200) {
+						if(ple.getState().equals("success")) {
 							reference = references.get(0);
 						} else {
 							reference = references.get(references.size()-1);

@@ -57,7 +57,7 @@ public class PipeLineExit implements IForwardTarget {
 	private String state;
 	private int exitCode = 0;
 	private boolean emptyResult = false;
-	private String elementName;
+	private String responseRoot;
 
 	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
@@ -96,12 +96,12 @@ public class PipeLineExit implements IForwardTarget {
 	public boolean getEmptyResult() {
 		return emptyResult;
 	}
-	// TODO: validate the output by looking at the elementName
-	@IbisDoc({"configures exit specific element reference in open api schema. If it is not set, but the responseRoot attribute is set in the validator, for the exit code 200 it will use the first element in the responseRoot and for the other codes last element of the responseRoot will be used.", ""})
-	public void setElementName(String elementName) {
-		this.elementName = elementName;
+	// TODO: validate the output by looking at this responseRoot
+	@IbisDoc({"Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state 'success', the last for the other exits.", ""})
+	public void setResponseRoot(String responseRoot) {
+		this.responseRoot = responseRoot;
 	}
-	public String getElementName() {
-		return elementName;
+	public String getResponseRoot() {
+		return responseRoot;
 	}
 }

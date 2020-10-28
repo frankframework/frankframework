@@ -188,10 +188,10 @@ public class OpenApiTestBase extends Mockito {
 			return addExit(exitCode, null, "false");
 		}
 		
-		public AdapterBuilder addExit(String exitCode, String elementName, String isEmpty) {
+		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
-			ple.setElementName(elementName);
+			ple.setResponseRoot(responseRoot);
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
 				case "200":

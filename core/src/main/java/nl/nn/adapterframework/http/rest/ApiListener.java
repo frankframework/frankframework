@@ -112,7 +112,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getCleanPattern(false)+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumesEnum().name();
 		if(!MediaTypes.ANY.equals(produces))
@@ -121,16 +121,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return destinationName;
 	}
 
-	public String getCleanPattern() {
-		return getCleanPattern(true);
-	}
-
 	/**
-	 * returns the clear pattern, if replacePathParams is true then replaces everything between <code>{}</code> to <code>*</code>
-	 * @param replacePathParams 
+	 * returns the clear pattern, replaces everything between <code>{}</code> to <code>*</code>
 	 * @return null if no pattern is found
 	 */
-	public String getCleanPattern(boolean replacePathParams) {
+	public String getCleanPattern() {
 		String pattern = getUriPattern();
 		if(StringUtils.isEmpty(pattern))
 			return null;
@@ -141,10 +136,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(pattern.endsWith("/"))
 			pattern = pattern.substring(0, pattern.length()-1);
 
-		if(replacePathParams)
-			pattern = pattern.replaceAll("\\{.*?}", "*");
-
-		return pattern;
+		return pattern = pattern.replaceAll("\\{.*?}", "*");
 	}
 
 	/**
