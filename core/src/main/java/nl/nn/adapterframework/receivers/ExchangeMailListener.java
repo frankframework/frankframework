@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 	private void addEmailInfoSimple(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
 		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setCdataValue(emailMessage.getSubject());
+		subjectXml.setValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 	}
 
@@ -192,10 +192,10 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		fromXml.setValue(emailMessage.getFrom().getAddress());
 		emailXml.addSubElement(fromXml);
 		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setCdataValue(emailMessage.getSubject());
+		subjectXml.setValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setCdataValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+		messageXml.setValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
 		emailXml.addSubElement(messageXml);
 		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
 		try {
@@ -234,7 +234,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 				XmlBuilder headerXml = new XmlBuilder("header");
 				InternetMessageHeader imh = (InternetMessageHeader) it.next();
 				headerXml.addAttribute("name", imh.getName());
-				headerXml.setCdataValue(imh.getValue());
+				headerXml.setValue(imh.getValue());
 				headersXml.addSubElement(headerXml);
 			}
 		}
