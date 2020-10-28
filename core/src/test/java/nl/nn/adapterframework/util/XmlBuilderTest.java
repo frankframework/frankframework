@@ -143,7 +143,7 @@ public class XmlBuilderTest {
 	}
 
 	@Test
-	public void testAddEmbeddedCdata() {
+	public void testAddEmbeddedCdata1() {
 		
 		String value = "<xml>&amp; <![CDATA[cdatastring < > & <tag/> ]]>rest</xml>";
 		
@@ -154,4 +154,18 @@ public class XmlBuilderTest {
 		MatchUtils.assertXmlEquals(expected, root.toXML(false));
 	}
 
+	@Test
+	public void testAddEmbeddedCdata2() {
+		String CDATA_START="<![CDATA[";
+		String CDATA_END="]]>";
+		String CDATA_END_REPLACEMENT=CDATA_END.substring(0,1)+CDATA_END+CDATA_START+CDATA_END.substring(1);
+		
+		String value = "<xml>&amp; "+CDATA_START+"cdatastring < > & <tag/> "+CDATA_END+"rest</xml>";
+		
+		XmlBuilder root = new XmlBuilder("root");
+		root.setCdataValue(value);
+		
+		String expected = "<root>"+CDATA_START+value.replace(CDATA_END, CDATA_END_REPLACEMENT)+CDATA_END+"</root>";
+		MatchUtils.assertXmlEquals(expected, root.toXML(false));
+	}
 }
