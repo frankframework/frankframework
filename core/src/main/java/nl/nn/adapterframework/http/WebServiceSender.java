@@ -144,14 +144,7 @@ public class WebServiceSender extends HttpSender {
 		try {
 			httpResult = super.extractResult(responseHandler, session).asString();
 		} catch (SenderException e) {
-			String responseBody = null;
-			try { // the responseBody is optional. Make sure no exceptions are thrown when the response cannot be read properly (due to another underlying problem)
-				responseBody = getResponseBody(responseHandler).asString();
-			} catch (IOException ie) {
-				log.warn(getLogPrefix()+"unable to parse response", ie);
-			}
-
-			soapWrapper.checkForSoapFault(responseBody, e);
+			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
 			throw e;
 		}
 

@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 437863352486501446L;
+	private static final long serialVersionUID = 437863352486501445L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -421,10 +421,6 @@ public class Message implements Serializable {
 		if(request == null) {
 			return -1;
 		}
-		if(request instanceof InputStream || request instanceof Reader) {
-			return -1; //Unable to determine the size of a Stream
-		}
-
 		try {
 			if (request instanceof FileInputStream) {
 				FileInputStream fileStream = (FileInputStream) request;
@@ -432,6 +428,10 @@ public class Message implements Serializable {
 			}
 		} catch (IOException e) {
 			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
+		}
+
+		if(request instanceof InputStream || request instanceof Reader) {
+			return -1; //Unable to determine the size of a Stream
 		}
 
 		if(request instanceof String) {

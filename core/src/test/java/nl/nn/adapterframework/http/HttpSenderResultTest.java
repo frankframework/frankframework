@@ -200,8 +200,8 @@ public class HttpSenderResultTest extends Mockito {
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
-		Message message = (Message) pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", message.asString());
+		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
 	}
 
 	@Test
@@ -221,8 +221,8 @@ public class HttpSenderResultTest extends Mockito {
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
-		Message message = (Message)pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", message.asString());
+		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
 	}
 
 	@Test
@@ -242,8 +242,8 @@ public class HttpSenderResultTest extends Mockito {
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
-		Message message = (Message)pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", message.asString());
+		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", Misc.streamToString(stream));
 	}
 
 	@Test
@@ -263,8 +263,8 @@ public class HttpSenderResultTest extends Mockito {
 		String result = sender.sendMessage(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
-		Message message = (Message)pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", message.asString());
+		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", Misc.streamToString(stream));
 	}
 
 	@Test

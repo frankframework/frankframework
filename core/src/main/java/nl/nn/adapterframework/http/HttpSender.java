@@ -158,8 +158,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class HttpSender extends HttpSenderBase {
 
-	private String streamResultToFileNameSessionKey = null;
-	private String storeResultInSessionKey;
+	@Deprecated private String streamResultToFileNameSessionKey = null;
+	@Deprecated private String storeResultAsStreamInSessionKey;
+	@Deprecated private String storeResultAsByteArrayInSessionKey;
+
 	private boolean base64=false;
 	private boolean streamResultToServlet=false;
 
@@ -524,16 +526,9 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
-			String responseBody = null;
-			try { // the responseBody is optional. Make sure no exceptions are thrown when the response cannot be read properly (due to another underlying problem)
-				responseBody = getResponseBody(responseHandler).asString();
-			} catch (IOException e) {
-				log.warn(getLogPrefix()+"unable to parse response", e);
-			}
-
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + responseBody);
+					+ " body: " + getResponseBodyAsString(responseHandler));
 			
 		}
 
@@ -553,9 +548,11 @@ public class HttpSender extends HttpSenderBase {
 				}
 			} else if (isBase64()) { //This should be removed in a future iteration
 				return getResponseBodyAsBase64(responseHandler.getResponse());
-			} else if (StringUtils.isNotEmpty(storeResultInSessionKey)) { //This should be removed in a future iteration
-				Message message = new Message(responseHandler.getResponse());
-				session.put(storeResultInSessionKey, message);
+			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
+				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
+				return Message.nullMessage();
+			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
+				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 				return Message.nullMessage();
 			} else if (BooleanUtils.isTrue(isMultipartResponse()) || responseHandler.isMultipart()) {
 				if(BooleanUtils.isFalse(isMultipartResponse())) {
@@ -588,6 +585,31 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		return new Message(responseHandler.getResponse(), charset);
+	}
+
+	/**
+	 * Tries to parse the response as a String. If unsuccessful return null.
+	 */
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
+		String responseBody = null;
+		try {
+			responseBody = getResponseBody(responseHandler).asString();
+		} catch(IOException e) {
+			log.warn(getLogPrefix()+"unable to parse response", e);
+			return null;
+		}
+
+		if (StringUtils.isEmpty(responseBody)) {
+			log.warn(getLogPrefix()+"responseBody is empty");
+		} else {
+			int rbLength = responseBody.length();
+			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+			if (rbLength >= rbSizeWarn) {
+				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+			}
+		}
+
+		return responseBody;
 	}
 
 	public Message getResponseBodyAsBase64(InputStream is) throws IOException {
@@ -720,15 +742,21 @@ public class HttpSender extends HttpSenderBase {
 
 	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
 	@Deprecated
-	@ConfigurationWarning("use setStoreResultInSessionKey on the MessageSendingPipe instead")
-	public void setStoreResultAsStreamInSessionKey(String storeResultInSessionKey) {
-		this.storeResultInSessionKey = storeResultInSessionKey;
+	@ConfigurationWarning("use storeResultInSessionKey on the MessageSendingPipe instead")
+	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
+		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
+	}
+	public String getStoreResultAsStreamInSessionKey() {
+		return storeResultAsStreamInSessionKey;
 	}
 
 	@Deprecated
-	@ConfigurationWarning("use setStoreResultInSessionKey on the MessageSendingPipe instead")
-	public void setStoreResultAsByteArrayInSessionKey(String storeResultInSessionKey) {
-		this.storeResultInSessionKey = storeResultInSessionKey;
+	@ConfigurationWarning("use storeResultInSessionKey on the MessageSendingPipe instead")
+	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
+		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
+	}
+	public String getStoreResultAsByteArrayInSessionKey() {
+		return storeResultAsByteArrayInSessionKey;
 	}
 
 	@IbisDoc({"when true, the result is base64 encoded", "false"})

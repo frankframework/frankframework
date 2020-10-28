@@ -377,7 +377,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 			}
 		}
-		if (result !=null && result instanceof Message && ((Message)result).asObject() instanceof String) {
+		if (result !=null && result instanceof Message) {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +38,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import static org.hamcrest.core.StringStartsWith.startsWith;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -415,6 +415,17 @@ public class MessageTest {
 	public void testMessageSizeByteArray() {
 		Message message = Message.asMessage( "string".getBytes());
 		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeFileInputStream() throws Exception {
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		File file = new File(url.toURI());
+		FileInputStream fis = new FileInputStream(file);
+		Message message = Message.asMessage(fis);
+		assertEquals("size differs or could not be determined", 33, message.size());
 	}
 
 	@Test

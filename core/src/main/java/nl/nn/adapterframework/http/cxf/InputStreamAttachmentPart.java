@@ -33,7 +33,7 @@ import org.apache.axis.attachments.AttachmentPart;
  */
 public class InputStreamAttachmentPart extends AttachmentPart {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 1L;
 
 	public InputStreamAttachmentPart(javax.xml.soap.AttachmentPart attachment) throws SOAPException {
 		//Init a super class with current attachment dataHandler to keep the content
