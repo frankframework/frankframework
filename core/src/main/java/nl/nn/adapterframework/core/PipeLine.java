@@ -161,6 +161,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
+	@IbisDoc("80")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -544,6 +545,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
+	@IbisDoc("50")
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
@@ -756,6 +758,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return transactionAttribute;
 	}
 
+	@IbisDoc("60")
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -763,6 +766,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return locker;
 	}
 
+	@IbisDoc("10")
 	public void setInputValidator(IPipe inputValidator) {
 		this.inputValidator = inputValidator;
 	}
@@ -770,6 +774,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return inputValidator;
 	}
 
+	@IbisDoc("20")
 	public void setOutputValidator(IPipe outputValidator) {
 		this.outputValidator = outputValidator;
 	}
@@ -777,6 +782,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return outputValidator;
 	}
 
+	@IbisDoc("30")
 	public void setInputWrapper(IPipe inputWrapper) {
 		this.inputWrapper = inputWrapper;
 	}
@@ -784,6 +790,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return inputWrapper;
 	}
 
+	@IbisDoc("40")
 	public void setOutputWrapper(IPipe outputWrapper) {
 		this.outputWrapper = outputWrapper;
 	}
@@ -840,6 +847,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	}
 
 	@Override
+	@IbisDoc("70")
 	public void registerCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}

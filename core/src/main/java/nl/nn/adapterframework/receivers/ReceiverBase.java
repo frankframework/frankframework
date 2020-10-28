@@ -1724,6 +1724,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return sender;
 	}
 	
+	@IbisDoc("20")
 	protected void setSender(ISender sender) {
 		this.sender = sender;
 	}
@@ -1748,6 +1749,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * Creation date: (04-11-2003 12:04:05)
 	 * @param newListener IListener
 	 */
+	@IbisDoc("10")
 	protected void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (StringUtils.isEmpty(listener.getName())) {
@@ -1798,11 +1800,13 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * Sets the errorSender.
 	 * @param errorSender The errorSender to set
 	 */
+	@IbisDoc("30")
 	protected void setErrorSender(ISender errorSender) {
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
+	@IbisDoc("50")
 	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
 			this.errorStorage = errorStorage;
@@ -1817,6 +1821,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/**
 	 * Sets the messageLog.
 	 */
+	@IbisDoc("40")
 	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;

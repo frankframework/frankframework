@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -51,6 +52,16 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 class InfoBuilderSource {
+	private static final String JAVA_STRING = "java.lang.String";
+	private static final String JAVA_INTEGER = "java.lang.Integer";
+	private static final String JAVA_BOOLEAN = "java.lang.Boolean";
+	private static final String JAVA_LONG = "java.lang.Long";
+	private static final String JAVA_BYTE = "java.lang.Byte";
+	private static final String JAVA_SHORT = "java.lang.Short";
+
+	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
+			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
+	
 	private static Logger log = LogUtil.getLogger(InfoBuilderSource.class);
 
 	static Map<String, String> ignores = new HashMap<String, String>();
@@ -370,6 +381,9 @@ class InfoBuilderSource {
 		try {
 			Method[] methods = clazz.getMethods();
 			for (int i = 0; i < methods.length; i++) {
+				if(!isGetterOrSetter(methods[i])) {
+					continue;
+				}
 				Class<?> returnType = methods[i].getReturnType();
 				if (returnType == String.class || returnType.isPrimitive()) {
 					if (methods[i].getName().startsWith(verb)) {
@@ -386,4 +400,25 @@ class InfoBuilderSource {
 		}
 	}
 
+	public static boolean isGetterOrSetter(Method method) {
+		boolean isSetter = method.getReturnType().isPrimitive()
+				&& method.getReturnType().getName().equals("void")
+				&& (method.getParameterTypes().length == 1)
+				&& (method.getParameterTypes()[0].isPrimitive()
+						|| JAVA_BOXED.contains(method.getParameterTypes()[0].getName()));
+		boolean isGetter = (
+					(method.getReturnType().isPrimitive()
+							&& !method.getReturnType().getName().equals("void"))
+					|| JAVA_BOXED.contains(method.getReturnType().getName())
+				) && (method.getParameterTypes().length == 0);
+		return isSetter || isGetter;
+	}
+
+	public static boolean isConfigChildSetter(Method method) {
+		return (method.getParameterTypes().length == 1)
+				&& (! method.getParameterTypes()[0].isPrimitive())
+				&& (! JAVA_BOXED.contains(method.getParameterTypes()[0].getName()))
+				&& (method.getReturnType().isPrimitive())
+				&& (method.getReturnType().getName().equals("void"));
+	}
 }

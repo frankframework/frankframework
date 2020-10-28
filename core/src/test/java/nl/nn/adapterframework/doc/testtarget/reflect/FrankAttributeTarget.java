@@ -22,6 +22,24 @@ public class FrankAttributeTarget {
 	public void setAttributeOnlySetter(String value) {
 	}
 
+	public void setAttributeOnlySetterInt(int value) {
+	}
+
+	public void setAttributeOnlySetterIntBoxed(Integer value) {
+	}
+
+	public void setAttributeOnlySetterBoolBoxed(Boolean value) {
+	}
+
+	public void setAttributeOnlySetterLongBoxed(Long value) {
+	}
+
+	public void setAttributeOnlySetterByteBoxed(Byte value) {
+	}
+
+	public void setAttributeOnlySetterShortBoxed(Short value) {
+	}
+
 	public void setNoAttributeComplexType(List<String> value) {
 	}
 
