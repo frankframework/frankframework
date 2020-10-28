@@ -87,8 +87,8 @@ public abstract class Base implements ApplicationContextAware {
 			retrieveIbisContextFromServlet();
 		}
 
-		if(ibisContext.getBootState().getException() != null) {
-			throw new ApiException(ibisContext.getBootState().getException());
+		if(ibisContext.getStartupException() != null) {
+			throw new ApiException(ibisContext.getStartupException());
 		}
 
 		return ibisContext;
