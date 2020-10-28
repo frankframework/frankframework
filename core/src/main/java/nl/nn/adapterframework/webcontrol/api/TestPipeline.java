@@ -25,12 +25,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -59,10 +57,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class TestPipeline extends Base {
-	@Context ServletConfig servletConfig;
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
-
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@POST
@@ -72,7 +68,7 @@ public final class TestPipeline extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 
 		IbisManager ibisManager = getIbisManager();
 		if (ibisManager == null) {
@@ -185,9 +181,9 @@ public final class TestPipeline extends Base {
 		}
 		Date now = new Date();
 		PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
-		if (writeSecLogMessage) {
-			secLog.info("message [" + message + "]");
-		}
+
+		secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
+
 		return adapter.processMessage(messageId, new Message(message), pls);
 	}
 }
