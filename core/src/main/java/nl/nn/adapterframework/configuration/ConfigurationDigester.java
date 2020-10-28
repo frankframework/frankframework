@@ -100,15 +100,15 @@ public class ConfigurationDigester {
 	private class XmlErrorHandler implements ErrorHandler  {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.addGlobalWarning(log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.addGlobalWarning(log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.addGlobalWarning(log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 

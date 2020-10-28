@@ -29,6 +29,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
@@ -64,11 +65,11 @@ public class IbisContext extends IbisApplicationContext {
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
 	private IbisManager ibisManager;
@@ -343,17 +344,15 @@ public class IbisContext extends IbisApplicationContext {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
+					Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class);
 					try {
-						Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class);
 						databaseMigrator.setIbisContext(this);
 						databaseMigrator.configure(currentConfigurationName, classLoader);
 						databaseMigrator.update();
 						databaseMigrator.close();
 					}
 					catch (Exception e) {
-						String errorMsg = "Error configuring LiquiBase for configuration ["+currentConfigurationName+"]. ";
-						errorMsg += e.getMessage();
-						ConfigurationWarnings.add(LOG, errorMsg, e);
+						ConfigurationWarnings.add(databaseMigrator, LOG, e.getMessage(), e);
 					}
 				}
 
@@ -449,7 +448,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 		m = m + message;
 		if (MessageKeeperLevel.ERROR.equals(level)) {
-			LOG.info(m, e);
+			LOG.error(m, e);
 		} else if (MessageKeeperLevel.WARN.equals(level)) {
 			LOG.warn(m, e);
 		} else {

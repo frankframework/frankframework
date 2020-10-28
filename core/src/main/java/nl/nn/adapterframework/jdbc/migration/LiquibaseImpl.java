@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -37,7 +38,7 @@ import liquibase.resource.ClassLoaderResourceAccessor;
  * @since	7.0-B4
  *
  */
-public class LiquibaseImpl {
+public class LiquibaseImpl implements INamedObject{
 
 	private Liquibase liquibase = null;
 	private Contexts contexts;
@@ -87,9 +88,9 @@ public class LiquibaseImpl {
 			}
 		}
 		catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update for configuration ["+configurationName+"]. Failed to execute ["+changes.size()+"] change(s): ";
+			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(log, errorMsg, e);
+			ConfigurationWarnings.add(this, log, errorMsg, e);
 		}
 	}
 
@@ -99,5 +100,15 @@ public class LiquibaseImpl {
 
 	public void tag(String tagName) throws LiquibaseException {
 		liquibase.tag(tagName);
+	}
+
+	@Override
+	public String getName() {
+		return configurationName;
+	}
+
+	@Override
+	public void setName(String name) {
+		// name = configurationName;
 	}
 }
