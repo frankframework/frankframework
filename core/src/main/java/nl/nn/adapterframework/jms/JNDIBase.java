@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -35,16 +37,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+
 /**
  * Provides all JNDI functions and is meant to act as a base class.
  * 
  * <br/>
  * @author Johan Verrips IOS
  */
-public class JNDIBase {
+public class JNDIBase implements IConfigurable{
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	private String name;
     // JNDI
     private String providerURL = null;
     private String initialContextFactoryName = null;
@@ -59,6 +64,13 @@ public class JNDIBase {
 	private String jndiProperties = null;
 
 	private Context context = null;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if(StringUtils.isEmpty(jndiContextPrefix)) {
+			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix","");
+		}
+	}
 
 	public void close() {
 		if (null != context) {
@@ -77,7 +89,7 @@ public class JNDIBase {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(classLoader, getJndiProperties());
+			URL url = ClassUtils.getResourceURL(configurationClassLoader, getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}
@@ -262,4 +274,15 @@ public class JNDIBase {
 	public void setJndiProperties(String jndiProperties) {
 		this.jndiProperties = jndiProperties;
 	}
+
+	@IbisDoc({"Name of the sender or the listener", ""})
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+	@Override
+	public String getName() {
+		return name;
+	}
+
 }
