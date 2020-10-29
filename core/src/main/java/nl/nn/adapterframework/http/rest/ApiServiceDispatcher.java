@@ -239,12 +239,14 @@ public class ApiServiceDispatcher {
 		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
 		if(validator != null && !validator.getParameterList().isEmpty()) {
 			for (Parameter parameter : validator.getParameterList()) {
-				JsonObjectBuilder param = Json.createObjectBuilder();
-				param.add("name", parameter.getName());
-				param.add("in", "query");
-				String parameterType = parameter.getType() != null ? parameter.getType() : "string";
-				param.add("schema", Json.createObjectBuilder().add("type", parameterType));
-				paramBuilder.add(param);
+				if(StringUtils.isNotEmpty(parameter.getSessionKey())) {
+					JsonObjectBuilder param = Json.createObjectBuilder();
+					param.add("name", parameter.getSessionKey());
+					param.add("in", "query");
+					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
+					param.add("schema", Json.createObjectBuilder().add("type", parameterType));
+					paramBuilder.add(param);
+				}
 			}
 		}
 		methodBuilder.add("parameters", paramBuilder);
