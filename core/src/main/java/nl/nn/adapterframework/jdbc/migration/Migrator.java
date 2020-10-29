@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
@@ -41,19 +42,16 @@ public class Migrator extends JdbcFacade {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(null, null, null);
+		throw new IllegalStateException("No configuration is specified!");
 	}
 
-	public void configure(String configurationName) throws ConfigurationException {
-		configure(configurationName, null, null);
+	public void configure(Configuration configuration, ClassLoader classLoader) throws ConfigurationException {
+		configure(configuration, classLoader, null);
 	}
 
-	public void configure(String configurationName, ClassLoader classLoader) throws ConfigurationException {
-		configure(configurationName, classLoader, null);
-	}
-
-	public synchronized void configure(String configurationName, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
-		setName("JdbcMigrator for configuration["+configurationName+"]");
+	public synchronized void configure(Configuration configuration, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
+		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
+		super.configure();
 
 		AppConstants appConstants = AppConstants.getInstance(classLoader);
 
@@ -63,7 +61,7 @@ public class Migrator extends JdbcFacade {
 		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(classLoader);
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			if(configurationName != null)
+			if(configuration.getName() != null)
 				msg += " classLoader ["+ClassUtils.nameOf(classLoader)+"]";
 
 			log.debug(msg);
@@ -74,7 +72,7 @@ public class Migrator extends JdbcFacade {
 
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, cl, connection, configurationName, changeLogFile);
+				instance = new LiquibaseImpl(ibisContext, cl, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
 				throw new ConfigurationException("liquibase validation failed", e);

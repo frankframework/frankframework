@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -47,7 +48,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.IAdapter
  */
-public class Configuration {
+public class Configuration implements INamedObject{
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = null;
 
@@ -273,10 +274,11 @@ public class Configuration {
 		handler.configure();
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	@Override
 	public String getName() {
 		return name;
 	}

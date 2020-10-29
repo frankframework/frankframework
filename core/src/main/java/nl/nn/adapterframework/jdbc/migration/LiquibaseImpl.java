@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -38,18 +38,18 @@ import liquibase.resource.ClassLoaderResourceAccessor;
  * @since	7.0-B4
  *
  */
-public class LiquibaseImpl implements INamedObject{
+public class LiquibaseImpl {
 
 	private Liquibase liquibase = null;
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 	private IbisContext ibisContext = null;
-	private String configurationName = null;
+	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, String configurationName, String changeLogFile) throws LiquibaseException {
+	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
 		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+		this.configuration = configuration;
 
 		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(classLoader);
 
@@ -59,7 +59,7 @@ public class LiquibaseImpl implements INamedObject{
 
 	private void log(String message) {
 		if(ibisContext != null) 
-			ibisContext.log(configurationName, null, message);
+			ibisContext.log(configuration.getName(), null, message);
 	}
 
 	public void update() {
@@ -90,7 +90,7 @@ public class LiquibaseImpl implements INamedObject{
 		catch (Exception e) {
 			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(this, log, errorMsg, e);
+			ConfigurationWarnings.add(configuration, log, errorMsg, e);
 		}
 	}
 
@@ -100,15 +100,5 @@ public class LiquibaseImpl implements INamedObject{
 
 	public void tag(String tagName) throws LiquibaseException {
 		liquibase.tag(tagName);
-	}
-
-	@Override
-	public String getName() {
-		return configurationName;
-	}
-
-	@Override
-	public void setName(String name) {
-		// name = configurationName;
 	}
 }
