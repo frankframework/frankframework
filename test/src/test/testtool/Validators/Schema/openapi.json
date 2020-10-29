@@ -24,14 +24,14 @@
                         }
                     },
                     {
-                        "name":"Item/Id",
+                        "name":"ItemId",
                         "in":"query",
                         "schema":{
                             "type":"string"
                         }
                     },
                     {
-                        "name":"Attributes/Attribute/Id",
+                        "name":"AttributeId",
                         "in":"query",
                         "schema":{
                             "type":"string"
@@ -109,14 +109,14 @@
                         }
                     },
                     {
-                        "name":"Item/Id",
+                        "name":"ItemId",
                         "in":"query",
                         "schema":{
                             "type":"string"
                         }
                     },
                     {
-                        "name":"Attributes/Attribute/Id",
+                        "name":"AttributeId",
                         "in":"query",
                         "schema":{
                             "type":"string"
