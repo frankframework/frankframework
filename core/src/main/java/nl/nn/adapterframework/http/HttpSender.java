@@ -732,7 +732,7 @@ public class HttpSender extends HttpSenderBase {
 
 	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
 	@Deprecated
-	@ConfigurationWarning("remove this attribute and use a LocalFileSystemPipe as next pipe to save the contents as a file")
+	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
@@ -742,7 +742,7 @@ public class HttpSender extends HttpSenderBase {
 
 	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
 	@Deprecated
-	@ConfigurationWarning("use storeResultInSessionKey on the MessageSendingPipe instead")
+	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
 		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
@@ -751,7 +751,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("use storeResultInSessionKey on the MessageSendingPipe instead")
+	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}

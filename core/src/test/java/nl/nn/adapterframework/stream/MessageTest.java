@@ -448,9 +448,9 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testNullMessage() {
+	public void testNullMessageSize() {
 		Message message = Message.nullMessage();
-		assertEquals(-1, message.size());
+		assertEquals(0, message.size());
 	}
 
 	@Test

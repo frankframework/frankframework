@@ -516,7 +516,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			hiddenString = null;
 		} else {
 			hiddenString = "";
-			for (int i = 0; i < string.toString().length(); i++) {
+			for (int i = 0; i < string.length(); i++) {
 				hiddenString = hiddenString + "*";
 			}
 		}

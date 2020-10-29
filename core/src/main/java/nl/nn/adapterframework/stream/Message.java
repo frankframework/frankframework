@@ -419,8 +419,9 @@ public class Message implements Serializable {
 	 */
 	public long size() {
 		if(request == null) {
-			return -1;
+			return 0;
 		}
+
 		try {
 			if (request instanceof FileInputStream) {
 				FileInputStream fileStream = (FileInputStream) request;
@@ -428,10 +429,6 @@ public class Message implements Serializable {
 			}
 		} catch (IOException e) {
 			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
-		}
-
-		if(request instanceof InputStream || request instanceof Reader) {
-			return -1; //Unable to determine the size of a Stream
 		}
 
 		if(request instanceof String) {
@@ -444,7 +441,11 @@ public class Message implements Serializable {
 			return ((byte[]) request).length;
 		}
 
-		log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
+		if(!(request instanceof InputStream || request instanceof Reader)) {
+			//Unable to determine the size of a Stream
+			log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
+		}
+		
 		return -1;
 	}
 }
