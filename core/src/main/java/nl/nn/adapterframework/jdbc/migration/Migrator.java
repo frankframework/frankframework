@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
@@ -45,24 +46,24 @@ public class Migrator extends JdbcFacade {
 		throw new IllegalStateException("No configuration is specified!");
 	}
 
-	public void configure(Configuration configuration, ClassLoader classLoader) throws ConfigurationException {
-		configure(configuration, classLoader, null);
+	public void configure(Configuration configuration) throws ConfigurationException {
+		configure(configuration, null);
 	}
 
-	public synchronized void configure(Configuration configuration, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
+	public synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
 		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
 		super.configure();
 
-		AppConstants appConstants = AppConstants.getInstance(classLoader);
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 
 		if(changeLogFile == null)
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(classLoader);
+		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
 			if(configuration.getName() != null)
-				msg += " classLoader ["+ClassUtils.nameOf(classLoader)+"]";
+				msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
 
 			log.debug(msg);
 		}
@@ -72,16 +73,16 @@ public class Migrator extends JdbcFacade {
 
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, cl, connection, configuration, changeLogFile);
+				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
-				throw new ConfigurationException("liquibase validation failed", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase validation failed", e);
 			}
 			catch (LiquibaseException e) {
-				throw new ConfigurationException("liquibase failed to initialize", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
 			}
 			catch (Throwable e) {
-				throw new ConfigurationException("liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
 			}
 		}
 	}

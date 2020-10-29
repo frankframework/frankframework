@@ -47,11 +47,11 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
+	public LiquibaseImpl(IbisContext ibisContext, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
 		this.ibisContext = ibisContext;
 		this.configuration = configuration;
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(classLoader);
+		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(configuration.getClassLoader());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
 		this.liquibase.validate();
