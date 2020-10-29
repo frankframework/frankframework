@@ -10,8 +10,6 @@
             "get":{
                 "summary":"get envelope adapter description",
                 "operationId":"operationId",
-                "parameters":[
-                ],
                 "responses":{
                     "200":{
                         "description":"OK",

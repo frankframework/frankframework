@@ -9,8 +9,6 @@
         "/users":{
             "get":{
                 "summary":"description4simple-get",
-                "parameters":[
-                ],
                 "responses":{
                     "200":{
                         "description":"OK",

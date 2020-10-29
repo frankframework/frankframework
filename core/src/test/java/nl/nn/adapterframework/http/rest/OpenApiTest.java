@@ -107,6 +107,8 @@ public class OpenApiTest extends OpenApiTestBase {
 		Parameter param = new Parameter();
 		param.setName("parameter");
 		param.setValue("parameter");
+		param.setSessionKey("parameter");
+
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener("simpleEndpointQueryParamTest", "get", null)
 			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
@@ -135,6 +137,8 @@ public class OpenApiTest extends OpenApiTestBase {
 		Parameter param = new Parameter();
 		param.setName("parameter");
 		param.setValue("parameter");
+		param.setSessionKey("parameter");
+
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener("pathParamQueryParamTest/{pattern}", "get", null)
 			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
@@ -167,6 +171,8 @@ public class OpenApiTest extends OpenApiTestBase {
 		Parameter param = new Parameter();
 		param.setName("parameter");
 		param.setValue("parameter");
+		param.setSessionKey("parameter");
+
 		String responseRoot = "EnvelopeResponse,EnvelopeError403,EnvelopeError500";
 		new AdapterBuilder("myAdapterName", "each exit have specific element name")
 			.setListener("envelope", "get", null)

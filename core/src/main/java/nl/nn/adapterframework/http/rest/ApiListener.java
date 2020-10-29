@@ -133,9 +133,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(pattern.startsWith("/"))
 			pattern = pattern.substring(1);
 
-		if(pattern.endsWith("/"))
-			pattern = pattern.substring(0, pattern.length()-1);
-
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
@@ -167,6 +164,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
 	public void setUriPattern(String uriPattern) {
+		if(!uriPattern.startsWith("/"))
+			uriPattern = "/" + uriPattern;
+
+		if(uriPattern.endsWith("/"))
+			uriPattern = uriPattern.substring(0, uriPattern.length()-1);
+
 		this.uriPattern = uriPattern;
 	}
 	public String getUriPattern() {

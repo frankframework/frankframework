@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -200,8 +201,7 @@ public class ApiServiceDispatcher {
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
 			if(listener != null) {
-				String uriPattern = listener.getUriPattern().startsWith("/") ? listener.getUriPattern() : "/" + listener.getUriPattern();
-				paths.add(uriPattern, methods);
+				paths.add(listener.getUriPattern(), methods);
 			}
 		}
 		root.add("paths", paths.build());
@@ -249,7 +249,10 @@ public class ApiServiceDispatcher {
 				}
 			}
 		}
-		methodBuilder.add("parameters", paramBuilder);
+		JsonArray paramBuilderArray = paramBuilder.build();
+		if(!paramBuilderArray.isEmpty()) {
+			methodBuilder.add("parameters", paramBuilderArray);
+		}
 	}
 
 	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
