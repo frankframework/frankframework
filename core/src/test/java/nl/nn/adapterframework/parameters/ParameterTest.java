@@ -1,6 +1,11 @@
 package nl.nn.adapterframework.parameters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.UUID;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -147,5 +152,46 @@ public class ParameterTest {
 		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
 	}
 
+	@Test
+	public void testParameterValueMessageString() throws ConfigurationException, ParameterException {
+		String sessionKey = "mySessionKey";
+		String sessionMessage = "message goes here "+UUID.randomUUID();
+
+		Parameter p = new Parameter();
+		p.setName("readMyMessage");
+		p.setSessionKey(sessionKey);
+		p.configure();
+
+		IPipeLineSession session = new PipeLineSessionBase();
+		session.put(sessionKey, new Message(sessionMessage));
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testParameterValueMessageStream() throws Exception {
+		String sessionKey = "mySessionKey";
+		String sessionMessage = "message goes here "+UUID.randomUUID();
+		ByteArrayInputStream is = new ByteArrayInputStream(sessionMessage.getBytes());
+
+		Parameter p = new Parameter();
+		p.setName("readMyMessage");
+		p.setSessionKey(sessionKey);
+		p.configure();
+
+		IPipeLineSession session = new PipeLineSessionBase();
+		session.put(sessionKey, new Message(is));
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof InputStream);
+
+		assertEquals(sessionMessage, Message.asMessage(result).asString());
+	}
 
 }

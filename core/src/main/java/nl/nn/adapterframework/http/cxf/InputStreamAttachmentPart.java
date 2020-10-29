@@ -50,7 +50,7 @@ public class InputStreamAttachmentPart extends AttachmentPart {
 
 	public InputStream getInputStream() throws SOAPException {
 		try {
-			return (InputStream) super.getDataHandler().getDataSource().getInputStream();
+			return super.getDataHandler().getDataSource().getInputStream();
 		} catch (IOException e) {
 			throw new SOAPException("failed to retreive inputstream from attachment dataHander", e);
 		}

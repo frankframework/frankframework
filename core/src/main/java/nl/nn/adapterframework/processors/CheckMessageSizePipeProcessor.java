@@ -30,19 +30,19 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
-	
+
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession ) throws PipeRunException {
-		checkMessageSize(message, pipeLine, pipe, true);
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+
 		Message result = pipeRunResult.getResult();
-		checkMessageSize(result.asObject(), pipeLine, pipe, false);
+		checkMessageSize(result.size(), pipeLine, pipe, false);
 		return pipeRunResult;
 	}
 
-	private void checkMessageSize(Object message, PipeLine pipeLine, IPipe pipe, boolean input) {
-		if (message!=null && message instanceof String) {
-			int messageLength = message.toString().length();
+	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
+		if(messageLength > -1) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
 				StatisticsKeeper sizeStat = null;
@@ -60,14 +60,11 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 				}
 			}
 
-			if (pipeLine.getMessageSizeWarnNum()>=0) {
-				if (messageLength>=pipeLine.getMessageSizeWarnNum()) {
-					String logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
-					log.warn(logMessage);
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe pe = (IExtendedPipe)pipe;
-						pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-					}
+			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {
+				log.warn(String.format("pipe [%s] of adapter [%s], " + (input ? "input" : "result") + " message size [%s] exceeds [%s]", pipe.getName(), pipeLine.getOwner().getName(), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum())));
+				if (pipe instanceof IExtendedPipe) {
+					IExtendedPipe pe = (IExtendedPipe)pipe;
+					pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
 				}
 			}
 		}

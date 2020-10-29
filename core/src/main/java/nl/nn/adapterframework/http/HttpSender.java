@@ -158,9 +158,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class HttpSender extends HttpSenderBase {
 
-	private String streamResultToFileNameSessionKey = null;
-	private String storeResultAsStreamInSessionKey;
-	private String storeResultAsByteArrayInSessionKey;
+	@Deprecated private String streamResultToFileNameSessionKey = null;
+	@Deprecated private String storeResultAsStreamInSessionKey;
+	@Deprecated private String storeResultAsByteArrayInSessionKey;
+
 	private boolean base64=false;
 	private boolean streamResultToServlet=false;
 
@@ -251,7 +252,7 @@ public class HttpSender extends HttpSenderBase {
 			}
 			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
 		}
-		if(pairs.size() > 0) {
+		if(!pairs.isEmpty()) {
 			uri.clearParameters();
 			uri.addParameters(pairs);
 		}
@@ -525,10 +526,9 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
-			String responseBody = getResponseBodyAsString(responseHandler, false);
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + responseBody);
+					+ " body: " + getResponseBodyAsString(responseHandler));
 			
 		}
 
@@ -546,7 +546,7 @@ public class HttpSender extends HttpSenderBase {
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
-			} else if (isBase64()) {
+			} else if (isBase64()) { //This should be removed in a future iteration
 				return getResponseBodyAsBase64(responseHandler.getResponse());
 			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
 				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
@@ -560,8 +560,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 				return handleMultipartResponse(responseHandler, session);
 			} else {
-				//TODO remove getResponseBodyAsString method and return a Message object
-				return Message.asMessage(getResponseBodyAsString(responseHandler, true));
+				return getResponseBody(responseHandler);
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
@@ -569,13 +568,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	/**
-	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
-	 * Since this method is used when handling other exceptions thrown by {@link WebServiceSender} and {@link HttpSender} , silently return null, to avoid npe's, ioexceptions etc.
-	 */
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
+	public Message getResponseBody(HttpResponseHandler responseHandler) {
 		String charset = responseHandler.getCharset();
 		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
@@ -585,15 +581,21 @@ public class HttpSender extends HttpSenderBase {
 				headerXml.setCdataValue(header.getValue());
 				headersXml.addSubElement(headerXml);
 			}
-			return headersXml.toXML();
+			return Message.asMessage(headersXml.toXML());
 		}
+
+		return new Message(responseHandler.getResponse(), charset);
+	}
+
+	/**
+	 * Tries to parse the response as a String. If unsuccessful return null.
+	 */
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
 		String responseBody = null;
 		try {
-			responseBody = responseHandler.getResponseAsString(true);
+			responseBody = getResponseBody(responseHandler).asString();
 		} catch(IOException e) {
-			if(throwIOExceptionWhenParsingResponse) {
-				throw e;
-			}
+			log.warn(getLogPrefix()+"unable to parse response", e);
 			return null;
 		}
 
@@ -606,6 +608,7 @@ public class HttpSender extends HttpSenderBase {
 				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
 			}
 		}
+
 		return responseBody;
 	}
 
@@ -659,22 +662,15 @@ public class HttpSender extends HttpSenderBase {
 		return result;
 	}
 
-	public void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
-		streamResponseBody(responseHandler.getResponse(),
-				responseHandler.getHeader("Content-Type"),
-				responseHandler.getHeader("Content-Disposition"),
-				response, log, getLogPrefix());
+	private void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
+		streamResponseBody(responseHandler.getResponse(), responseHandler.getHeader("Content-Type"), responseHandler.getHeader("Content-Disposition"), response, log, getLogPrefix());
 	}
 
-	public static void streamResponseBody(InputStream is, String contentType,
-			String contentDisposition, HttpServletResponse response,
-			Logger log, String logPrefix) throws IOException {
+	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix) throws IOException {
 		streamResponseBody(is, contentType, contentDisposition, response, log, logPrefix, null);
 	}
 
-	public static void streamResponseBody(InputStream is, String contentType,
-			String contentDisposition, HttpServletResponse response,
-			Logger log, String logPrefix, String redirectLocation) throws IOException {
+	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
 			response.setHeader("Content-Type", contentType); 
 		}
@@ -734,33 +730,39 @@ public class HttpSender extends HttpSenderBase {
 		return ignoreRedirects;
 	}
 
+	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
+	public void setStreamResultToFileNameSessionKey(String string) {
+		streamResultToFileNameSessionKey = string;
+	}
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
 	}
 
-	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
-	public void setStreamResultToFileNameSessionKey(String string) {
-		streamResultToFileNameSessionKey = string;
+	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
+	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
+		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
-
 	public String getStoreResultAsStreamInSessionKey() {
 		return storeResultAsStreamInSessionKey;
 	}
 
-	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	public String getStoreResultAsByteArrayInSessionKey() {
-		return storeResultAsByteArrayInSessionKey;
-	}
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
+	public String getStoreResultAsByteArrayInSessionKey() {
+		return storeResultAsByteArrayInSessionKey;
+	}
 
 	@IbisDoc({"when true, the result is base64 encoded", "false"})
-	public void setBase64(boolean b) { // TODO deprecate this. Let people use the Base64Pipe instead!
+	@Deprecated
+	@ConfigurationWarning("use Base64Pipe instead")
+	public void setBase64(boolean b) {
 		base64 = b;
 	}
 	public boolean isBase64() {
