@@ -1748,29 +1748,33 @@ public class XmlUtils {
 		map.put("XML tool version info:", null);
 		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
-		}  catch (Throwable t) {
+		} catch (Throwable t) {
+			log.warn("Could not get Xerces version", t);
 			map.put("Xerces-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
 		try {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
- 			map.put("Xalan-Version", xalanVersion);
+			map.put("Xalan-Version", xalanVersion);
 		} catch (Throwable t) {
+			log.warn("Could not get Xalan version", t);
 			map.put("Xalan-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
- 			map.put("Saxon-Version", saxonVersion);
+			map.put("Saxon-Version", saxonVersion);
 		} catch (Throwable t) {
+			log.warn("Could not get Saxon version", t);
 			map.put("Saxon-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			if (xmlInputFactory instanceof WstxInputFactory) {
 				ReaderConfig woodstoxConfig = ((WstxInputFactory)xmlInputFactory).createPrivateConfig();
 				String woodstoxVersion = ReaderConfig.getImplName()+" "+ReaderConfig.getImplVersion()+"; xml1.1 "+(woodstoxConfig.isXml11()?"":"not ")+"enabled";
-	 			map.put("Woodstox-Version", woodstoxVersion);
+				map.put("Woodstox-Version", woodstoxVersion);
 			}
 		} catch (Throwable t) {
+			log.warn("Could not get Woodstox version", t);
 			map.put("Woodstox-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
