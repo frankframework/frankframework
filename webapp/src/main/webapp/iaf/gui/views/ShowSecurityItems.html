@@ -72,6 +72,27 @@
 						</table>
 					</div>
 				</div>
+				<div class="col-md-4 m-t-md table-responsive" ng-if="xmlComponents.length > 0">
+					<div class="ibox-title">
+						<h4>XML Components</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Component</th>
+									<th>Version</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="entry in xmlComponents">
+									<td>{{entry.key}}</td>
+									<td>{{entry.value}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
 				<div class="col-md-4 m-t-md table-responsive" ng-if="sapSystems.length > 0">
 					<div class="ibox-title">
 						<h4>Used Sap Systems</h4>
