@@ -121,7 +121,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("200")
 			.build(true);
 
-		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findConfigForUri("simpleEndpointQueryParamTest").getMethods().size());
+		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findConfigForUri("/simpleEndpointQueryParamTest").getMethods().size());
 		String result = callOpenApi();
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeQueryParam.json");
@@ -155,7 +155,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("403")
 			.build(true);
 
-		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri("pathParamQueryParamTest").size());
+		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri("/pathParamQueryParamTest").size());
 		String result = callOpenApi();
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
@@ -206,7 +206,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("403",null,"true")
 			.build(true);
 
-		assertEquals("more then 4 registered pattern found!", 4, dispatcher.findMatchingConfigsForUri("envelope").size());
+		assertEquals("more then 4 registered pattern found!", 4, dispatcher.findMatchingConfigsForUri("/envelope").size());
 		String result = callOpenApi();
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeExits.json");
@@ -246,10 +246,10 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		Thread.sleep(1200); //Adding a small timeout to fix async starting issues
 
-		assertNotNull("unable to find DispatchConfig for uri [pets]", dispatcher.findConfigForUri("pets"));
-		assertEquals("not all listener uri [pets] are registered on the dispatcher", 2, dispatcher.findConfigForUri("pets").getMethods().size());
-		assertNotNull("unable to find DispatchConfig for uri [pets/a]", dispatcher.findConfigForUri("pets/a"));
-		assertEquals("listener uri [pets/a] not registered on dispatcher", 1, dispatcher.findConfigForUri("pets/a").getMethods().size());
+		assertNotNull("unable to find DispatchConfig for uri [pets]", dispatcher.findConfigForUri("/pets"));
+		assertEquals("not all listener uri [pets] are registered on the dispatcher", 2, dispatcher.findConfigForUri("/pets").getMethods().size());
+		assertNotNull("unable to find DispatchConfig for uri [pets/a]", dispatcher.findConfigForUri("/pets/a"));
+		assertEquals("listener uri [pets/a] not registered on dispatcher", 1, dispatcher.findConfigForUri("/pets/a").getMethods().size());
 
 		String result = callOpenApi();
 

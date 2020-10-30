@@ -36,24 +36,24 @@ public class ApiListenerPatternsTest {
 	@Parameters(name = "uriPattern[{0}] -> expected[{1}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{ "*", "*" },
-				{ "test", "test" },
-				{ "/test", "test" },
-				{ "/test/", "test" },
+				{ "*", "/*" },
+				{ "test", "/test" },
+				{ "/test", "/test" },
+				{ "/test/", "/test" },
 
-				{ "test/*", "test/*" },
-				{ "*/*", "*/*" },
-				{ "test/something", "test/something" },
-				{ "test/*/something", "test/*/something" },
-				{ "test/*/*", "test/*/*" },
-				{ "test/*/something/else", "test/*/something/else" },
-				{ "test/*/something/*", "test/*/something/*" },
+				{ "test/*", "/test/*" },
+				{ "*/*", "/*/*" },
+				{ "test/something", "/test/something" },
+				{ "test/*/something", "/test/*/something" },
+				{ "test/*/*", "/test/*/*" },
+				{ "test/*/something/else", "/test/*/something/else" },
+				{ "test/*/something/*", "/test/*/something/*" },
 
-				{ "/*/*/*", "*/*/*" },
+				{ "/*/*/*", "/*/*/*" },
 
-				{ "/text/{name}", "text/*" },
-				{ "/text/{name}/something", "text/*/something" },
-				{ "/text/{name}/{name2}", "text/*/*" },
+				{ "/text/{name}", "/text/*" },
+				{ "/text/{name}/something", "/text/*/something" },
+				{ "/text/{name}/{name2}", "/text/*/*" },
 		});
 	}
 
@@ -68,7 +68,9 @@ public class ApiListenerPatternsTest {
 
 	@Test
 	public void testUriPattern() {
-		assertEquals(uriPattern, listener.getUriPattern());
+		String preFormattedUriPattern = uriPattern.startsWith("/") ? uriPattern : "/" + uriPattern;
+		String expectedUriPattern = preFormattedUriPattern.endsWith("/") ? preFormattedUriPattern.substring(0, preFormattedUriPattern.length()-1) : preFormattedUriPattern;
+		assertEquals(expectedUriPattern, listener.getUriPattern());
 	}
 
 	@Test

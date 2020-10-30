@@ -130,9 +130,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(StringUtils.isEmpty(pattern))
 			return null;
 
-		if(pattern.startsWith("/"))
-			pattern = pattern.substring(1);
-
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
