@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher_ServiceProxy;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -39,10 +40,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+public class IbisWebServiceSender extends SenderBase implements ISender, HasPhysicalDestination {
 
-	private String name;
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;
 	private String serviceName = "serviceListener";
@@ -94,17 +93,6 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 		return getEndPoint()+" - "+getServiceName();
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@IbisDoc({"name of the sender", ""})
-	@Override
-	public void setName(String name) {
-		this.name=name;
-	}
-	
 	public String getIbisHost() {
 		return ibisHost;
 	}
@@ -130,11 +118,6 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	@IbisDoc({"name of the receiver that should be called", "servicelistener"})
 	public void setServiceName(String serviceName) {
 		this.serviceName=serviceName;
-	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return classLoader;
 	}
 
 }

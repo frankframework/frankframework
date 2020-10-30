@@ -60,6 +60,8 @@ import com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification;
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
+import lombok.Getter;
+
 /**
  * Helper class for sftp and ftp.
  * 
@@ -67,9 +69,9 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * 
  * @author John Dekker
  */
-public class FtpSession implements IConfigurable{
+public class FtpSession implements IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	// types of ftp transports
 	static final int FTP = 1;
@@ -959,17 +961,12 @@ public class FtpSession implements IConfigurable{
 	}
 
 	@Override
-	@IbisDoc({"name of the listener", ""})
+	@IbisDoc({"name of the listener or sender", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return classLoader;
 	}
 }
