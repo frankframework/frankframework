@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.LogUtil;
@@ -43,14 +44,14 @@ public class LiquibaseImpl {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 	private IbisContext ibisContext = null;
-	private String configurationName = null;
+	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, String configurationName, String changeLogFile) throws LiquibaseException {
+	public LiquibaseImpl(IbisContext ibisContext, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
 		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+		this.configuration = configuration;
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(classLoader);
+		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(configuration.getClassLoader());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
 		this.liquibase.validate();
@@ -58,7 +59,7 @@ public class LiquibaseImpl {
 
 	private void log(String message) {
 		if(ibisContext != null) 
-			ibisContext.log(configurationName, null, message);
+			ibisContext.log(configuration.getName(), null, message);
 	}
 
 	public void update() {
@@ -87,9 +88,9 @@ public class LiquibaseImpl {
 			}
 		}
 		catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update for configuration ["+configurationName+"]. Failed to execute ["+changes.size()+"] change(s): ";
+			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(log, errorMsg, e);
+			ConfigurationWarnings.add(configuration, log, errorMsg, e);
 		}
 	}
 
