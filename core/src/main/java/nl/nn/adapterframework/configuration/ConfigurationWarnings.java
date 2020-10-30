@@ -34,6 +34,19 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
 	private Configuration activeConfiguration = null;
 
+	public static void addGlobalWarning(Logger log, String msg, SuppressKeys suppressionKey, ClassLoader classLoader) {
+		if(suppressionKey == null) {
+			addGlobalWarning(log, msg, null);
+		} else if(!isSuppressed(suppressionKey, null, classLoader)) {
+			if(suppressionKey.isAllowGlobalSuppression()) {
+				msg += "This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"=true'";
+			} else {
+				throw new RuntimeException("["+suppressionKey.getKey()+"] does not allow suppression at global level.");
+			}
+			addGlobalWarning(log, msg, null);
+		}
+	}
+
 	/**
 	 * Add configuration independent warning
 	 */
@@ -60,6 +73,14 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	 */
 	public static void add(IConfigurable object, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		if(!isSuppressed(suppressionKey, adapter, object.getConfigurationClassLoader())) {
+			if(adapter != null) {
+				message += "This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+				if(suppressionKey.isAllowGlobalSuppression()) {
+					message += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				}
+			} else if(suppressionKey.isAllowGlobalSuppression()) {
+				message += "This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+			}
 			add(object, log, message, null);
 		}
 	}
@@ -130,8 +151,12 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	}
 	
 	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter, ClassLoader cl) {
+		if(key == null || cl == null) {
+			return false;
+		}
+
 		AppConstants appConstants = AppConstants.getInstance(cl);
-		return appConstants.getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
+		return key.isAllowGlobalSuppression() && appConstants.getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
 				|| adapter!=null && appConstants.getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }

@@ -63,8 +63,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-	private boolean suppressDefaultValueWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), false);
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
     public AbstractSpringPoweredDigesterFactory() {
         super();
@@ -168,7 +166,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
 	 */
 	private void checkDeprecation(Object currObj) {
-		if(!suppressDeprecationWarnings) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
 			Class<?> clazz = ClassUtils.getUserClass(currObj);
 			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
 			if(warning != null) {
@@ -180,7 +179,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					msg += ": " + warning.value();
 				}
 				//Only print it once per deprecated class
-				ConfigurationWarnings.addGlobalWarning(log, msg);
+				ConfigurationWarnings.addGlobalWarning(log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, classLoader);
 			}
 		}
 	}
@@ -268,18 +267,28 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
-		if(!suppressDefaultValueWarnings) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, null, classLoader)) {
 			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
 			if (!configWarnings.containsDefaultValueException(mergedKey)) {
-				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
+				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, classLoader);
 			}
 		}
 	}
 
 	private void addConfigWarning(Object currObj, String name, String message) {
+		addConfigWarning(currObj, name, message, null, null);
+	}
+
+	private void addConfigWarning(Object currObj, String name, String message, SuppressKeys key, ClassLoader cl) {
 		Locator loc = getDigester().getDocumentLocator();
 		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-		ConfigurationWarnings.add(null, log, msg);
+		if(currObj instanceof INamedObject) {
+			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
+		} else { 
+			ConfigurationWarnings.addGlobalWarning(log, msg, key, cl);
+		}
+		
 	}
 
     /**
