@@ -35,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+
 /**
  * Provides all JNDI functions and is meant to act as a base class.
  * 
@@ -43,7 +45,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class JNDIBase {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
     // JNDI
     private String providerURL = null;
@@ -73,15 +75,11 @@ public class JNDIBase {
 		}
 	}
 
-	public ClassLoader getClassLoader() {
-		return classLoader;
-	}
-
 	protected Hashtable getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(getClassLoader(), getJndiProperties());
+			URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}

@@ -1347,9 +1347,4 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public boolean isReplyNotFound() {
 		return replyNotFound;
 	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return super.getClassLoader();
-	}
 }
