@@ -40,14 +40,14 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	/**
 	 * Add configuration independent warning
 	 */
-	public static void add(Logger log, String message) {
-		add(log, message, null);
+	public static void addGlobalWarning(Logger log, String message) {
+		addGlobalWarning(log, message, null);
 	}
 
 	/**
 	 * Add configuration independent warning and log the exception stack
 	 */
-	public static void add(Logger log, String message, Throwable t) {
+	public static void addGlobalWarning(Logger log, String message, Throwable t) {
 		getInstance().addConfigurationIndependentWarning(log, message, t, (t==null));
 	}
 

@@ -119,7 +119,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			try {
 				flowDiagramManager.generate(configuration);
 			} catch (IOException e) {
-				ConfigurationWarnings.add(log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
+				ConfigurationWarnings.add(configuration, log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
 			}
 		}
 	}

@@ -180,7 +180,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					msg += ": " + warning.value();
 				}
 				//Only print it once per deprecated class
-				ConfigurationWarnings.add(log, msg);
+				ConfigurationWarnings.addGlobalWarning(log, msg);
 			}
 		}
 	}
