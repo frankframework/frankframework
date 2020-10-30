@@ -62,9 +62,7 @@ public class Migrator extends JdbcFacade {
 		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			if(configuration.getName() != null)
-				msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
-
+			msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
 			log.debug(msg);
 		}
 		else {
