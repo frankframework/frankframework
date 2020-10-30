@@ -91,10 +91,4 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	public ParameterList getParameterList() {
 		return paramList;
 	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return super.getClassLoader();
-	}
-
 }

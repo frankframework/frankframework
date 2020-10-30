@@ -28,6 +28,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -54,7 +55,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
 public class FileRecordListener implements IPullingListener {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String inputDirectory;
@@ -284,11 +285,6 @@ public class FileRecordListener implements IPullingListener {
 		return array.iterator();
 	}
 
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return classLoader;
-	}
-
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
@@ -371,5 +367,4 @@ public class FileRecordListener implements IPullingListener {
 	public String getStoreFileNameInSessionKey() {
 		return storeFileNameInSessionKey;
 	}
-
 }

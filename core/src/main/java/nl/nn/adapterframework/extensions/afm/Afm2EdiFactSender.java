@@ -27,6 +27,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import lombok.Getter;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,7 +51,7 @@ import java.util.Date;
  */
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";
@@ -326,10 +328,5 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	public String getTpnummer() {
 		return tpnummer;
-	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return classLoader;
 	}
 }

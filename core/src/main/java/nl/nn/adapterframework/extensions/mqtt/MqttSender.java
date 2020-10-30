@@ -116,5 +116,4 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	public boolean isSynchronous() {
 		return false;
 	}
-
 }

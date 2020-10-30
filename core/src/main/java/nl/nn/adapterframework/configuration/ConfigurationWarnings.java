@@ -131,7 +131,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	
 	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter, ClassLoader cl) {
 		AppConstants appConstants = AppConstants.getInstance(cl);
-		return appConstants.getBoolean(key.getValue(), false) // warning is suppressed globally, for all adapters
-				|| adapter!=null && appConstants.getBoolean(key.getValue()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return appConstants.getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
+				|| adapter!=null && appConstants.getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }

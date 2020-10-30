@@ -31,8 +31,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
+import lombok.Getter;
+
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
@@ -230,10 +232,5 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	}
 	public String getAuthAlias() {
 		return authAlias;
-	}
-
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return classLoader;
 	}
 }

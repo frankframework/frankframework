@@ -15,6 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.configuration;
 
+import lombok.Getter;
+
 /**
  * Enumeration class for suppressing configuration warnings.
  * 
@@ -29,13 +31,9 @@ public enum SuppressKeys {
 	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction"),
 	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck");
 
-	private String key;
+	private @Getter String key;
 
 	private SuppressKeys(String key) {
 		this.key = key;
-	}
-
-	public String getValue() {
-		return key;
 	}
 }
