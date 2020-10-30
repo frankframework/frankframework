@@ -20,9 +20,7 @@
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
 	<rule pattern="*/sender" registerMethod="setSender"/>
-	<rule pattern="*/postboxSender" registerMethod="setSender"/>
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" registerMethod="setListener"/>
-	<rule pattern="*/postboxListener" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
 	<rule pattern="*/inProcessStorage" registerMethod="setInProcessStorage"/>
@@ -51,8 +49,6 @@
 	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
-
-	<rule pattern="*/statisticsHandlers" registerMethod="registerStatisticsHandler"/>
 	<rule pattern="*/statisticsHandler" registerMethod="registerStatisticsHandler"/>
 	<rule pattern="*/cache" registerMethod="registerCache"/>
 </digester-rules>

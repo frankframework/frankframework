@@ -131,7 +131,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 	private void addEmailInfoSimple(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
 		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setCdataValue(emailMessage.getSubject());
+		subjectXml.setValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 	}
 
@@ -172,10 +172,10 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		fromXml.setValue(emailMessage.getFrom().getAddress());
 		emailXml.addSubElement(fromXml);
 		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setCdataValue(emailMessage.getSubject());
+		subjectXml.setValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setCdataValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+		messageXml.setValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
 		emailXml.addSubElement(messageXml);
 		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
 		try {
@@ -214,7 +214,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 				XmlBuilder headerXml = new XmlBuilder("header");
 				InternetMessageHeader imh = (InternetMessageHeader) it.next();
 				headerXml.addAttribute("name", imh.getName());
-				headerXml.setCdataValue(imh.getValue());
+				headerXml.setValue(imh.getValue());
 				headersXml.addSubElement(headerXml);
 			}
 		}

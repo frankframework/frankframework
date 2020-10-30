@@ -387,7 +387,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
-	protected void setKeyField(String fieldname) {
+	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 	public String getKeyField() {
@@ -395,7 +395,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
-	protected void setMessageField(String fieldname) {
+	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 	public String getMessageField() {

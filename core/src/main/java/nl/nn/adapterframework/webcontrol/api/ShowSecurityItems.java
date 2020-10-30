@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public final class ShowSecurityItems extends Base {
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("serverProps", addServerProps());
+		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}

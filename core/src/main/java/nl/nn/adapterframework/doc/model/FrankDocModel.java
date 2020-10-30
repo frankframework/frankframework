@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,42 +9,145 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.digester.DigesterRule;
+import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
-	private static final String JAVA_STRING = "java.lang.String";
-
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
-
-	private @Getter List<FrankDocGroup> groups;
+	private static final String DIGESTER_RULES = "digester-rules.xml";
+	
+	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
+	private @Getter Map<String, FrankDocGroup> groups;
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
+	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
-	public FrankDocModel() {
-		groups = new ArrayList<>();
+	/**
+	 * Get the FrankDocModel needed in production. This is just a first draft. The
+	 * present version does not have groups yet. It will be improved in future
+	 * pull requests. 
+	 */
+	public static FrankDocModel populate() {
+		FrankDocModel result = new FrankDocModel();
+		try {
+			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
+			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
+		} catch(Exception e) {
+			log.fatal("Could not populate FrankDocModel", e);
+			return null;
+		}
+		return result;
 	}
 
-	public FrankElement findOrCreateFrankElement(Class<?> clazz) {
+	public FrankDocModel() {
+		configChildDescriptors = new HashMap<>();
+		groups = new HashMap<>();
+	}
+
+	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
+		Resource resource = Resource.getResource(path);
+		if(resource == null) {
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
+		}
+		try {
+			XmlUtils.parseXml(resource.asInputSource(), new Handler(path));
+		}
+		catch(IOException e) {
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
+		}
+		catch(SAXException e) {
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
+		}
+	}
+
+	private class Handler extends DigesterRulesHandler {
+		private final String path;
+
+		Handler(String path) {
+			this.path = path;
+		}
+
+		@Override
+		protected void handle(DigesterRule rule) throws SAXException {
+			String pattern = rule.getPattern();
+			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
+			String syntax1Name = null;
+			while(tokenizer.hasMoreElements()) {
+				String token = tokenizer.nextToken();
+				if(!"*".equals(token)) {
+					syntax1Name = token;
+				}
+			}
+			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
+				add(rule.getRegisterMethod(), syntax1Name);
+			}			
+		}
+
+		private void add(String registerMethod, String syntax1Name) throws SAXException {
+			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, syntax1Name);
+			if(configChildDescriptors.containsKey(item.getMethodName())) {
+				log.warn(String.format("In digester rules [%s], duplicate method name [%s]", path, registerMethod));
+			} else {
+				configChildDescriptors.put(item.getMethodName(), item);
+			}
+		}
+	}
+
+	public ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
+		if(allTypes.containsKey(clazz.getName())) {
+			return allTypes.get(clazz.getName());
+		}
+		final ElementType result = new ElementType(clazz);
+		// If a containing FrankElement contains the type being created, we do not
+		// want recursion.
+		allTypes.put(result.getFullName(), result);
+		if(result.isFromJavaInterface()) {
+			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			for(SpringBean b: springBeans) {
+				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
+				result.addMember(frankElement);
+			}
+		} else {
+			result.addMember(findOrCreateFrankElement(clazz));
+		}
+		return result;
+	}
+
+	public boolean hasType(String typeName) {
+		return allTypes.containsKey(typeName);
+	}
+
+	public FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
+		FrankElement current = new FrankElement(clazz);
+		allElements.put(clazz.getName(), current);
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
-		FrankElement current = new FrankElement(clazz, parent);
+		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
-		allElements.put(current.getFullName(), current);
+		current.setConfigChildren(createConfigChildren(clazz.getMethods(), current));
 		return current;
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) {
+	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) throws ReflectiveOperationException {
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
@@ -81,7 +185,7 @@ public class FrankDocModel {
 	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
-				.filter(FrankDocModel::isGetterOrSetter)
+				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());		
 		Map<String, Method> result = new LinkedHashMap<>();
@@ -93,20 +197,6 @@ public class FrankDocModel {
 		return result;
 	}
 
-	static boolean isGetterOrSetter(Method method) {
-		boolean isSetter = method.getReturnType().isPrimitive()
-				&& method.getReturnType().getName().equals("void")
-				&& (method.getParameterTypes().length == 1)
-				&& (method.getParameterTypes()[0].isPrimitive()
-						|| method.getParameterTypes()[0].getName().equals(JAVA_STRING));
-		boolean isGetter = (
-					(method.getReturnType().isPrimitive()
-							&& !method.getReturnType().getName().equals("void"))
-					|| method.getReturnType().getName().equals(JAVA_STRING)
-				) && (method.getParameterTypes().length == 0);
-		return isSetter || isGetter;
-	}
-
 	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
@@ -116,19 +206,25 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) {
+	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
-			if(ibisDoc != null) {
-				attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
-				attribute.parseIbisDocAnnotation(ibisDoc);
-				if(parsed.hasOrder) {
-					attribute.setOrder(parsed.getOrder());
-				}
-				return;
+			IbisDoc ibisDoc = null;
+			if(parsed.getReferredMethod() != null) {
+				ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
+				if(ibisDoc != null) {
+					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
+					attribute.parseIbisDocAnnotation(ibisDoc);
+					if(parsed.hasOrder) {
+						attribute.setOrder(parsed.getOrder());
+					}
+					return;
+				}				
+			} else {
+				log.warn(String.format(
+						"@IbisDocRef of Frank elelement [%s] attribute [%s] points to non-existent method", attributeOwner.getSimpleName(), attribute.getName()));
 			}
 		}
 		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
@@ -201,9 +297,24 @@ public class FrankDocModel {
 		}
 	}
 
-	public FrankDocGroup addGroup(String name) {
-		FrankDocGroup group = new FrankDocGroup(name);
-		groups.add(group);
-		return group;
+	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
+		List<Method> configChildSetters = Arrays.asList(methods).stream()
+				.filter(Utils::isConfigChildSetter)
+				.filter(m -> configChildDescriptors.get(m.getName()) != null)
+				.collect(Collectors.toList());
+		List<ConfigChild> result = new ArrayList<>();
+		for(Method m: configChildSetters) {
+			ConfigChild configChild = new ConfigChild(parent);
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
+			Class<?> elementClass = m.getParameterTypes()[0];
+			configChild.setElementType(findOrCreateElementType(elementClass));
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
+			configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
+			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
+			configChild.setMandatory(configChildDescriptor.isMandatory());
+			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
+			result.add(configChild);
+		}
+		return result;
 	}
 }
