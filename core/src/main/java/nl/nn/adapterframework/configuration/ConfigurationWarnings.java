@@ -39,7 +39,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 			addGlobalWarning(log, msg, null);
 		} else if(!isSuppressed(suppressionKey, null, classLoader)) {
 			if(suppressionKey.isAllowGlobalSuppression()) {
-				msg += "This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"=true'";
+				msg += ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"=true'";
 			} else {
 				throw new RuntimeException("["+suppressionKey.getKey()+"] does not allow suppression at global level.");
 			}
@@ -74,7 +74,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	public static void add(IConfigurable object, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		if(!isSuppressed(suppressionKey, adapter, object.getConfigurationClassLoader())) {
 			if(adapter != null) {
-				message += "This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+				message = "in adapter [" + adapter.getName() + "] " + message + ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
 				if(suppressionKey.isAllowGlobalSuppression()) {
 					message += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
 				}
