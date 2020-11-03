@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -310,7 +311,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 
 
 	@Override
-	public Iterator<Item> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<Item> listFiles(String folder) throws FileSystemException {
 		try {
 			FolderId folderId = findFolder(basefolderId,folder);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList());
@@ -325,7 +326,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 			if (findResults.getTotalCount() == 0) {
 				return null;
 			} else {
-				return findResults.getItems().iterator();
+				return FileSystemUtils.getDirectoryStream(findResults.getItems().iterator());
 			}
 		} catch (Exception e) {
 			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);

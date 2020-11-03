@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -102,8 +104,12 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	public int getMessageCount() throws ListenerException {
 		try {
 			int count = 0;
-			for (Iterator<F> it = fileSystem.listFiles(folder); it.hasNext(); it.next()) {
-				count++;
+			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+				for (Iterator<F> it = ds.iterator(); it.hasNext(); it.next()) {
+					count++;
+				}
+			} catch (IOException e) {
+				throw new ListenerException(e);
 			}
 			return count;
 		} catch (FileSystemException e) {

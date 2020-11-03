@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -50,7 +51,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null). 
 	 * Should list only 'files', no folders.
 	 */
-	public Iterator<F> listFiles(String folder) throws FileSystemException;
+	public DirectoryStream<F> listFiles(String folder) throws FileSystemException;
 	
 	/**
 	 * Get a string representation of an identification of a file, expected to be in the 'root' folder. 

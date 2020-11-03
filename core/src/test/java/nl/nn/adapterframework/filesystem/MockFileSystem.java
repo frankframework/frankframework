@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -113,7 +114,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public Iterator<M> listFiles(String folderName) throws FileSystemException {
+	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
 		if (folder==null) {
@@ -123,7 +124,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		return (Iterator<M>)files.values().iterator();
+		return FileSystemUtils.getDirectoryStream((Iterator<M>)files.values().iterator());
 	}
 
 	@Override

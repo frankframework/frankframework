@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -166,38 +168,39 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		try {
 			FS fileSystem=getFileSystem();
-			Iterator<F> it = fileSystem.listFiles(getInputFolder());
-			if (it==null || !it.hasNext()) {
-				return null;
+			try(DirectoryStream<F> ds = fileSystem.listFiles(getInputFolder())) {
+				Iterator<F> it = ds.iterator();
+				if (it==null || !it.hasNext()) {
+					return null;
+				}
+				
+				long stabilityLimit = getMinStableTime();
+				if (stabilityLimit>0) {
+					stabilityLimit=System.currentTimeMillis()-stabilityLimit;
+				}
+				while (it.hasNext()) {
+					F file = it.next();
+					if (stabilityLimit>0) {
+						long filemodtime=fileSystem.getModificationTime(file).getTime();
+						if (filemodtime>stabilityLimit) {
+							continue;
+						}
+					}
+					if (StringUtils.isNotEmpty(getInProcessFolder())) {
+						F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
+						return inprocessFile;
+					} 
+					return file;
+				}
+			} catch (IOException e) {
+				throw new ListenerException(e);
 			}
 			
-			long stabilityLimit = getMinStableTime();
-			if (stabilityLimit>0) {
-				stabilityLimit=System.currentTimeMillis()-stabilityLimit;
-			}
-			while (it.hasNext()) {
-				F file = it.next();
-				if (stabilityLimit>0) {
-					long filemodtime=fileSystem.getModificationTime(file).getTime();
-					if (filemodtime>stabilityLimit) {
-						continue;
-					}
-				}
-				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
-					return inprocessFile;
-				} 
-				return file;
-			}
 			return null;
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
 	}
-
-
-
-
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {

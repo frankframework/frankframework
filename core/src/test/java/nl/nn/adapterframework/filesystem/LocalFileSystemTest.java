@@ -6,15 +6,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
+public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
 	public TemporaryFolder folder;
 
@@ -50,7 +51,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		deleteFile(null, filename);
 		waitForActionToFinish();
 		
-		File file = fileSystem.toFile(fileSystem.getRoot()+"/"+filename);
+		Path file = fileSystem.toFile(fileSystem.getRoot()+"/"+filename);
 		OutputStream out = fileSystem.createFile(file);
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
@@ -87,20 +88,20 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		fsShort.configure();
 		fsShort.open();
 		
-		File fLong = fsLong.toFile(filename);
-		File fShort = fsShort.toFile(filename);
+		Path fLong = fsLong.toFile(filename);
+		Path fShort = fsShort.toFile(filename);
 		
-		System.out.println("Flong ["+fLong.getName()+"] absolute path ["+fLong.getAbsolutePath()+"]");
-		System.out.println("Fshort ["+fShort.getName()+"] absolute path ["+fShort.getAbsolutePath()+"]");
+		System.out.println("Flong ["+fLong.getFileName().toString()+"] absolute path ["+fLong.toAbsolutePath()+"]");
+		System.out.println("Fshort ["+fShort.getFileName().toString()+"] absolute path ["+fShort.toAbsolutePath()+"]");
 		
 		assertTrue(fsLong.exists(fLong));
 		assertTrue(fsShort.exists(fShort));
 		
-		assertTrue(fsLong.exists(fsLong.toFile(fLong.getAbsolutePath())));
-		assertTrue(fsShort.exists(fsShort.toFile(fShort.getAbsolutePath())));
+		assertTrue(fsLong.exists(fsLong.toFile(fLong.toAbsolutePath().toString())));
+		assertTrue(fsShort.exists(fsShort.toFile(fShort.toAbsolutePath().toString())));
 
-		assertTrue("LocalFileSystem with short path root must accept absolute filename with long path root", fsShort.exists(fsShort.toFile(fLong.getAbsolutePath())));
-		assertTrue("LocalFileSystem with long path root must accept absolute filename with short path root", fsLong.exists(fsLong.toFile(fShort.getAbsolutePath())));
+		assertTrue("LocalFileSystem with short path root must accept absolute filename with long path root", fsShort.exists(fsShort.toFile(fLong.toAbsolutePath().toString())));
+		assertTrue("LocalFileSystem with long path root must accept absolute filename with short path root", fsLong.exists(fsLong.toFile(fShort.toAbsolutePath().toString())));
 	}
 
 	@Test
@@ -109,7 +110,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		String filename1 = filename+".bak";
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
-		
+
 		fileSystem.setWildcard("*.xml");
 		fileSystem.configure();
 		fileSystem.open();
@@ -117,17 +118,19 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		createFile(null, filename1, contents);
 		createFile(null, filename2, contents);
 		waitForActionToFinish();
-		
-		Iterator<File> files = fileSystem.listFiles(null);
-		File f = null;
-		if(files.hasNext()) {
-			f = files.next();
+
+		try(DirectoryStream<Path> ds = fileSystem.listFiles(null)) {
+			Iterator<Path> files = ds.iterator();
+			Path f = null;
+			if(files.hasNext()) {
+				f = files.next();
+			}
+			else {
+				fail("No file found");
+			}
+			assertEquals(filename2,fileSystem.getName(f));
+			assertFalse(files.hasNext());
 		}
-		else {
-			fail("No file found");
-		}
-		assertEquals(filename2,fileSystem.getName(f));
-		assertFalse(files.hasNext());
 	}
 
 	@Test
@@ -144,17 +147,18 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		createFile(null, filename1, contents);
 		createFile(null, filename2, contents);
 		waitForActionToFinish();
-		
-		Iterator<File> files = fileSystem.listFiles(null);
-		File f = null;
-		if(files.hasNext()) {
-			f = files.next();
+		try(DirectoryStream<Path> ds = fileSystem.listFiles(null)) {
+			Iterator<Path> files = ds.iterator();
+			Path f = null;
+			if(files.hasNext()) {
+				f = files.next();
+			}
+			else {
+				fail("No file found");
+			}
+			assertEquals(filename2,fileSystem.getName(f));
+			assertFalse(files.hasNext());
 		}
-		else {
-			fail("No file found");
-		}
-		assertEquals(filename2,fileSystem.getName(f));
-		assertFalse(files.hasNext());
 	}
 
 	@Test
@@ -172,17 +176,19 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 		createFile(null, filename1, contents);
 		createFile(null, filename2, contents);
 		waitForActionToFinish();
-		
-		Iterator<File> files = fileSystem.listFiles(null);
-		File f = null;
-		if(files.hasNext()) {
-			f = files.next();
+
+		try(DirectoryStream<Path> ds = fileSystem.listFiles(null)) {
+			Iterator<Path> files = ds.iterator();
+			Path f = null;
+			if(files.hasNext()) {
+				f = files.next();
+			}
+			else {
+				fail("No file found");
+			}
+			assertEquals(filename2,fileSystem.getName(f));
+			assertFalse(files.hasNext());
 		}
-		else {
-			fail("No file found");
-		}
-		assertEquals(filename2,fileSystem.getName(f));
-		assertFalse(files.hasNext());
 	}
 
 
