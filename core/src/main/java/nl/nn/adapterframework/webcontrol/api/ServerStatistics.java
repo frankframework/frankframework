@@ -377,25 +377,25 @@ public class ServerStatistics extends Base {
 	@PermitAll
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getIbisHealth() throws ApiException {
+	public Response getIbisHealth() {
 
-		Map<String, Object> response = new HashMap<String, Object>();
+		Map<String, Object> response = new HashMap<>();
 
 		try {
 			getIbisManager();
 		}
-		catch(ApiException e) {
+		catch(Exception e) {
 			Throwable c = e.getCause();
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
 			response.put("error", c.getMessage());
-			response.put("stacktrace", c.getStackTrace());
+			response.put("stackTrace", c.getStackTrace());
 
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
 		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : adapters) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
@@ -430,8 +430,9 @@ public class ServerStatistics extends Base {
 		if(stateCount.containsKey(RunStateEnum.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
-		if(errors.size() > 0)
+		if(!errors.isEmpty()) {
 			response.put("errors", errors);
+		}
 		response.put("status", status);
 
 		return Response.status(status).entity(response).build();

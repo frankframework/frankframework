@@ -439,9 +439,9 @@ angular.module('iaf.beheerconsole')
 
 	var cooldown = function(data) {
 		$scope.cooldownCounter = 60;
-		if(data.status == "INTERNAL_SERVER_ERROR") {
+		if(data.status == "error" || data.status == "INTERNAL_SERVER_ERROR") {
 			$rootScope.startupError = data.error;
-			$scope.stackTrace = data.stacktrace;
+			$scope.stackTrace = data.stackTrace;
 
 			var interval = $interval(function() {
 				$scope.cooldownCounter--;
