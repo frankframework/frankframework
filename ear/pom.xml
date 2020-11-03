@@ -9,6 +9,15 @@
 	<artifactId>ibis-adapterframework-ear</artifactId>
 	<name>Ibis AdapterFramework ear</name>
 	<packaging>ear</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<type>war</type>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -25,14 +34,14 @@
 									<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
 								</manifestEntries>
 							</archive>
-							<applicationId>Application_ID</applicationId>
+							<applicationId>FrankFramework</applicationId>
 							<filtering>true</filtering>
 							<modules>
 								<webModule>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-webapp</artifactId>
 									<bundleFileName>adapterframework.war</bundleFileName>
-									<contextRoot>/iaf-test</contextRoot>
+									<contextRoot>/iaf</contextRoot>
 								</webModule>
 							</modules>
 						</configuration>
@@ -40,12 +49,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	<dependencies>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<version>7.6-SNAPSHOT</version>
-			<type>war</type>
-		</dependency>
-	</dependencies>
 </project>
