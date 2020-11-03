@@ -269,7 +269,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 			Item item = Item.bind(exchangeService,itemId);
 			return item;
 		} catch (Exception e) {
-			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId");
+			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId", e);
 		}
 	}
 
