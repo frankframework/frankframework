@@ -198,7 +198,7 @@ public class FileSystemUtils {
 			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
-		};
+		}
 	}
 
 }
