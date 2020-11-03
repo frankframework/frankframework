@@ -36,7 +36,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simple.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -57,7 +56,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePost.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -79,7 +77,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePostWithEmptyExit.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -100,7 +97,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelope.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -131,7 +127,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -166,7 +161,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -218,7 +212,6 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeExits.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 
 	@Test
@@ -263,6 +256,5 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/petstore.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-		dispatcher = null;
 	}
 }
