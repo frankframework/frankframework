@@ -56,19 +56,31 @@
 									<td ng-if="$index===0" rowspan="{{t.slotcount}}" title="{{t.name}}">{{t.type}}</td>
 									<td ng-if="$index===0" rowspan="{{t.slotcount}}">{{t.msgcount}}</td>
 									<td>{{s.id}}</td>
-									<td>{{s.adapter}}</td>
-									<td>
+									<td ng-if="::s.adapter">{{s.adapter}}</td>
+									<td ng-if="::!s.adapter">-</td>
+									<td ng-if="::s.receiver">
 										<span class="text-success" title="View Messages Processed by {{s.receiver}}">
-											<button ng-show="{{::t.type=='A' && !!s.adapter && !!s.receiver}}" ui-sref="pages.messagelog.list({adapter: s.adapter, receiver: s.receiver})" class="btn btn-xs btn-default m-l-xs" type="button">
+											<button ng-if="::t.type=='A'" ui-sref="pages.messagelog.list({adapter: s.adapter, receiver: s.receiver})" class="btn btn-xs btn-default m-l-xs" type="button">
 												<i class="fa fa-envelope-o"></i>
 											</button>
 										</span>
 										<span class="text-danger" title="View Messages in Error in {{s.receiver}}">
-											<button ng-show="{{::t.type=='E' && !!s.adapter && !!s.receiver}}" ui-sref="pages.errorstorage.list({adapter: s.adapter, receiver: s.receiver})" class="btn btn-xs btn-default m-l-xs" type="button">
+											<button ng-if="::t.type=='E'" ui-sref="pages.errorstorage.list({adapter: s.adapter, receiver: s.receiver})" class="btn btn-xs btn-default m-l-xs" type="button">
 												<i class="fa fa-times-circle"></i>
 											</button>
 										</span>
 										{{s.receiver}}
+									</td>
+									<td ng-if="::s.pipe">
+										<span class="text-success" title="View Messages Processed by {{s.pipe}}">
+											<button ui-sref="pages.pipemessagelog.list({pipe: s.pipe, adapter: s.adapter})" class="btn btn-xs btn-default m-l-xs" type="button">
+												<i class="fa fa-envelope-o"></i>
+											</button>
+										</span>
+										{{s.pipe}}
+									</td>
+									<td ng-if="::!s.receiver && !s.pipe">
+										-
 									</td>
 									<td>{{s.msgcount}}</td>
 									<td>

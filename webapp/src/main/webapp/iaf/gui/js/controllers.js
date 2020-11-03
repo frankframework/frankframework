@@ -1993,7 +1993,7 @@ angular.module('iaf.beheerconsole')
 	}
 }])
 
-.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
 	$scope.datasources = {};
 
 	Api.Get("jdbc", function(data) {
@@ -2001,12 +2001,12 @@ angular.module('iaf.beheerconsole')
 		$scope.form = {datasource: data.datasources[0]};
 	});
 
-	$scope.submit = function(formData) {
-		if(!formData) formData = {};
-
-		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
-
-		Api.Post("jdbc/summary", JSON.stringify(formData), function(data) {
+	if($location.search() && $location.search().datasource != null) {
+		var datasource = $location.search().datasource;
+		fetch(datasource);
+	}
+	function fetch(datasource) {
+		Api.Post("jdbc/summary", JSON.stringify({datasource: datasource}), function(data) {
 			$scope.error = "";
 			$.extend($scope, data);
 		}, function(errorData, status, errorMsg) {
@@ -2014,9 +2014,18 @@ angular.module('iaf.beheerconsole')
 			$scope.error = error;
 			$scope.result = "";
 		}, false);
+	}
+
+	$scope.submit = function(formData) {
+		if(!formData) formData = {};
+
+		if(!formData.datasource) formData.datasource = $scope.datasources[0] || false;
+		$location.search('datasource', formData.datasource);
+		fetch(formData.datasource);
 	};
 
 	$scope.reset = function() {
+		$location.search('datasource', null);
 		$scope.result = "";
 		$scope.error = "";
 	};
