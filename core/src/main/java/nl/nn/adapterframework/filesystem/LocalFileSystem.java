@@ -150,7 +150,7 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 			try {
 				Files.createDirectories(toFile(folder));
 			} catch (IOException e) {
-				throw new FileSystemException(e);
+				throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
 			}
 		} else {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
@@ -163,7 +163,7 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 			try {
 				Files.delete(toFile(folder));
 			} catch (IOException e) {
-				throw new FileSystemException(e);
+				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
 			}
 		}else {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
@@ -175,7 +175,7 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 		try {
 			return Files.move(source, destination);
 		} catch (IOException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot rename folder ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
 		}
 	}
 	
@@ -184,7 +184,7 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 		try {
 			return Files.move(f, toFile(destinationFolder, f.getFileName().toString()));
 		} catch (IOException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
 		}
 	}
 	@Override
@@ -193,11 +193,10 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 		try {
 			Files.copy(f, target);
 		} catch (IOException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot copy file ["+ f.toString()+"] to ["+ destinationFolder+"]", e);
 		}
 		return target;
 	}
-
 
 	@Override
 	public long getFileSize(Path f) throws FileSystemException {

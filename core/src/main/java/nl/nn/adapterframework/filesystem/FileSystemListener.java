@@ -67,15 +67,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
-	
+
 	private FS fileSystem;
 
 	protected abstract FS createFileSystem();
-	
+
 	public FileSystemListener() {
 		fileSystem=createFileSystem();
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
@@ -101,7 +101,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			throw new ListenerException("Cannot open fileSystem",e);
 		}
 	}
-	
+
 	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws ListenerException {
 		FS fileSystem = getFileSystem();
 		if (StringUtils.isNotEmpty(folderName)) {
@@ -131,7 +131,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void close() throws ListenerException {
 		try {
@@ -163,43 +163,38 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileSystem;
 	}
 
-
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		try {
-			FS fileSystem=getFileSystem();
-			try(DirectoryStream<F> ds = fileSystem.listFiles(getInputFolder())) {
-				Iterator<F> it = ds.iterator();
-				if (it==null || !it.hasNext()) {
-					return null;
-				}
-				
-				long stabilityLimit = getMinStableTime();
-				if (stabilityLimit>0) {
-					stabilityLimit=System.currentTimeMillis()-stabilityLimit;
-				}
-				while (it.hasNext()) {
-					F file = it.next();
-					if (stabilityLimit>0) {
-						long filemodtime=fileSystem.getModificationTime(file).getTime();
-						if (filemodtime>stabilityLimit) {
-							continue;
-						}
-					}
-					if (StringUtils.isNotEmpty(getInProcessFolder())) {
-						F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
-						return inprocessFile;
-					} 
-					return file;
-				}
-			} catch (IOException e) {
-				throw new ListenerException(e);
+		FS fileSystem=getFileSystem();
+		try(DirectoryStream<F> ds = fileSystem.listFiles(getInputFolder())) {
+			Iterator<F> it = ds.iterator();
+			if (it==null || !it.hasNext()) {
+				return null;
 			}
-			
-			return null;
-		} catch (FileSystemException e) {
+
+			long stabilityLimit = getMinStableTime();
+			if (stabilityLimit>0) {
+				stabilityLimit=System.currentTimeMillis()-stabilityLimit;
+			}
+			while (it.hasNext()) {
+				F file = it.next();
+				if (stabilityLimit>0) {
+					long filemodtime=fileSystem.getModificationTime(file).getTime();
+					if (filemodtime>stabilityLimit) {
+						continue;
+					}
+				}
+				if (StringUtils.isNotEmpty(getInProcessFolder())) {
+					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
+					return inprocessFile;
+				}
+				return file;
+			}
+		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
 		}
+
+		return null;
 	}
 
 	@Override
@@ -312,9 +307,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
 	}
 
-
-
-
 	@Override
 	@IbisDoc({"1", "Name of the listener", ""})
 	public void setName(String name) {
@@ -338,7 +330,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public String getInputFolder() {
 		return inputFolder;
 	}
-
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'outputDirectory' has been replaced by 'inProcessFolder'")
@@ -440,7 +431,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return overwrite;
 	}
 
-
 	@IbisDoc({"11", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
@@ -449,7 +439,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return messageType;
 	}
 
-
 	@IbisDoc({"12", "If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
@@ -457,7 +446,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public boolean isFileTimeSensitive() {
 		return fileTimeSensitive;
 	}
-
 
 	@IbisDoc({"13", "Minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
