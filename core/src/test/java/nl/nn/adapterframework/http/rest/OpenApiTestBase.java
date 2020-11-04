@@ -13,6 +13,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.GenericReceiver;
@@ -110,8 +112,8 @@ public class OpenApiTestBase extends Mockito {
 		return request;
 	}
 
-	protected String callOpenApi() throws ServletException, IOException {
-		return service(createRequest("get", "openapi.json"));
+	protected String callOpenApi(String uri) throws ServletException, IOException {
+		return service(createRequest("get", uri + "/openapi.json"));
 	}
 
 	protected String service(HttpServletRequest request) throws ServletException, IOException {
@@ -136,7 +138,7 @@ public class OpenApiTestBase extends Mockito {
 		private ApiListener listener;
 		private Json2XmlValidator validator;
 		private Adapter adapter;
-		private List<Integer> exits = new ArrayList<Integer>();
+		private List<PipeLineExit> exits = new ArrayList<PipeLineExit>();
 
 //		public static AdapterBuilder create(String name, String description) {
 //			return new AdapterBuilder(name, description);
@@ -149,24 +151,21 @@ public class OpenApiTestBase extends Mockito {
 			adapter.setConfiguration(configuration);
 			adapter.setTaskExecutor(getTaskExecutor());
 		}
-		public AdapterBuilder setListener(String uriPattern, String method) {
-			return setListener(uriPattern, method, "json");
+		public AdapterBuilder setListener(String uriPattern, String method, String operationId) {
+			return setListener(uriPattern, method, "json", operationId);
 		}
-		public AdapterBuilder setListener(String uriPattern, String method, String produces) {
+		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
 			listener.setMethod(method);
 			listener.setUriPattern(uriPattern);
 			listener.setProduces(produces);
-			if(method.equalsIgnoreCase("POST")) {
-				exits.add(201);
-			} else {
-				exits.add(200);
+			if(StringUtils.isNotEmpty(operationId)) {
+				listener.setOperationId(operationId);
 			}
-			exits.add(500);
 
 			return this;
 		}
-		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot) {
+		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
 			validator = new Json2XmlValidator();
 			validator.setName(ref);
@@ -179,11 +178,33 @@ public class OpenApiTestBase extends Mockito {
 			}
 			validator.setResponseRoot(responseRoot);
 			validator.setThrowException(true);
+			if(param != null) {
+				validator.addParameter(param);
+			}
 
 			return this;
 		}
-		public AdapterBuilder addExit(int exitCode) {
-			this.exits.add(exitCode);
+		public AdapterBuilder addExit(String exitCode) {
+			return addExit(exitCode, null, "false");
+		}
+		
+		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
+			PipeLineExit ple = new PipeLineExit();
+			ple.setCode(exitCode);
+			ple.setResponseRoot(responseRoot);
+			ple.setEmpty(isEmpty);
+			switch (exitCode) {
+				case "200":
+					ple.setState("success");
+					break;
+				case "201":
+					ple.setState("success");
+					break;
+				default:
+					ple.setState("error");
+					break;
+			}
+			this.exits.add(ple);
 			return this;
 		}
 		public Adapter build() throws ConfigurationException {
@@ -199,26 +220,10 @@ public class OpenApiTestBase extends Mockito {
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 			pipeline.setInputValidator(validator);
-			for (Integer exit : exits) {
-				PipeLineExit ple = new PipeLineExit();
-				ple.setPath("success"+exit);
-				ple.setState("success");
+			for (PipeLineExit exit : exits) {
+				exit.setPath("success"+exit.getExitCode());
 
-				switch (exit) {
-				case 200:
-					ple.setCode("200");
-					break;
-				case 201:
-					ple.setCode("201");
-					ple.setEmpty("true");
-					break;
-				case 500:
-					ple.setCode("500");
-					ple.setState("error");
-				default:
-					break;
-				}
-				pipeline.registerPipeLineExit(ple);
+				pipeline.registerPipeLineExit(exit);
 			}
 			IPipe pipe = new EchoPipe();
 			pipe.setName("echo");

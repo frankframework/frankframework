@@ -6,22 +6,12 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/users":{
-            "get":{
+        "/simpleEndpointPostTest":{
+            "post":{
                 "summary":"description4simple-get",
                 "responses":{
                     "200":{
                         "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/user"
-                                }
-                            }
-                        }
-                    },
-                    "500":{
-                        "description":"Internal Server Error",
                         "content":{
                             "application/json":{
                                 "schema":{
