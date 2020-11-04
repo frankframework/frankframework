@@ -420,7 +420,7 @@ public class CmisSessionBuilder {
 		return (new ReflectionToStringBuilder(this) {
 			@Override
 			protected boolean accept(Field f) {
-				return super.accept(f) && !f.getName().contains("password");
+				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
 	}
