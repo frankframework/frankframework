@@ -29,7 +29,7 @@ setJVMSystemProperty( 'log.dir.match', '(?i)(([cd]:[\\\\/]temp)|(${SERVER_LOG_RO
 setJVMSystemProperty( 'test.alias', 'testAuthAlias')
 setJVMSystemProperty( 'APPSERVER_ROOT_DIR', '${USER_INSTALL_ROOT}') # APPSERVER_ROOT_DIR is a NN standard custom property for WAS
 
-setJVMProperty( '-classpath', '[ /work/frank/configuration ]')
+setJVMProperty( '-classpath', '[ /work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar ]')
 
 AdminConfig.save()
 	

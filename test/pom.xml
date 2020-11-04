@@ -73,7 +73,8 @@
 						</goals>
 						<configuration>
 							<classifier>configurations</classifier>
-							<classesDirectory>src/main/configurations</classesDirectory>
+							<classesDirectory>src/main</classesDirectory>
+							<includes>configurations/</includes>
 						</configuration>
 					</execution>
 					<execution>

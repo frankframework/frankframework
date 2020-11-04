@@ -66,7 +66,7 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-			<!--  unpack META-INF service from core.jar to include it in WEB-INF/classes/META-INF, to be found in WebSphere -->
+			<!--  copy META-INF/services from the core module so it can be found by application servers -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
