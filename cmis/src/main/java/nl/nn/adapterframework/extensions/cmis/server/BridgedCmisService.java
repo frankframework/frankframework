@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,94 +16,58 @@
 package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.servlet.http.HttpSession;
-
-import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
-import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
-import nl.nn.adapterframework.extensions.cmis.server.impl.IbisNavigationService;
-import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
-import nl.nn.adapterframework.extensions.cmis.server.impl.IbisRepositoryService;
 
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
+import org.apache.chemistry.opencmis.commons.spi.AclService;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
+import org.apache.chemistry.opencmis.commons.spi.MultiFilingService;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
+import org.apache.chemistry.opencmis.commons.spi.PolicyService;
+import org.apache.chemistry.opencmis.commons.spi.RelationshipService;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
+import org.apache.chemistry.opencmis.commons.spi.VersioningService;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisNavigationService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisRepositoryService;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
- * Uses HTTP sessions to cache {@link CmisBinding} objects.
+ * After each request the CallContext is removed.
+ * The CmisBinding is kept, unless property cmisbridge.closeConnection = true
  */
-public class HttpSessionCmisService extends CachedBindingCmisService {
+public class BridgedCmisService extends FilterCmisService {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	private final Logger log = LogUtil.getLogger(this);
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	public static final boolean CMIS_BRIDGE_CLOSE_CONNECTION = APP_CONSTANTS.getBoolean(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"closeConnection", false);
 
-	/** Key in the HTTP session. **/
-	public static final String CMIS_BINDING = "org.apache.chemistry.opencmis.bridge.binding";
+	private CmisBinding clientBinding;
 
-	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-	public HttpSessionCmisService(CallContext context) {
+	public BridgedCmisService(CallContext context) {
 		setCallContext(context);
 	}
 
-	@Override
-	public CmisBinding getCmisBindingFromCache() {
-		HttpSession httpSession = getHttpSession(false);
-		if (httpSession == null) {
-			return null;
+	public CmisBinding getCmisBinding() {
+		if(clientBinding == null) {
+			clientBinding = createCmisBinding();
+			log.info("initialized "+toString());
 		}
 
-		lock.readLock().lock();
-		try {
-			return (CmisBinding) httpSession.getAttribute(CMIS_BINDING);
-		} finally {
-			lock.readLock().unlock();
-		}
+		return clientBinding;
 	}
 
-	@Override
-	public CmisBinding putCmisBindingIntoCache(CmisBinding binding) {
-		HttpSession httpSession = getHttpSession(true);
-
-		lock.writeLock().lock();
-		try {
-			CmisBinding existingBinding = (CmisBinding) httpSession.getAttribute(CMIS_BINDING);
-			if (existingBinding == null) {
-				httpSession.setAttribute(CMIS_BINDING, binding);
-			} else {
-				binding = existingBinding;
-			}
-
-			return binding;
-		} finally {
-			lock.writeLock().unlock();
-		}
-	}
-
-	/**
-	 * Returns the current {@link HttpSession}.
-	 * 
-	 * @param create
-	 *            <code>true</code> to create a new session, <code>false</code>
-	 *            to return <code>null</code> if there is no current session
-	 */
-	public HttpSession getHttpSession(boolean create) {
-		return getHttpServletRequest().getSession(create);
-	}
-
-	@Override
 	public CmisBinding createCmisBinding() {
-		AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 		//Make sure cmisbridge properties are defined
 		if(APP_CONSTANTS.getResolvedProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
@@ -157,21 +121,71 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	@Override
 	public ObjectService getObjectService() {
-		return new IbisObjectService(super.getObjectService(), getCallContext());
+		return new IbisObjectService(getCmisBinding().getObjectService(), getCallContext());
 	}
 
 	@Override
 	public RepositoryService getRepositoryService() {
-		return new IbisRepositoryService(super.getRepositoryService(), getCallContext());
+		return new IbisRepositoryService(getCmisBinding().getRepositoryService(), getCallContext());
 	}
 
 	@Override
 	public DiscoveryService getDiscoveryService() {
-		return new IbisDiscoveryService(super.getDiscoveryService(), getCallContext());
+		return new IbisDiscoveryService(getCmisBinding().getDiscoveryService(), getCallContext());
 	}
 
 	@Override
 	public NavigationService getNavigationService() {
-		return new IbisNavigationService(super.getNavigationService(), getCallContext());
+		return new IbisNavigationService(getCmisBinding().getNavigationService(), getCallContext());
+	}
+
+	@Override
+	public VersioningService getVersioningService() {
+		return getCmisBinding().getVersioningService();
+	}
+
+	@Override
+	public MultiFilingService getMultiFilingService() {
+		return getCmisBinding().getMultiFilingService();
+	}
+
+	@Override
+	public RelationshipService getRelationshipService() {
+		return getCmisBinding().getRelationshipService();
+	}
+
+	@Override
+	public AclService getAclService() {
+		return getCmisBinding().getAclService();
+	}
+
+	@Override
+	public PolicyService getPolicyService() {
+		return getCmisBinding().getPolicyService();
+	}
+
+	/**
+	 * Returns Class SimpleName + hash + attribute info
+	 * @return BridgedCmisService@abc12345 close[xxx] session[xxx]
+	 */
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
+		builder.append(" close ["+CMIS_BRIDGE_CLOSE_CONNECTION+"]");
+		if(clientBinding != null) {
+			builder.append(" session ["+clientBinding.getSessionId()+"]");
+		}
+		return builder.toString();
+	}
+
+	@Override
+	public void close() {
+		super.close();
+
+		if(CMIS_BRIDGE_CLOSE_CONNECTION) {
+			clientBinding = null;
+			log.info("closed "+toString());
+		}
 	}
 }

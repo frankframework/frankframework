@@ -45,7 +45,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
 	@Override
 	public void init(Map<String, String> parameters) {
-		LOG.info("Initialized proxy repository service");
+		LOG.info("initialized proxy repository service");
 
 		String ibisTempDir = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 		File baseDir = null;
@@ -62,7 +62,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
 	@Override
 	public void destroy() {
-		LOG.info("Destroyed proxy repository service");
+		LOG.info("destroyed proxy repository service");
 	}
 
 	@Override
@@ -74,13 +74,14 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 			throw new CmisRuntimeException("no CMIS bridge events registered");
 		}
 
-		LOG.debug("Retrieve proxy repository service");
+		LOG.debug("retrieve repository service");
 
+		// Make sure that each thread in the HTTP CONN POOL has it's own BridgedCmisService
 		CallContextAwareCmisService service = threadLocalService.get();
 		if (service == null) {
 			service = new ConformanceCmisServiceWrapper(createService(context));
 			threadLocalService.set(service);
-			LOG.info("Create service wrapper");
+			LOG.debug("stored repository service in local http-conn-thread");
 		}
 
 		service.setCallContext(context); //Update the CallContext
@@ -89,12 +90,12 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 	}
 
 	protected FilterCmisService createService(CallContext context) {
-		HttpSessionCmisService service = null;
+		BridgedCmisService service = null;
 		try {
-			service = new HttpSessionCmisService(context);
-			LOG.info("Created proxy repository service");
+			service = new BridgedCmisService(context);
+			LOG.info("created repository service ["+service+"]");
 		} catch (Exception e) {
-			throw new CmisRuntimeException("Could not create service instance: " + e, e);
+			throw new CmisRuntimeException("could not create service instance: " + e, e);
 		}
 
 		return service;
