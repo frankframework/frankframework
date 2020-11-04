@@ -208,7 +208,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerManager(manager);
 	}
-	@IbisDoc({"1", "a uniquely named manager"})
+	@IbisDoc({"10", "A uniquely named manager"})
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
@@ -247,7 +247,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerRecordHandler(handler);
 	}
-	@IbisDoc({"2", "a uniquely named record handler"})
+	@IbisDoc({"20", "A uniquely named record handler"})
 	public void registerRecordHandler(IRecordHandler handler) throws Exception {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
@@ -266,7 +266,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", ConfigurationWarnings.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerResultHandler(handler);
 	}
-	@IbisDoc({"3", "a uniquely named result handler"})
+	@IbisDoc({"30", "A uniquely named result handler"})
 	public void registerResultHandler(IResultHandler handler) throws Exception {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);

@@ -39,7 +39,7 @@ public interface IRecordHandlerManager extends INamedObject {
 	/**
 	 * @param flow New flow to be added to the managed flow elements
 	 */
-	@IbisDoc("flow to be added to the managed flow elements")
+	@IbisDoc({"10", "Flow to be added to the managed flow elements"})
 	void addHandler(RecordHandlingFlow flow);
 	
 	/**
