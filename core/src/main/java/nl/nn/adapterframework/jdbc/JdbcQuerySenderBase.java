@@ -467,6 +467,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (resultset.next()) {
 				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
+				int numberOfColumns = rsmeta.getColumnCount();
+				if(numberOfColumns > 1) {
+					log.warn(getLogPrefix() + "has the [scalar]=true. However, the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
+				}
 				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
 					if (response==null) {
 						if (blobSessionVar!=null) {
@@ -514,6 +518,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							result="[empty]";
 						}
 					}
+				}
+				if (resultset.next()) {
+					log.warn(getLogPrefix() + "has the [scalar]=true. However, the query returns more than 1 row. Consider optimizing the query.");
 				}
 			} else {
 				if (isScalarExtended()) {
