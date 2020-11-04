@@ -38,12 +38,12 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		if(suppressionKey == null) {
 			addGlobalWarning(log, msg, null);
 		} else if(!isSuppressed(suppressionKey, null, classLoader)) {
-			if(suppressionKey.isAllowGlobalSuppression()) {
-				msg += ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"=true'";
-			} else {
-				throw new RuntimeException("["+suppressionKey.getKey()+"] does not allow suppression at global level.");
-			}
 			addGlobalWarning(log, msg, null);
+			// provide suppression hint as info
+			if(suppressionKey.isAllowGlobalSuppression()) {
+				String msgWithHint = msg + ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"=true'";
+				log.info(msgWithHint);
+			}
 		}
 	}
 
@@ -73,15 +73,18 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	 */
 	public static void add(IConfigurable object, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		if(!isSuppressed(suppressionKey, adapter, object.getConfigurationClassLoader())) {
-			if(adapter != null) {
-				message = "in adapter [" + adapter.getName() + "] " + message + ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
-				if(suppressionKey.isAllowGlobalSuppression()) {
-					message += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
-				}
-			} else if(suppressionKey.isAllowGlobalSuppression()) {
-				message += "This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
-			}
 			add(object, log, message, null);
+			// provide suppression hint as info 
+			if(adapter != null) {
+				String messageWithHint = "in adapter [" + adapter.getName() + "] " + message + ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+				if(suppressionKey.isAllowGlobalSuppression()) {
+					messageWithHint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				}
+				log.info(messageWithHint);
+			} else if(suppressionKey.isAllowGlobalSuppression()) {
+				String messageWithHint = message + "This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				log.info(messageWithHint);
+			}
 		}
 	}
 

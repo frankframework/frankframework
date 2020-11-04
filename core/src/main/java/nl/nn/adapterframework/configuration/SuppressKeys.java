@@ -25,10 +25,10 @@ import lombok.Getter;
  */
 public enum SuppressKeys {
 
-	SQL_INJECTION_SUPPRESS_KEY("warnings.suppress.sqlInjections", true),
+	SQL_INJECTION_SUPPRESS_KEY("warnings.suppress.sqlInjections"),
 	DEPRECATION_SUPPRESS_KEY("warnings.suppress.deprecated", true),
 	DEFAULT_VALUE_SUPPRESS_KEY("warnings.suppress.defaultvalue", true),
-	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction", true),
+	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction"),
 	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck");
 
 	private @Getter String key;

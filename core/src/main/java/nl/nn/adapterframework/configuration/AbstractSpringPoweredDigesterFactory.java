@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.AbstractObjectCreationFactory;
@@ -271,24 +270,20 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, null, classLoader)) {
 			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
 			if (!configWarnings.containsDefaultValueException(mergedKey)) {
-				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, classLoader);
+				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
 			}
 		}
 	}
 
 	private void addConfigWarning(Object currObj, String name, String message) {
-		addConfigWarning(currObj, name, message, null, null);
-	}
-
-	private void addConfigWarning(Object currObj, String name, String message, SuppressKeys key, ClassLoader cl) {
 		Locator loc = getDigester().getDocumentLocator();
-		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
 		if(currObj instanceof INamedObject) {
+			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
 			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
 		} else { 
-			ConfigurationWarnings.addGlobalWarning(log, msg, key, cl);
+			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
+			ConfigurationWarnings.add(null, log, msg);
 		}
-		
 	}
 
     /**
