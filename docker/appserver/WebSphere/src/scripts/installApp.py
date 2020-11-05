@@ -4,7 +4,7 @@ server = 'server1'
 contextRoot = '/iaf-test'
 
 def installApp( ear, module, war, contextRoot ):
-	print "installing app:",ear, "contextRoot:", contextRoot
+	print "installing app:", ear, "contextRoot:", contextRoot
 	AdminApp.install('/work/app/'+ear,
 		[ '-nopreCompileJSPs', '-distributeApp', '-nouseMetaDataFromBinary', '-nodeployejb',
 		  '-appname', ear,

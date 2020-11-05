@@ -359,7 +359,10 @@
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.1.0</version>
 			</plugin>
-			<!-- http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html Generate Javadocs As Part Of Project Reports -->
+			<!-- 
+				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html 
+				Generate Javadocs As Part Of Project Reports 
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
