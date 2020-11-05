@@ -32,9 +32,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 	private static final String DIGESTER_RULES = "digester-rules.xml";
-	
+	static final String OTHER = "Other";
+
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
-	private @Getter Map<String, FrankDocGroup> groups;
+	private @Getter Map<String, FrankDocGroup> groups = new HashMap<>();
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
@@ -48,6 +49,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
 			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
+			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
 			return null;
@@ -316,5 +318,43 @@ public class FrankDocModel {
 			result.add(configChild);
 		}
 		return result;
+	}
+
+	public void buildGroups() {
+		Map<String, List<FrankDocGroup>> groupsBase = new HashMap<>();
+		List<FrankElement> membersOfOther = new ArrayList<>();
+		for(ElementType elementType: getAllTypes().values()) {
+			if(elementType.isFromJavaInterface()) {
+				if(groupsBase.containsKey(elementType.getSimpleName())) {
+					groupsBase.get(elementType.getSimpleName()).add(FrankDocGroup.getInstanceFromElementType(elementType));
+				} else {
+					groupsBase.put(elementType.getSimpleName(), Arrays.asList(FrankDocGroup.getInstanceFromElementType(elementType)));
+				}
+			}
+			else {
+				try {
+					membersOfOther.add(elementType.getSingletonElement());
+				} catch(ReflectiveOperationException e) {
+					log.warn(String.format("Error adding ElementType [%s] to group other because it has multiple FrankElement objects: [%s]",
+							elementType.getFullName(),
+							elementType.getMembers().values().stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "))));
+				}
+			}
+		}
+		if(groupsBase.containsKey(OTHER)) {
+			log.warn(String.format("Name [%s] cannot been used for other because it is the name of an ElementType", OTHER));
+		}
+		else {
+			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));
+		}
+		for(String groupName: groupsBase.keySet()) {
+			if(groupsBase.get(groupName).size() != 1) {
+				log.warn(String.format("Group name [%s] used for multiple groups", groupName));
+			}
+		}
+		groups = new HashMap<>();
+		for(String groupName: groupsBase.keySet()) {
+			groups.put(groupName, groupsBase.get(groupName).get(0));
+		}
 	}
 }

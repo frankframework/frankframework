@@ -21,4 +21,11 @@ public class ElementType {
 	void addMember(FrankElement member) {
 		members.put(member.getFullName(), member);
 	}
+
+	FrankElement getSingletonElement() throws ReflectiveOperationException {
+		if(members.size() != 1) {
+			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", fullName));
+		}
+		return members.values().iterator().next();
+	}
 }
