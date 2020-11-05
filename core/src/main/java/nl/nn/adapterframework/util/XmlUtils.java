@@ -1551,8 +1551,7 @@ public class XmlUtils {
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
 	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false,
-				false);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false, true);
 	}
 
 	/**
@@ -1560,13 +1559,10 @@ public class XmlUtils {
 	 * appended with #, the character number and ;.
 	 */
 	public static String replaceNonValidXmlCharacters(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true,
-				false);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
 	}
 
-	public static String replaceNonValidXmlCharacters(String string, char to,
-			boolean appendCharNum,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string==null) {
 			return null;
 		} else {
@@ -1576,8 +1572,7 @@ public class XmlUtils {
 			int counter = 0;
 			for (int i = 0; i < length; i += Character.charCount(c)) {
 				c=string.codePointAt(i);
-				if (isPrintableUnicodeChar(c,
-						allowUnicodeSupplementaryCharacters)) {
+				if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
 					encoded.appendCodePoint(c);
 				} else {
 					if (appendCharNum) {
@@ -1595,8 +1590,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String stripNonValidXmlCharacters(String string,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static String stripNonValidXmlCharacters(String string, boolean allowUnicodeSupplementaryCharacters) {
 		int length = string.length();
 		StringBuilder encoded = new StringBuilder(length);
 		int c;
@@ -1620,15 +1614,13 @@ public class XmlUtils {
 		return isPrintableUnicodeChar(c, false);
 	}
 
-	public static boolean isPrintableUnicodeChar(int c,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static boolean isPrintableUnicodeChar(int c, boolean allowUnicodeSupplementaryCharacters) {
 		return (c == 0x0009)
 			|| (c == 0x000A)
 			|| (c == 0x000D)
 			|| (c >= 0x0020 && c <= 0xD7FF)
 			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (allowUnicodeSupplementaryCharacters
-					&& (c >= 0x00010000 && c <= 0x0010FFFF));
+			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
 
 	/**

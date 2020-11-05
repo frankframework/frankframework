@@ -5,7 +5,10 @@ import org.junit.Test;
 
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Item, ExchangeFileSystem>{
 
@@ -33,13 +36,13 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		fileSystem.setAccessToken(accessToken);
 		fileSystem.setUsername(username);
 		fileSystem.setPassword(password);
-		fileSystem.setBaseFolder(basefolder3);
+		fileSystem.setBaseFolder(basefolder1);
 		return fileSystem;
 	}
 
 	@Test
-	public void fileSystemTestListFile() throws Exception {
-		fileSystemTestListFile(1);
+	public void fileSystemTestListFileFromInbox() throws Exception {
+		fileSystemTestListFile(1, null);
 	}
 
 	@Test
@@ -47,4 +50,32 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		fileSystemTestRandomFileShouldNotExist(nonExistingFileName);
 	}
 
+	@Test
+	public void fileSystemTestListFileWithXmlProblem() throws Exception {
+		fileSystemTestListFile(1, "XmlProblem");
+	}
+
+	@Test
+	public void testExtractNormalMessage() throws Exception {
+		Item item = getFirstFileFromFolder(null);
+		Message message = fileSystem.extractEmailMessage(item, null, false, null);
+		String expected = TestFileUtils.getTestFile("/ExchangeMailNormal.xml");
+		MatchUtils.assertXmlEquals(expected, message.asString());
+	}
+
+	@Test
+	public void testExtractNormalMessageSimple() throws Exception {
+		Item item = getFirstFileFromFolder(null);
+		Message message = fileSystem.extractEmailMessage(item, null, true, null);
+		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalSimple.xml");
+		MatchUtils.assertXmlEquals(expected, message.asString());
+	}
+
+	@Test
+	public void testExtractProblematicMessage() throws Exception {
+		Item item = getFirstFileFromFolder("XmlProblem");
+		Message message = fileSystem.extractEmailMessage(item, null, false, null);
+		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem.xml");
+		MatchUtils.assertXmlEquals(expected, message.asString());
+	}
 }

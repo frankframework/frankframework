@@ -390,8 +390,7 @@ public class JdbcUtil {
 				rawMessage = new String(bytes,charset);
 			}
 
-			String message = XmlUtils.encodeCdataString(rawMessage);
-			return message;
+			return XmlUtils.replaceNonValidXmlCharacters(rawMessage);
 		} 
 		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null,xmlEncode);
 	}
