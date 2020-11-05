@@ -133,16 +133,6 @@ public class OpenApiTestBase extends Mockito {
 		//This should never happen because of the assertTrue(false) statement in the catch cause.
 		return null;
 	}
-	/*
-	 * Wait for adapter to start for 5 seconds max
-	 */
-	protected void waitForAdapterToStart(Adapter adapter) throws InterruptedException {
-		long timeout = 5000;
-		long start = System.currentTimeMillis();
-		while(System.currentTimeMillis() - timeout <= start && !adapter.getRunState().equals(RunStateEnum.STARTED)) {
-			Thread.sleep(50);
-		}
-	}
 
 	public class AdapterBuilder {
 		private ApiListener listener;
