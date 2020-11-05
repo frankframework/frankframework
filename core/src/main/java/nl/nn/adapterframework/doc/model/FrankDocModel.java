@@ -336,8 +336,9 @@ public class FrankDocModel {
 					membersOfOther.add(elementType.getSingletonElement());
 				} catch(ReflectiveOperationException e) {
 					log.warn(String.format("Error adding ElementType [%s] to group other because it has multiple FrankElement objects: [%s]",
-							elementType.getFullName(),
-							elementType.getMembers().values().stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "))));
+								elementType.getFullName(),
+								elementType.getMembers().values().stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "))),
+							e);
 				}
 			}
 		}
