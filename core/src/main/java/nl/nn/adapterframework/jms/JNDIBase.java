@@ -67,6 +67,8 @@ public class JNDIBase implements IConfigurable{
 
 	@Override
 	public void configure() throws ConfigurationException {
+		// somewhere a sender is being initialized without setting the property
+		// TODO get rid of the workaround and find out why spring does not set the prefix
 		if(StringUtils.isEmpty(jndiContextPrefix)) {
 			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix","");
 		}
