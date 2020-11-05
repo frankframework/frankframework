@@ -1,9 +1,10 @@
 cell = AdminControl.getCell()
 node = AdminControl.getNode()
 server = 'server1'
+contextRoot = '/iaf-test'
 
-def installApp( ear, module, war ):
-	print "installing app:",ear
+def installApp( ear, module, war, contextRoot ):
+	print "installing app:",ear, "contextRoot:", contextRoot
 	AdminApp.install('/work/app/'+ear,
 		[ '-nopreCompileJSPs', '-distributeApp', '-nouseMetaDataFromBinary', '-nodeployejb',
 		  '-appname', ear,
@@ -12,7 +13,8 @@ def installApp( ear, module, war ):
 		  '-asyncRequestDispatchType', 'DISABLED', '-nouseAutoLink', '-noenableClientModule', '-clientMode', 'isolated', '-novalidateSchema',
 		  '-MapModulesToServers',        [[ module, war+',WEB-INF/web.xml', 'WebSphere:cell='+cell+',node='+node+',server='+server ]],
 		  '-MapWebModToVH',              [[ module, war+',WEB-INF/web.xml', 'default_host' ]],
-		  '-MetadataCompleteForModules', [[ module, war+',WEB-INF/web.xml', 'true' ]]
+		  '-MetadataCompleteForModules', [[ module, war+',WEB-INF/web.xml', 'true' ]],
+		  '-CtxRootForWebMod',           [[ module, war+',WEB-INF/web.xml', contextRoot ]]
 		] )
 	return
 
@@ -36,9 +38,7 @@ def setClassloaderMode( ear, mode ):
 	return
 
 
-installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war')
-
-AdminConfig.save()
+installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war', contextRoot)
 
 setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
