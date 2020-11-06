@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+    Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -42,8 +44,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author  John Dekker
  */
-public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
+public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters, IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String inputSeparator;

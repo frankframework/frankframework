@@ -9,6 +9,9 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API">
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
 		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API-ParamsInPath">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" method="GET" operationId="UniqueIdSoapValidator"/>
+		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
 				<exit path="EXIT" state="success" code="200"/>

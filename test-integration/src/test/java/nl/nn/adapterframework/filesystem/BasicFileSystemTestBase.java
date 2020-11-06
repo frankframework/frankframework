@@ -74,7 +74,17 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		// just perform the setup()
 	}
 
-	public void fileSystemTestListFile(int numFilesExpected) throws Exception {
+	protected F getFirstFileFromFolder(String folder) throws Exception {
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+      	Iterator<F> it = ds.iterator();
+        if (it.hasNext()) {
+          return it.next();
+        }
+      throw new FileNotFoundException("No file found in folder ["+folder+"]");
+    }
+	}
+	
+	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
 		
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
