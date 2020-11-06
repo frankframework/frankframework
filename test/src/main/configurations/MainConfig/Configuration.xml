@@ -5,7 +5,6 @@
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
-	<!ENTITY SkipEmptyTags SYSTEM "./ConfigurationSkipEmptyTags.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
@@ -64,7 +63,6 @@
 	&Zip;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
-	&SkipEmptyTags;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
 	&CompareStringPipe;
