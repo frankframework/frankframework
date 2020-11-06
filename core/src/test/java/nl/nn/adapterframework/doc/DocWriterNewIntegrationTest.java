@@ -13,6 +13,7 @@ import nl.nn.adapterframework.doc.model.FrankDocModel;
 
 public class DocWriterNewIntegrationTest {
 
+	@Ignore
 	@Test
 	public void testXsd() throws IOException {
 		FrankDocModel model = FrankDocModel.populate();

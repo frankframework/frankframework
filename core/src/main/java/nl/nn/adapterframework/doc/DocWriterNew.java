@@ -196,13 +196,8 @@ public class DocWriterNew {
 		if(children.size() == 0) {
 			return;
 		}
-		if(children.size() == 1) {
-			addConfigChild(complexType, children.get(0));
-		}
-		else {
-			XmlBuilder sequence = addSequence(complexType);
-			children.forEach(c -> addConfigChild(sequence, c));
-		}
+		XmlBuilder sequence = addSequence(complexType);
+		children.forEach(c -> addConfigChild(sequence, c));
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
