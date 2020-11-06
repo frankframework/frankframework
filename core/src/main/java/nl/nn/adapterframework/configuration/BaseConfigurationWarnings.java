@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedList;
@@ -29,11 +30,12 @@ import java.util.Vector;
 public class BaseConfigurationWarnings extends LinkedList<String> {
 	protected Vector<String> defaultValueExceptions = new Vector<String>();
 
-	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
+	protected boolean add(Logger log, String msg, Throwable t, String messageSuffixForLog, boolean onlyOnce) {
+		String logMsg = StringUtils.isNotEmpty(messageSuffixForLog) ? msg + messageSuffixForLog : msg;
 		if (t == null) {
-			log.warn(msg);
+			log.warn(logMsg);
 		} else {
-			log.warn(msg, t);
+			log.warn(logMsg, t);
 		}
 		if (!onlyOnce || !super.contains(msg)) {
 			return super.add(msg);
