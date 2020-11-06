@@ -26,12 +26,9 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -65,11 +62,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDestination, IXAEnabled, HasStatistics {
+public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-
-	private String name;
 	private String authAlias = null;
 	private String username = null;
 	private String password = null;
@@ -95,6 +89,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		configureCredentials();
 		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
@@ -175,7 +170,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 		return dsinfo;
 	}
 
-	
 	public Dbms getDatabaseType() {
 		IDbmsSupport dbms=getDbmsSupport();
 		return dbms != null ? dbms.getDbms() : Dbms.NONE; 
@@ -245,7 +239,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 			if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
 				configureCredentials(); 
 			}
-			DataSource ds=getDatasource();
+			DataSource ds = getDatasource();
 			try {
 				if (cf!=null) {
 					return ds.getConnection(cf.getUsername(), cf.getPassword());
@@ -303,16 +297,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 		return result;
 	}
 
-	@IbisDoc({"1", "Name of the sender", ""})
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-
 	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
@@ -320,7 +304,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 	public String getDatasourceName() {
 		return datasourceName;
 	}
-
 
 	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
 	public void setAuthAlias(String authAlias) {
@@ -363,4 +346,5 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, HasPhysicalDe
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
 	}
+
 }
