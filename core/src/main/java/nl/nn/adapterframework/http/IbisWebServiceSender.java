@@ -24,7 +24,6 @@ import org.apache.soap.SOAPException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -40,7 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class IbisWebServiceSender extends SenderBase implements ISender, HasPhysicalDestination {
+public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
 
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;
