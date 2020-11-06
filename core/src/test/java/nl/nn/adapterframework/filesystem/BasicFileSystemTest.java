@@ -332,18 +332,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 				// test
 				assertFalse("after a delete the number of files should be one less",it.hasNext());
 			}
-	
-			Thread.sleep(100);
-			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-				Iterator<F> it = ds.iterator();
-				for (int i = 0; i < count - numDeleted; i++) {
-					assertTrue(it.hasNext());
-					F f=it.next();
-					long modTime=fileSystem.getModificationTime(f).getTime();
-					if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-					if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
-				}
-			}
+
 			if (numOfFilesInFolder>1) {
 				deleteFile(folder, "file_1.txt");
 				numDeleted++;
