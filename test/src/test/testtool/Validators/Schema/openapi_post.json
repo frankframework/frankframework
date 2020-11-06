@@ -6,18 +6,47 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/soapvalidator/item":{
-            "get":{
-                "operationId":"SoapValidator",
+        "/json2xmlvalidator/item/post":{
+            "post":{
                 "requestBody":{
                     "content":{
                         "*/*":{
                             "schema":{
-                                "$ref":"#/components/schemas/Envelope"
+                                "$ref":"#/components/schemas/Item_Request"
                             }
                         }
                     }
                 },
+                "parameters":[
+                    {
+                        "name":"Status",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"Id",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"ItemId",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"AttributeId",
+                        "in":"query",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -57,128 +86,6 @@
     },
     "components":{
         "schemas":{
-            "Header":{
-            },
-            "Envelope":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "Header":{
-                        "$ref":"#/definitions/Header"
-                    },
-                    "Body":{
-                        "$ref":"#/definitions/Body"
-                    }
-                },
-                "required":[
-                    "Body"
-                ]
-            },
-            "Fault":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "Code":{
-                        "$ref":"#/components/schemas/faultcode"
-                    },
-                    "Reason":{
-                        "$ref":"#/components/schemas/faultreason"
-                    },
-                    "Node":{
-                        "type":"string"
-                    },
-                    "Role":{
-                        "type":"string"
-                    },
-                    "Detail":{
-                        "$ref":"#/components/schemas/detail"
-                    }
-                },
-                "required":[
-                    "Code",
-                    "Reason"
-                ]
-            },
-            "Body":{
-            },
-            "detail":{
-            },
-            "encodingStyle":{
-                "type":"string"
-            },
-            "NotUnderstood":{
-                "$ref":"#/components/schemas/NotUnderstoodType"
-            },
-            "Upgrade":{
-                "$ref":"#/components/schemas/UpgradeType"
-            },
-            "NotUnderstoodType":{
-            },
-            "faultcode":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "Value":{
-                        "$ref":"#/components/schemas/faultcodeEnum"
-                    },
-                    "Subcode":{
-                        "$ref":"#/components/schemas/subcode"
-                    }
-                },
-                "required":[
-                    "Value"
-                ]
-            },
-            "UpgradeType":{
-                "type":"array",
-                "items":{
-                }
-            },
-            "faultcodeEnum":{
-                "type":"string",
-                "enum":[
-                    "tns:DataEncodingUnknown",
-                    "tns:MustUnderstand",
-                    "tns:Receiver",
-                    "tns:Sender",
-                    "tns:VersionMismatch"
-                ]
-            },
-            "SupportedEnvType":{
-            },
-            "reasontext":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "@lang":{
-                        "type":"string"
-                    },
-                    "#text":{
-                        "type":"string"
-                    }
-                }
-            },
-            "faultreason":{
-                "type":"array",
-                "items":{
-                    "$ref":"#/components/schemas/reasontext"
-                }
-            },
-            "subcode":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "Value":{
-                        "type":"string"
-                    },
-                    "Subcode":{
-                        "$ref":"#/components/schemas/subcode"
-                    }
-                },
-                "required":[
-                    "Value"
-                ]
-            },
             "MessageHeader":{
                 "$ref":"#/components/schemas/MessageHeaderType"
             },

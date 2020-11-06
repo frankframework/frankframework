@@ -9,7 +9,6 @@
         "/users":{
             "get":{
                 "summary":"description4simple-get",
-                "operationId":"myAdapterName",
                 "responses":{
                     "200":{
                         "description":"OK",

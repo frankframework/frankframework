@@ -19,6 +19,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -75,9 +76,9 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
-			return new FTPFilePathIterator(folder, ftpClient.listFiles(folder));
+			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folder, ftpClient.listFiles(folder)));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}

@@ -17,11 +17,4 @@
 			<filtered>true</filtered>
 		</fileSet>
 	</fileSets>	
-
-	<dependencySets>
-		<dependencySet>
-			<useTransitiveDependencies>false</useTransitiveDependencies>
-		</dependencySet>
-	</dependencySets>
-
 </assembly>

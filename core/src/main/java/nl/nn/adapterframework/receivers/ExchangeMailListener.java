@@ -15,28 +15,9 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.io.ByteArrayInputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
-import microsoft.exchange.webservices.data.core.PropertySet;
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
-import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
-import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
-import microsoft.exchange.webservices.data.property.complex.Attachment;
-import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
-import microsoft.exchange.webservices.data.property.complex.EmailAddress;
-import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
-import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
-import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
-import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
-import microsoft.exchange.webservices.data.property.complex.MessageBody;
-import microsoft.exchange.webservices.data.property.complex.MimeContent;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
@@ -45,7 +26,6 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
@@ -99,136 +79,9 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, threadContext);
 		}
-		Item item = (Item) rawMessage;
-		try {
-			XmlBuilder emailXml = new XmlBuilder("email");
-			EmailMessage emailMessage;
-			PropertySet ps;
-			if (isSimple()) {
-				ps = new PropertySet(EmailMessageSchema.Subject);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
-				emailMessage.load();
-				addEmailInfoSimple(emailMessage, emailXml);
-			} else {
-				ps = new PropertySet(EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.Subject, EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
-				emailMessage.load();
-				addEmailInfo(emailMessage, emailXml);
-			}
-
-			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
-				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
-				MimeContent mc = emailMessage.getMimeContent();
-				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
-				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
-			}
-
-			return new Message(emailXml.toXML());
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
+		return getFileSystem().extractEmailMessage(rawMessage, threadContext, isSimple(), getStoreEmailAsStreamInSessionKey());
 	}
 
-	private void addEmailInfoSimple(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
-		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setValue(emailMessage.getSubject());
-		emailXml.addSubElement(subjectXml);
-	}
-
-	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
-		XmlBuilder recipientsXml = new XmlBuilder("recipients");
-		EmailAddressCollection eacTo = emailMessage.getToRecipients();
-		if (eacTo != null) {
-			for (Iterator<EmailAddress> it = eacTo.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = it.next();
-				recipientXml.addAttribute("type", "to");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		EmailAddressCollection eacCc = emailMessage.getCcRecipients();
-		if (eacCc != null) {
-			for (Iterator<EmailAddress> it = eacCc.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = it.next();
-				recipientXml.addAttribute("type", "cc");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		EmailAddressCollection eacBcc = emailMessage.getBccRecipients();
-		if (eacBcc != null) {
-			for (Iterator<EmailAddress> it = eacBcc.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = it.next();
-				recipientXml.addAttribute("type", "bcc");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		emailXml.addSubElement(recipientsXml);
-		XmlBuilder fromXml = new XmlBuilder("from");
-		fromXml.setValue(emailMessage.getFrom().getAddress());
-		emailXml.addSubElement(fromXml);
-		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setValue(emailMessage.getSubject());
-		emailXml.addSubElement(subjectXml);
-		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
-		emailXml.addSubElement(messageXml);
-		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
-		try {
-			AttachmentCollection ac = emailMessage.getAttachments();
-			if (ac != null) {
-				for (Iterator<Attachment> it = ac.iterator(); it.hasNext();) {
-					XmlBuilder attachmentXml = new XmlBuilder("attachment");
-					Attachment att = (Attachment) it.next();
-					att.load();
-					attachmentXml.addAttribute("name", att.getName());
-					if (att instanceof ItemAttachment) {
-						ItemAttachment ia = (ItemAttachment) att;
-						Item aItem = ia.getItem();
-						if (aItem instanceof EmailMessage) {
-							EmailMessage em;
-							em = (EmailMessage) aItem;
-							addEmailInfo(em, attachmentXml);
-						}
-					}
-					attachmentsXml.addSubElement(attachmentXml);
-				}
-			}
-		} catch (Exception e) {
-			log.info("error occurred during getting internet message attachment(s): " + e.getMessage());
-		}
-		emailXml.addSubElement(attachmentsXml);
-		XmlBuilder headersXml = new XmlBuilder("headers");
-		InternetMessageHeaderCollection imhc = null;
-		try {
-			imhc = emailMessage.getInternetMessageHeaders();
-		} catch (Exception e) {
-			log.info("error occurred during getting internet message headers: " + e.getMessage());
-		}
-		if (imhc != null) {
-			for (Iterator<InternetMessageHeader> it = imhc.iterator(); it.hasNext();) {
-				XmlBuilder headerXml = new XmlBuilder("header");
-				InternetMessageHeader imh = (InternetMessageHeader) it.next();
-				headerXml.addAttribute("name", imh.getName());
-				headerXml.setValue(imh.getValue());
-				headersXml.addSubElement(headerXml);
-			}
-		}
-		emailXml.addSubElement(headersXml);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		Date dateTimeSend = emailMessage.getDateTimeSent();
-		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
-		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
-		emailXml.addSubElement(dateTimeSentXml);
-		Date dateTimeReceived = emailMessage.getDateTimeReceived();
-		XmlBuilder dateTimeReceivedXml = new XmlBuilder("dateTimeReceived");
-		dateTimeReceivedXml.setValue(sdf.format(dateTimeReceived));
-		emailXml.addSubElement(dateTimeReceivedXml);
-	}
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'outputFolder' has been replaced by 'processedFolder'")
@@ -329,6 +182,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		return simple;
 	}
 
+	@Deprecated
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
 	}

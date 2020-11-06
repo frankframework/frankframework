@@ -111,8 +111,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			log.warn("Aborting request with status [400], empty uri");
 			return;
 		}
-		if(uri.startsWith("/"))
-			uri = uri.substring(1);
 		if(uri.endsWith("/"))
 			uri = uri.substring(0, uri.length()-1);
 
