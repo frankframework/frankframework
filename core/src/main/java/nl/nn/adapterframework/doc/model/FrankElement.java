@@ -19,8 +19,9 @@ public class FrankElement {
 	/**
 	 * Constructor for testing purposes. We want to test attribute construction in isolation,
 	 * in which case we do not have a parent.
+	 * TODO: Reorganize files such that this test constructor need not be public.
 	 */
-	FrankElement(final String fullName, final String simpleName) {
+	public FrankElement(final String fullName, final String simpleName) {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
 	}
