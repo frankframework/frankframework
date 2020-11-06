@@ -45,12 +45,11 @@ import nl.nn.adapterframework.util.RunStateEnum;
  */
 @Deprecated
 @ConfigurationWarning("Please replace with FtpFileSystemListener")
-public class FtpListener extends FtpSession implements IPullingListener<String>, INamedObject, RunStateEnquiring {
+public class FtpListener extends FtpSession implements IPullingListener<String>, RunStateEnquiring {
 
 	private LinkedList<String> remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
 
-	private String name;
 	private String remoteDirectory;
 	private long responseTime = 3600000; // one hour
 
@@ -176,18 +175,6 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-
-	
-	@Override
-	@IbisDoc({"name of the listener", ""})
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-	
 	@IbisDoc({"time between pollings", "3600000 (one hour)"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;

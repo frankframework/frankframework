@@ -27,7 +27,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public interface IListener<M> extends INamedObject {
+public interface IListener<M> extends IConfigurable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 

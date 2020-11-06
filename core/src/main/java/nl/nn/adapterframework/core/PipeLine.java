@@ -30,6 +30,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
@@ -624,6 +625,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		log.debug(getLogPrefix()+"successfully closed pipeline");
 
 	}
+
 	public TransactionDefinition getTxDef() {
 		return txDef;
 	}
@@ -800,10 +802,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	@IbisDoc({"4", "if set to <code>true, messages will be processed under transaction control. (see below)</code>", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 		if (transacted) {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required");
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports");
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}

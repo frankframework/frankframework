@@ -37,6 +37,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -85,7 +86,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
@@ -284,7 +285,7 @@ public class FileHandler {
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(classLoader, name);
+			return ClassUtils.getResourceURL(getConfigurationClassLoader(), name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);

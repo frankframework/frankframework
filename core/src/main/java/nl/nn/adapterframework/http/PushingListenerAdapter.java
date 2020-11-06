@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IMessageHandler<M> handler;
 	private String name;
@@ -140,5 +142,4 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	public void setRunning(boolean running) {
 		this.running = running;
 	}
-
 }
