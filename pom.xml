@@ -492,18 +492,6 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>ear-modules</id>
-			<activation>
-				<property>
-					<name>ear-modules</name>
-				</property>
-			</activation>
-			<modules>
-				<module>ear-example</module>
-				<module>ear-test</module>
-			</modules>
-		</profile>
-		<profile>
 			<id>proprietary</id>
 			<activation>
 				<property>
