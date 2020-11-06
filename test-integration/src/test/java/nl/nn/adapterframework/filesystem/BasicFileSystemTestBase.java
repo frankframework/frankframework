@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,27 +75,31 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	protected F getFirstFileFromFolder(String folder) throws Exception {
-		Iterator<F> it = fileSystem.listFiles(folder);
-		if (it.hasNext()) {
-			return it.next();
-		}
-		throw new FileNotFoundException("No file found in folder ["+folder+"]");
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+      	Iterator<F> it = ds.iterator();
+        if (it.hasNext()) {
+          return it.next();
+        }
+      throw new FileNotFoundException("No file found in folder ["+folder+"]");
+    }
 	}
 	
 	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
 		
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
-		Iterator<F> it = fileSystem.listFiles(folder);
 		int count = 0;
-		// Count files
-		while (it.hasNext()) {
-			F f=it.next();
-			String name=fileSystem.getName(f);
-			log.debug("found item ["+name+"]");
-			files.add(f);
-			filenames.add(name);
-			count++;
+		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
+			Iterator<F> it = ds.iterator();
+			// Count files
+			while (it.hasNext()) {
+				F f=it.next();
+				String name=fileSystem.getName(f);
+				log.debug("found item ["+name+"]");
+				files.add(f);
+				filenames.add(name);
+				count++;
+			}
 		}
 
 		assertEquals("number of files found by listFiles()", numFilesExpected, count);

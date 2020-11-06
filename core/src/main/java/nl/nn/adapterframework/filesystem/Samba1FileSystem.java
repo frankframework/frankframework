@@ -18,6 +18,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public Iterator<SmbFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -113,9 +114,9 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 						return !file.isHidden();
 					}
 				};
-				return new SmbFileIterator(smbContext.listFiles(filter));
+				return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles(filter)));
 			}
-			return new SmbFileIterator(smbContext.listFiles());
+			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles()));
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}

@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -338,14 +339,15 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
-		
-		Iterator<F> files = fileSystem.listFiles(null);
 		F f = null;
-		if(files.hasNext()) {
-			f = files.next();
-		}
-		else {
-			fail("File not found");
+		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
+			Iterator<F> files = ds.iterator();
+			if(files.hasNext()) {
+				f = files.next();
+			}
+			else {
+				fail("File not found");
+			}
 		}
 		long size=fileSystem.getFileSize(f);
 		

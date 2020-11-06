@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -152,6 +154,23 @@ public class FileSystemUtils {
 		}
 	}
 
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
+		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+
+			@Override
+			public void close() throws IOException {
+				// nothing to close for now 
+			}
+
+			@Override
+			public Iterator<F> iterator() {
+				return iterator;
+			}
+			
+		};
+
+		return ds;
+	}
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {
 		final long millisPerDay = 24 * 60 * 60 * 1000;
@@ -167,14 +186,18 @@ public class FileSystemUtils {
 		
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
-		Iterator<F> it = fileSystem.listFiles(folder);
-		while(it.hasNext()) {
-			F f=it.next();
-			String filename=fileSystem.getName(f);
-			if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
-				if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"]");
-				fileSystem.deleteFile(f);
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+			Iterator<F> it = ds.iterator();
+			while(it.hasNext()) {
+				F f=it.next();
+				String filename=fileSystem.getName(f);
+				if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
+					if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"]");
+					fileSystem.deleteFile(f);
+				}
 			}
+		} catch (IOException e) {
+			throw new FileSystemException(e);
 		}
 	}
 
