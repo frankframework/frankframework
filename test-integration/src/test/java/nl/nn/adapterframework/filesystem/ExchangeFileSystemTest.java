@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.fail;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -78,4 +80,43 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem.xml");
 		MatchUtils.assertXmlEquals(expected, message.asString());
 	}
+	
+	
+	private Item prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
+		if (!fileSystem.folderExists(folderName)) {
+			fileSystem.createFolder(folderName);
+		}
+		Item orgItem = getFirstFileFromFolder(folderName);
+		if (orgItem == null) {
+			Item seedItem = getFirstFileFromFolder(null);
+			orgItem = fileSystem.copyFile(seedItem, folderName, false);
+		}
+		return orgItem;
+	}
+	
+	@Test
+	public void testGetMessageRace() throws Exception {
+		String folderName1 = "RaceFolder1";
+		String folderName2 = "RaceFolder2";
+
+		Item orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
+		System.out.println("Item original ["+fileSystem.getName(orgItem));
+
+		System.out.println("moving item...");
+		Item movedItem1 = fileSystem.moveFile(orgItem, folderName2, true);
+		System.out.println("Item original ["+fileSystem.getName(orgItem));
+		System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
+
+		System.out.println("tring to move same item again...");
+		try {
+			Item movedItem2 = fileSystem.moveFile(orgItem, folderName2, true);
+			System.out.println("Item original ["+fileSystem.getName(orgItem));
+			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
+			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem2));
+			fail("Expected second move to fail");
+		} catch (FileSystemException e) {
+			log.debug("second move failed as expected", e);
+		}
+	}
+	
 }

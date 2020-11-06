@@ -262,17 +262,17 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(fileSystem.exists(f));
 	}
 
-	public void basicFileSystemTestListFile(String folder) throws Exception {
-		String contents1 = "maakt niet uit";
-		String contents2 = "maakt ook niet uit";
+	public void basicFileSystemTestListFile(String folder, int numOfFilesInFolder) throws Exception {
+		String contents = "maakt niet uit ";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
 		long beforeFilesCreated=System.currentTimeMillis();
 		
-		createFile(folder, FILE1, contents1);
-		createFile(folder, FILE2, contents2);
+		for (int i=0; i<numOfFilesInFolder; i++) {
+			createFile(folder, "file_"+i+".txt", contents+i);
+		}
 		waitForActionToFinish();
 
 		long afterFilesCreated=System.currentTimeMillis();
@@ -293,8 +293,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			}
 		}
 
-		assertEquals("Size of set of files", 2, files.size());
-		assertEquals("Size of set of filenames", 2, filenames.size());
+		assertEquals("Size of set of files", numOfFilesInFolder, files.size());
+		assertEquals("Size of set of filenames", numOfFilesInFolder, filenames.size());
 		
 		if (folder==null) {
 			for (String filename:filenames) {
@@ -313,58 +313,68 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			assertFalse(it.hasNext());
 		}
 
-		deleteFile(folder, FILE1);
-		int numDeleted = 1;
-
-		waitForActionToFinish();
-
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			Iterator<F> it = ds.iterator();
-			for (int i = 0; i < count - numDeleted; i++) {
-				assertTrue(it.hasNext());
-				F f=it.next();
-				log.debug("found file ["+fileSystem.getName(f)+"]");
-				long modTime=fileSystem.getModificationTime(f).getTime();
-				if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-				if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+		if (numOfFilesInFolder>0) {
+			deleteFile(folder, "file_0.txt");
+			int numDeleted = 1;
+	
+			waitForActionToFinish();
+	
+			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+				Iterator<F> it = ds.iterator();
+				for (int i = 0; i < count - numDeleted; i++) {
+					assertTrue(it.hasNext());
+					F f=it.next();
+					log.debug("found file ["+fileSystem.getName(f)+"]");
+					long modTime=fileSystem.getModificationTime(f).getTime();
+					if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
+					if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+				}
+				// test
+				assertFalse("after a delete the number of files should be one less",it.hasNext());
 			}
-			// test
-			assertFalse("after a delete the number of files should be one less",it.hasNext());
-		}
-
-		Thread.sleep(1000);
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			Iterator<F> it = ds.iterator();
-			for (int i = 0; i < count - numDeleted; i++) {
-				assertTrue(it.hasNext());
-				F f=it.next();
-				long modTime=fileSystem.getModificationTime(f).getTime();
-				if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-				if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+	
+			Thread.sleep(100);
+			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+				Iterator<F> it = ds.iterator();
+				for (int i = 0; i < count - numDeleted; i++) {
+					assertTrue(it.hasNext());
+					F f=it.next();
+					long modTime=fileSystem.getModificationTime(f).getTime();
+					if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
+					if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+				}
 			}
-		}
-		deleteFile(folder, FILE2);
-		numDeleted++;
-
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			Iterator<F> it = ds.iterator();
-			for (int i = 0; i < count - numDeleted; i++) {
-				assertTrue(it.hasNext());
-				it.next();
+			if (numOfFilesInFolder>1) {
+				deleteFile(folder, "file_1.txt");
+				numDeleted++;
+		
+				try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+					Iterator<F> it = ds.iterator();
+					for (int i = 0; i < count - numDeleted; i++) {
+						assertTrue(it.hasNext());
+						it.next();
+					}
+					// test
+					assertFalse(it.hasNext());
+				}
 			}
-			// test
-			assertFalse(it.hasNext());
 		}
 	}
 	
 	@Test
 	public void basicFileSystemTestListFileFromRoot() throws Exception {
-		basicFileSystemTestListFile(null);
+		basicFileSystemTestListFile(null, 2);
 	}
 	@Test
 	public void basicFileSystemTestListFileFromFolder() throws Exception {
 		_createFolder("folder");
-		basicFileSystemTestListFile("folder");
+		basicFileSystemTestListFile("folder", 2);
+	}
+
+	@Test
+	public void basicFileSystemTestListFileFromEmptyFolder() throws Exception {
+		_createFolder("folder2");
+		basicFileSystemTestListFile("folder2", 0);
 	}
 
 	@Test
@@ -372,7 +382,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
-		basicFileSystemTestListFile(null);
+		basicFileSystemTestListFile(null, 2);
 	}
 
 	@Test
@@ -380,14 +390,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
-		basicFileSystemTestListFile("folder");
+		basicFileSystemTestListFile("folder", 2);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromRootWhenReadingFromFolder() throws Exception {
 		_createFolder("folder");
 		createFile(null, "otherfile", "maakt niet uit");
-		basicFileSystemTestListFile("folder");
+		basicFileSystemTestListFile("folder", 2);
 	}
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFolders() throws Exception {

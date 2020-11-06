@@ -77,6 +77,9 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	protected F getFirstFileFromFolder(String folder) throws Exception {
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
       	Iterator<F> it = ds.iterator();
+      	if (it==null) {
+      		return null;
+      	}
         if (it.hasNext()) {
           return it.next();
         }
