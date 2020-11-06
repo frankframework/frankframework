@@ -88,7 +88,7 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		}
 		Item orgItem = getFirstFileFromFolder(folderName);
 		if (orgItem == null) {
-			Item seedItem = getFirstFileFromFolder(null);
+			Item seedItem = getFirstFileFromFolder(sourceFolder);
 			orgItem = fileSystem.copyFile(seedItem, folderName, false);
 		}
 		return orgItem;
