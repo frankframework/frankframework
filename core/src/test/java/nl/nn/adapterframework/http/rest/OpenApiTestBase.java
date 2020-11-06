@@ -20,10 +20,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
+import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -97,10 +97,8 @@ public class OpenApiTestBase extends Mockito {
 	 */
 	private static TaskExecutor getTaskExecutor() {
 		if(taskExecutor == null) {
-			ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-			executor.setCorePoolSize(2);
-			executor.setMaxPoolSize(10);
-			executor.initialize();
+			//Make sure all threads are joining the calling thread
+			SyncTaskExecutor executor = new SyncTaskExecutor();
 			taskExecutor = executor;
 		}
 		return taskExecutor;
