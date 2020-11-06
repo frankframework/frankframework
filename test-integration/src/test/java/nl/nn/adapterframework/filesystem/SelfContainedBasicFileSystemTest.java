@@ -17,12 +17,14 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 
 	public void testFolders()  throws Exception{
 		String folderName = testFolderPrefix+"_testFolders";
-		
-		fileSystem.createFolder(folderName);
-		assertTrue(fileSystem.folderExists(folderName));
 
-		fileSystem.removeFolder(folderName);
-		assertFalse(fileSystem.folderExists(folderName));
+		try {
+			fileSystem.createFolder(folderName);
+			assertTrue(fileSystem.folderExists(folderName));
+		} finally {
+			fileSystem.removeFolder(folderName);
+			assertFalse(fileSystem.folderExists(folderName));
+		}
 	}
 
 	public void displayFile(F f) throws FileSystemException {

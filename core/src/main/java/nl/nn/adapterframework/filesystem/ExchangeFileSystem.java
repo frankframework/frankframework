@@ -330,7 +330,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 				findResults = exchangeService.findItems(folderId, view);
 			}
 			if (findResults.getTotalCount() == 0) {
-				return null;
+				return FileSystemUtils.getDirectoryStream(null);
 			} else {
 				return FileSystemUtils.getDirectoryStream(findResults.getItems().iterator());
 			}
@@ -389,9 +389,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	@Override
 	public Item moveFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try {
-			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
-			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
-			return emailMessage;
+			FolderId destinationFolderId = getFolderIdByFolderName(destinationFolder, createFolder);
+			return f.move(destinationFolderId);
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -400,9 +399,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	@Override
 	public Item copyFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try {
-			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
-			emailMessage = (EmailMessage) emailMessage.copy(getFolderIdByFolderName(destinationFolder));
-			return emailMessage;
+			FolderId destinationFolderId = getFolderIdByFolderName(destinationFolder, createFolder);
+			return f.copy(destinationFolderId);
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -593,9 +591,18 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 
 	
 	
-	public FolderId getFolderIdByFolderName(String folderName) throws Exception{
+	public FolderId getFolderIdByFolderName(String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
 		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		if (create && findResults.getTotalCount()==0) {
+			log.debug("creating folder [" + folderName + "]");
+			createFolder(folderName);
+			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		}
+		if (findResults.getTotalCount()==0) {
+			log.debug("folder [" + folderName + "] not found");
+			return null;
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
 			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
@@ -619,7 +626,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	@Override
 	public void removeFolder(String folderName) throws FileSystemException {
 		try {
-			FolderId folderId = getFolderIdByFolderName(folderName);
+			FolderId folderId = getFolderIdByFolderName(folderName, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
 			folder.delete(DeleteMode.HardDelete);
 		} catch (Exception e) {
