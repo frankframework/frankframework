@@ -1,5 +1,5 @@
 <?ibiscontext test=PL26081973 ?>
-<request>
+<request action="passThrough">
 	<data1>&lt;RDB&gt;
  &lt;P volgnummer="1"&gt;
    &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
