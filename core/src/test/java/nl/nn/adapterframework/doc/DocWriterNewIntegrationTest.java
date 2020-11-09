@@ -19,7 +19,7 @@ import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 
-@Ignore
+// @Ignore
 public class DocWriterNewIntegrationTest {
 
 	@Test
