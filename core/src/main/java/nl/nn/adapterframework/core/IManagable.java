@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @author Gerrit van Brakel
  * @since 4.0
  */
-public interface IManagable extends INamedObject {
+public interface IManagable extends IConfigurable {
     /**
      * returns the runstate of the object.
      * Possible values are defined by {@link RunStateEnum}.

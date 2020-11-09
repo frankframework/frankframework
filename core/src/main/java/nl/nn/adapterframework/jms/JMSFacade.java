@@ -42,12 +42,9 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
@@ -69,14 +66,10 @@ import nl.nn.adapterframework.util.DateUtils;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDestination, IXAEnabled {
-
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled {
 
 	public static final String MODE_PERSISTENT     = "PERSISTENT";
 	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";
-
-	private String name;
 
 	private boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
@@ -242,6 +235,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getDestinationName())) {
 			throw new ConfigurationException("destinationName must be specified");
 		}
@@ -320,7 +314,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 			message.setJMSCorrelationID(correlationID);
 		}
 	}
-	
+
 	public Destination getDestination() throws NamingException, JMSException, JmsException {
 		if (destination == null) {
 			String destinationName = getDestinationName();
@@ -426,7 +420,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 		try {
 			return getPhysicalDestinationShortName(false);
 		} catch (JmsException e) {
-			log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
 			return null;
 		}
 	}
@@ -445,7 +439,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 			if (throwException) {
 				throw new JmsException(e);
 			} else {
-				log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+				log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
 			}
 		}
 		return result;
@@ -477,7 +471,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 		QueueReceiver queueReceiver = session.createReceiver(destination, selector);
 		return queueReceiver;
 	}
-	
+
 	/**
 	  * Gets the queueSender for a specific queue, not the one in <code>destination</code>
 	  * @see QueueSender
@@ -498,11 +492,11 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 		TopicSubscriber topicSubscriber;
 		if (subscriberType.equalsIgnoreCase("DURABLE")) {
 			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + name + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 
 		} else {
 			topicSubscriber = session.createSubscriber(topic, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 		}
 
 		return topicSubscriber;
@@ -512,14 +506,13 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 		MessageConsumer messageConsumer;
 		if (subscriberType.equalsIgnoreCase("DURABLE")) {
 			messageConsumer = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + name  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + getName()  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 		} else {
 			messageConsumer = session.createConsumer(topic, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 		}
 		return messageConsumer;
 	}
-
 
 	// TODO: send functions could benefit from have Message messages instead of String
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
@@ -571,7 +564,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
 				String key = it.next();
 				Object value = properties.get(key);
-				log.debug("setting property ["+name+"] to value ["+value+"]");
+				log.debug("setting property ["+getName()+"] to value ["+value+"]");
 				msg.setObjectProperty(key, value);
 			}
 		}
@@ -622,7 +615,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 			}
 		}
 	}
-	
+
 	/**
 	 * Send a message
 	 * @param session
@@ -739,17 +732,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
         return sb.toString();
     }
 
-
-	@Override
-	@IbisDoc({"name of the listener", ""})
-	public void setName(String newName) {
-		name = newName;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
 	 */
@@ -760,7 +742,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 	public String getDestinationName() {
 		return destinationName;
 	}
-
 
 	/**
 	 * should be <code>QUEUE</code> or <code>TOPIC</code><br/>
@@ -827,7 +808,7 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 					ackMode = Session.CLIENT_ACKNOWLEDGE;
 				} else {
 					// ignore all ack modes, to test no acking
-					log.warn("["+name+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
+					log.warn("["+getName()+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
 					ackMode = -1;
 				}
 
@@ -838,7 +819,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 	public String getAcknowledgeMode() {
 		return getAcknowledgeModeAsString(getAckMode());
 	}
-
 
 	/**
 	 * Controls whether messages are processed persistently.
@@ -883,7 +863,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 		return queueConnectionFactoryName;
 	}
 
-
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
@@ -895,7 +874,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 	public String getTopicConnectionFactoryName() {
 		return topicConnectionFactoryName;
 	}
-
 
 	/**
 	 * Controls the use of JMS transacted session.
@@ -983,7 +961,6 @@ public class JMSFacade extends JNDIBase implements IConfigurable, HasPhysicalDes
 	public String getMessageSelector() {
 		return messageSelector;
 	}
-
 
 	@IbisDoc({"alias used to obtain credentials for authentication to jms server", ""})
 	public void setAuthAlias(String string) {

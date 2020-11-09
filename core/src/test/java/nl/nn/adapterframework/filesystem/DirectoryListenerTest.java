@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.receivers.DirectoryListener;
 
-public class DirectoryListenerTest extends FileSystemListenerTest<File, LocalFileSystem> {
+public class DirectoryListenerTest extends FileSystemListenerTest<Path, LocalFileSystem> {
 
 	public TemporaryFolder folder;
 	
 	@Override
-	public FileSystemListener<File, LocalFileSystem> createFileSystemListener() {
+	public FileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
 		result.setInputDirectory(folder.getRoot().getAbsolutePath());
 		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"/";

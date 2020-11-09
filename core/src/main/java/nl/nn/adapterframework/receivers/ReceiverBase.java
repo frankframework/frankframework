@@ -39,9 +39,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -159,7 +161,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
@@ -580,7 +582,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			if (getListener() instanceof ITransactionRequirements) {
 				ITransactionRequirements tr=(ITransactionRequirements)getListener();
 				if (tr.transactionalRequired() && !isTransacted()) {
-					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing");
+					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 					//throw new ConfigurationException(msg);
 				}
 			}
@@ -632,7 +634,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					info("has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser()!=null) {
 					ConfigurationWarnings.add(this, log, "Default messageLogBrowser provided by listener is overridden by configured messageLog");
@@ -660,7 +662,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
+					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
@@ -682,7 +684,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
 			}
 			
 			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
@@ -1659,6 +1661,59 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public boolean isInRunState(RunStateEnum someRunState) {
 		return runState.isInState(someRunState);
 	}
+	private String sendResultToSender(String correlationId, Message result) {
+		String errorMessage = null;
+		try {
+			if (getSender() != null) {
+				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
+				getSender().sendMessage(result, null);
+			}
+		} catch (Exception e) {
+			String msg = "caught exception in message post processing";
+			error(msg, e);
+			errorMessage = msg + ": " + e.getMessage();
+			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+				log.info("closing after exception in post processing");
+				stopRunning();
+			}
+		}
+		return errorMessage;
+	}
+
+	private ListenerException wrapExceptionAsListenerException(Throwable t) {
+		ListenerException l;
+		if (t instanceof ListenerException) {
+			l = (ListenerException) t;
+		} else {
+			l = new ListenerException(t);
+		}
+		return l;
+	}
+
+	public BeanFactory getBeanFactory() {
+		return beanFactory;
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) {
+		this.beanFactory = beanFactory;
+	}
+
+	public PullingListenerContainer<M> getListenerContainer() {
+		return listenerContainer;
+	}
+
+	public void setListenerContainer(PullingListenerContainer<M> listenerContainer) {
+		this.listenerContainer = listenerContainer;
+	}
+
+	public PullingListenerContainer<M> createListenerContainer() {
+		@SuppressWarnings("unchecked")
+		PullingListenerContainer<M> plc = (PullingListenerContainer<M>) beanFactory.getBean("listenerContainer");
+		plc.setReceiver(this);
+		plc.configure();
+		return plc;
+	}
 
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
@@ -1718,139 +1773,30 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		}
 		return queueingStatistics.iterator();
 	}		
-	
-	@Override
-	public ISender getSender() {
-		return sender;
+
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
 	}
-	
-	protected void setSender(ISender sender) {
-		this.sender = sender;
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
 	}
 
+	
 	@Override
 	public void setAdapter(IAdapter adapter) {
 		this.adapter = adapter;
 	}
 	
-	
-	
-	/**
-	 * Returns the listener
-	 * @return IListener
-	 */
+	public boolean isOnErrorContinue() {
+		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
+	}
 	@Override
-	public IListener<M> getListener() {
-		return listener;
-	}/**
-	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
-	 * Creation date: (04-11-2003 12:04:05)
-	 * @param newListener IListener
-	 */
-	protected void setListener(IListener<M> newListener) {
-		listener = newListener;
-		if (StringUtils.isEmpty(listener.getName())) {
-			listener.setName("listener of ["+getName()+"]");
-		}
-		if (listener instanceof RunStateEnquiring)  {
-			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
-		}
+	public IAdapter getAdapter() {
+		return adapter;
 	}
-
-	/**
-	 * Sets the inProcessStorage.
-	 * @param inProcessStorage The inProcessStorage to set
-	 * @deprecated
-	 */
-	@Deprecated
-	@ConfigurationWarning("In-Process Storage no longer exists")
-	protected void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
-		// We do not use an in-process storage anymore, but we temporarily
-		// store it if it's set by the configuration.
-		// During configure, we check if we need to use the in-process storage
-		// as error-storage.
-		this.tmpInProcessStorage = inProcessStorage;
-	}
-
-	/**
-	 * Returns the errorSender.
-	 * @return ISender
-	 */
-	public ISender getErrorSender() {
-		return errorSender;
-	}
-
-	/**
-	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
-	 */
-	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
-		return errorStorage;
-	}
-	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
-	 */
-	public ITransactionalStorage<Serializable> getErrorStorage() {
-		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
-	}
-
-	/**
-	 * Sets the errorSender.
-	 * @param errorSender The errorSender to set
-	 */
-	protected void setErrorSender(ISender errorSender) {
-		this.errorSender = errorSender;
-		errorSender.setName("errorSender of ["+getName()+"]");
-	}
-
-	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
-		if (errorStorage.isActive()) {
-			this.errorStorage = errorStorage;
-			errorStorage.setName("errorStorage of ["+getName()+"]");
-			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
-				errorStorage.setSlotId(getName());
-			}
-			errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
-		}
-	}
-	
-	/**
-	 * Sets the messageLog.
-	 */
-	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-			messageLog.setName("messageLog of ["+getName()+"]");
-			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId(getName());
-			}
-			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
-		}
-	}
-
-	/**
-	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
-	 */
-	public IMessageBrowser<Serializable> getMessageLogBrowser() {
-		return messageLog;
-	}
-	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
-	 */
-	public ITransactionalStorage<Serializable> getMessageLog() {
-		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
-	}
-	/**
-	 * returns a browser of messages inProcess, if provided as a {@link IMessageBrowser} by the listener itself. 
-	 */
-	public IMessageBrowser<Serializable> getInProcessBrowser() {
-		return inProcessBrowser;
-	}
-
 
 	/**
 	 * Get the number of messages received.
-	  * @return long
 	 */
 	@Override
 	public long getMessagesReceived() {
@@ -1859,7 +1805,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	/**
 	 * Get the number of messages retried.
-	  * @return long
 	 */
 	@Override
 	public long getMessagesRetried() {
@@ -1867,8 +1812,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	/**
-	 * Get the number of messages rejected (discarded or put in errorstorage).
-	  * @return long
+	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
 	@Override
 	public long getMessagesRejected() {
@@ -1888,11 +1832,144 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 
 	/**
+	 *  Returns a toString of this class by introspection and the toString() value of its listener.
+	 *
+	 * @return Description of the Return Value
+	 */
+	@Override
+	public String toString() {
+		String result = super.toString();
+		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
+		ts.append("name", getName() );
+		result += ts.toString();
+		result+=" listener ["+(listener==null ? "-none-" : listener.toString())+"]";
+		return result;
+	}
+
+	
+	
+	/**
+	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
+	 * of the listener is empty, the name of this object is given to the listener.
+	 */
+	@IbisDoc({"10", "The source of messages"})
+	protected void setListener(IListener<M> newListener) {
+		listener = newListener;
+		if (StringUtils.isEmpty(listener.getName())) {
+			listener.setName("listener of ["+getName()+"]");
+		}
+		if (listener instanceof RunStateEnquiring)  {
+			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
+		}
+	}
+	@Override
+	public IListener<M> getListener() {
+		return listener;
+	}
+
+	@IbisDoc("20")
+	protected void setSender(ISender sender) {
+		this.sender = sender;
+	}
+	@Override
+	public ISender getSender() {
+		return sender;
+	}
+
+	/**
+	 * Sets the inProcessStorage.
+	 * @param inProcessStorage The inProcessStorage to set
+	 * @deprecated
+	 */
+	@Deprecated
+	@ConfigurationWarning("In-Process Storage no longer exists")
+	protected void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
+		// We do not use an in-process storage anymore, but we temporarily
+		// store it if it's set by the configuration.
+		// During configure, we check if we need to use the in-process storage
+		// as error-storage.
+		this.tmpInProcessStorage = inProcessStorage;
+	}
+
+
+
+	/**
+	 * Sets the errorSender.
+	 * @param errorSender The errorSender to set
+	 */
+	@IbisDoc({"30", "Sender that will receive the result in case the PipeLineExit state was not 'success'"})
+	protected void setErrorSender(ISender errorSender) {
+		this.errorSender = errorSender;
+		errorSender.setName("errorSender of ["+getName()+"]");
+	}
+	public ISender getErrorSender() {
+		return errorSender;
+	}
+
+	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
+	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
+		if (errorStorage.isActive()) {
+			this.errorStorage = errorStorage;
+			errorStorage.setName("errorStorage of ["+getName()+"]");
+			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
+				errorStorage.setSlotId(getName());
+			}
+			errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
+		}
+	}
+	/**
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
+	 */
+	public ITransactionalStorage<Serializable> getErrorStorage() {
+		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
+	}
+	/**
+	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
+	 */
+	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
+		return errorStorage;
+	}
+	
+	
+	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
+	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+		if (messageLog.isActive()) {
+			this.messageLog = messageLog;
+			messageLog.setName("messageLog of ["+getName()+"]");
+			if (StringUtils.isEmpty(messageLog.getSlotId())) {
+				messageLog.setSlotId(getName());
+			}
+			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
+		}
+	}
+	/**
+	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
+	 */
+	public ITransactionalStorage<Serializable> getMessageLog() {
+		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
+	}
+	/**
+	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
+	 */
+	public IMessageBrowser<Serializable> getMessageLogBrowser() {
+		return messageLog;
+	}
+
+	/**
+	 * returns a browser of messages inProcess, if provided as a {@link IMessageBrowser} by the listener itself. 
+	 */
+	public IMessageBrowser<Serializable> getInProcessBrowser() {
+		return inProcessBrowser;
+	}
+
+
+
+	/**
 	 * Sets the name of the Receiver. 
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	@IbisDoc({"name of the receiver as known to the adapter", ""})
+	@IbisDoc({"1", "name of the receiver as known to the adapter", ""})
 	@Override
 	public void setName(String newName) {
 		name = newName;
@@ -1903,17 +1980,15 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return name;
 	}
 	
-	/**
-	 * Controls the use of XA-transactions.
-	 */
 	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)", "<code>false</code>"})
+	@Deprecated
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		if (transacted) {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required");
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports");
+			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
@@ -1981,31 +2056,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return onError;
 	}
 
-	public boolean isOnErrorContinue() {
-		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
-	}
-	@Override
-	public IAdapter getAdapter() {
-		return adapter;
-	}
-
-
-	/**
-	 *  Returns a toString of this class by introspection and the toString() value of its listener.
-	 *
-	 * @return Description of the Return Value
-	 */
-	@Override
-	public String toString() {
-		String result = super.toString();
-		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
-		ts.append("name", getName() );
-		result += ts.toString();
-		result+=" listener ["+(listener==null ? "-none-" : listener.toString())+"]";
-		return result;
-	}
-
-	
 	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
@@ -2023,33 +2073,32 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 
-	public int getNumThreadsPolling() {
-		return numThreadsPolling;
-	}
 
 	@IbisDoc({"the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)", "1"})
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
-
-	public int getMaxDeliveries() {
-		return maxDeliveries;
+	public int getNumThreadsPolling() {
+		return numThreadsPolling;
 	}
+
 
 	@IbisDoc({"the maximum delivery count after which to stop processing the message. when -1 the delivery count is ignored", "5"})
 	public void setMaxDeliveries(int i) {
 		maxDeliveries = i;
 	}
-
-	public int getMaxRetries() {
-		return maxRetries;
+	public int getMaxDeliveries() {
+		return maxDeliveries;
 	}
 
 	@IbisDoc({"the number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). if maxretries &lt; 0 the number of attempts is infinite", "1"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
-	
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
 	@IbisDoc({"when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
@@ -2076,67 +2125,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 
 
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 
-
-	private String sendResultToSender(String correlationId, Message result) {
-		String errorMessage = null;
-		try {
-			if (getSender() != null) {
-				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
-				getSender().sendMessage(result, null);
-			}
-		} catch (Exception e) {
-			String msg = "caught exception in message post processing";
-			error(msg, e);
-			errorMessage = msg + ": " + e.getMessage();
-			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
-				log.info("closing after exception in post processing");
-				stopRunning();
-			}
-		}
-		return errorMessage;
-	}
-
-	private ListenerException wrapExceptionAsListenerException(Throwable t) {
-		ListenerException l;
-		if (t instanceof ListenerException) {
-			l = (ListenerException) t;
-		} else {
-			l = new ListenerException(t);
-		}
-		return l;
-	}
-
-	public BeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-	}
-
-	public PullingListenerContainer<M> getListenerContainer() {
-		return listenerContainer;
-	}
-
-	public void setListenerContainer(PullingListenerContainer<M> listenerContainer) {
-		this.listenerContainer = listenerContainer;
-	}
-
-	public PullingListenerContainer<M> createListenerContainer() {
-		@SuppressWarnings("unchecked")
-		PullingListenerContainer<M> plc = (PullingListenerContainer<M>) beanFactory.getBean("listenerContainer");
-		plc.setReceiver(this);
-		plc.configure();
-		return plc;
-	}
 
 	@IbisDoc({"The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners", "10"})
 	public void setPollInterval(int i) {
@@ -2304,5 +2293,4 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	public String getHideMethod() {
 		return hideMethod;
 	}
-
 }

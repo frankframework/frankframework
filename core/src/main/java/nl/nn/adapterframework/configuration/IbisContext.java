@@ -64,11 +64,11 @@ public class IbisContext extends IbisApplicationContext {
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
 	private IbisManager ibisManager;
@@ -123,7 +123,7 @@ public class IbisContext extends IbisApplicationContext {
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialise.
+				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 				log(null, null, "failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e, true);
 			}
@@ -346,11 +346,10 @@ public class IbisContext extends IbisApplicationContext {
 					try {
 						Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class);
 						databaseMigrator.setIbisContext(this);
-						databaseMigrator.configure(currentConfigurationName, classLoader);
+						databaseMigrator.configure(configuration);
 						databaseMigrator.update();
 						databaseMigrator.close();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
 					}
 				}
@@ -447,7 +446,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 		m = m + message;
 		if (MessageKeeperLevel.ERROR.equals(level)) {
-			LOG.info(m, e);
+			LOG.error(m, e);
 		} else if (MessageKeeperLevel.WARN.equals(level)) {
 			LOG.warn(m, e);
 		} else {

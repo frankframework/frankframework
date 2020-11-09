@@ -134,7 +134,7 @@ public final class Webservices extends Base {
 				IReceiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
 				Map<String, Object> endpoint = new HashMap<>();
-				endpoint.put("uriPattern", config.getUriPattern());
+				endpoint.put("uriPattern", listener.getUriPattern());
 				endpoint.put("method", method);
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());

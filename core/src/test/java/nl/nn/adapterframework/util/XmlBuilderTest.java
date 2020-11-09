@@ -1,16 +1,14 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 
-import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import com.unboundid.ldap.sdk.LDAPException;
+
+import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class XmlBuilderTest {
 
@@ -77,7 +75,7 @@ public class XmlBuilderTest {
 		sb.append("</messages>");
 		sb.append("</summary>");
 
-		compareXML(sb.toString(), summaryXML.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), summaryXML.toXML());
 	}
 
 	@Test
@@ -108,7 +106,7 @@ public class XmlBuilderTest {
 		sb.append("</complexType>");
 		sb.append("</schema>");
 
-		compareXML(sb.toString(), schema.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), schema.toXML());
 	}
 
 	@Test
@@ -141,14 +139,33 @@ public class XmlBuilderTest {
 		sb.append("</complexType>");
 		sb.append("</schema>");
 
-		compareXML(sb.toString(), schema.toXML());
+		MatchUtils.assertXmlEquals(sb.toString(), schema.toXML());
 	}
 
-	private void compareXML(String expected, String actual)
-			throws SAXException, IOException {
-		// System.out.println(expected);
-		// System.out.println(actual);
-		Diff diff = XMLUnit.compareXML(expected, actual);
-		assertTrue(diff.toString(), diff.identical());
+	@Test
+	public void testAddEmbeddedCdata1() {
+		
+		String value = "<xml>&amp; <![CDATA[cdatastring < > & <tag/> ]]>rest</xml>";
+		
+		XmlBuilder root = new XmlBuilder("root");
+		root.setValue(value);
+		
+		String expected = "<root>"+XmlUtils.encodeChars(value)+"</root>";
+		MatchUtils.assertXmlEquals(expected, root.toXML(false));
+	}
+
+	@Test
+	public void testAddEmbeddedCdata2() {
+		String CDATA_START="<![CDATA[";
+		String CDATA_END="]]>";
+		String CDATA_END_REPLACEMENT=CDATA_END.substring(0,1)+CDATA_END+CDATA_START+CDATA_END.substring(1);
+		
+		String value = "<xml>&amp; "+CDATA_START+"cdatastring < > & <tag/> "+CDATA_END+"rest</xml>";
+		
+		XmlBuilder root = new XmlBuilder("root");
+		root.setCdataValue(value);
+		
+		String expected = "<root>"+CDATA_START+value.replace(CDATA_END, CDATA_END_REPLACEMENT)+CDATA_END+"</root>";
+		MatchUtils.assertXmlEquals(expected, root.toXML(false));
 	}
 }

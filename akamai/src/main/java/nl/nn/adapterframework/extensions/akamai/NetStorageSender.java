@@ -265,7 +265,7 @@ public class NetStorageSender extends HttpSenderBase {
 		if (!ok) {
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + getResponseBodyAsString(responseHandler, false));
 		}
 
 		XmlBuilder result = new XmlBuilder("result");
@@ -276,7 +276,7 @@ public class NetStorageSender extends HttpSenderBase {
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			String responseString = getResponseBodyAsString(responseHandler);
+			String responseString = getResponseBodyAsString(responseHandler, true);
 			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
 			responseString = XmlUtils.skipXmlDeclaration(responseString);
 
@@ -314,11 +314,26 @@ public class NetStorageSender extends HttpSenderBase {
 		return Message.asMessage(result.toXML());
 	}
 
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	/**
+	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
+	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
+	 */
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		String responseBody = responseHandler.getResponseAsString(true);
+		Message response = new Message(responseHandler.getResponse(), charset);
+
+		String responseBody = null;
+		try {
+			responseBody = response.asString();
+		} catch(IOException e) {
+			if(throwIOExceptionWhenParsingResponse) {
+				throw e;
+			}
+			return null;
+		}
+
 		int rbLength = responseBody.length();
 		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
 		if (rbLength >= rbSizeWarn) {

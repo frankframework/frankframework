@@ -75,11 +75,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.ejb</groupId>
-			<artifactId>ejb-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>javax.transaction</groupId>
 			<artifactId>transaction-api</artifactId>
 			<version>1.1</version>
@@ -646,6 +641,25 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>services-war</id>
+						<goals>
+							<goal>war</goal>
+						</goals>
+						<configuration>
+							<classifier>services</classifier>
+							<packagingIncludes>WEB-INF/classes/META-INF/services/</packagingIncludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			 -->
 		</plugins>
 	</build>
 

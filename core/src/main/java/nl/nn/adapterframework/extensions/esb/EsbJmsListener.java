@@ -28,6 +28,7 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -78,7 +79,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 					recovered = (receiverBase.isRecover() || receiverBase.isRecoverAdapter());
 				}
 				if (!recovered) {
-					ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
+					ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, receiverBase.getAdapter());
 				}
 			}
 			setCacheMode("CACHE_CONSUMER");

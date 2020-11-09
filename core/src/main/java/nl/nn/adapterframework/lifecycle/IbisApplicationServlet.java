@@ -78,16 +78,16 @@ public class IbisApplicationServlet extends HttpServlet {
 		ibisContext.setParentContext(parentContext);
 		ibisContext.init();
 
-		if(ibisContext.getIbisManager() == null) { //Simplest check to see if the IbisContext has started up successfully is by retrieving the IbisManager bean.
-			Exception ex = ibisContext.getBootState().getException();
-			log.error("Servlet finished without successfully initializing the ibisContext", ex);
-			String msg = "IbisContext failed to initialize, check ibis logs for more information!";
-			if(ex != null) {
-				msg += " ("+ex.getClass().getName()+") "+ex.getMessage();
-			}
-			servletContext.log(msg); //We can't log the stacktrace here as it will prevent the servlet from starting up
-			servletContext.setAttribute(KEY_EXCEPTION, ex);
-		} else {
+		Exception startupException = ibisContext.getStartupException();
+		if(startupException != null) { //Check if there are any problems initializing Spring
+			String msg = this.getClass().getSimpleName()+" finished without successfully initializing the IbisContext";
+			log.error(msg, startupException);
+
+			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
+			servletContext.log(String.format("%s, check ibis logs for more information! (%s) %s", msg, startupException.getClass().getName(), startupException.getMessage()));
+
+			servletContext.setAttribute(KEY_EXCEPTION, startupException); //Instead of the IbisContext we store the Exception, see IbisApplicationServlet.getIbisContext(ServletContext)
+		} else { //Since Spring has started, save the IbisContext in the ServletContext
 			String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 			servletContext.setAttribute(attributeKey, ibisContext);
 			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");

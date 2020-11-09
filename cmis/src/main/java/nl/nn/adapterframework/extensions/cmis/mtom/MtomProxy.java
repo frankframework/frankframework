@@ -71,7 +71,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	public void setServletManager(ServletManager servletManager) {
 		if(ACTIVE) {
 			super.setServletManager(servletManager);
-			ConfigurationWarnings.add(log, "CmisProxy has been deprecated. Please enable the MtomFilter [cmis.mtomfilter.active=true] and use default cmis endpoints instead!");
+			ConfigurationWarnings.addGlobalWarning(log, "CmisProxy has been deprecated. Please enable the MtomFilter [cmis.mtomfilter.active=true] and use default cmis endpoints instead!");
 		}
 	}
 }

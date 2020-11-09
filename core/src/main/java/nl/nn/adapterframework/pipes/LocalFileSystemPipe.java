@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemPipe extends FileSystemPipe<File, LocalFileSystem>{
+public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());

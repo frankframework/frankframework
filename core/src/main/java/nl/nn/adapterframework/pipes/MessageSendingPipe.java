@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -246,17 +247,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		propagateName();
 	}
 
-	@Override
-	public void addParameter(Parameter p){
-		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
-			if (p.getName().equals(STUBFILENAME)) {
-				super.addParameter(p);
-			} else {
-				((ISenderWithParameters)getSender()).addParameter(p);
-			}
-		}
-	}
-
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
@@ -284,7 +274,18 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (getSender() == null) {
 				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
 			}
-	
+			
+			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+			// because sender might not have been set when addPipe() is called.
+			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
+				for (Parameter p:getParameterList()) {
+					if (!p.getName().equals(STUBFILENAME)) {
+						((ISenderWithParameters)getSender()).addParameter(p);
+					}
+				}
+				
+			}
+
 			try {
 				if (getSender() instanceof ConfigurationAware) {
 					IAdapter adapter=getAdapter();
@@ -296,8 +297,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
-					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"] in adapter ["+getAdapter().getName()+"]. This may cause potential SQL injections!";
-					ConfigurationWarnings.add(this, log, msg, ConfigurationWarnings.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
+					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"]. This may cause potential SQL injections!";
+					ConfigurationWarnings.add(this, log, msg, SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
 					((DirectQuerySender) getSender()).configure(true);
 				} else {
 					getSender().configure();
@@ -363,7 +364,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
 			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
-				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed("warnings.suppress.integrityCheck", getAdapter(), getConfigurationClassLoader());
+				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
 					if (!legacyCheckMessageLog) {

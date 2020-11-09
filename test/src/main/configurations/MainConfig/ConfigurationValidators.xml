@@ -9,9 +9,17 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API">
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
 		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API-ParamsInPath">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" method="GET" operationId="UniqueIdSoapValidator"/>
+		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit path="EXIT" state="success" code="200"/>
+				<exit path="NotModified" state="success" code="304" empty="true" />
+				<exit path="BadRequest" state="error" code="400" empty="true" />
+				<exit path="NotAuthorized" state="error" code="401" empty="true" />
+				<exit path="NotAllowed" state="error" code="403" empty="true" />
+				<exit path="ServerError" state="error" code="500" />
 			</exits>
 	
 			<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" soapBody="Item_Request" outputSoapBody="Item_Response" allowPlainXml="true"
@@ -62,9 +70,17 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API">
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" method="GET"/>
 		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API-POST">
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST"/>
+		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit path="EXIT" state="success" code="200"/>
+				<exit path="NotModified" state="success" code="304" empty="true" />
+				<exit path="BadRequest" state="error" code="400" empty="true" />
+				<exit path="NotAuthorized" state="error" code="401" empty="true" />
+				<exit path="NotAllowed" state="error" code="403" empty="true" />
+				<exit path="ServerError" state="error" code="500" />
 			</exits>
 	
 			<inputValidator className="nl.nn.adapterframework.pipes.Json2XmlValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" root="Item_Request" responseRoot="Item_Response">

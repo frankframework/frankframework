@@ -41,6 +41,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private String uriPattern;
 	private boolean updateEtag = true;
+	private String operationId;
 
 	private String method;
 	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
@@ -71,7 +72,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
-		if(!getConsumes().equals("ANY")) {
+		if(!getConsumesEnum().equals(MediaTypes.ANY)) {
 			if(getMethod().equals("GET"))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
 			if(getMethod().equals("DELETE"))
@@ -111,11 +112,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
 		if(!MediaTypes.ANY.equals(consumes))
-			destinationName += "; consumes: "+getConsumes();
+			destinationName += "; consumes: "+getConsumesEnum().name();
 		if(!MediaTypes.ANY.equals(produces))
-			destinationName += "; produces: "+getProduces();
+			destinationName += "; produces: "+getProducesEnum().name();
 
 		return destinationName;
 	}
@@ -128,12 +129,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		String pattern = getUriPattern();
 		if(StringUtils.isEmpty(pattern))
 			return null;
-
-		if(pattern.startsWith("/"))
-			pattern = pattern.substring(1);
-
-		if(pattern.endsWith("/"))
-			pattern = pattern.substring(0, pattern.length()-1);
 
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
@@ -166,6 +161,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
 	public void setUriPattern(String uriPattern) {
+		if(!uriPattern.startsWith("/"))
+			uriPattern = "/" + uriPattern;
+
+		if(uriPattern.endsWith("/"))
+			uriPattern = uriPattern.substring(0, uriPattern.length()-1);
+
 		this.uriPattern = uriPattern;
 	}
 	public String getUriPattern() {
@@ -182,8 +183,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.consumes = MediaTypes.valueOf(consumes);
 	}
-	public String getConsumes() {
-		return consumes.name();
+	public MediaTypes getConsumesEnum() {
+		return consumes;
 	}
 
 	@IbisDoc({"4", "the specified contentType on response", "ANY"})
@@ -196,8 +197,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.produces = MediaTypes.valueOf(produces);
 	}
-	public String getProduces() {
-		return produces.name();
+	public MediaTypes getProducesEnum() {
+		return produces;
 	}
 
 	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
@@ -271,9 +272,16 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
-
 	public String getMessageIdHeader() {
 		return messageIdHeader;
+	}
+
+	@IbisDoc({"11", "Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema", ""})
+	public void setOperationId(String operationId) {
+		this.operationId = operationId;
+	}
+	public String getOperationId() {
+		return operationId;
 	}
 
 	@Override
@@ -281,8 +289,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		final StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
 		builder.append(" uriPattern["+getUriPattern()+"]");
-		builder.append(" produces["+getProduces()+"]");
-		builder.append(" consumes["+getConsumes()+"]");
+		builder.append(" produces["+getProducesEnum().name()+"]");
+		builder.append(" consumes["+getConsumesEnum().name()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();

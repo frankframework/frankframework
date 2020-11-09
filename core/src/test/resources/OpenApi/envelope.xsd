@@ -1,0 +1,34 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="EnvelopeRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="envelopeID" type="xs:unsignedLong" minOccurs="1" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="EnvelopeResponse">
+		<xs:complexType>
+			<xs:sequence>
+					<xs:element name="envelopeID" type="xs:unsignedLong" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="setID" type="xs:unsignedLong" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="type" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="envelopeCreationDate" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="retried" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="EnvelopeError500">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="message500" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="EnvelopeError403">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="message403" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

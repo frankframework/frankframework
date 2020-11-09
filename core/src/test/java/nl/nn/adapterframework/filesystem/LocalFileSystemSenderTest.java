@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -14,7 +15,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.LocalFileSystemSender;
 import nl.nn.adapterframework.stream.Message;
 
-public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, File, LocalFileSystem>{
+public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 
 	public TemporaryFolder folder;
 
