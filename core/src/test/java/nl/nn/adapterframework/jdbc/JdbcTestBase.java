@@ -34,9 +34,10 @@ public abstract class JdbcTestBase {
 	protected IDbmsSupport dbmsSupport;
 
 	
-	@Parameters(name= "{index}: {0}")
+	@Parameters(name= "{index}: {0} url: {1}")
 	public static Iterable<Object[]> data() {
 		Object[][] datasources = {
+			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
 			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=10", null, null, false },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false }, 
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false }, 
