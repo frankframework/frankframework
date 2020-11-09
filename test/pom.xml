@@ -188,32 +188,5 @@
 				</dependency>
 			</dependencies>
 		</profile>
-		<profile>
-			<id>oracle</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.oracle.database.jdbc</groupId>
-					<artifactId>ojdbc8</artifactId>
-					<version>12.2.0.1</version>
-					<scope>compile</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>docker</id>
-			<properties>
-				<databaseHost>host.docker.internal</databaseHost>
-			</properties>
-		</profile>
-		<profile>
-			<id>tomcat</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_1.1_spec</artifactId>
-					<scope>compile</scope>
-				</dependency>
-			</dependencies>
-		</profile>
 	</profiles>
 </project>

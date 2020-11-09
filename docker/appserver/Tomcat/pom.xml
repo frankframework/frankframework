@@ -1,40 +1,142 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
+	<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
+	<name>Ibis AdapterFramework Docker image for Tomcat</name>
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
 		<version>7.6-SNAPSHOT</version>
 	</parent>
-
-	<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-	<name>Ibis AdapterFramework Docker image for Tomcat</name>
-
 	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<version>${iaf.version}</version>
+			<type>ear</type>
+		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${iaf.version}</version>
-			<type>war</type>
+			<classifier>resources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${iaf.version}</version>
+			<classifier>configurations</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${iaf.version}</version>
+			<classifier>scenarios</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${oracle.driver.groupid}</groupId>
+			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
+			<version>${oracle.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>${mssql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<version>${mariadb.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.driver.version}</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<defaultGoal>package</defaultGoal>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
 		<plugins>
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.2</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+							<stripVersion>true</stripVersion>
+							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-configuration</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>configurations</classifier>
+									<destFileName>configurations.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>resources</classifier>
+									<destFileName>resources.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
+							<stripVersion>true</stripVersion>
+							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-tests</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>scenarios</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -46,8 +148,8 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>prepare-as-dependencies</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
+						<id>prepare-as-dependencies</id>
+						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
@@ -66,12 +168,10 @@
 						<configuration>
 							<target>
 								<exec executable="docker">
-									<arg value="build" />
-									<arg value="-f" />
-									<arg value="target/classes/Dockerfile" />
-									<arg value="-t" />
-									<arg value="iaf-test-as-tomcat:${project.version}" />
-									<arg value="." />
+									<arg value="build"/>
+									<arg value="-t"/>
+									<arg value="iaf-test-as-websphere:${project.version}"/>
+									<arg value="."/>
 								</exec>
 							</target>
 						</configuration>
@@ -83,4 +183,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
