@@ -17,7 +17,7 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<version>${iaf.version}</version>
-			<type>ear</type>
+			<type>war</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
