@@ -23,6 +23,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -139,7 +140,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 
 	@Override
-	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
 		String prefix = folder != null ? folder + "/" : "";
 		try {
@@ -167,7 +168,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 			} 
 		}
 
-		return list.iterator();
+		return FileSystemUtils.getDirectoryStream(list.iterator());
 	}
 
 	@Override

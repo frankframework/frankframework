@@ -20,6 +20,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -230,8 +231,8 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 
 	@Override
-	public Iterator<String> listFiles(String folder) throws FileSystemException {
-		return new FilesIterator(folder, diskShare.list(folder));
+	public DirectoryStream<String> listFiles(String folder) throws FileSystemException {
+		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, diskShare.list(folder)));
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -340,17 +341,19 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						}
 					}
 				}
-				Iterator<F> fileList = fileSystem.listFiles(folder);
-				int count = 0;
-				XmlBuilder dirXml = new XmlBuilder("directory");
-				while (fileList.hasNext()) {
-					F fileObject = fileList.next();
-					dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
-					count++;
-				}
-				dirXml.addAttribute("count", count);
+				try(DirectoryStream<F> ds = fileSystem.listFiles(folder)){
+					Iterator<F> fileList = ds.iterator();
+					int count = 0;
+					XmlBuilder dirXml = new XmlBuilder("directory");
+					while (fileList.hasNext()) {
+						F fileObject = fileList.next();
+						dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
+						count++;
+					}
+					dirXml.addAttribute("count", count);
 
-				return dirXml.toXML();
+					return dirXml.toXML();
+				}
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
 				if (fileSystem.exists(file)) {

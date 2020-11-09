@@ -25,10 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
@@ -40,6 +36,9 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
@@ -111,11 +110,6 @@ public class IbisApplicationContext {
 			if(parentContext != null) {
 				log.debug("found Spring rootContext ["+parentContext+"]");
 				applicationContext.setParent(parentContext);
-
-				// We need to set the SpringBus here, because on WebSphere the IbisApplicationInitalizer is ran from a different ClassLoader.
-				// This causes the WebServiceListeners register them selves on a different (newly created) SpringBus instead of the Ibis one.
-				SpringBus bus = (SpringBus) parentContext.getBean("cxf");
-				BusFactory.setDefaultBus(bus);
 			}
 			applicationContext.refresh();
 		} catch (BeansException be) {

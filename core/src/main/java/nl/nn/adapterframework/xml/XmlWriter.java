@@ -180,7 +180,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				if (inCdata || !outputEscaping) {
 					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
+					writer.append(XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
 				}
 			}
 		} catch (IOException e) {

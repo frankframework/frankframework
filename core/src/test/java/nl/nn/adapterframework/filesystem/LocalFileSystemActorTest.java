@@ -4,7 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -14,7 +14,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
-public class LocalFileSystemActorTest extends FileSystemActorTest<File, LocalFileSystem>{
+public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
 
 	public TemporaryFolder folder;
 
