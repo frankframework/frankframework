@@ -180,7 +180,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
+		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
 	@Override
