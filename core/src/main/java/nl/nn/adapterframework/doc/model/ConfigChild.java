@@ -15,6 +15,7 @@ public class ConfigChild {
 	private @Getter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
+	private @Getter @Setter boolean deprecated;
 	private @Getter @Setter String syntax1Name;
 
 	ConfigChild(FrankElement configParent) {

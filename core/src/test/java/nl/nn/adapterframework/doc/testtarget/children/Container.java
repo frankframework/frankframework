@@ -7,6 +7,11 @@ public class Container extends ContainerParent {
 	public void setChild(Child child) {
 	}
 
+	@Deprecated
+	@IbisDoc("200")
+	public void setDeprecatedChild(Child child) {
+	}
+
 	@Override
 	public void registerInheritedChild(InheritedChild inheritedChild) {
 		super.registerInheritedChild(inheritedChild);

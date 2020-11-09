@@ -37,6 +37,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertEquals(100, actual.getSequenceInConfig());
 		assertFalse(actual.isAllowMultiple());
+		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 	}
 
@@ -49,6 +50,18 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
+	public void whenConfigChildMethodDeprecatedThenConfigChildDeprecated() {
+		ConfigChild actual = selectChild("syntax1NameDeprecatedChild");
+		assertEquals("syntax1NameDeprecatedChild", actual.getSyntax1Name());
+		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Child", actual.getElementType().getSimpleName());
+		assertEquals(200, actual.getSequenceInConfig());
+		assertFalse(actual.isAllowMultiple());
+		assertTrue(actual.isDeprecated());
+		assertFalse(actual.isMandatory());
+	}
+
+	@Test
 	public void whenChildSetterInheritedThenConfigChildProduced() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChild");
 		assertEquals("syntax1NameInheritedChild", actual.getSyntax1Name());
@@ -56,6 +69,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertEquals(50, actual.getSequenceInConfig());
 		assertTrue(actual.isAllowMultiple());
+		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 	}
 
@@ -68,6 +82,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals(70, actual.getSequenceInConfig());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isMandatory());
+		assertFalse(actual.isDeprecated());
 	}
 
 	@Test
@@ -77,10 +92,11 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
 		assertEquals(10, actual.getSequenceInConfig());
+		assertFalse(actual.isDeprecated());
 	}
 
 	@Test
 	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(4, configChildren.size());
+		assertEquals(5, configChildren.size());
 	}
 }

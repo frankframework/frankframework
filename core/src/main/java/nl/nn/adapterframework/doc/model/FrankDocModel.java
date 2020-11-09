@@ -314,10 +314,16 @@ public class FrankDocModel {
 			configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
+			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
 		}
 		return result;
+	}
+
+	private boolean isDeprecated(Method m) {
+		Deprecated deprecated = AnnotationUtils.findAnnotation(m, Deprecated.class);
+		return (deprecated != null);
 	}
 
 	public void buildGroups() {

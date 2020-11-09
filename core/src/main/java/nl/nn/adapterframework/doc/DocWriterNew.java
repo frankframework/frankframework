@@ -198,7 +198,8 @@ public class DocWriterNew {
 
 	private void defineElementType(XmlBuilder schema, FrankElement frankElement) {
 		XmlBuilder complexType = addComplexType(schema, xsdTypeOf(frankElement));
-		List<ConfigChild> configChildren = new ArrayList<>(frankElement.getConfigChildren());
+		List<ConfigChild> configChildren = frankElement.getConfigChildren().stream()
+				.filter(c -> ! c.isDeprecated()).collect(Collectors.toList());
 		configChildren.sort(
 				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
 		addConfigChildren(complexType, configChildren);
@@ -243,7 +244,8 @@ public class DocWriterNew {
 	}
 
 	private void addAttributes(XmlBuilder complexType, FrankElement frankElement) {
-		List<FrankAttribute> frankAttributes = new ArrayList<>(frankElement.getAttributes());
+		List<FrankAttribute> frankAttributes = frankElement.getAttributes().stream()
+				.filter(a -> ! a.isDeprecated()).collect(Collectors.toList());
 		frankAttributes.sort((a1, a2) -> new Integer(a1.getOrder()).compareTo(new Integer(a2.getOrder())));
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			XmlBuilder attribute = addAttribute(complexType, frankAttribute.getName(), frankAttribute.getDefaultValue());
