@@ -14,7 +14,6 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
-		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
@@ -186,7 +185,7 @@
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-		 </dependencies>
+			</dependencies>
 		</profile>
 	</profiles>
 </project>
