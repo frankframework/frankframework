@@ -1,22 +1,31 @@
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.doc.model.ConfigChild;
+import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
@@ -24,14 +33,13 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class DocWriterNew {
-	private static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 
 	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
 
 	private FrankDocModel model;
 	private Map<String, String> syntax2Names;
-	private List<FrankElement> sortedFrankElements;
+	List<SortKeyForXsd> xsdSortOrder;
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -43,8 +51,10 @@ public class DocWriterNew {
 		for(List<FrankElement> partition: simpleNamePartitions.values()) {
 			syntax2Names.putAll(chooseSyntax2Names(partition));
 		}
-		sortedFrankElements = breadthFirstSort(model.getAllElements(), CONFIGURATION);
-		runTimeTest();
+	}
+
+	public void init() {
+		xsdSortOrder = breadthFirstSort(CONFIGURATION);
 	}
 
 	static Map<String, String> chooseSyntax2Names(List<FrankElement> elementPartition) {
@@ -95,101 +105,104 @@ public class DocWriterNew {
 		return items.stream().map(InfoBuilderSource::toUpperCamelCase).collect(Collectors.joining(""));
 	}
 
-	static List<FrankElement> breadthFirstSort(Map<String, FrankElement> elements, String sourceFullName) {
-		return new FrankElementBreadthFirstSorter(elements).sort(sourceFullName);
+	List<SortKeyForXsd> breadthFirstSort(String sourceFullName) {
+		return new FrankElementBreadthFirstSorter().sort(sourceFullName);
 	}
 
-	private static class FrankElementBreadthFirstSorter {		
-		private Map<String, FrankElement> elements;
-		private Set<String> available;
-		private Deque<FrankElement> processing;
-		private List<FrankElement> result;
+	private class FrankElementBreadthFirstSorter {		
+		private Set<SortKeyForXsd> available;
+		private Deque<SortKeyForXsd> processing;
+		private List<SortKeyForXsd> result;
 
-		FrankElementBreadthFirstSorter(Map<String, FrankElement> elements) {
-			this.elements = elements;
-			available = new TreeSet<>(elements.keySet());
+		FrankElementBreadthFirstSorter() {
+			available = new HashSet<>();
+			available.addAll(model.getAllTypes().values().stream()
+					.map(SortKeyForXsd::getInstance)
+					.collect(Collectors.toSet()));
+			available.addAll(model.getAllElements().values().stream()
+					.map(SortKeyForXsd::getInstance)
+					.collect(Collectors.toSet()));
 			processing = new ArrayDeque<>();
 			result = new ArrayList<>();
 		}
 
-		List<FrankElement> sort(String sourceFullName) {
-			if(! elements.containsKey(sourceFullName)) {
+		List<SortKeyForXsd> sort(String sourceFullName) {
+			if(! model.getAllElements().containsKey(sourceFullName)) {
 				log.warn(String.format("Cannot sort FrankElements because element [%s] is not known", sourceFullName));
 				return null;
 			}
-			FrankElement source = elements.get(sourceFullName);
-			take(source);
+			SortKeyForXsd sourceKey = SortKeyForXsd.getInstance(model.getAllElements().get(sourceFullName));
+			take(sourceKey);
 			while(! processing.isEmpty()) {
-				FrankElement current = processing.removeFirst();
+				SortKeyForXsd current = processing.removeFirst();
 				result.add(current);
-				List<ConfigChild> configChildren = new ArrayList<>(current.getConfigChildren());
-				configChildren.sort((c1, c2) ->
-					Integer.valueOf(c1.getSequenceInConfig()).compareTo(c2.getSequenceInConfig()));
-				for(ConfigChild configChild: configChildren) {
-					Set<String> candidateFullNames = new TreeSet<>(configChild.getElementType().getMembers().keySet());
-					candidateFullNames.retainAll(available);
-					candidateFullNames.forEach(n -> take(elements.get(n)));
-				}
+				List<SortKeyForXsd> children = getSortedChildren(current);
+				children.stream().filter(available::contains).forEach(this::take);
 			}
-			result.addAll(available.stream().map(n -> elements.get(n)).collect(Collectors.toList()));
+			available.forEach(result::add);
 			return result;
 		}
 
-		private void take(FrankElement element) {
-			processing.addLast(element);
-			available.remove(element.getFullName());
+		private void take(SortKeyForXsd sortKey) {
+			processing.addLast(sortKey);
+			available.remove(sortKey);
 		}
-	}
 
-	private void runTimeTest() {
-		Set<String> originalElementFullNames = new TreeSet<>(model.getAllElements().values().stream()
-				.map(FrankElement::getFullName).collect(Collectors.toList()));
-		Set<String> sortedNames = new TreeSet<>(sortedFrankElements.stream().map(FrankElement::getFullName).collect(Collectors.toList()));
-		if(! sortedNames.equals(originalElementFullNames)) {
-			throw new IllegalStateException("Programming error detected, please debug");
+		private List<SortKeyForXsd> getSortedChildren(SortKeyForXsd parent) {
+			switch(parent.getKind()) {
+			case TYPE:
+				return getSortedTypeChildren(parent.getName());
+			default:
+				return getSortedElementChildren(parent.getName());
+			}
+		}
+
+		private List<SortKeyForXsd> getSortedTypeChildren(String typeName) {
+			ElementType elementType = model.getAllTypes().get(typeName);
+			List<FrankElement> members = new ArrayList<>(elementType.getMembers().values());
+			members.sort((c1, c2) -> syntax2Names.get(c1.getFullName())
+					.compareTo(syntax2Names.get(c2.getFullName())));
+			return members.stream().map(SortKeyForXsd::getInstance).collect(Collectors.toList());
+		}
+
+		private List<SortKeyForXsd> getSortedElementChildren(String elementName) {
+			FrankElement element = model.getAllElements().get(elementName);
+			List<ConfigChild> configChildren = new ArrayList<>(element.getConfigChildren());
+			configChildren.sort((c1, c2) -> c1.getSyntax1Name().compareTo(c2.getSyntax1Name()));
+			return configChildren.stream()
+					.map(ConfigChild::getElementType)
+					.map(SortKeyForXsd::getInstance)
+					.collect(Collectors.toList());
 		}
 	}
 
 	public String getSchema() {
-		XmlBuilder schema;
-		schema = new XmlBuilder("schema", "xs", XML_SCHEMA_URI);
-		schema.addAttribute("xmlns:xs", XML_SCHEMA_URI);
-		schema.addAttribute("elementFormDefault", "qualified");
+		XmlBuilder schema = getXmlSchema();
 		addElement(schema, "Configuration", "ConfigurationType");
 		defineAllTypes(schema);
 		return schema.toXML(true);
 	}
 
-	private static void addElement(XmlBuilder context, String elementName, String elementType) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		context.addSubElement(element);
-	}
-
 	private void defineAllTypes(XmlBuilder schema) {
-		sortedFrankElements.forEach(elem -> defineXsdType(schema, elem));
+		for(SortKeyForXsd item: xsdSortOrder) {
+			switch(item.getKind()) {
+			case ELEMENT:
+				defineElementType(schema, model.getAllElements().get(item.getName()));
+				break;
+			case TYPE:
+				defineTypeType(schema, model.getAllTypes().get(item.getName()));
+				break;
+			}
+		}
 	}
 
-	private void defineXsdType(XmlBuilder schema, FrankElement frankElement) {
+	private void defineElementType(XmlBuilder schema, FrankElement frankElement) {
 		XmlBuilder complexType = addComplexType(schema, xsdTypeOf(frankElement));
 		List<ConfigChild> configChildren = new ArrayList<>(frankElement.getConfigChildren());
 		configChildren.sort(
 				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
 		addConfigChildren(complexType, configChildren);
-		addAttributes(complexType, frankElement);
-	}
-
-	private static XmlBuilder addComplexType(XmlBuilder schema, String complexTypeName) {
-		XmlBuilder complexType;
-		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
-		complexType.addAttribute("name", complexTypeName);
-		schema.addSubElement(complexType);
-		return complexType;
-	}
-
-	private String xsdTypeOf(FrankElement element) {
-		return syntax2Names.get(element.getFullName()) + "Type";
+		addAttributes(complexType, frankElement);		
 	}
 
 	private void addConfigChildren(XmlBuilder complexType, List<ConfigChild> children) {
@@ -201,36 +214,16 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
-		List<FrankElement> frankElementOptions = new ArrayList<>(child.getElementType().getMembers().values());
-		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
-		if(frankElementOptions.size() == 1) {
-			FrankElement frankElement = frankElementOptions.get(0);
-			String syntax2Name = syntax2Names.get(frankElement.getFullName());
-			String xsdType = xsdTypeOf(frankElement);
-			addElement(context, syntax2Name, xsdType, getMinOccurs(child), getMaxOccurs(child));
-		}
-		else {
-			XmlBuilder choice = addChoice(context, getMinOccurs(child), getMaxOccurs(child));
-			for(FrankElement frankElement: frankElementOptions) {
-				String syntax2Name = syntax2Names.get(frankElement.getFullName());
-				String xsdType = xsdTypeOf(frankElement);
-				addElement(choice, syntax2Name, xsdType);
-			}
-		}
+		addElement(context, xsdFieldName(child), xsdTypeOf(child.getElementType()),
+				getMinOccurs(child), getMaxOccurs(child));
 	}
 
-	private static void addElement(
-			XmlBuilder context,
-			String elementName,
-			String elementType,
-			String minOccurs,
-			String maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		element.addAttribute("minOccurs", minOccurs);
-		element.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(element);
+	private String xsdFieldName(ConfigChild configChild) {
+		return InfoBuilderSource.toUpperCamelCase(configChild.getSyntax1Name());
+	}
+
+	private String xsdTypeOf(ElementType elementType) {
+		return elementType.getSimpleName() + "CombinationType";
 	}
 
 	private String getMinOccurs(ConfigChild child) {
@@ -248,20 +241,6 @@ public class DocWriterNew {
 			return "1";
 		}
 	}
-	
-	private static XmlBuilder addChoice(XmlBuilder context, String minOccurs, String maxOccurs) {
-		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
-		choice.addAttribute("minOccurs", minOccurs);
-		choice.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(choice);
-		return choice;
-	}
-
-	private XmlBuilder addSequence(XmlBuilder context) {
-		XmlBuilder sequence = new XmlBuilder("sequence", "xs", XML_SCHEMA_URI);
-		context.addSubElement(sequence);
-		return sequence;
-	}
 
 	private void addAttributes(XmlBuilder complexType, FrankElement frankElement) {
 		List<FrankAttribute> frankAttributes = new ArrayList<>(frankElement.getAttributes());
@@ -274,22 +253,19 @@ public class DocWriterNew {
 		}
 	}
 
-	private XmlBuilder addAttribute(XmlBuilder context, String name, String defaultValue) {
-		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
-		attribute.addAttribute("name", name);
-		attribute.addAttribute("type", "xs:string");
-		if(defaultValue != null) {
-			attribute.addAttribute("default", defaultValue);
-		}
-		context.addSubElement(attribute);
-		return attribute;
+	private void defineTypeType(XmlBuilder schema, ElementType elementType) {
+		XmlBuilder complexType = addComplexType(schema, xsdTypeOf(elementType));
+		XmlBuilder choice = addChoice(complexType);
+		List<FrankElement> frankElementOptions = new ArrayList<>(elementType.getMembers().values());
+		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
+		for(FrankElement frankElement: frankElementOptions) {
+			String syntax2Name = syntax2Names.get(frankElement.getFullName());
+			String xsdType = xsdTypeOf(frankElement);
+			addElement(choice, syntax2Name, xsdType);
+		}		
 	}
 
-	private void addDocumentation(XmlBuilder context, String description) {
-		XmlBuilder annotation = new XmlBuilder("annotation", "xs", XML_SCHEMA_URI);
-		context.addSubElement(annotation);
-		XmlBuilder documentation = new XmlBuilder("documentation", "xs", XML_SCHEMA_URI);
-		annotation.addSubElement(documentation);
-		documentation.setValue(description);
+	private String xsdTypeOf(FrankElement element) {
+		return syntax2Names.get(element.getFullName()) + "Type";
 	}
 }
