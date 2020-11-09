@@ -185,8 +185,8 @@
 					<groupId>org.ibissource</groupId>
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
-			 </dependency>
-			</dependencies>
+			</dependency>
+		 </dependencies>
 		</profile>
 	</profiles>
 </project>
