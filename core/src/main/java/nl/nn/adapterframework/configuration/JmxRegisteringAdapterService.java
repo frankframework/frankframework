@@ -36,7 +36,9 @@ import nl.nn.adapterframework.core.IAdapter;
 
 /**
  * This implementation of {@link IAdapterService} registers the adapters to a JMX server.
-
+ * 
+ * NOTE: Using the PlatformMBeanServer on WebSphere changes ObjectNames on registration.
+ * 
  * @author Niels Meijer
  */
 public class JmxRegisteringAdapterService extends AdapterService implements InitializingBean {
@@ -59,8 +61,8 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 		synchronized(registeredAdapters) {
 			ObjectName name = mBeanManager.registerManagedResource(adapter);
 			registeredAdapters.put(adapter, name);
+			log.info("adapter [" + adapter.getName() + "] objectName ["+name+"] registered to the JMX server");
 		}
-		log.info("adapter [" + adapter.getName() + "] registered to the JMX server");
 	}
 
 	@Override
@@ -70,7 +72,7 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 		synchronized(registeredAdapters) {
 			ObjectName name = registeredAdapters.remove(adapter);
 			if(!mBeanManager.getServer().isRegistered(name)) {
-				log.debug("unable to locate the registered MBean ["+name+"] on MBeanServer, try to query and manually unregister it");
+				log.debug("unable to locate the registered MBean ["+name+"] on the JMX server, try to query and manually unregister it");
 				for(ObjectName mbean : queryMBean(name)) {
 					manuallyRemoveMBean(mbean);
 				}
