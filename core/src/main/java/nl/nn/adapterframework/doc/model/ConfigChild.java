@@ -17,6 +17,7 @@ public class ConfigChild {
 	private @Getter @Setter boolean allowMultiple;
 	private @Getter @Setter boolean deprecated;
 	private @Getter @Setter String syntax1Name;
+	private @Getter FrankElement overriddenFrom;
 
 	ConfigChild(FrankElement configParent) {
 		this.configParent = configParent;
@@ -48,5 +49,23 @@ public class ConfigChild {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Calculate property overriddenFrom. Assumes that overriddenFrom has been
+	 * set already for all ancestors in the FrankElement inheritance hierarchy.
+	 */
+	public void calculateOverriddenFrom() {
+		if(configParent.getParent() != null) {
+			ConfigChildKey key = new ConfigChildKey(this);
+			ConfigChild match = configParent.getParent().find(key);
+			if(match != null) {
+				if(match.overriddenFrom != null) {
+					this.overriddenFrom = match.overriddenFrom;
+				} else {
+					this.overriddenFrom = match.configParent;
+				}
+			}
+		}
 	}
 }

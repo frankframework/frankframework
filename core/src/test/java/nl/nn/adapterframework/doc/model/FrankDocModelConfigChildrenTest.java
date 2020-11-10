@@ -2,6 +2,7 @@ package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -16,9 +17,11 @@ import nl.nn.adapterframework.doc.Utils;
 
 public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER = "nl.nn.adapterframework.doc.testtarget.children.Container";
+	private static String CONTAINER_DERIVED = "nl.nn.adapterframework.doc.testtarget.children.ContainerDerived";
 
 	private FrankDocModel instance;
 	private List<ConfigChild> configChildren;
+	private List<ConfigChild> configChildrenOfDerived;
 
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
@@ -26,7 +29,11 @@ public class FrankDocModelConfigChildrenTest {
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER));
+		instance.findOrCreateElementType(
+				Utils.getClass(CONTAINER_DERIVED));
+		instance.setConfigChildrenOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren();
+		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren();
 	}
 
 	@Test
@@ -39,6 +46,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
+		assertNull(actual.getOverriddenFrom());
 	}
 
 	private ConfigChild selectChild(String name) {
@@ -59,6 +67,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isAllowMultiple());
 		assertTrue(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
+		assertNull(actual.getOverriddenFrom());
 	}
 
 	@Test
@@ -71,6 +80,8 @@ public class FrankDocModelConfigChildrenTest {
 		assertTrue(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
+		// The method in the parent is protected, so not overridden
+		assertNull(actual.getOverriddenFrom());
 	}
 
 	@Test
@@ -83,6 +94,8 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isMandatory());
 		assertFalse(actual.isDeprecated());
+		// The method in the parent is protected, so not overridden
+		assertNull(actual.getOverriddenFrom());
 	}
 
 	@Test
@@ -93,10 +106,21 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
 		assertEquals(10, actual.getSequenceInConfig());
 		assertFalse(actual.isDeprecated());
+		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 	}
 
 	@Test
 	public void onlyWantedConfigChildrenProduced() {
 		assertEquals(5, configChildren.size());
+	}
+
+	@Test
+	public void whenConfigChildOverriddenTwiceTheGrandparentTaken() {
+		List<ConfigChild> grandChildList = configChildrenOfDerived.stream()
+				.filter(c -> c.getSyntax1Name().equals("syntax1NameInheritedChildDocWithOrderOverride"))
+				.collect(Collectors.toList());
+		assertEquals(1, grandChildList.size());
+		ConfigChild grandChild = grandChildList.get(0);
+		assertEquals("ContainerParent", grandChild.getOverriddenFrom().getSimpleName());
 	}
 }

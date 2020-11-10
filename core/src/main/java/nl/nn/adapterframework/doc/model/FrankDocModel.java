@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
 			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
+			result.setConfigChildrenOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -362,6 +364,18 @@ public class FrankDocModel {
 		groups = new HashMap<>();
 		for(String groupName: groupsBase.keySet()) {
 			groups.put(groupName, groupsBase.get(groupName).get(0));
+		}
+	}
+
+	public void setConfigChildrenOverriddenFrom() {
+		Set<String> remainingElements = allElements.values().stream().map(FrankElement::getFullName).collect(Collectors.toSet());
+		while(! remainingElements.isEmpty()) {
+			FrankElement current = allElements.get(remainingElements.iterator().next());
+			while((current.getParent() != null) && (remainingElements.contains(current.getParent().getFullName()))) {
+				current = current.getParent();
+			}
+			current.getConfigChildren().forEach(ConfigChild::calculateOverriddenFrom);
+			remainingElements.remove(current.getFullName());
 		}
 	}
 }

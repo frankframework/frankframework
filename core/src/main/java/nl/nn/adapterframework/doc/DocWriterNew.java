@@ -7,6 +7,8 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ public class DocWriterNew {
 	private FrankDocModel model;
 	private Map<String, String> syntax2Names;
 	List<SortKeyForXsd> xsdSortOrder;
+	private XmlBuilder xsdRoot;
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -167,51 +170,104 @@ public class DocWriterNew {
 
 		private List<SortKeyForXsd> getSortedElementChildren(String elementName) {
 			FrankElement element = model.getAllElements().get(elementName);
-			List<ConfigChild> configChildren = new ArrayList<>(element.getConfigChildren());
+			List<ConfigChild> configChildren = getNewConfigChildren(element);
 			configChildren.sort((c1, c2) -> c1.getSyntax1Name().compareTo(c2.getSyntax1Name()));
-			return configChildren.stream()
+			List<SortKeyForXsd> result = configChildren.stream()
 					.map(ConfigChild::getElementType)
 					.map(SortKeyForXsd::getInstance)
 					.collect(Collectors.toList());
+			if(isParentSortElementChild(element, result)) {
+				result.add(SortKeyForXsd.getInstance(element.getParent()));
+			}
+			return result;
+		}
+
+		private boolean isParentSortElementChild(FrankElement container, List<SortKeyForXsd> otherChildren) {
+			FrankElement parent = container.getParent();
+			if(parent == null) {
+				return false;
+			}
+			Set<String> otherConfigChildNames = otherChildren.stream()
+					.map(SortKeyForXsd::getName).collect(Collectors.toSet());
+			return ! otherConfigChildNames.contains(parent.getFullName());
 		}
 	}
 
-	public String getSchema() {
-		XmlBuilder schema = getXmlSchema();
-		addElement(schema, "Configuration", "ConfigurationType");
-		defineAllTypes(schema);
-		return schema.toXML(true);
+	private static List<ConfigChild> getNewConfigChildren(FrankElement element) {
+		return element.getConfigChildren().stream()
+				.filter(c -> c.getOverriddenFrom() == null)
+				.filter(c -> ! c.isDeprecated())
+				.collect(Collectors.toList());
 	}
 
-	private void defineAllTypes(XmlBuilder schema) {
+	public String getSchema() {
+		xsdRoot = getXmlSchema();
+		addElement(xsdRoot, "Configuration", "ConfigurationType");
+		defineAllTypes();
+		return xsdRoot.toXML(true);
+	}
+
+	private void defineAllTypes() {
 		for(SortKeyForXsd item: xsdSortOrder) {
 			switch(item.getKind()) {
 			case ELEMENT:
-				defineElementType(schema, model.getAllElements().get(item.getName()));
+				defineElementType(model.getAllElements().get(item.getName()));
 				break;
 			case TYPE:
-				defineTypeType(schema, model.getAllTypes().get(item.getName()));
+				defineTypeType(model.getAllTypes().get(item.getName()));
 				break;
 			}
 		}
 	}
 
-	private void defineElementType(XmlBuilder schema, FrankElement frankElement) {
-		XmlBuilder complexType = addComplexType(schema, xsdTypeOf(frankElement));
-		List<ConfigChild> configChildren = frankElement.getConfigChildren().stream()
-				.filter(c -> ! c.isDeprecated()).collect(Collectors.toList());
+	private void defineElementType(FrankElement frankElement) {
+		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(frankElement));
+		List<ConfigChild> configChildren = getNewConfigChildren(frankElement);
 		configChildren.sort(
 				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
-		addConfigChildren(complexType, configChildren);
+		addConfigChildren(complexType, configChildren, getFirstAncestorWithChildren(frankElement));
 		addAttributes(complexType, frankElement);		
 	}
 
-	private void addConfigChildren(XmlBuilder complexType, List<ConfigChild> children) {
-		if(children.size() == 0) {
-			return;
+	private static FrankElement getFirstAncestorWithChildren(FrankElement element) {
+		FrankElement result = element;
+		while(result.getParent() != null) {
+			result = result.getParent();
+			if(getNewConfigChildren(result).size() >= 1) {
+				return result;
+			}
 		}
-		XmlBuilder sequence = addSequence(complexType);
-		children.forEach(c -> addConfigChild(sequence, c));
+		return null;
+	}
+
+	private void addConfigChildren(XmlBuilder complexType, List<ConfigChild> children, FrankElement ancestorWithChildren) {
+		if(children.size() == 0) {
+			if(ancestorWithChildren == null) {
+				return;
+			}
+			else {
+				addGroupRef(complexType, xsdGroupNameForChildren(ancestorWithChildren));
+			}
+		}
+		else {
+			FrankElement container = children.get(0).getConfigParent();
+			addGroupRef(complexType, xsdGroupNameForChildren(container));
+			XmlBuilder group = addGroup(xsdRoot, xsdGroupNameForChildren(container));
+			if(ancestorWithChildren == null) {
+				XmlBuilder sequence = addSequence(group);
+				children.forEach(c -> addConfigChild(sequence, c));
+			}
+			else {
+				XmlBuilder outerSequence = addSequence(group);
+				XmlBuilder innerSequence = addSequence(outerSequence);
+				children.forEach(c -> addConfigChild(innerSequence, c));
+				addGroupRef(outerSequence, xsdGroupNameForChildren(ancestorWithChildren));
+			}
+		}
+	}
+
+	private String xsdGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "ChildGroup";
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
@@ -255,8 +311,8 @@ public class DocWriterNew {
 		}
 	}
 
-	private void defineTypeType(XmlBuilder schema, ElementType elementType) {
-		XmlBuilder complexType = addComplexType(schema, xsdTypeOf(elementType));
+	private void defineTypeType(ElementType elementType) {
+		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(elementType));
 		XmlBuilder choice = addChoice(complexType);
 		List<FrankElement> frankElementOptions = new ArrayList<>(elementType.getMembers().values());
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));

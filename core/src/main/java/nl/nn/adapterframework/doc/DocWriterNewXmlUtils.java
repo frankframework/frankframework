@@ -74,4 +74,18 @@ class DocWriterNewXmlUtils {
 		annotation.addSubElement(documentation);
 		documentation.setValue(description);
 	}
+
+	static XmlBuilder addGroup(XmlBuilder context, String name) {
+		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
+		context.addSubElement(group);
+		group.addAttribute("name", name);
+		return group;
+	}
+
+	static XmlBuilder addGroupRef(XmlBuilder context, String id) {
+		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
+		context.addSubElement(group);
+		group.addAttribute("ref", id);
+		return group;
+	}
 }
