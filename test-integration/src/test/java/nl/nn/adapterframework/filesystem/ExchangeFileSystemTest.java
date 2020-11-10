@@ -139,7 +139,7 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ema
 		}
 	}
 	
-	ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
+	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
 		ExchangeMailListener listener = new ExchangeMailListener();
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
 		listener.setMailAddress(mailaddress);
@@ -163,6 +163,7 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ema
 		if (!fileSystem.folderExists(inProcessFolder)) {
 			fileSystem.createFolder(inProcessFolder);
 		}
+		String messageId = (String)fileSystem.getAdditionalFileProperties(orgMsg).get("Message-ID");
 
 		ExchangeMailListener listener1 = getConfiguredListener(sourceFolder, null);
 		ExchangeMailListener listener2 = getConfiguredListener(sourceFolder, inProcessFolder);
@@ -180,6 +181,8 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ema
 		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
 		
 		assertEquals(msgId1, msgId2);
+		
+		assertEquals(messageId, msgId2);
 	}
 	
 }
