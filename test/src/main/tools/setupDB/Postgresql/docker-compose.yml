@@ -3,9 +3,5 @@ services:
   db:
     image: iaf-test-db-postgresql
     restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: testiaf_user00
-      POSTGRES_USER: testiaf_user
-      POSTGRES_DB: testiaf
     ports:
       - 5432:5432
