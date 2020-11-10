@@ -15,17 +15,26 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
 import java.util.Map;
 
-import microsoft.exchange.webservices.data.core.service.item.Item;
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.FileSystemUtils;
+import nl.nn.adapterframework.filesystem.IMailFileSystem;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
@@ -56,9 +65,10 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination {
+public class ExchangeMailListener extends FileSystemListener<EmailMessage,ExchangeFileSystem> implements HasPhysicalDestination {
 
 	public final String EMAIL_MESSAGE_TYPE="email";
+	public final String MIME_MESSAGE_TYPE="mime";
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 	
 	private String storeEmailAsStreamInSessionKey;
@@ -66,6 +76,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	
 	{
 		setMessageType(EMAIL_MESSAGE_TYPE);
+		setMessageIdProperty(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 	
 	@Override
@@ -75,13 +86,33 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 
 	@Override
-	public Message extractMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(EmailMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
+			try {
+				return getFileSystem().getMimeContent(rawMessage);
+			} catch (FileSystemException e) {
+				throw new ListenerException("cannot get MimeContents",e);
+			}
+		}
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, threadContext);
 		}
-		return getFileSystem().extractEmailMessage(rawMessage, threadContext, isSimple(), getStoreEmailAsStreamInSessionKey());
+		XmlWriter writer = new XmlWriter();
+		try (SaxElementBuilder emailXml = new SaxElementBuilder("email",writer)) {
+			if (isSimple()) {
+				FileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage, emailXml);
+			} else {
+				getFileSystem().extractEmail(rawMessage, emailXml);
+			}
+			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
+				Message mimeContent = getFileSystem().getMimeContent(rawMessage);
+				threadContext.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
+			}
+		} catch (SAXException | IOException | FileSystemException e) {
+			throw new ListenerException(e);
+		}
+		return new Message(writer.toString());
 	}
-
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'outputFolder' has been replaced by 'processedFolder'")
@@ -189,6 +220,5 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	public String getStoreEmailAsStreamInSessionKey() {
 		return storeEmailAsStreamInSessionKey;
 	}
-
 
 }

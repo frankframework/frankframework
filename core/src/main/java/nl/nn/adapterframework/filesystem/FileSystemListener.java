@@ -52,6 +52,8 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	
+	public final String ORIGINAL_FILENAME_KEY = "originalFilename";
 
 	private String name;
 	private String inputFolder;
@@ -66,6 +68,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private int numberOfBackups=0;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
+	private String messageIdProperty = null;
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -187,6 +190,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
+					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				}
@@ -269,13 +273,27 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		try {
 			FS fileSystem = getFileSystem();
 			F file = rawMessage;
-			filename=fileSystem.getName(file);
-			String messageId=fileSystem.getCanonicalName(file);
+			filename=fileSystem.getName(rawMessage);
+			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
+			String messageId = null;
+			if (StringUtils.isNotEmpty(getMessageIdProperty())) {
+				if (attributes != null) {
+					messageId = (String)attributes.get(getMessageIdProperty());
+				}
+				if (StringUtils.isEmpty(messageId)) {
+					log.warn("no attribute ["+getMessageIdProperty()+"] found, will use filename as messageId");
+				}
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
+				if (StringUtils.isEmpty(messageId)) {
+					messageId = fileSystem.getName(rawMessage);
+				}
+			}
 			if (isFileTimeSensitive()) {
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
 			PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
-			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {
 				threadContext.putAll(attributes);
 			}
@@ -457,4 +475,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return minStableTime;
 	}
 
+	@IbisDoc({"14", "Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
+	public void setMessageIdProperty(String messageIdProperty) {
+		this.messageIdProperty = messageIdProperty;
+	}
+	public String getMessageIdProperty() {
+		return messageIdProperty;
+	}
 }
