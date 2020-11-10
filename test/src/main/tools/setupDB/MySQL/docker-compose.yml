@@ -3,7 +3,7 @@ services:
   mysqlserver:
     image: iaf-test-db-mysql
     command: --default-authentication-plugin=mysql_native_password
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: MySqlRootPassword
       innodb_lock_wait_timeout: 5
