@@ -98,7 +98,7 @@
 		<property name="assembler">
 			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
 		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
 	</bean>
 
 	<bean

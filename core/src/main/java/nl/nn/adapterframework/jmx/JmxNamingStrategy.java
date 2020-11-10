@@ -34,6 +34,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 
 	private final Logger log = LogUtil.getLogger(this);
 	private String jmxDomain = null;
+	private static final String ILLEGAL_CHARACTER_REGEX = "[=:,*?]";
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -62,14 +63,13 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 				if (StringUtils.isNotEmpty(config.getVersion())) {
 					version = config.getVersion();
 				} else {
-					version = Integer.toHexString(this.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
+					version = Integer.toHexString(config.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
 				}
-				properties.put("type", String.format("%s-%s", config.getName(), version).replaceAll("[=:,]", "_"));
+				properties.put("type", String.format("%s-%s", config.getName(), version).replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
 			} else { //if configuration is null (for whatever reason) we need to be able to differentiate adapters in between reloads.
 				properties.put("identity", Integer.toHexString(adapter.hashCode()));
 			}
-			properties.put("name", adapter.getName().replaceAll("[=:,]", "_"));
-
+			properties.put("name", adapter.getName().replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
 			ObjectName name = new ObjectName(jmxDomain, properties);
 			if(log.isDebugEnabled()) log.debug("determined ObjectName ["+name+"] for MBean ["+managedBean+"]");
 			return name;
