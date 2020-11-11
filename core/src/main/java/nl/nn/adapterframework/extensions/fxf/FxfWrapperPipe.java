@@ -66,6 +66,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String flowId;
 	private String environment;
 	private boolean transformFilename = true;
+	private String filePath = "";
 	private String fxfVersion = "3.1";
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
@@ -129,6 +130,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
 			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/ClientFilename", "text", false, getParameterList());
 		}
+		if (StringUtils.isNotEmpty(getFilePath()) && !getFilePath().endsWith("/")) {
+			setFilePath(getFilePath()+"/");
+		}
 		if (!getFxfVersion().equals("3.1") && !getFxfVersion().equals("3.2")) {
 			throw new ConfigurationException("illegal value for fxfVersion ["
 					+ getFxfVersion() + "], must be '3.1' or '3.2'");
@@ -189,7 +193,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 					String filenameOnIufState = "/opt/data/FXF/" + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
 					xmlFilename.setValue(filenameOnIufState);
 				} else {
-					xmlFilename.setValue(filename);
+					xmlFilename.setValue(getFilePath()+filename);
 				}
 			}
 			xmlTransferDetails.addSubElement(xmlFilename);
@@ -240,21 +244,27 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
+	public void setFlowId(String flowId) {
+		this.flowId = flowId;
+	}
 	public String getFlowId() {
 		return flowId;
 	}
 
-	public void setFlowId(String flowId) {
-		this.flowId = flowId;
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
 	}
-
-	public boolean isTransformFilename() {
-		return transformFilename;
+	public String getFilePath() {
+		return filePath;
 	}
 
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
+	public boolean isTransformFilename() {
+		return transformFilename;
+	}
+
 
 	public String getSoapBodySessionKey() {
 		return soapBodySessionKey;
