@@ -24,6 +24,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -121,5 +122,13 @@ public class TestAssertions extends org.junit.Assert {
 		String str2 = str1.replace("\r", "");
 
 		assertEqualsIgnoreWhitespaces(str1, str2);
+	}
+
+	public static boolean isTestRunningOnTravis() {
+		return StringUtils.isNotEmpty(System.getProperty("TRAVIS_CI_USER")) || StringUtils.isNotEmpty(System.getenv("TRAVIS_CI_USER"));
+	}
+
+	public static boolean isTestRunningOnWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
 	}
 }
