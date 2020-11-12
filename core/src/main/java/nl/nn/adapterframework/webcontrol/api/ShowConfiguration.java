@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -60,6 +61,9 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
@@ -73,6 +77,8 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 @Path("/")
 public final class ShowConfiguration extends Base {
 	@Context SecurityContext securityContext;
+
+	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -203,7 +209,7 @@ public final class ShowConfiguration extends Base {
 		if(stateCount.containsKey(RunStateEnum.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
-		if(errors.size() > 0)
+		if(!errors.isEmpty())
 			response.put("errors", errors);
 		response.put("status", status);
 
@@ -436,26 +442,28 @@ public final class ShowConfiguration extends Base {
 			}
 		}
 
-		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, configurationName);
 					try (ResultSet rs = stmt.executeQuery()) {
 						while (rs.next()) {
-							Map<String, Object> config = new HashMap<String, Object>();
+							Map<String, Object> config = new HashMap<>();
 							config.put("name", rs.getString(1));
 							config.put("version", rs.getString(2));
 							config.put("filename", rs.getString(3));
 							config.put("user", rs.getString(4));
 							config.put("active", rs.getBoolean(5));
 							config.put("autoreload", rs.getBoolean(6));
-							config.put("created", rs.getString(7));
+
+							Date creationDate = rs.getDate(7);
+							config.put("created", DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME));
 							returnMap.add(config);
 						}
 					}
@@ -466,6 +474,18 @@ public final class ShowConfiguration extends Base {
 		} finally {
 			qs.close();
 		}
+
+		returnMap.sort(new NameComparatorBase<Map<String, Object>>() {
+
+			@Override
+			public int compare(Map<String, Object> obj1, Map<String, Object> obj2) {
+				String filename1 = (String) obj1.get(orderBy);
+				String filename2 = (String) obj2.get(orderBy);
+
+				return -compareNames(filename1, filename2); //invert the results as we want the latest version first
+			}
+
+		});
 		return returnMap;
 	}
 }
