@@ -76,7 +76,7 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ema
 	public void testExtractNormalMessageSimple() throws Exception {
 		EmailMessage emailMessage = getFirstFileFromFolder(null);
 		SaxElementBuilder xml = new SaxElementBuilder("email");
-		FileSystemUtils.addEmailInfoSimple(fileSystem, emailMessage, xml);
+		MailFileSystemUtils.addEmailInfoSimple(fileSystem, emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalSimple.xml");
 		MatchUtils.assertXmlEquals(expected, xml.toString());

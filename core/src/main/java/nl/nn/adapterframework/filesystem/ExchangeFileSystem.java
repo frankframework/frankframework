@@ -340,6 +340,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 
 					@Override
 					public EmailMessage next() {
+						// must cast <Items> to <EmailMessage> separately, cannot cast Iterator<Item> to Iterator<EmailMessage> 
 						return (EmailMessage)itemIterator.next();
 					}
 					
@@ -570,14 +571,14 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	}
 
 	@Override
-	public EmailMessage getFileFromAttachment(Attachment a) throws FileSystemException {
-		if (a instanceof ItemAttachment) {
-			ItemAttachment ia = (ItemAttachment) a;
-			Item aItem = ia.getItem();
-			if (aItem instanceof EmailMessage) {
-				return (EmailMessage) aItem;
+	public EmailMessage getFileFromAttachment(Attachment attachment) throws FileSystemException {
+		if (attachment instanceof ItemAttachment) {
+			Item item = ((ItemAttachment) attachment).getItem();
+			if (item instanceof EmailMessage) {
+				return (EmailMessage) item;
 			}
 		}
+		// Attachment is not an EmailMessage itself, no need to parse further, can just return null
 		return null;
 	}
 
@@ -754,7 +755,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 						EmailMessageSchema.Body, EmailMessageSchema.Attachments);
 				emailMessage.load(ps);
 			}
-			FileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
+			MailFileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -764,7 +765,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	public void extractAttachment(Attachment attachment, SaxElementBuilder attachmentsXml) throws FileSystemException {
 		try {
 			attachment.load();
-			FileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
+			MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}

@@ -17,19 +17,14 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -206,63 +201,4 @@ public class FileSystemUtils {
 		}
 	}
 
-	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
-		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
-	}
-
-	public static <M,A> void addEmailInfo(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
-		try (SaxElementBuilder recipientsXml = emailXml.startElement("recipients")) {
-			for(String address:fileSystem.getToRecipients(emailMessage)) {
-				recipientsXml.addElement("recipient", "type", "to", address);
-			}
-			for(String address:fileSystem.getCCRecipients(emailMessage)) {
-				recipientsXml.addElement("recipient", "type", "cc", address);
-			}
-			for(String address:fileSystem.getBCCRecipients(emailMessage)) {
-				recipientsXml.addElement("recipient", "type", "bcc", address);
-			}
-		}
-		emailXml.addElement("from", fileSystem.getFrom(emailMessage));
-		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
-		emailXml.addElement("message", fileSystem.getMessageBody(emailMessage));
-		try (SaxElementBuilder attachmentsXml = emailXml.startElement("attachments")) {
-			for (Iterator<A> it = fileSystem.listAttachments(emailMessage); it.hasNext();) {
-				fileSystem.extractAttachment(it.next(), attachmentsXml);
-			}
-		} catch (Exception e) {
-			throw new FileSystemException("Cannot extract attachment",e);
-		}
-		try (SaxElementBuilder headersXml = emailXml.startElement("headers")) {
-			Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-			if (properties != null) {
-				for (Map.Entry<String,Object> header: properties.entrySet()) {
-					if (header.getValue() instanceof List) {
-						for(Object value:(List<?>)header.getValue()) {
-							headersXml.addElement("header", "name", header.getKey(), (String)value);
-						}
-					} else {
-						headersXml.addElement("header", "name", header.getKey(), (String)header.getValue());
-					}
-				}
-			}
-		}
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		emailXml.addElement("dateTimeSent", sdf.format(fileSystem.getDateTimeSent(emailMessage)));
-		emailXml.addElement("dateTimeReceived", sdf.format(fileSystem.getDateTimeReceived(emailMessage)));
-	}
-
-	public static <M,A> void addAttachmentInfo(IMailFileSystem<M,A> fileSystem, A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException {
-		try (SaxElementBuilder attachmentXml = attachmentsXml.startElement("attachment")) {
-			attachmentXml.addAttribute("name", fileSystem.getAttachmentName(attachment));
-			String filename = fileSystem.getAttachmentFileName(attachment);
-			if (filename!=null) {
-				attachmentXml.addAttribute("filename", fileSystem.getAttachmentFileName(attachment));
-			}
-			M emailMessage = fileSystem.getFileFromAttachment(attachment);
-			if (emailMessage!=null) {
-				fileSystem.extractEmail(emailMessage, attachmentXml);
-			}
-		}
-	}
-	
 }
