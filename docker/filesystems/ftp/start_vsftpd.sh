@@ -32,9 +32,9 @@ for i in $USERS ; do
     UID_OPT="-u $UID"
   fi
 
-  echo -e "$PASS\n$PASS" | adduser -h $FOLDER -s /sbin/nologin $UID_OPT $NAME
-  mkdir -p $FOLDER
-  chown $NAME:$NAME $FOLDER
+  echo -e "$PASS\n$PASS" | adduser -h "$FOLDER" -s /sbin/nologin "$UID_OPT" "$NAME"
+  mkdir -p "$FOLDER"
+  chown "$NAME":"$NAME" "$FOLDER"
   unset NAME PASS FOLDER UID
 done
 

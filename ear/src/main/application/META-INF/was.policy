@@ -18,8 +18,7 @@
 * APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x                          
 */
 
-//grant codeBase "file:${application}" {
-grant {
+grant codeBase "file:${application}" {
 
 //permission java.io.FilePermission "${app.installed.path}${/}-", "read";
 permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}", "read";
@@ -163,4 +162,6 @@ permission java.security.SecurityPermission "printIdentity";
 // required for Log4j stacktrace rendering
 permission java.lang.RuntimePermission "createSecurityManager";
 
+// required for cxf
+permission java.lang.RuntimePermission "shutdownHooks";
 };
