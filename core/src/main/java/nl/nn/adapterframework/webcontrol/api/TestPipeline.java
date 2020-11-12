@@ -46,6 +46,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -124,30 +125,18 @@ public final class TestPipeline extends Base {
 	}
 
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
 		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 			String name = entry.getName();
-			int size = (int) entry.getSize();
-			if (size > 0) {
-				byte[] b = new byte[size];
-				int rb = 0;
-				int chunk = 0;
-				while (((int) size - rb) > 0) {
-					chunk = archive.read(b, rb, (int) size - rb);
-					if (chunk == -1) {
-						break;
-					}
-					rb += chunk;
-				}
-				String message = XmlUtils.readXml(b, 0, rb, fileEncoding, false);
-				if (StringUtils.isNotEmpty(result)) {
-					result += "\n";
-				}
-				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
-				result += name + ":" + lastState;
+			byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
+			String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
+			if (result.length() > 0) {
+				result.append("\n");
 			}
+			lastState = processMessage(adapter, message, writeSecLogMessage).getState();
+			result.append(name + ":" + lastState);
 			archive.closeEntry();
 		}
 		archive.close();
