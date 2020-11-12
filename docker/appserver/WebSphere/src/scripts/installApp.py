@@ -41,7 +41,7 @@ def setClassloaderMode( ear, mode ):
 
 def createSharedLibrary( name, classpath ):
 	print "creating shared library:", name
-	library = AdminConfig.create('Library', nodeId, [['name', name], ['classPath', classpath]])
+	print AdminConfig.create('Library', nodeId, [['name', name], ['classPath', classpath]])
 	return
 
 def assignSharedLibrary( ear, name ):
@@ -57,7 +57,7 @@ def assignSharedLibrary( ear, name ):
 installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war', contextRoot)
 setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
-AdminConfig.save()
+
 createSharedLibrary('frankConfig', '/work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar')
 assignSharedLibrary('adapterframework.ear', 'frankConfig')
 
