@@ -2,6 +2,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,8 +50,8 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel();
 		try {
 			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
-			result.findOrCreateElementType(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
-			result.setConfigChildrenOverriddenFrom();
+			result.findOrCreateFrankElement(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
+			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -147,7 +148,7 @@ public class FrankDocModel {
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
-		current.setConfigChildren(createConfigChildren(clazz.getMethods(), current));
+		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		return current;
 	}
 
@@ -189,6 +190,7 @@ public class FrankDocModel {
 	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
 		List<Method> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
+				.filter(m -> Modifier.isPublic(m.getModifiers()))
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());		
@@ -303,6 +305,7 @@ public class FrankDocModel {
 
 	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
+				.filter(m -> Modifier.isPublic(m.getModifiers()))
 				.filter(Utils::isConfigChildSetter)
 				.filter(m -> configChildDescriptors.get(m.getName()) != null)
 				.collect(Collectors.toList());
@@ -367,7 +370,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public void setConfigChildrenOverriddenFrom() {
+	public void setOverriddenFrom() {
 		Set<String> remainingElements = allElements.values().stream().map(FrankElement::getFullName).collect(Collectors.toSet());
 		while(! remainingElements.isEmpty()) {
 			FrankElement current = allElements.get(remainingElements.iterator().next());
@@ -375,6 +378,7 @@ public class FrankDocModel {
 				current = current.getParent();
 			}
 			current.getConfigChildren().forEach(ConfigChild::calculateOverriddenFrom);
+			current.getAttributes().forEach(FrankAttribute::calculateOverriddenFrom);
 			remainingElements.remove(current.getFullName());
 		}
 	}

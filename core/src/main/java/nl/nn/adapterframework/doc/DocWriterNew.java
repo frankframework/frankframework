@@ -1,14 +1,16 @@
 package nl.nn.adapterframework.doc;
 
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -194,10 +197,11 @@ public class DocWriterNew {
 	}
 
 	private static List<ConfigChild> getNewConfigChildren(FrankElement element) {
-		return element.getConfigChildren().stream()
+		List<ConfigChild> result = element.getConfigChildren().stream()
 				.filter(c -> c.getOverriddenFrom() == null)
 				.filter(c -> ! c.isDeprecated())
 				.collect(Collectors.toList());
+		return result;
 	}
 
 	public String getSchema() {
@@ -230,10 +234,14 @@ public class DocWriterNew {
 	}
 
 	private static FrankElement getFirstAncestorWithChildren(FrankElement element) {
+		return getFirstAncestorSatisfying(element, elem -> getNewConfigChildren(elem).size() >= 1);
+	}
+
+	private static FrankElement getFirstAncestorSatisfying(FrankElement element, Predicate<FrankElement> predicate) {
 		FrankElement result = element;
 		while(result.getParent() != null) {
 			result = result.getParent();
-			if(getNewConfigChildren(result).size() >= 1) {
+			if(predicate.test(result)) {
 				return result;
 			}
 		}
@@ -266,7 +274,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private String xsdGroupNameForChildren(FrankElement element) {
+	private static String xsdGroupNameForChildren(FrankElement element) {
 		return element.getSimpleName() + "ChildGroup";
 	}
 
@@ -275,15 +283,15 @@ public class DocWriterNew {
 				getMinOccurs(child), getMaxOccurs(child));
 	}
 
-	private String xsdFieldName(ConfigChild configChild) {
+	private static String xsdFieldName(ConfigChild configChild) {
 		return InfoBuilderSource.toUpperCamelCase(configChild.getSyntax1Name());
 	}
 
-	private String xsdTypeOf(ElementType elementType) {
+	private static String xsdTypeOf(ElementType elementType) {
 		return elementType.getSimpleName() + "CombinationType";
 	}
 
-	private String getMinOccurs(ConfigChild child) {
+	private static String getMinOccurs(ConfigChild child) {
 		if(child.isMandatory()) {
 			return "1";
 		} else {
@@ -291,7 +299,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private String getMaxOccurs(ConfigChild child) {
+	private static String getMaxOccurs(ConfigChild child) {
 		if(child.isAllowMultiple()) {
 			return "unbounded";
 		} else {
@@ -300,15 +308,51 @@ public class DocWriterNew {
 	}
 
 	private void addAttributes(XmlBuilder complexType, FrankElement frankElement) {
-		List<FrankAttribute> frankAttributes = frankElement.getAttributes().stream()
-				.filter(a -> ! a.isDeprecated()).collect(Collectors.toList());
+		List<FrankAttribute> frankAttributes = getNonDeprecatedAttributes(frankElement);
+		FrankElement ancestor = getFirstAncestorWithAttributes(frankElement);
+		if(frankAttributes.size() == 0) {
+			if(ancestor == null) {
+				return;
+			}
+			else {
+				addAttributeGroupRef(complexType, xsdGroupNameForAttributes(ancestor));
+			}
+		}
+		else {
+			String newXsdGroupName = xsdGroupNameForAttributes(frankElement);
+			addAttributeGroupRef(complexType, newXsdGroupName);
+			XmlBuilder group = addAttributeGroup(xsdRoot, newXsdGroupName);
+			addAttributeList(group, frankAttributes);
+			if(ancestor != null) {
+				addAttributeGroupRef(group, xsdGroupNameForAttributes(ancestor));
+			}
+		}
+	}
+
+	private static List<FrankAttribute> getNonDeprecatedAttributes(FrankElement element) {
+		return element.getAttributes().stream()
+				.filter(a -> ! a.isDeprecated())
+				.filter(a -> a.getOverriddenFrom() == null)
+				.collect(Collectors.toList());
+	}
+
+	private static FrankElement getFirstAncestorWithAttributes(FrankElement element) {
+		return getFirstAncestorSatisfying(element, elem -> getNonDeprecatedAttributes(elem).size() >= 1);
+	}
+
+	private static String xsdGroupNameForAttributes(FrankElement element) {
+		return element.getSimpleName() + "AttributeGroup";
+	}
+
+	private void addAttributeList(XmlBuilder context, List<FrankAttribute> originalAttributes) {
+		List<FrankAttribute> frankAttributes = new ArrayList<>(originalAttributes);
 		frankAttributes.sort((a1, a2) -> new Integer(a1.getOrder()).compareTo(new Integer(a2.getOrder())));
 		for(FrankAttribute frankAttribute: frankAttributes) {
-			XmlBuilder attribute = addAttribute(complexType, frankAttribute.getName(), frankAttribute.getDefaultValue());
+			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), frankAttribute.getDefaultValue());
 			if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
 				addDocumentation(attribute, frankAttribute.getDescription());
 			}
-		}
+		}		
 	}
 
 	private void defineTypeType(ElementType elementType) {

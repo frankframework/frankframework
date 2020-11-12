@@ -88,4 +88,18 @@ class DocWriterNewXmlUtils {
 		group.addAttribute("ref", id);
 		return group;
 	}
+
+	static XmlBuilder addAttributeGroup(XmlBuilder context, String name) {
+		XmlBuilder group = new XmlBuilder("attributeGroup", "xs", XML_SCHEMA_URI);
+		context.addSubElement(group);
+		group.addAttribute("name", name);
+		return group;
+	}
+
+	static XmlBuilder addAttributeGroupRef(XmlBuilder context, String name) {
+		XmlBuilder group = new XmlBuilder("attributeGroup", "xs", XML_SCHEMA_URI);
+		context.addSubElement(group);
+		group.addAttribute("ref", name);
+		return group;
+	}
 }

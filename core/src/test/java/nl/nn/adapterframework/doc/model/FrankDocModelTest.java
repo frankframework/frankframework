@@ -23,16 +23,20 @@ public class FrankDocModelTest {
 	private static final String LISTENER = SIMPLE + ".IListener";
 	private static final String SIMPLE_PARENT = SIMPLE + ".ListenerParent";
 	private static final String SIMPLE_CHILD = SIMPLE + ".ListenerChild";
+	private static final String SIMPLE_GRNAD_CHILD = SIMPLE + ".ListenerGrandChild";
 
 	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.testtarget.ibisdocref";
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
 	private static final String REFERRED_PARENT = IBISDOCREF + ".ParentTarget";
+	private static final String REFERRER = "nl.nn.adapterframework.doc.testtarget.ibisdocref.Referrer";
 
 	private FrankDocModel instance;
+	private FrankElement fakeAttributeOwner;
 
 	@Before
 	public void setUp() {
 		instance = new FrankDocModel();
+		fakeAttributeOwner = null;
 	}
 
 	@Test
@@ -57,9 +61,10 @@ public class FrankDocModelTest {
 		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
 		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
 		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
-		assertEquals(2, listenerMembers.size());
+		assertEquals(3, listenerMembers.size());
 		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
 		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
+		assertTrue(listenerMembers.containsKey(SIMPLE_GRNAD_CHILD));
 		Map<String, FrankElement> childMembers = actualChild.getMembers();
 		assertEquals(1, childMembers.size());
 		assertTrue(childMembers.containsKey(SIMPLE_CHILD));
@@ -80,6 +85,8 @@ public class FrankDocModelTest {
 	public void whenChildElementAddedBeforeParentThenCorrectModel() throws ReflectiveOperationException {
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
+		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
+		instance.setOverriddenFrom();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
@@ -87,6 +94,8 @@ public class FrankDocModelTest {
 	public void whenParentElementAddedBeforeChildThenCorrectModel() throws ReflectiveOperationException {
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
+		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
+		instance.setOverriddenFrom();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
@@ -101,17 +110,35 @@ public class FrankDocModelTest {
 		assertSame(actualObject, actualParent.getParent());
 		assertEquals(SIMPLE_PARENT, actualParent.getFullName());
 		assertEquals("ListenerParent", actualParent.getSimpleName());
-		assertEquals(1, actualParent.getAttributes().size());
-		FrankAttribute actualParentAttribute = actualParent.getAttributes().get(0);
+		// We check here that protected method getChildAttribute does not produce
+		// an attribute
+		assertEquals(2, actualParent.getAttributes().size());
+		FrankAttribute actualParentAttribute = actualParent.find("parentAttribute");
 		assertEquals("parentAttribute", actualParentAttribute.getName());
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
+		assertSame(actualParent, actualParentAttribute.getOwningElement());
+		assertNull(actualParentAttribute.getOverriddenFrom());
+		FrankAttribute actualInheritedAttribute = actualParent.find("inheritedAttribute");
+		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
+		assertNull(actualInheritedAttribute.getOverriddenFrom());
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(1, actualChild.getAttributes().size());
-		FrankAttribute actualChildAttribute = actualChild.getAttributes().get(0);
+		assertEquals(2, actualChild.getAttributes().size());
+		FrankAttribute actualChildAttribute = actualChild.find("childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
+		assertSame(actualChild, actualChildAttribute.getOwningElement());
 		assertSame(actualChild, actualChildAttribute.getDescribingElement());
+		assertNull(actualChildAttribute.getOverriddenFrom());
+		actualInheritedAttribute = actualChild.find("inheritedAttribute");
+		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
+		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
+		FrankElement actualGrandChild = actualAllElements.get(SIMPLE_GRNAD_CHILD);
+		assertEquals(SIMPLE_GRNAD_CHILD, actualGrandChild.getFullName());
+		assertEquals(1, actualGrandChild.getAttributes().size());
+		actualInheritedAttribute = actualGrandChild.getAttributes().get(0);
+		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
+		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
 	}
 
 	@Test
@@ -136,8 +163,8 @@ public class FrankDocModelTest {
 	 * describingElement is only correct if it is parsed from an @IbisDocRef annotation.
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws ReflectiveOperationException {
-		FrankElement dummy = new FrankElement("dummy.Dummy", "Dummy");
-		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), dummy);
+		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy");
+		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), fakeAttributeOwner);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
@@ -277,7 +304,7 @@ public class FrankDocModelTest {
 
 	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) throws ReflectiveOperationException {
 		Map<String, FrankAttribute> attributeMap =
-				getAttributesOfClass("nl.nn.adapterframework.doc.testtarget.ibisdocref.Referrer");
+				getAttributesOfClass(REFERRER);
 		assertTrue(attributeMap.containsKey(attributeName));
 		return attributeMap.get(attributeName);
 	}
@@ -313,6 +340,9 @@ public class FrankDocModelTest {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertSame(
 				instance.getAllElements().get(REFERRED_PARENT),
-				actual.getDescribingElement());		
+				actual.getDescribingElement());
+		assertSame(
+				fakeAttributeOwner,
+				actual.getOwningElement());
 	}
 }

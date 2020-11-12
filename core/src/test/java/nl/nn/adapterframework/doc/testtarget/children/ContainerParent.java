@@ -10,6 +10,9 @@ public class ContainerParent {
 	protected void setInheritedChildDocOnDerived(InheritedChildDocOnDerived child) {
 	}
 
+	public void setInheritedWithoutOverride(InheritedWithoutOverride child) {
+	}
+
 	@IbisDoc("20")
 	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
 	}

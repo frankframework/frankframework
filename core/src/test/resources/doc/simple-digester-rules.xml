@@ -6,4 +6,5 @@
   <rule pattern="*/syntax1NameInheritedChildDocOnDerived" registerMethod="setInheritedChildDocOnDerived"/>
   <rule pattern="*/syntax1NameChildNoDoc" registerMethod="setChildNoDoc"/>
   <rule pattern="*/syntax1NameInheritedChildDocWithOrderOverride" registerMethod="setInheritedChildDocWithOrderOverride"/>
+  <rule pattern="*/syntax1NameInheritedWithoutOverride" registerMethod="setInheritedWithoutOverride"/>
 </digester-rules>

@@ -31,7 +31,7 @@ public class FrankDocModelConfigChildrenTest {
 				Utils.getClass(CONTAINER));
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER_DERIVED));
-		instance.setConfigChildrenOverriddenFrom();
+		instance.setOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren();
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren();
 	}
@@ -110,17 +110,40 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
+	public void whenConfigChildOnAncestorNotOverriddenThenOmitted() {
+		checkChildNotPresent("syntax1NameInheritedWithoutOverride");
+	}
+
+	private void checkChildNotPresent(String name) {
+		boolean result = configChildren.stream()
+				.filter(c -> c.getSyntax1Name().equals(name))
+				.collect(Collectors.counting())
+				.longValue() == 0;
+		assertTrue(result);
+	}
+
+	@Test
 	public void onlyWantedConfigChildrenProduced() {
 		assertEquals(5, configChildren.size());
 	}
 
 	@Test
 	public void whenConfigChildOverriddenTwiceTheGrandparentTaken() {
+		ConfigChild grandChild = checkAndFindGrandChild("syntax1NameInheritedChildDocWithOrderOverride");
+		assertEquals("ContainerParent", grandChild.getOverriddenFrom().getSimpleName());
+	}
+
+	private ConfigChild checkAndFindGrandChild(final String syntax1Name) {
 		List<ConfigChild> grandChildList = configChildrenOfDerived.stream()
-				.filter(c -> c.getSyntax1Name().equals("syntax1NameInheritedChildDocWithOrderOverride"))
+				.filter(c -> c.getSyntax1Name().equals(syntax1Name))
 				.collect(Collectors.toList());
 		assertEquals(1, grandChildList.size());
-		ConfigChild grandChild = grandChildList.get(0);
+		return grandChildList.get(0);
+	}
+
+	@Test
+	public void whenConfigChildOverriddenFromGrandparentThenGrandparentTaken() {
+		ConfigChild grandChild = checkAndFindGrandChild("syntax1NameInheritedWithoutOverride");
 		assertEquals("ContainerParent", grandChild.getOverriddenFrom().getSimpleName());
 	}
 }

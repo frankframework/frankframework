@@ -17,7 +17,8 @@ public class FrankElement {
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
 	private @Getter @Setter FrankElement parent;
-	private @Getter @Setter List<FrankAttribute> attributes;
+	private @Getter List<FrankAttribute> attributes;
+	private Map<String, FrankAttribute> attributeLookup;
 	private @Getter List<ConfigChild> configChildren;
 	private Map<ConfigChildKey, ConfigChild> configChildLookup;
 
@@ -36,6 +37,24 @@ public class FrankElement {
 	}
 
 	/**
+	 * Setter for attributes. We prevent modifying the list of attributes
+	 * because we want to maintain the private field attributeLookup.
+	 * @param inputAttributes
+	 */
+	public void setAttributes(List<FrankAttribute> inputAttributes) {
+		this.attributes = Collections.unmodifiableList(inputAttributes);
+		attributeLookup = new HashMap<>();
+		for(FrankAttribute a: attributes) {
+			if(attributeLookup.containsKey(a.getName())) {
+				log.warn(String.format("Frank element [%s] has multiple attributes with name [%s]",
+						fullName, a.getName()));
+			} else {
+				attributeLookup.put(a.getName(), a);
+			}
+		}
+	}
+
+	/**
 	 * Setter for config children. We prevent modifying the list of config children
 	 * because we want to maintain the private field configChildLookup.
 	 * @param children
@@ -51,6 +70,10 @@ public class FrankElement {
 				configChildLookup.put(key, c);
 			}
 		}
+	}
+
+	public FrankAttribute find(String attributeName) {
+		return attributeLookup.get(attributeName);
 	}
 
 	public ConfigChild find(ConfigChildKey key) {

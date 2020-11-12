@@ -1,11 +1,16 @@
 package nl.nn.adapterframework.doc.testtarget.simple;
 
 public class ListenerChild extends ListenerParent {
+	@Override
 	public void setChildAttribute(String value) {
 	}
 
 	public String getChildAttribute() {
 		return null;
+	}
+
+	@Override
+	public void setInheritedAttribute(String value) {
 	}
 
 	public void setListener(IListener listener) {

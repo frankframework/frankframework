@@ -56,15 +56,18 @@ public class ConfigChild {
 	 * set already for all ancestors in the FrankElement inheritance hierarchy.
 	 */
 	public void calculateOverriddenFrom() {
-		if(configParent.getParent() != null) {
-			ConfigChildKey key = new ConfigChildKey(this);
-			ConfigChild match = configParent.getParent().find(key);
-			if(match != null) {
-				if(match.overriddenFrom != null) {
-					this.overriddenFrom = match.overriddenFrom;
+		ConfigChildKey key = new ConfigChildKey(this);
+		FrankElement match = configParent;
+		while(match.getParent() != null) {
+			match = match.getParent();
+			ConfigChild matchingChild = match.find(key);
+			if(matchingChild != null) {
+				if(matchingChild.overriddenFrom != null) {
+					this.overriddenFrom = matchingChild.overriddenFrom;
 				} else {
-					this.overriddenFrom = match.configParent;
+					this.overriddenFrom = match;
 				}
+				return;
 			}
 		}
 	}

@@ -17,13 +17,16 @@ public class FrankAttribute {
 	 */
 	private @Getter @Setter int order;
 	
+	private @Getter FrankElement owningElement;
 	private @Getter @Setter FrankElement describingElement;
 	private @Getter String description;
 	private @Getter String defaultValue;
 	private @Getter @Setter boolean isDeprecated;
+	private @Getter FrankElement overriddenFrom;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		this.name = name;
+		this.owningElement = attributeOwner;
 		this.describingElement = attributeOwner;
 	}
 
@@ -46,6 +49,23 @@ public class FrankAttribute {
 			description = ibisDocValues[0];
 			if (ibisDocValues.length > 1) {
 				defaultValue = ibisDocValues[1];
+			}
+		}
+	}
+
+	void calculateOverriddenFrom() {
+		FrankElement match = owningElement;
+		while(match.getParent() != null) {
+			match = match.getParent();
+			FrankAttribute matchingAttribute = match.find(name);
+			if(matchingAttribute != null) {
+				FrankElement matchOverriddenFrom = matchingAttribute.overriddenFrom;
+				if(matchOverriddenFrom != null) {
+					overriddenFrom = matchOverriddenFrom;
+				} else {
+					overriddenFrom = match;
+				}
+				return;
 			}
 		}
 	}
