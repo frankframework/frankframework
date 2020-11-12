@@ -243,6 +243,10 @@ public class ConfigurationUtils {
 		}
 	}
 
+	/**
+	 * @return true if successful SQL update
+	 * @throws ConfigurationException when SQL error occurs or filename validation fails
+	 */
 	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		ConfigurationValidator configDefails = new ConfigurationValidator(file);
 		return addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDefails.getName(), configDefails.getVersion(), fileName, configDefails.getJar(), ruser);
@@ -322,20 +326,20 @@ public class ConfigurationUtils {
 		String result = "";
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
-				int counter = 1;
 				ZipEntry zipEntry;
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
 
-					String fileName = "file_zipentry" + counter;
 					if (StringUtils.isNotEmpty(result)) {
 						result += "\n";
 					}
 
-					result += entryName + ":" + 
-					ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, fileName, zipInputStream, ruser);
-	
-					counter++;
+					try {
+						result += entryName + ":" + ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, zipInputStream, ruser);
+					} catch (ConfigurationException e) {
+						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
+						result += entryName + ":false";
+					}
 				}
 			}
 		}
