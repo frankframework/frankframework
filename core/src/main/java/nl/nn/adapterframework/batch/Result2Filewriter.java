@@ -63,7 +63,7 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	public void closeDocument(IPipeLineSession session, String streamId) {
-		File outputFile = openFiles.remove(streamId);
+		openFiles.remove(streamId);
 	}
 
 	@Override

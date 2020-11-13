@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package nl.nn.adapterframework.batch;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -31,19 +28,18 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
  * 
- * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
 public abstract class ResultWriter extends AbstractResultHandler {
+	
+	private final String WRITER_KEY_PREFIX="ResultWriter:";
 	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";
 	private String onOpenBlock="<#name#>";
 	private String onCloseBlock="</#name#>";
 	private String blockNamePattern="#name#";
-	
-	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 	
 	protected abstract Writer createWriter(IPipeLineSession session, String streamId) throws Exception;
 
@@ -56,13 +52,10 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	@Override
 	public void closeDocument(IPipeLineSession session, String streamId) {
-		Writer w = openWriters.remove(streamId);
-		if (w != null) {
-			try {
-				w.close();
-			} catch (IOException e) {
-				log.error("Exception closing ["+streamId+"]",e);
-			}
+		try (Writer w = (Writer)session.remove(WRITER_KEY_PREFIX+streamId)) {
+			w.close();
+		} catch (IOException e) {
+			log.error("Exception closing ["+streamId+"]",e);
 		}
 		super.closeDocument(session,streamId);
 	}
@@ -155,8 +148,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	protected Writer getWriter(IPipeLineSession session, String streamId, boolean create) throws Exception {
 		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
-		Writer writer;
-		writer = openWriters.get(streamId);
+		Writer writer = (Writer)session.get(WRITER_KEY_PREFIX+streamId);
 		if (writer != null) {
 			return writer;
 		}
@@ -168,8 +160,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (writer==null) {
 			throw new IOException("cannot get writer for stream ["+streamId+"]");
 		}
-		openWriters.put(streamId,writer);
-		return writer;		
+		session.put(WRITER_KEY_PREFIX+streamId,writer);
+		return writer;
 	}
 
 	
