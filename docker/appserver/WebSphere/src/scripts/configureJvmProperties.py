@@ -38,7 +38,6 @@ setJVMSystemProperty( 'com.ibm.websphere.java2secman.norethrow', 'true')
 
 setSecurityProperty('enforceJava2Security', 'true')
 
-#setJVMProperty( '-classpath', '[ /work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar ]')
 
 AdminConfig.save()
 	

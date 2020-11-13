@@ -47,10 +47,12 @@ grant {
   permission java.lang.RuntimePermission "accessClassInPackage.sun.misc";
   
 
-	// 2020-11-11 additional:
+  // 2020-11-11 additional:
   permission java.lang.RuntimePermission "accessClassInPackage.sun.reflect";
   permission java.lang.RuntimePermission "accessClassInPackage.sun.net.www.protocol.classpath";
-  	// for Liquibase:
+  
+  // for Liquibase:
+  // TODO: adjust code to be able to remove this permission, should not be necessary for liquibase
   permission java.io.FilePermission "/opt/IBM/WebSphere/AppServer/-", "read";
   
 };
