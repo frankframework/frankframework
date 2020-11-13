@@ -89,6 +89,10 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
+// required for nashhorn
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
+
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
 
