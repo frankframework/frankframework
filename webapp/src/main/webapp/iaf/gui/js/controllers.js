@@ -952,6 +952,10 @@ angular.module('iaf.beheerconsole')
 					activate_config:true,
 					automatic_reload:false,
 			};
+			if($scope.file != null) {
+				angular.element(".form-file")[0].value = null;
+				$scope.file = null;
+			}
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.error = error;
