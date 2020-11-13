@@ -174,7 +174,7 @@ public class DocWriterNew {
 
 		private List<SortKeyForXsd> getSortedElementChildren(String elementName) {
 			FrankElement element = model.getAllElements().get(elementName);
-			List<ConfigChild> configChildren = getNewConfigChildren(element);
+			List<ConfigChild> configChildren = getNonDeprecatedConfigChildren(element);
 			configChildren.sort((c1, c2) -> c1.getSyntax1Name().compareTo(c2.getSyntax1Name()));
 			List<SortKeyForXsd> result = configChildren.stream()
 					.map(ConfigChild::getElementType)
@@ -197,9 +197,8 @@ public class DocWriterNew {
 		}
 	}
 
-	private static List<ConfigChild> getNewConfigChildren(FrankElement element) {
+	private static List<ConfigChild> getNonDeprecatedConfigChildren(FrankElement element) {
 		List<ConfigChild> result = element.getConfigChildren().stream()
-				.filter(c -> c.getOverriddenFrom() == null)
 				.filter(c -> ! c.isDeprecated())
 				.collect(Collectors.toList());
 		return result;
@@ -236,7 +235,7 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChildren(XmlBuilder complexType, FrankElement frankElement) {
-		boolean hasNoConfigChildren = getNewConfigChildren(frankElement).isEmpty();
+		boolean hasNoConfigChildren = getNonDeprecatedConfigChildren(frankElement).isEmpty();
 		FrankElement ancestor = getFirstAncestorWithChildren(frankElement);
 		if(hasNoConfigChildren) {
 			if(ancestor == null) {
@@ -265,7 +264,7 @@ public class DocWriterNew {
 	}
 
 	private static FrankElement getFirstAncestorWithChildren(FrankElement element) {
-		return getFirstAncestorSatisfying(element, elem -> getNewConfigChildren(elem).size() >= 1);
+		return getFirstAncestorSatisfying(element, elem -> getNonDeprecatedConfigChildren(elem).size() >= 1);
 	}
 
 	private static FrankElement getFirstAncestorSatisfying(FrankElement element, Predicate<FrankElement> predicate) {
@@ -307,8 +306,10 @@ public class DocWriterNew {
 
 			@Override
 			public void addItemsOf(Set<ConfigChildKey> items, FrankElement itemOwner) {
-				List<ConfigChild> children = getNewConfigChildren(itemOwner);
-				children.stream().filter(c -> items.contains(new ConfigChildKey(c)));
+				List<ConfigChild> children = getNonDeprecatedConfigChildren(itemOwner);
+				children = children.stream()
+						.filter(c -> items.contains(new ConfigChildKey(c)))
+						.collect(Collectors.toList());
 				children.sort(
 						(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
 				children.forEach(c -> addConfigChild(sequence, c));
@@ -341,7 +342,7 @@ public class DocWriterNew {
 	private void addDeclaredChildGroup(FrankElement frankElement) {
 		XmlBuilder group = addGroup(xsdRoot, xsdDeclaredGroupNameForChildren(frankElement));
 		XmlBuilder sequence = addSequence(group);
-		List<ConfigChild> children = getNewConfigChildren(frankElement);
+		List<ConfigChild> children = getNonDeprecatedConfigChildren(frankElement);
 		children.sort(
 				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
 		children.forEach(c -> addConfigChild(sequence, c));
@@ -408,7 +409,6 @@ public class DocWriterNew {
 	private static List<FrankAttribute> getNonDeprecatedAttributes(FrankElement element) {
 		return element.getAttributes().stream()
 				.filter(a -> ! a.isDeprecated())
-				.filter(a -> a.getOverriddenFrom() == null)
 				.collect(Collectors.toList());
 	}
 

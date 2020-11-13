@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ abstract class OverrideHandler<K> {
 
 	private void handleOverridesForCurrent() {
 		handleNotifyGroupRepetition();
-		Set<K> omit = items.keySet();
+		Set<K> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
 		if(omit.isEmpty()) {
 			addDeclaredGroup(current);
@@ -80,7 +81,7 @@ abstract class OverrideHandler<K> {
 
 	private void repeatNonOverriddenItems() {
 		notifyItemsRepeated(current);
-		Set<K> retain = items.keySet();
+		Set<K> retain = new HashSet<>(items.keySet());
 		retain.removeAll(overridden);
 		if(! retain.isEmpty()) {
 			addItemsOf(retain, current);	
