@@ -15,7 +15,7 @@
  */
 package nl.nn.adapterframework.senders;
 
-import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.doc.IbisDocRef;
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
  * 
  * @author Gerrit van Brakel
  */
-public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSystem> implements HasPhysicalDestination {
+public class ExchangeFolderSender extends FileSystemSender<EmailMessage,ExchangeFileSystem> implements HasPhysicalDestination {
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 

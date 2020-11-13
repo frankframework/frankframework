@@ -15,73 +15,27 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.util.Map;
-
-import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
+import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemListener;
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.filesystem.MailListener;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
- * FileSystemListener} that enables a
- * {@link nl.nn.adapterframework.receivers.GenericReceiver} to look in a folder
- * for received mails. When a mail is found, it is moved to an output folder (or
- * it's deleted), so that it isn't found more then once. A xml string with
- * information about the mail is passed to the pipeline.
+ * Microsoft Exchange Implementation of a {@link nl.nn.adapterframework.filesystem.MailListener}.
  * 
- * <p>
- * <b>example:</b> <code><pre>
- *   &lt;email&gt;
- *      &lt;recipients&gt;
- *         &lt;recipient type="to"&gt;***@nn.nl&lt;/recipient&gt;
- *         &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
- *      &lt;/recipients&gt;
- *      &lt;from&gt;***@nn.nl&lt;/from&gt;
- *      &lt;subject&gt;this is the subject&lt;/subject&gt;
- *      &lt;headers&gt;
- *         &lt;header name="prop1"&gt;<i>value of first header property</i>&lt;/header&gt;
- *         &lt;header name="prop2"&gt;<i>value of second header property</i>&lt;/header&gt;
- *      &lt;/headers&gt;
- *      &lt;dateTimeSent&gt;2015-11-18T11:40:19.000+0100&lt;/dateTimeSent&gt;
- *      &lt;dateTimeReceived&gt;2015-11-18T11:41:04.000+0100&lt;/dateTimeReceived&gt;
- *   &lt;/email&gt;
- * </pre></code>
- * </p>
- * 
- * @author Peter Leeuwenburgh, Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
-public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination {
+public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> implements HasPhysicalDestination {
 
-	public final String EMAIL_MESSAGE_TYPE="email";
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
-	
-	private String storeEmailAsStreamInSessionKey;
-	private boolean simple = false;
-	
-	{
-		setMessageType(EMAIL_MESSAGE_TYPE);
-	}
 	
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
 		return new ExchangeFileSystem();
 	}
-
-
-	@Override
-	public Message extractMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
-			return super.extractMessage(rawMessage, threadContext);
-		}
-		return getFileSystem().extractEmailMessage(rawMessage, threadContext, isSimple(), getStoreEmailAsStreamInSessionKey());
-	}
-
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'outputFolder' has been replaced by 'processedFolder'")
@@ -172,23 +126,5 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
 	}
-
-	
-	@IbisDoc({"15", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
-	public void setSimple(boolean b) {
-		simple = b;
-	}
-	public boolean isSimple() {
-		return simple;
-	}
-
-	@Deprecated
-	public void setStoreEmailAsStreamInSessionKey(String string) {
-		storeEmailAsStreamInSessionKey = string;
-	}
-	public String getStoreEmailAsStreamInSessionKey() {
-		return storeEmailAsStreamInSessionKey;
-	}
-
 
 }

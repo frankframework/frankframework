@@ -1,18 +1,23 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
 
-public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Item, ExchangeFileSystem>{
+public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<EmailMessage, ExchangeFileSystem>{
 
 	private String PROPERTY_FILE = "ExchangeMail.properties";
 	
@@ -59,36 +64,51 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 
 	@Test
 	public void testExtractNormalMessage() throws Exception {
-		Item item = getFirstFileFromFolder(null);
-		Message message = fileSystem.extractEmailMessage(item, null, false, null);
+		EmailMessage emailMessage = getFirstFileFromFolder(null);
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormal.xml");
-		MatchUtils.assertXmlEquals(expected, message.asString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	@Test
 	public void testExtractNormalMessageSimple() throws Exception {
-		Item item = getFirstFileFromFolder(null);
-		Message message = fileSystem.extractEmailMessage(item, null, true, null);
+		EmailMessage emailMessage = getFirstFileFromFolder(null);
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		MailFileSystemUtils.addEmailInfoSimple(fileSystem, emailMessage, xml);
+		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalSimple.xml");
-		MatchUtils.assertXmlEquals(expected, message.asString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	@Test
 	public void testExtractProblematicMessage() throws Exception {
-		Item item = getFirstFileFromFolder("XmlProblem");
-		Message message = fileSystem.extractEmailMessage(item, null, false, null);
+		EmailMessage emailMessage = getFirstFileFromFolder("XmlProblem");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem.xml");
-		MatchUtils.assertXmlEquals(expected, message.asString());
+		MatchUtils.assertXmlEquals(expected,xml.toString());
 	}
 	
+	@Test
+	public void testExtractMessageWithMessageAttached() throws Exception {
+		EmailMessage emailMessage = getFirstFileFromFolder("AttachedMessage");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
+		String expected = TestFileUtils.getTestFile("/ExchangeMailAttachedMessage.xml");
+		MatchUtils.assertXmlEquals(expected,xml.toString());
+	}
 	
-	private Item prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
+	private EmailMessage prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
 		if (!fileSystem.folderExists(folderName)) {
 			fileSystem.createFolder(folderName);
 		}
-		Item orgItem = getFirstFileFromFolder(folderName);
+		EmailMessage orgItem = getFirstFileFromFolder(folderName);
 		if (orgItem == null) {
-			Item seedItem = getFirstFileFromFolder(sourceFolder);
+			EmailMessage seedItem = getFirstFileFromFolder(sourceFolder);
 			orgItem = fileSystem.copyFile(seedItem, folderName, false);
 		}
 		return orgItem;
@@ -99,17 +119,17 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		String folderName1 = "RaceFolder1";
 		String folderName2 = "RaceFolder2";
 
-		Item orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
+		EmailMessage orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 
 		System.out.println("moving item...");
-		Item movedItem1 = fileSystem.moveFile(orgItem, folderName2, true);
+		EmailMessage movedItem1 = fileSystem.moveFile(orgItem, folderName2, true);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 		System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 
 		System.out.println("tring to move same item again...");
 		try {
-			Item movedItem2 = fileSystem.moveFile(orgItem, folderName2, true);
+			EmailMessage movedItem2 = fileSystem.moveFile(orgItem, folderName2, true);
 			System.out.println("Item original ["+fileSystem.getName(orgItem));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem2));
@@ -117,6 +137,52 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ite
 		} catch (FileSystemException e) {
 			log.debug("second move failed as expected", e);
 		}
+	}
+	
+	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
+		ExchangeMailListener listener = new ExchangeMailListener();
+		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
+		listener.setMailAddress(mailaddress);
+		listener.setAccessToken(accessToken);
+		listener.setUsername(username);
+		listener.setPassword(password);
+		listener.setBaseFolder(basefolder1);
+		listener.setInputFolder(sourceFolder);
+		if (inProcessFolder!=null) listener.setInProcessFolder(inProcessFolder);
+		listener.configure();
+		listener.open();
+		return listener;
+	}
+	
+	@Test
+	public void testMessageIdDoesNotChangeWhenMessageIsMoved() throws Exception {
+		String sourceFolder = "SourceFolder";
+		String inProcessFolder = "InProcessFolder";
+
+		EmailMessage orgMsg = prepareFolderAndGetFirstMessage(sourceFolder, null);
+		if (!fileSystem.folderExists(inProcessFolder)) {
+			fileSystem.createFolder(inProcessFolder);
+		}
+		String messageId = (String)fileSystem.getAdditionalFileProperties(orgMsg).get("Message-ID");
+
+		ExchangeMailListener listener1 = getConfiguredListener(sourceFolder, null);
+		ExchangeMailListener listener2 = getConfiguredListener(sourceFolder, inProcessFolder);
+		
+		Map<String,Object> threadContext1 = new HashMap<>();
+		Map<String,Object> threadContext2 = new HashMap<>();
+		
+		EmailMessage msg1 = listener1.getRawMessage(threadContext1);
+		String msgId1 = listener1.getIdFromRawMessage(msg1, threadContext1);
+		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
+		
+		
+		EmailMessage msg2 = listener2.getRawMessage(threadContext2);
+		String msgId2 = listener2.getIdFromRawMessage(msg2, threadContext2);
+		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
+		
+		assertEquals(msgId1, msgId2);
+		
+		assertEquals(messageId, msgId2);
 	}
 	
 }
