@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.5</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
 	
 	<artifactId>ibis-adapterframework-example-ear</artifactId>
@@ -44,7 +44,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>7.5</version>
+			<version>7.5.1-SNAPSHOT</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>
