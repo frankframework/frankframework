@@ -33,7 +33,7 @@ public class Result2StringWriter extends ResultWriter {
 	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
 		return new StringWriter();
 	}
-	
+
 	@Override
 	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		super.finalizeResult(session,streamId, error);
@@ -42,7 +42,7 @@ public class Result2StringWriter extends ResultWriter {
 		if (writer!=null) {
 			result = (writer).getBuffer().toString();
 		} 
-		return result;		
+		return result;
 	}
 
 }

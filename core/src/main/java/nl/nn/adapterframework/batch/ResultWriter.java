@@ -18,6 +18,9 @@ package nl.nn.adapterframework.batch;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -33,13 +36,13 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public abstract class ResultWriter extends AbstractResultHandler {
 	
-	private final String WRITER_KEY_PREFIX="ResultWriter:";
-	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";
 	private String onOpenBlock="<#name#>";
 	private String onCloseBlock="</#name#>";
 	private String blockNamePattern="#name#";
+	
+	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 	
 	protected abstract Writer createWriter(IPipeLineSession session, String streamId) throws Exception;
 
@@ -52,10 +55,13 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	@Override
 	public void closeDocument(IPipeLineSession session, String streamId) {
-		try (Writer w = (Writer)session.remove(WRITER_KEY_PREFIX+streamId)) {
-			w.close();
+		Writer w = openWriters.remove(streamId);
+		if (w != null) {
+			try {
+				w.close();
 		} catch (IOException e) {
 			log.error("Exception closing ["+streamId+"]",e);
+		}
 		}
 		super.closeDocument(session,streamId);
 	}
@@ -148,7 +154,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	protected Writer getWriter(IPipeLineSession session, String streamId, boolean create) throws Exception {
 		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
-		Writer writer = (Writer)session.get(WRITER_KEY_PREFIX+streamId);
+		Writer writer;
+		writer = openWriters.get(streamId);
 		if (writer != null) {
 			return writer;
 		}
@@ -160,7 +167,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (writer==null) {
 			throw new IOException("cannot get writer for stream ["+streamId+"]");
 		}
-		session.put(WRITER_KEY_PREFIX+streamId,writer);
+		openWriters.put(streamId,writer);
 		return writer;
 	}
 
