@@ -10,13 +10,13 @@ import lombok.Getter;
  *
  */
 @EqualsAndHashCode
-final class ConfigChildKey {
+public final class ConfigChildKey {
 	private final @Getter String syntax1Name;
 	private final @Getter ElementType elementType;
 	private final @Getter boolean mandatory;
 	private final @Getter boolean allowMultiple;
 
-	ConfigChildKey(ConfigChild configChild) {
+	public ConfigChildKey(ConfigChild configChild) {
 		syntax1Name = configChild.getSyntax1Name();
 		elementType = configChild.getElementType();
 		mandatory = configChild.isMandatory();

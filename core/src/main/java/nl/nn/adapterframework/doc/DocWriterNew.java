@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.doc;
 
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
@@ -9,8 +11,6 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.doc.model.ConfigChild;
+import nl.nn.adapterframework.doc.model.ConfigChildKey;
 import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -226,11 +227,41 @@ public class DocWriterNew {
 
 	private void defineElementType(FrankElement frankElement) {
 		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(frankElement));
-		List<ConfigChild> configChildren = getNewConfigChildren(frankElement);
-		configChildren.sort(
-				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
-		addConfigChildren(complexType, configChildren, getFirstAncestorWithChildren(frankElement));
+		addConfigChildren(complexType, frankElement);
 		addAttributes(complexType, frankElement);		
+	}
+
+	private String xsdTypeOf(FrankElement element) {
+		return syntax2Names.get(element.getFullName()) + "Type";
+	}
+
+	private void addConfigChildren(XmlBuilder complexType, FrankElement frankElement) {
+		boolean hasNoConfigChildren = getNewConfigChildren(frankElement).isEmpty();
+		FrankElement ancestor = getFirstAncestorWithChildren(frankElement);
+		if(hasNoConfigChildren) {
+			if(ancestor == null) {
+				return;
+			}
+			else {
+				FrankElement superAncestor = getFirstAncestorWithChildren(ancestor);
+				if(superAncestor == null) {
+					addGroupRef(complexType, xsdDeclaredGroupNameForChildren(ancestor));
+				}
+				else {
+					addGroupRef(complexType, xsdCumulativeGroupNameForChildren(ancestor));
+				}
+			}
+		}
+		else {
+			if(ancestor == null) {
+				addGroupRef(complexType, xsdDeclaredGroupNameForChildren(frankElement));
+			}
+			else {
+				addGroupRef(complexType, xsdCumulativeGroupNameForChildren(frankElement));
+				addCumulativeChildGroup(frankElement);
+			}
+			addDeclaredChildGroup(frankElement);
+		}
 	}
 
 	private static FrankElement getFirstAncestorWithChildren(FrankElement element) {
@@ -248,34 +279,72 @@ public class DocWriterNew {
 		return null;
 	}
 
-	private void addConfigChildren(XmlBuilder complexType, List<ConfigChild> children, FrankElement ancestorWithChildren) {
-		if(children.size() == 0) {
-			if(ancestorWithChildren == null) {
-				return;
-			}
-			else {
-				addGroupRef(complexType, xsdGroupNameForChildren(ancestorWithChildren));
-			}
-		}
-		else {
-			FrankElement container = children.get(0).getConfigParent();
-			addGroupRef(complexType, xsdGroupNameForChildren(container));
-			XmlBuilder group = addGroup(xsdRoot, xsdGroupNameForChildren(container));
-			if(ancestorWithChildren == null) {
-				XmlBuilder sequence = addSequence(group);
-				children.forEach(c -> addConfigChild(sequence, c));
-			}
-			else {
-				XmlBuilder outerSequence = addSequence(group);
-				XmlBuilder innerSequence = addSequence(outerSequence);
-				children.forEach(c -> addConfigChild(innerSequence, c));
-				addGroupRef(outerSequence, xsdGroupNameForChildren(ancestorWithChildren));
-			}
-		}
+	private static String xsdDeclaredGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "DeclaredChildGroup";
 	}
 
-	private static String xsdGroupNameForChildren(FrankElement element) {
-		return element.getSimpleName() + "ChildGroup";
+	private static String xsdCumulativeGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "CumulativeChildGroup";
+	}
+
+	private void addCumulativeChildGroup(FrankElement frankElement) {
+		XmlBuilder group = addGroup(xsdRoot, xsdCumulativeGroupNameForChildren(frankElement));
+		final XmlBuilder sequence = addSequence(group);
+		new OverrideHandler<ConfigChildKey>() {
+			@Override
+			public FrankElement nextAncestor(FrankElement element) {
+				return getFirstAncestorWithChildren(element);
+			}
+
+			@Override
+			public Map<ConfigChildKey, Boolean> itemsOf(final FrankElement groupOwner) {
+				Map<ConfigChildKey, Boolean> result = new HashMap<>();
+				for(ConfigChild c: groupOwner.getConfigChildren()) {
+					result.put(new ConfigChildKey(c), c.getOverriddenFrom() != null);
+				}
+				return result;
+			}
+
+			@Override
+			public void addItemsOf(Set<ConfigChildKey> items, FrankElement itemOwner) {
+				List<ConfigChild> children = getNewConfigChildren(itemOwner);
+				children.stream().filter(c -> items.contains(new ConfigChildKey(c)));
+				children.sort(
+						(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
+				children.forEach(c -> addConfigChild(sequence, c));
+			}
+
+			@Override
+			public void addDeclaredGroup(FrankElement groupOwner) {
+				addGroupRef(sequence, xsdDeclaredGroupNameForChildren(groupOwner));
+			}
+
+			@Override
+			public void addCumulativeGroup(FrankElement groupOwner) {
+				addGroupRef(sequence, xsdCumulativeGroupNameForChildren(groupOwner));
+			}
+
+			@Override
+			public void notifyGroupRefRepeated(FrankElement groupOwner) {
+				log.info(String.format("Repeating reference to conig child group of [%s] due to overrides in [%s]",
+						groupOwner.getFullName(), frankElement.getFullName()));
+			}
+
+			@Override
+			public void notifyItemsRepeated(FrankElement groupOwner) {
+				log.info(String.format("Repeating config children of [%s] due to overrides in [%s]",
+						groupOwner.getFullName(), frankElement.getFullName()));				
+			}
+		}.run(frankElement);
+	}
+
+	private void addDeclaredChildGroup(FrankElement frankElement) {
+		XmlBuilder group = addGroup(xsdRoot, xsdDeclaredGroupNameForChildren(frankElement));
+		XmlBuilder sequence = addSequence(group);
+		List<ConfigChild> children = getNewConfigChildren(frankElement);
+		children.sort(
+				(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
+		children.forEach(c -> addConfigChild(sequence, c));
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
@@ -308,25 +377,32 @@ public class DocWriterNew {
 	}
 
 	private void addAttributes(XmlBuilder complexType, FrankElement frankElement) {
-		List<FrankAttribute> frankAttributes = getNonDeprecatedAttributes(frankElement);
+		boolean hasNoAttributes = getNonDeprecatedAttributes(frankElement).isEmpty();
 		FrankElement ancestor = getFirstAncestorWithAttributes(frankElement);
-		if(frankAttributes.size() == 0) {
+		if(hasNoAttributes) {
 			if(ancestor == null) {
 				return;
 			}
 			else {
-				addAttributeGroupRef(complexType, xsdGroupNameForAttributes(ancestor));
+				FrankElement superAncestor = getFirstAncestorWithAttributes(ancestor);
+				if(superAncestor == null) {
+					addAttributeGroupRef(complexType, xsdDeclaredGroupNameForAttributes(ancestor));
+				}
+				else {
+					addAttributeGroupRef(complexType, xsdCumulativeGroupNameForAttributes(ancestor));
+				}
 			}
 		}
 		else {
-			String newXsdGroupName = xsdGroupNameForAttributes(frankElement);
-			addAttributeGroupRef(complexType, newXsdGroupName);
-			XmlBuilder group = addAttributeGroup(xsdRoot, newXsdGroupName);
-			addAttributeList(group, frankAttributes);
-			if(ancestor != null) {
-				addAttributeGroupRef(group, xsdGroupNameForAttributes(ancestor));
+			if(ancestor == null) {
+				addAttributeGroupRef(complexType, xsdDeclaredGroupNameForAttributes(frankElement));
 			}
-		}
+			else {
+				addAttributeGroupRef(complexType, xsdCumulativeGroupNameForAttributes(frankElement));
+				addCumulativeAttributeGroup(frankElement);
+			}
+			addDeclaredAttributeGroup(frankElement);
+		}		
 	}
 
 	private static List<FrankAttribute> getNonDeprecatedAttributes(FrankElement element) {
@@ -340,8 +416,66 @@ public class DocWriterNew {
 		return getFirstAncestorSatisfying(element, elem -> getNonDeprecatedAttributes(elem).size() >= 1);
 	}
 
-	private static String xsdGroupNameForAttributes(FrankElement element) {
-		return element.getSimpleName() + "AttributeGroup";
+	private static String xsdDeclaredGroupNameForAttributes(FrankElement element) {
+		return element.getSimpleName() + "DeclaredAttributeGroup";
+	}
+
+	private static String xsdCumulativeGroupNameForAttributes(FrankElement element) {
+		return element.getSimpleName() + "CumulativeAttributeGroup";
+	}
+
+	private void addCumulativeAttributeGroup(final FrankElement frankElement) {
+		final XmlBuilder group = addAttributeGroup(xsdRoot, xsdCumulativeGroupNameForAttributes(frankElement));
+		new OverrideHandler<String>() {
+			@Override
+			public FrankElement nextAncestor(FrankElement attributeOwner) {
+				return getFirstAncestorWithAttributes(attributeOwner);
+			}
+
+			@Override
+			public Map<String, Boolean> itemsOf(FrankElement attributeOwner) {
+				Map<String, Boolean> result = new HashMap<>();
+				for(FrankAttribute attribute: getNonDeprecatedAttributes(attributeOwner)) {
+					result.put(attribute.getName(), attribute.getOverriddenFrom() != null);
+				}
+				return result;
+			}
+
+			@Override
+			public void addItemsOf(Set<String> items, FrankElement attributeOwner) {
+				List<FrankAttribute> attributes = getNonDeprecatedAttributes(attributeOwner).stream()
+						.filter(a -> items.contains(a.getName()))
+						.collect(Collectors.toList());
+				addAttributeList(group, attributes);
+			}
+
+			@Override
+			public void addDeclaredGroup(FrankElement attributeOwner) {
+				addAttributeGroupRef(group, xsdDeclaredGroupNameForAttributes(attributeOwner));
+			}
+
+			@Override
+			public void addCumulativeGroup(FrankElement attributeOwner) {
+				addAttributeGroupRef(group, xsdCumulativeGroupNameForAttributes(attributeOwner));
+			}
+
+			@Override
+			public void notifyGroupRefRepeated(FrankElement attributeOwner) {
+				log.info(String.format("Repeating reference to attribute group of [%s] due to overrides in [%s]",
+						attributeOwner.getFullName(), frankElement.getFullName()));
+			}
+
+			@Override
+			public void notifyItemsRepeated(FrankElement attributeOwner) {
+				log.info(String.format("Repeating attributes of [%s] due to overrides in [%s]",
+						attributeOwner.getFullName(), frankElement.getFullName()));				
+			}
+		}.run(frankElement);
+	}
+
+	private void addDeclaredAttributeGroup(FrankElement frankElement) {
+		XmlBuilder group = addAttributeGroup(xsdRoot, xsdDeclaredGroupNameForAttributes(frankElement));
+		addAttributeList(group, getNonDeprecatedAttributes(frankElement));
 	}
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> originalAttributes) {
@@ -365,9 +499,5 @@ public class DocWriterNew {
 			String xsdType = xsdTypeOf(frankElement);
 			addElement(choice, syntax2Name, xsdType);
 		}		
-	}
-
-	private String xsdTypeOf(FrankElement element) {
-		return syntax2Names.get(element.getFullName()) + "Type";
 	}
 }
