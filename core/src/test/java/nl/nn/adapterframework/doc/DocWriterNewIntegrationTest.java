@@ -18,6 +18,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
+import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 
 @Ignore
 public class DocWriterNewIntegrationTest {
@@ -65,5 +66,22 @@ public class DocWriterNewIntegrationTest {
 		}
 		assertEquals(model.getAllElements(), reconstructedElements);
 		assertEquals(model.getAllTypes(), reconstructedTypes);
+	}
+
+	@Test
+	public void testStatistics() throws IOException {
+		FrankDocModel model = FrankDocModel.populate();
+		File output = new File("testStatistics.csv");
+		System.out.println("Output file of test statistics: " + output.getAbsolutePath());
+		Writer writer = new BufferedWriter(new FileWriter(output));
+		try {
+			writer.append(FrankElementStatistics.header() + "\n");
+			for(FrankElement elem: model.getAllElements().values()) {
+				writer.append(elem.getStatistics().toString() + "\n");
+			}
+		}
+		finally {
+			writer.close();
+		}
 	}
 }

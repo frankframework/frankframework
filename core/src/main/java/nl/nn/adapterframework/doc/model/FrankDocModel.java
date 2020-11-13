@@ -379,6 +379,7 @@ public class FrankDocModel {
 			}
 			current.getConfigChildren().forEach(ConfigChild::calculateOverriddenFrom);
 			current.getAttributes().forEach(FrankAttribute::calculateOverriddenFrom);
+			current.getStatistics().finish();
 			remainingElements.remove(current.getFullName());
 		}
 	}

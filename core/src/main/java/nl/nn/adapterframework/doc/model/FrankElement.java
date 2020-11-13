@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
@@ -16,11 +15,12 @@ public class FrankElement {
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
-	private @Getter @Setter FrankElement parent;
+	private @Getter FrankElement parent;
 	private @Getter List<FrankAttribute> attributes;
 	private Map<String, FrankAttribute> attributeLookup;
 	private @Getter List<ConfigChild> configChildren;
 	private Map<ConfigChildKey, ConfigChild> configChildLookup;
+	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName());
@@ -34,6 +34,11 @@ public class FrankElement {
 	public FrankElement(final String fullName, final String simpleName) {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
+	}
+
+	public void setParent(FrankElement parent) {
+		this.parent = parent;
+		this.statistics = new FrankElementStatistics(this);
 	}
 
 	/**
