@@ -1,5 +1,6 @@
 <!DOCTYPE configuration [
 	<!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
+	<!ENTITY Batch SYSTEM "./ConfigurationBatch.xml">
 	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
 	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
@@ -58,6 +59,7 @@
 ]>
 <configuration name="MainConfig">
 	&Authentication;
+	&Batch;
 	&Cache;
 	&Checksum;
 	&Zip;
