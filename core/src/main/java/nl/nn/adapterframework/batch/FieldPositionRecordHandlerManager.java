@@ -31,6 +31,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 	private int fieldNr;
 	private String separator;
 	
+	@Override
 	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;
 		int curField = 0;

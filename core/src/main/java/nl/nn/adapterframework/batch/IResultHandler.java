@@ -42,7 +42,7 @@ public interface IResultHandler extends IConfigurable {
 	void closeDocument(IPipeLineSession session, String streamId);
 
 	/**
-	 * write a result ta record. 
+	 * write a result record. 
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)

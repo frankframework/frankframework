@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.batch;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -34,27 +33,29 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	private int startPosition;
 	private int endPosition=-1;
 	
+	@Override
 	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
 		String value = null;
 		if (startPosition >= record.length()) {
 			throw new Exception("Record size is smaller then the specified position of the recordtype within the record");
 		}
 		if (endPosition < 0) {
-			Map valueHandlersMap = getValueHandlersMap();
+			Map<String,RecordHandlingFlow> valueHandlersMap = getValueHandlersMap();
 			RecordHandlingFlow rhf = null;
-			for(Iterator it=valueHandlersMap.keySet().iterator();it.hasNext() && rhf == null;) {
-				String name=(String)it.next();
-				log.debug("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
+			for(String name: valueHandlersMap.keySet()) {
+				if (log.isTraceEnabled()) log.trace("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
 				if (name.length()<=record.length()) {
 					value = record.substring(startPosition, name.length());
 					if (value.equals(name)) {
-						rhf = (RecordHandlingFlow)valueHandlersMap.get(name);
+						if ((rhf = valueHandlersMap.get(name))!=null) {
+							break;
+						}
 					}
 				}
 			}
-			if  (rhf == null) {
-				rhf =(RecordHandlingFlow)getValueHandlersMap().get("*");
-				if  (rhf == null) {
+			if (rhf == null) {
+				rhf =getValueHandlersMap().get("*");
+				if (rhf == null) {
 					throw new Exception("No handlers (flow) found for recordKey [" + value + "]");
 				}
 			}

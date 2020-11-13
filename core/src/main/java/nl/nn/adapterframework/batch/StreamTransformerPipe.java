@@ -328,23 +328,23 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private boolean autoCloseBlocks(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName) throws Exception {
 		List<String> blockStack=getBlockStack(session,handler, streamId, true);
 		int blockLevel;
-		if (log.isDebugEnabled()) log.debug("searching block stack for open block ["+blockName+"] to perform autoclose");
+		if (log.isTraceEnabled()) log.trace("searching block stack for open block ["+blockName+"] to perform autoclose");
 		for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
 			String stackedBlock=blockStack.get(blockLevel);
-			if (log.isDebugEnabled()) log.debug("stack position ["+blockLevel+"] block ["+stackedBlock+"]");
+			if (log.isTraceEnabled()) log.trace("stack position ["+blockLevel+"] block ["+stackedBlock+"]");
 			if (stackedBlock.equals(blockName)) {
 				break;
 			}
 		}
 		if (blockLevel>=0) {
-			if (log.isDebugEnabled()) log.debug("found open block ["+blockName+"] at stack position ["+blockLevel+"]");
+			if (log.isTraceEnabled()) log.trace("found open block ["+blockName+"] at stack position ["+blockLevel+"]");
 			for (int i=blockStack.size()-1; i>=blockLevel; i--) {
 				String stackedBlock=blockStack.remove(i);
 				closeBlock(session, handler, streamId,null,stackedBlock, "autoclose of previous blocks while opening block ["+blockName+"]");
 			}
 			return true;
 		} else {
-			if (log.isDebugEnabled()) log.debug("did not found open block ["+blockName+"] at block stack");
+			if (log.isTraceEnabled()) log.trace("did not found open block ["+blockName+"] at block stack");
 			return false;
 		}
 	}
@@ -355,10 +355,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (flow.isAutoCloseBlock()) {
 					autoCloseBlocks(session, handler, streamId,flow, blockName);
 					List<String> blockStack=getBlockStack(session, handler, streamId, true);
-					if (log.isDebugEnabled()) log.debug("adding block ["+blockName+"] to block stack at position ["+blockStack.size()+"]");
+					if (log.isTraceEnabled()) log.trace("adding block ["+blockName+"] to block stack at position ["+blockStack.size()+"]");
 					blockStack.add(blockName);
 				}
-				if (log.isDebugEnabled()) log.debug("opening block ["+blockName+"] for resultHandler ["+handler.getName()+"]");
+				if (log.isTraceEnabled()) log.trace("opening block ["+blockName+"] for resultHandler ["+handler.getName()+"]");
 				handler.openBlock(session, streamId, blockName);
 			} else {
 				log.warn("openBlock("+blockName+") without resultHandler");
