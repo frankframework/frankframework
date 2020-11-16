@@ -19,6 +19,8 @@ public class FrankAttribute {
 	
 	private @Getter FrankElement owningElement;
 	private @Getter @Setter FrankElement describingElement;
+	private boolean hasIbisDoc;
+	private @Setter boolean hasIbisDocRef;
 	private @Getter String description;
 	private @Getter String defaultValue;
 	private @Getter @Setter boolean isDeprecated;
@@ -31,6 +33,7 @@ public class FrankAttribute {
 	}
 
 	void parseIbisDocAnnotation(IbisDoc ibisDoc) {
+		hasIbisDoc = true;
 		String[] ibisDocValues = ibisDoc.value();
 		boolean isIbisDocHasOrder = false;
 		order = Integer.MAX_VALUE;
@@ -51,6 +54,10 @@ public class FrankAttribute {
 				defaultValue = ibisDocValues[1];
 			}
 		}
+	}
+
+	public boolean isDocumented() {
+		return hasIbisDoc || hasIbisDocRef;
 	}
 
 	void calculateOverriddenFrom() {

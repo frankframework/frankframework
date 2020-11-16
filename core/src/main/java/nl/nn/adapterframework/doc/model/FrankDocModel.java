@@ -215,6 +215,7 @@ public class FrankDocModel {
 	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+		attribute.setHasIbisDocRef(ibisDocRef != null);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			IbisDoc ibisDoc = null;

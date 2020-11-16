@@ -179,7 +179,8 @@ public class FrankDocModelTest {
 
 	@Test
 	public void whenOnlySetterThenAttribute() throws ReflectiveOperationException {
-		checkReflectAttributeCreated("attributeOnlySetter");
+		FrankAttribute attribute = checkReflectAttributeCreated("attributeOnlySetter");
+		assertFalse(attribute.isDocumented());
 	}
 
 	@Test
@@ -257,6 +258,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDockedOnlyDescription() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
+		assertTrue(actual.isDocumented());
 		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedOnlyDescription", actual.getDescription());
 		assertNull(actual.getDefaultValue());
@@ -266,6 +268,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDockedOrderDescription() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescription");
+		assertTrue(actual.isDocumented());
 		assertEquals(3, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
 		assertNull(actual.getDefaultValue());
@@ -275,6 +278,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDockedDescriptionDefault() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDescriptionDefault");
+		assertTrue(actual.isDocumented());
 		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedDescriptionDefault", actual.getDefaultValue());
@@ -284,6 +288,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDockedOrderDescriptionDefault() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescriptionDefault");
+		assertTrue(actual.isDocumented());
 		assertEquals(5, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedOrderDescriptionDefault", actual.getDefaultValue());
@@ -293,6 +298,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDockedDeprecated() throws ReflectiveOperationException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDeprecated");
+		assertTrue(actual.isDocumented());
 		assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
 		assertTrue(actual.isDeprecated());
 	}
@@ -316,18 +322,21 @@ public class FrankDocModelTest {
 	@Test
 	public void testReferredIbisDocDescriptionAppearsInFrankAttribute() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
+		assertTrue(actual.isDocumented());
 		assertEquals("Description of ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", actual.getDescription());
 	}
 
 	@Test
 	public void testReferredIbisDocDescriptionOtherMethodAppearsInFrankAttribute() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocReffMethodNoOrderRefersIbisDocOrderDescriptionDefault");
+		assertTrue(actual.isDocumented());
 		assertEquals("Description of otherMethod", actual.getDescription());
 	}
 
 	@Test
 	public void testReferredIbisDocDescriptiondWithOrderAndInheritance() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
+		assertTrue(actual.isDocumented());
 		assertEquals(
 				"Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited",
 				actual.getDescription());
@@ -336,12 +345,14 @@ public class FrankDocModelTest {
 	@Test
 	public void testOrderInsideIbisDocRefHasPreferenceOverReferredIbisDocOrder() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
+		assertTrue(actual.isDocumented());
 		assertEquals(10, actual.getOrder());
 	}
 
 	@Test
 	public void whenIbisDocRefThenDescribingElementAdjusted() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
+		assertTrue(actual.isDocumented());
 		assertSame(
 				instance.getAllElements().get(REFERRED_PARENT),
 				actual.getDescribingElement());
