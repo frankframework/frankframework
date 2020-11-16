@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.doc.testtarget.simple;
 
-public class ListenerParent implements IListener {
+public class ListenerParent extends AbstractGrandParent {
 	protected void setChildAttribute(String value) {
 	}
 

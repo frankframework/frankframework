@@ -29,13 +29,13 @@ import nl.nn.adapterframework.doc.model.FrankElement;
  *
  * @param <K> The key type for referencing attributes or config children.
  */
-abstract class OverrideHandler<K> {
+abstract class CumulativeGroupCreator<K> {
 	private FrankElement current;
 	private Map<K, Boolean> items;
 	private Set<K> overridden;
 	private boolean isGroupRefRepetitionNotified;
 
-	OverrideHandler() {
+	CumulativeGroupCreator() {
 	}
 
 	void run(FrankElement start) {

@@ -24,6 +24,7 @@ public class FrankDocModelTest {
 	private static final String SIMPLE_PARENT = SIMPLE + ".ListenerParent";
 	private static final String SIMPLE_CHILD = SIMPLE + ".ListenerChild";
 	private static final String SIMPLE_GRNAD_CHILD = SIMPLE + ".ListenerGrandChild";
+	private static final String SIMPLE_GRNAD_PARENT = SIMPLE + ".AbstractGrandParent";
 
 	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.testtarget.ibisdocref";
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
@@ -61,6 +62,7 @@ public class FrankDocModelTest {
 		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
 		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
 		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
+		// Tests that AbstractGrandParent is omitted.
 		assertEquals(3, listenerMembers.size());
 		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
 		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
@@ -105,9 +107,11 @@ public class FrankDocModelTest {
 		assertTrue(actualAllElements.containsKey(actualChild.getFullName()));
 		assertSame(actualAllElements.get(actualParent.getFullName()), actualParent);
 		assertSame(actualAllElements.get(actualChild.getFullName()), actualChild);
+		FrankElement actualGrandParent = actualAllElements.get(SIMPLE_GRNAD_PARENT);
 		FrankElement actualObject = actualAllElements.get("java.lang.Object");
 		assertNull(actualObject.getParent());
-		assertSame(actualObject, actualParent.getParent());
+		assertSame(actualObject, actualGrandParent.getParent());
+		assertSame(actualGrandParent, actualParent.getParent());
 		assertEquals(SIMPLE_PARENT, actualParent.getFullName());
 		assertEquals("ListenerParent", actualParent.getSimpleName());
 		// We check here that protected method getChildAttribute does not produce

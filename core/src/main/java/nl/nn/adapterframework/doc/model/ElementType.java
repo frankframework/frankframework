@@ -5,6 +5,15 @@ import java.util.Map;
 
 import lombok.Getter;
 
+/**
+ * Represents a type of FrankElement instances, which appears in the FF! Java code as
+ * a Java interface. FrankElement objects that represent an abstract Java class should
+ * be omitted as members. This is done automatically when Spring is used to get the
+ * implementing classes of a Java interface.
+ *
+ * @author martijn
+ *
+ */
 public class ElementType {
 	private @Getter String fullName;
 	private @Getter String simpleName;
