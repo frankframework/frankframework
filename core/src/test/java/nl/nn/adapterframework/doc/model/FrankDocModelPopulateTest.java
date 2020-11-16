@@ -30,7 +30,7 @@ public class FrankDocModelPopulateTest {
 	}
 
 	@Test
-	public void testElementGenericReceiverCreated() {
+	public void testElementReceiverCreated() {
 		assertTrue(actualElementSimpleNames.contains("Receiver"));
 	}
 }
