@@ -52,7 +52,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.receivers.Receiver;

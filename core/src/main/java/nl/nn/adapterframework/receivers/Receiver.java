@@ -265,7 +265,7 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
  
-	int retryInterval=1;
+	private int retryInterval=1;
 	private int poisonMessageIdCacheSize = 100;
 	private int processResultCacheSize = 100;
    
@@ -291,9 +291,9 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 	};
 
 	private class ProcessResultCacheItem {
-		int receiveCount;
-		Date receiveDate;
-		String comments;
+		private int receiveCount;
+		private Date receiveDate;
+		private String comments;
 	}
 
 	public boolean configurationSucceeded() {
@@ -332,7 +332,7 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 
 	private String hide(String string) {
 		String hiddenString = "";
-		for (int i = 0; i < string.toString().length(); i++) {
+		for (int i = 0; i < string.length(); i++) {
 			hiddenString = hiddenString + "*";
 		}
 		return hiddenString;
@@ -1146,11 +1146,9 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 		} else {
 			businessCorrelationId=technicalCorrelationId;
 		}
-		if (StringUtils.isEmpty(businessCorrelationId)) {
-			if (StringUtils.isNotEmpty(messageId)) {
-				log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
-				businessCorrelationId=messageId;
-			}
+		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
+			log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
+			businessCorrelationId=messageId;
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);
@@ -1296,10 +1294,8 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 			}
 		} finally {
 			cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
-			if (!isTransacted() && messageInError) {
-				if (!manualRetry) {
-					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
-				}
+			if (!isTransacted() && messageInError && !manualRetry) {
+				moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 			}
 			try {
 				Map<String,Object> afterMessageProcessedMap=threadContext;
@@ -1414,10 +1410,7 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 				return true;
 			}
 		} 
-		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
-			return true;
-		}
-		return false;
+		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}
 
 	/*
@@ -1495,11 +1488,9 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 		} else {
 			log.warn(getLogPrefix()+"will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		}
-		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			if (!suspensionMessagePending) {
-				suspensionMessagePending=true;
-				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			}
+		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+			suspensionMessagePending=true;
+			throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
@@ -1571,10 +1562,7 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 			
 			return tcc.isThreadCountReadable();
 		}
-		if (getListener() instanceof IPullingListener) {
-			return true;
-		}
-		return false;
+		return getListener() instanceof IPullingListener;
 	}
 	@Override
 	public boolean isThreadCountControllable() {
@@ -1583,10 +1571,7 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 			
 			return tcc.isThreadCountControllable();
 		}
-		if (getListener() instanceof IPullingListener) {
-			return true;
-		}
-		return false;
+		return getListener() instanceof IPullingListener;
 	}
 
 	@Override
