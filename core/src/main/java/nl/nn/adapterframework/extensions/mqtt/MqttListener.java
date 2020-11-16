@@ -24,12 +24,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -64,12 +63,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	private IbisExceptionListener ibisExceptionListener;
 
 	@Override
-	public void setReceiver(IReceiver<MqttMessage> receiver) {
+	public void setReceiver(Receiver<MqttMessage> receiver) {
 		this.receiver = (Receiver<MqttMessage>)receiver;
 	}
 
 	@Override
-	public IReceiver<MqttMessage> getReceiver() {
+	public Receiver<MqttMessage> getReceiver() {
 		return receiver;
 	}
 

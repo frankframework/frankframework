@@ -60,7 +60,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
- * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
+ * and uses {@link Receiver Receivers} and a {@link PipeLine}.
  *
  * <b>responsibility</b><br/>
  * <ul>
@@ -80,7 +80,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table>
  * 
  * @author Johan Verrips
- * @see    IReceiver
+ * @see    Receiver
  * @see    PipeLine
  * @see    StatisticsKeeper
  * @see    DateUtils
@@ -186,9 +186,8 @@ public class Adapter implements IAdapter, NamedBean {
 			pipeline.setAdapter(this);
 			pipeline.configure();
 			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
-			Iterator<Receiver> it = receivers.iterator();
-			while (it.hasNext()) {
-				IReceiver receiver = it.next();
+			
+			for (Receiver receiver: receivers) {
 				configureReceiver(receiver);
 			}
 			configurationSucceeded = true;
@@ -222,7 +221,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-	public void configureReceiver(IReceiver receiver) {
+	public void configureReceiver(Receiver receiver) {
 		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
 		receiver.setAdapter(this);
 		try {
@@ -511,7 +510,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
+	public Receiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
@@ -735,7 +734,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * Register a receiver for this Adapter
-	 * @see IReceiver
+	 * @see Receiver
 	 */
 	@IbisDoc("100")
 	public void registerReceiver(Receiver receiver) {
@@ -817,7 +816,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * of the IReceiver. The Adapter will be a new thread, as this interface
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
-	 * @see IReceiver#startRunning()
+	 * @see Receiver#startRunning()
 	 */
 	@Override
 	public void startRunning() {
@@ -864,9 +863,7 @@ public class Adapter implements IAdapter, NamedBean {
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
 					log.info("Adapter [" + getName() + "] up and running");
 					// starting receivers
-					Iterator<Receiver> it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = it.next();
+					for (Receiver receiver: receivers) {
 						receiver.startRunning();
 					}
 				} catch (Throwable t) {
@@ -892,7 +889,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * will call the <code>IReceiver</code> to <code>stopListening</code>
 	 * <p>Also the <code>PipeLine.close()</code> method will be called,
 	 * closing alle registered pipes. </p>
-	 * @see IReceiver#stopRunning
+	 * @see Receiver#stopRunning
 	 * @see PipeLine#stop
 	 */
 	@Override
@@ -915,16 +912,12 @@ public class Adapter implements IAdapter, NamedBean {
 						runState.setRunState(RunStateEnum.STOPPING);
 					}
 					log.debug("Adapter [" + name + "] is stopping receivers");
-					Iterator<Receiver> it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = it.next();
+					for (Receiver receiver: receivers) {
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
 					// comment in method ReceiverBase.tellResourcesToStop()
-					it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = (IReceiver) it.next();
+					for (Receiver receiver: receivers) {
 						while (receiver.getRunState() != RunStateEnum.STOPPED) {
 							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
 							try {
@@ -968,10 +961,8 @@ public class Adapter implements IAdapter, NamedBean {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[name=" + name + "]");
 		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
-		Iterator<Receiver> it = receivers.iterator();
 		sb.append("[receivers=");
-		while (it.hasNext()) {
-			IReceiver receiver = it.next();
+		for (Receiver receiver: receivers) {
 			sb.append(" " + receiver.getName());
 
 		}

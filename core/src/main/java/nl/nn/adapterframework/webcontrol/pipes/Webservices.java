@@ -24,13 +24,14 @@ import java.util.SortedMap;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListener;
@@ -43,8 +44,6 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Webservices.
@@ -103,20 +102,16 @@ public class Webservices extends TimeoutGuardPipe {
 		XmlBuilder restsXML = new XmlBuilder("rests");
 		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
-			Iterator recIt = adapter.getReceiverIterator();
-			while (recIt.hasNext()) {
-				IReceiver receiver = (IReceiver) recIt.next();
-				if (receiver instanceof Receiver) {
-					Receiver rb = (Receiver) receiver;
-					IListener listener = rb.getListener();
-					if (listener instanceof RestListener) {
-						RestListener rl = (RestListener) listener;
-						if (rl.isView()) {
-							XmlBuilder restXML = new XmlBuilder("rest");
-							restXML.addAttribute("name", rb.getName());
-							restXML.addAttribute("uriPattern", rl.getUriPattern());
-							restsXML.addSubElement(restXML);
-						}
+			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+				Receiver receiver = it.next();
+				IListener listener = receiver.getListener();
+				if (listener instanceof RestListener) {
+					RestListener rl = (RestListener) listener;
+					if (rl.isView()) {
+						XmlBuilder restXML = new XmlBuilder("rest");
+						restXML.addAttribute("name", receiver.getName());
+						restXML.addAttribute("uriPattern", rl.getUriPattern());
+						restsXML.addSubElement(restXML);
 					}
 				}
 			}

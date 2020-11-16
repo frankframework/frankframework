@@ -61,7 +61,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -518,17 +517,14 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
 		String listenerName = null;
-		if (receiver instanceof Receiver) {
-			Receiver rb = (Receiver) receiver;
-			IListener<?> listener = rb.getListener();
-			if(listener != null) {
-				listenerName = listener.getName();
-			}
+		IListener<?> listener = receiver.getListener();
+		if(listener != null) {
+			listenerName = listener.getName();
 		}
 		if(StringUtils.isEmpty(listenerName)) {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");

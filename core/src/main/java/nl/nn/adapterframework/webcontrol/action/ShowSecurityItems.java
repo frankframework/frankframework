@@ -47,7 +47,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.ftp.FtpSender;
@@ -60,6 +59,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -150,25 +150,22 @@ public final class ShowSecurityItems extends ActionBase {
 
 			adapterXML.addAttribute("name", adapter.getName());
 
-			Iterator recIt = adapter.getReceiverIterator();
-			if (recIt.hasNext()) {
-				XmlBuilder receiversXML = new XmlBuilder("receivers");
-				while (recIt.hasNext()) {
-					IReceiver receiver = (IReceiver) recIt.next();
-					XmlBuilder receiverXML = new XmlBuilder("receiver");
-					receiversXML.addSubElement(receiverXML);
+			XmlBuilder receiversXML = new XmlBuilder("receivers");
+			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+				Receiver receiver = it.next();
+				XmlBuilder receiverXML = new XmlBuilder("receiver");
+				receiversXML.addSubElement(receiverXML);
 
-					receiverXML.addAttribute("name", receiver.getName());
+				receiverXML.addAttribute("name", receiver.getName());
 
-					if (receiver instanceof HasSender) {
-						ISender sender = ((HasSender) receiver).getSender();
-						if (sender != null) {
-							receiverXML.addAttribute("senderName", sender.getName());
-						}
+				if (receiver instanceof HasSender) {
+					ISender sender = ((HasSender) receiver).getSender();
+					if (sender != null) {
+						receiverXML.addAttribute("senderName", sender.getName());
 					}
 				}
-				adapterXML.addSubElement(receiversXML);
 			}
+			adapterXML.addSubElement(receiversXML);
 
 			// make list of pipes to be displayed in configuration status
 			XmlBuilder pipesElem = new XmlBuilder("pipes");

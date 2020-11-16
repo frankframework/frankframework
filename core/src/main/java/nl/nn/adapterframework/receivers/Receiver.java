@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
@@ -60,7 +61,6 @@ import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -101,7 +101,24 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * {@link IReceiver Receiver} implementation.
+ * The receiver is the trigger and central communicator for the framework.
+ * <br/>
+ * The main responsibilities are:
+ * <ul>
+ *    <li>receiving messages</li>
+ *    <li>for asynchronous receivers (which have a separate sender):<br/>
+ *            <ul><li>initializing ISender objects</li>
+ *                <li>stopping ISender objects</li>
+ *                <li>sending the message with the ISender object</li>
+ *            </ul>
+ *    <li>synchronous receivers give the result directly</li>
+ *    <li>take care of connection, sessions etc. to startup and shutdown</li>
+ * </ul>
+ * Listeners call the IAdapter.processMessage(String correlationID,String message)
+ * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
+ * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
+ * requests.
+ * 
  *
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
@@ -159,7 +176,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -488,6 +505,13 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 		}
 	}
 
+ 	/**
+ 	 * This method is called by the <code>IAdapter</code> to let the
+ 	 * receiver do things to initialize itself before the <code>startListening</code>
+ 	 * method is called.
+ 	 * @see #startRunning
+ 	 * @throws ConfigurationException when initialization did not succeed.
+ 	 */ 
 	@Override
 	public void configure() throws ConfigurationException {		
 		configurationSucceeded = false;
@@ -1767,7 +1791,13 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 	}
 
 	
-	@Override
+	/**
+	 * The processing of messages must be delegated to the <code>Adapter</code>
+	 * object. The adapter also provides a MessageKeeper, which the receiver may use
+	 * to store messages in.
+	 * 
+	 * @see nl.nn.adapterframework.core.IAdapter
+	 */
 	public void setAdapter(IAdapter adapter) {
 		this.adapter = adapter;
 	}
@@ -1781,17 +1811,15 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 	}
 
 	/**
-	 * Get the number of messages received.
+	 * get the number of messages received by this receiver.
 	 */
-	@Override
 	public long getMessagesReceived() {
 		return numReceived.getValue();
 	}
 
 	/**
-	 * Get the number of messages retried.
+	 * get the number of duplicate messages received this receiver.
 	 */
-	@Override
 	public long getMessagesRetried() {
 		return numRetried.getValue();
 	}
@@ -1799,7 +1827,6 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
-	@Override
 	public long getMessagesRejected() {
 		return numRejected.getValue();
 	}
@@ -1847,7 +1874,6 @@ public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageH
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
 	}
-	@Override
 	public IListener<M> getListener() {
 		return listener;
 	}

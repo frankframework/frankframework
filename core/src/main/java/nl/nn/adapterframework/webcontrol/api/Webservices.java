@@ -49,7 +49,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
@@ -127,7 +126,7 @@ public final class Webservices extends Base {
 			Set<String> methods = config.getMethods();
 			for (String method : methods) {
 				ApiListener listener = config.getApiListener(method);
-				IReceiver receiver = listener.getReceiver();
+				Receiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
 				Map<String, Object> endpoint = new HashMap<>();
 				endpoint.put("uriPattern", listener.getUriPattern());

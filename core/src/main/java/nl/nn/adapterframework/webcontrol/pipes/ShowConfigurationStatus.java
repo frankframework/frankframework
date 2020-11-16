@@ -34,7 +34,6 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -521,13 +520,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager, ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
-		Iterator recIt = adapter.getReceiverIterator();
+		Iterator<Receiver> recIt = adapter.getReceiverIterator();
 		if (!recIt.hasNext()) {
 			return null;
 		}
 		XmlBuilder receiversXML = new XmlBuilder("receivers");
 		while (recIt.hasNext()) {
-			IReceiver receiver = (IReceiver) recIt.next();
+			Receiver receiver = recIt.next();
 			XmlBuilder receiverXML = new XmlBuilder("receiver");
 			receiversXML.addSubElement(receiverXML);
 
@@ -684,42 +683,39 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	}
 
-	private boolean isAvailable(IReceiver receiver) {
-		if (receiver instanceof Receiver) {
-			Receiver rb = (Receiver) receiver;
-			IListener listener = rb.getListener();
-			boolean isRestListener = (listener instanceof RestListener);
-			boolean isJavaListener = (listener instanceof JavaListener);
-			boolean isWebServiceListener = (listener instanceof WebServiceListener);
-			boolean isApiListener = (listener instanceof ApiListener);
-			if (isRestListener) {
-				RestListener rl = (RestListener) listener;
-				String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + rl.getUriPattern());
-				return matchingPattern != null;
-			} else if (isJavaListener) {
-				JavaListener jl = (JavaListener) listener;
-				if (StringUtils.isNotEmpty(jl.getName())) {
-					JavaListener jlRegister = JavaListener.getListener(jl.getName());
-					return jlRegister == jl;
-				}
-			} else if (isWebServiceListener) {
-				WebServiceListener wsl = (WebServiceListener) listener;
-				if (StringUtils.isNotEmpty(wsl.getServiceNamespaceURI())) {
-					WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
-					return wslRegister == wsl;
-				} else {
-					WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getName());
-					return wslRegister == wsl;
-				}
-			} else if (isApiListener) {
-				ApiListener al = (ApiListener) listener;
-				ApiDispatchConfig apiDispatchConfig = ApiServiceDispatcher.getInstance().findConfigForUri(al.getUriPattern());
-				if (apiDispatchConfig == null) {
-					return false;
-				}
-				ApiListener alRegister = apiDispatchConfig.getApiListener(al.getMethod());
-				return alRegister == al;
+	private boolean isAvailable(Receiver receiver) {
+		IListener listener = receiver.getListener();
+		boolean isRestListener = (listener instanceof RestListener);
+		boolean isJavaListener = (listener instanceof JavaListener);
+		boolean isWebServiceListener = (listener instanceof WebServiceListener);
+		boolean isApiListener = (listener instanceof ApiListener);
+		if (isRestListener) {
+			RestListener rl = (RestListener) listener;
+			String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + rl.getUriPattern());
+			return matchingPattern != null;
+		} else if (isJavaListener) {
+			JavaListener jl = (JavaListener) listener;
+			if (StringUtils.isNotEmpty(jl.getName())) {
+				JavaListener jlRegister = JavaListener.getListener(jl.getName());
+				return jlRegister == jl;
 			}
+		} else if (isWebServiceListener) {
+			WebServiceListener wsl = (WebServiceListener) listener;
+			if (StringUtils.isNotEmpty(wsl.getServiceNamespaceURI())) {
+				WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
+				return wslRegister == wsl;
+			} else {
+				WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getName());
+				return wslRegister == wsl;
+			}
+		} else if (isApiListener) {
+			ApiListener al = (ApiListener) listener;
+			ApiDispatchConfig apiDispatchConfig = ApiServiceDispatcher.getInstance().findConfigForUri(al.getUriPattern());
+			if (apiDispatchConfig == null) {
+				return false;
+			}
+			ApiListener alRegister = apiDispatchConfig.getApiListener(al.getMethod());
+			return alRegister == al;
 		}
 		// default a receiver is available
 		return true;

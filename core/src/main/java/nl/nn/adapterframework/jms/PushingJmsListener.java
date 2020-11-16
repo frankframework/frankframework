@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -90,7 +89,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	private String cacheMode;
 	private IListenerConnector<javax.jms.Message> jmsConnector;
 	private IMessageHandler<javax.jms.Message> handler;
-	private IReceiver<javax.jms.Message> receiver;
+	private Receiver<javax.jms.Message> receiver;
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
 
@@ -283,11 +282,11 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void setReceiver(IReceiver<javax.jms.Message> receiver) {
+	public void setReceiver(Receiver<javax.jms.Message> receiver) {
 		this.receiver = receiver;
 	}
 	@Override
-	public IReceiver<javax.jms.Message> getReceiver() {
+	public Receiver<javax.jms.Message> getReceiver() {
 		return receiver;
 	}
 

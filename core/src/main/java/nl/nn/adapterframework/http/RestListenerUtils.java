@@ -33,8 +33,8 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -152,20 +152,15 @@ public class RestListenerUtils {
 	private static boolean doRestartShowConfigurationStatus(IbisContext ibisContext) {
 
 		IAdapter adapter = null;
-		IReceiver receiver = null;
+		Receiver receiver = null;
 		if (ibisContext != null) {
 			IbisManager ibisManager = ibisContext.getIbisManager();
 			if (ibisManager != null) {
-				Configuration configuration = ibisManager
-						.getConfiguration(SHOW_CONFIG_STATUS_CONFIGURATION);
+				Configuration configuration = ibisManager.getConfiguration(SHOW_CONFIG_STATUS_CONFIGURATION);
 				if (configuration != null) {
-					adapter = configuration
-							.getRegisteredAdapter(SHOW_CONFIG_STATUS_ADAPTER);
+					adapter = configuration.getRegisteredAdapter(SHOW_CONFIG_STATUS_ADAPTER);
 					if (adapter instanceof Adapter) {
-						receiver = ((Adapter) adapter)
-								.getReceiverByNameAndListener(
-										SHOW_CONFIG_STATUS_RECEIVER,
-										RestListener.class);
+						receiver = ((Adapter) adapter).getReceiverByNameAndListener(SHOW_CONFIG_STATUS_RECEIVER, RestListener.class);
 					}
 				}
 			}
