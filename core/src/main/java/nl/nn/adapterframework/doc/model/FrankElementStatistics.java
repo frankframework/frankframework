@@ -10,6 +10,8 @@ public class FrankElementStatistics {
 	private @Getter int numAncestors;
 	private @Getter int numChildren;
 	private @Getter int numDescendants;
+	private @Getter int numConfigChildren;
+	private @Getter int numAttributes;
 	private @Getter int numOverriddenConfigChildren;
 	private @Getter int numOverriddenAttributes;
 	private @Getter int numConfigChildOverriders;
@@ -34,6 +36,8 @@ public class FrankElementStatistics {
 				"numAncestors",
 				"numChildren",
 				"numDescendants",
+				"numConfigChildren",
+				"numAttributes",
 				"numOverriddenConfigChildren",
 				"numOverriddenAttributes",
 				"numConfigChildOverriders",
@@ -52,6 +56,8 @@ public class FrankElementStatistics {
 				new Integer(numAncestors).toString(),
 				new Integer(numChildren).toString(),
 				new Integer(numDescendants).toString(),
+				new Integer(numConfigChildren).toString(),
+				new Integer(numAttributes).toString(),
 				new Integer(numOverriddenConfigChildren).toString(),
 				new Integer(numOverriddenAttributes).toString(),
 				new Integer(numConfigChildOverriders).toString(),
@@ -70,6 +76,8 @@ public class FrankElementStatistics {
 	}
 
 	private void finishDescendantStatistics() {
+		numConfigChildren = subject.getConfigChildren().size();
+		numAttributes = subject.getAttributes().size();
 		boolean isFirstAncestor = true;
 		FrankElement ancestor = subject;
 		while(ancestor.getParent() != null) {
