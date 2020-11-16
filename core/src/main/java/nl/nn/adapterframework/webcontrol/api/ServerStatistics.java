@@ -182,8 +182,8 @@ public class ServerStatistics extends Base {
 			if (showCountErrorStore) {
 				long esr = 0;
 				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
-					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-						Receiver receiver = (Receiver) receiverIt.next();
+					for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+						Receiver receiver = it.next();
 						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {
@@ -401,9 +401,8 @@ public class ServerStatistics extends Base {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-				while (receiverIterator.hasNext()) {
-					IReceiver receiver = receiverIterator.next();
+				for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+					Receiver receiver = it.next();
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {

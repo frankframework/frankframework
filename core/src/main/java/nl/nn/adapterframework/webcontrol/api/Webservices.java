@@ -81,20 +81,16 @@ public final class Webservices extends Base {
 		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
 		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
-			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
-			while (recIt.hasNext()) {
-				IReceiver receiver = recIt.next();
-				if (receiver instanceof Receiver) {
-					Receiver rb = (Receiver) receiver;
-					IListener listener = rb.getListener();
-					if (listener instanceof RestListener) {
-						RestListener rl = (RestListener) listener;
-						if (rl.isView()) {
-							Map<String, Object> service = new HashMap<String, Object>(2);
-							service.put("name", rb.getName());
-							service.put("uriPattern", rl.getUriPattern());
-							webServices.add(service);
-						}
+			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+				Receiver receiver = it.next();
+				IListener listener = receiver.getListener();
+				if (listener instanceof RestListener) {
+					RestListener rl = (RestListener) listener;
+					if (rl.isView()) {
+						Map<String, Object> service = new HashMap<String, Object>(2);
+						service.put("name", receiver.getName());
+						service.put("uriPattern", rl.getUriPattern());
+						webServices.add(service);
 					}
 				}
 			}

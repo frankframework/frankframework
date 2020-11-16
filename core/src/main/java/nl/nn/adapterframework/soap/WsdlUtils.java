@@ -43,18 +43,14 @@ public abstract class WsdlUtils {
         // this class has no instances
     }
 
-    public static Collection<IListener> getListeners(IAdapter a) {
-        List<IListener> result = new ArrayList<IListener>();
-        Iterator j = a.getReceiverIterator();
-        while (j.hasNext()) {
-            Object o = j.next();
-            if (o instanceof Receiver) {
-                Receiver r = (Receiver) o;
-                result.add(r.getListener());
-            }
-        }
-        return result;
-    }
+	public static Collection<IListener> getListeners(IAdapter adapter) {
+		List<IListener> result = new ArrayList<IListener>();
+		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+			Receiver receiver = it.next();
+			result.add(receiver.getListener());
+		}
+		return result;
+	}
 
       // 2017-10-17 Previous version, before 
 //    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {

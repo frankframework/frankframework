@@ -687,8 +687,8 @@ public class JobDef {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
-			for (Iterator<IReceiver> it=adapter.getReceiverIterator(); it.hasNext();) {
-				collectMessageLogs(messageLogs, ((Receiver)it.next()).getMessageLog());
+			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+				collectMessageLogs(messageLogs, it.next().getMessageLog());
 			}
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
@@ -1117,120 +1117,89 @@ public class JobDef {
 				} else {
 					heartbeatLog.warn(message);
 				}
-				for (Iterator<IReceiver> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					IReceiver iReceiver = receiverIt.next();
+				for (Iterator<Receiver> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
+					Receiver receiver = receiverIt.next();
 					countReceiver++;
 
-					if (iReceiver instanceof Receiver) {
-						Receiver receiver = (Receiver) iReceiver;
-					
-						RunStateEnum receiverRunState = receiver.getRunState();
-						if (!adapterRunState.equals(RunStateEnum.ERROR)
-								&& receiverRunState.equals(RunStateEnum.ERROR)) {
-							log.debug("trying to recover receiver ["
-									+ receiver.getName() + "] of adapter ["
-									+ adapter.getName() + "]");
-							try {
-								if (receiver!=null) {
-									receiver.setRecover(true);
-								}
-								adapter.configureReceiver(receiver);
-							} finally {
-								if (receiver!=null) {
-									receiver.setRecover(false);
-								}
-							}
+					RunStateEnum receiverRunState = receiver.getRunState();
+					if (!adapterRunState.equals(RunStateEnum.ERROR) && receiverRunState.equals(RunStateEnum.ERROR)) {
+						log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+						try {
 							if (receiver!=null) {
-								if (receiver.configurationSucceeded()) {
-									receiver.stopRunning();
-									int count = 10;
-									while (count-- >= 0
-											&& !receiver.getRunState().equals(
-													RunStateEnum.STOPPED)) {
-										try {
-											Thread.sleep(1000);
-										} catch (InterruptedException e) {
-											log.debug("Interrupted waiting for receiver to stop", e);
-										}
+								receiver.setRecover(true);
+							}
+							adapter.configureReceiver(receiver);
+						} finally {
+							if (receiver!=null) {
+								receiver.setRecover(false);
+							}
+						}
+						if (receiver!=null) {
+							if (receiver.configurationSucceeded()) {
+								receiver.stopRunning();
+								int count = 10;
+								while (count-- >= 0
+										&& !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+									try {
+										Thread.sleep(1000);
+									} catch (InterruptedException e) {
+										log.debug("Interrupted waiting for receiver to stop", e);
 									}
 								}
-								// check for start is in method startRunning in
-								// ReceiverBase self
-								receiver.startRunning();
-								log.debug("finished recovering receiver ["
-										+ receiver.getName() + "] of adapter ["
-										+ adapter.getName() + "]");
 							}
-						} else if (receiverRunState
-								.equals(RunStateEnum.STARTED)) {
-							// workaround for started RestListeners of which
-							// uriPattern is not registered correctly
-							IListener listener = receiver.getListener();
-							if (listener instanceof RestListener) {
-								RestListener restListener = (RestListener) listener;
-								String matchingPattern = RestServiceDispatcher
-										.getInstance().findMatchingPattern("/"
-												+ restListener.getUriPattern());
-								if (matchingPattern == null) {
-									log.debug("trying to recover receiver ["
-											+ receiver.getName()
-											+ "] (restListener) of adapter ["
-											+ adapter.getName() + "]");
-									if (receiver!=null) {
-										if (receiver.configurationSucceeded()) {
-											receiver.stopRunning();
-											int count = 10;
-											while (count-- >= 0
-													&& !receiver.getRunState().equals(
-															RunStateEnum.STOPPED)) {
-												try {
-													Thread.sleep(1000);
-												} catch (InterruptedException e) {
-													log.debug("Interrupted waiting for receiver to stop", e);
-												}
+							// check for start is in method startRunning in
+							// ReceiverBase self
+							receiver.startRunning();
+							log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+						}
+					} else if (receiverRunState
+							.equals(RunStateEnum.STARTED)) {
+						// workaround for started RestListeners of which
+						// uriPattern is not registered correctly
+						IListener listener = receiver.getListener();
+						if (listener instanceof RestListener) {
+							RestListener restListener = (RestListener) listener;
+							String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + restListener.getUriPattern());
+							if (matchingPattern == null) {
+								log.debug("trying to recover receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
+								if (receiver!=null) {
+									if (receiver.configurationSucceeded()) {
+										receiver.stopRunning();
+										int count = 10;
+										while (count-- >= 0
+												&& !receiver.getRunState().equals(
+														RunStateEnum.STOPPED)) {
+											try {
+												Thread.sleep(1000);
+											} catch (InterruptedException e) {
+												log.debug("Interrupted waiting for receiver to stop", e);
 											}
 										}
-										// check for start is in method startRunning in
-										// ReceiverBase self
-										receiver.startRunning();
-										log.debug("finished recovering receiver ["
-												+ receiver.getName() + "] (restListener) of adapter ["
-												+ adapter.getName() + "]");
 									}
+									// check for start is in method startRunning in
+									// ReceiverBase self
+									receiver.startRunning();
+									log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
 								}
 							}
 						}
-						receiverRunState = receiver.getRunState();
-						message = "receiver [" + receiver.getName()
-								+ "] of adapter [" + adapter.getName()
-								+ "] has state [" + receiverRunState + "]";
-						if (receiverRunState.equals(RunStateEnum.STARTED)) {
-							countReceiverStateStarted++;
-							heartbeatLog.info(message);
-						} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
-							heartbeatLog.error(message);
-						} else {
-							heartbeatLog.warn(message);
-						}
+					}
+					receiverRunState = receiver.getRunState();
+					message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
+					if (receiverRunState.equals(RunStateEnum.STARTED)) {
+						countReceiverStateStarted++;
+						heartbeatLog.info(message);
+					} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
+						heartbeatLog.error(message);
 					} else {
-						log.warn("will not try to recover receiver ["
-								+ iReceiver.getName() + "] of adapter ["
-								+ adapter.getName()
-								+ "], is not of type Receiver but ["
-								+ iAdapter.getClass().getName() + "]");
+						heartbeatLog.warn(message);
 					}
 				}
 			} else {
-				log.warn("will not try to recover adapter ["
-						+ iAdapter.getName()
-						+ "], is not of type Adapter but ["
-						+ iAdapter.getClass().getName() + "]");
+				log.warn("will not try to recover adapter [" + iAdapter.getName() + "], is not of type Adapter but [" + iAdapter.getClass().getName() + "]");
 			}
 		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter
-				+ "] adapters and [" + countReceiverStateStarted + "/"
-				+ countReceiver + "] receivers have state ["
-				+ RunStateEnum.STARTED + "]");
+		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}
 
 	public String getLogPrefix() {

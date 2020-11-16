@@ -20,6 +20,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jmx.JmxAttribute;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -41,6 +42,7 @@ public interface IAdapter extends IManagable {
 	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
 	 * @see PipeLine#configure()
 	 */
+	@Override
 	void configure() throws ConfigurationException;
 
 	/**
@@ -48,8 +50,8 @@ public interface IAdapter extends IManagable {
 	 * the web-functions.
 	 */
 	public MessageKeeper getMessageKeeper();
-	public IReceiver getReceiverByName(String receiverName);
-	public Iterator<IReceiver> getReceiverIterator();
+	public Receiver getReceiverByName(String receiverName);
+	public Iterator<Receiver> getReceiverIterator();
 	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
 

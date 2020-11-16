@@ -220,9 +220,8 @@ public final class ShowConfigurationStatus extends Base {
 		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 		if(state.equals(RunStateEnum.STARTED)) {
-			Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-			while (receiverIterator.hasNext()) {
-				IReceiver receiver = receiverIterator.next();
+			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+				Receiver receiver = it.next();
 				RunStateEnum rState = receiver.getRunState();
 
 				if(!rState.equals(RunStateEnum.STARTED)) {
@@ -608,157 +607,151 @@ public final class ShowConfigurationStatus extends Base {
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 
-		Iterator<?> recIt=adapter.getReceiverIterator();
-		if (recIt.hasNext()){
-			while (recIt.hasNext()){
-				IReceiver receiver=(IReceiver) recIt.next();
-				Map<String, Object> receiverInfo = new HashMap<String, Object>();
+		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+			Receiver receiver = it.next();
+			Map<String, Object> receiverInfo = new HashMap<String, Object>();
 
-				RunStateEnum receiverRunState = receiver.getRunState();
+			RunStateEnum receiverRunState = receiver.getRunState();
 
-				receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
-				receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
-				
-				receiverInfo.put("name", receiver.getName());
-				receiverInfo.put("class", ClassUtils.nameOf(receiver));
-				Map<String, Object> messages = new HashMap<String, Object>(3);
-				messages.put("received", receiver.getMessagesReceived());
-				messages.put("retried", receiver.getMessagesRetried());
-				messages.put("rejected", receiver.getMessagesRejected());
-				receiverInfo.put("messages", messages);
-				ISender sender=null;
-				if (receiver instanceof Receiver ) {
-					Receiver rb = (Receiver) receiver;
-					Map<String, Object> listenerInfo = new HashMap<String, Object>();
-					IListener<?> listener=rb.getListener();
-					listenerInfo.put("name", listener.getName());
-					listenerInfo.put("class", ClassUtils.nameOf(listener));
-					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
-						listenerInfo.put("destination", pd);
-					}
-					if (listener instanceof HasSender) {
-						sender = ((HasSender)listener).getSender();
-					}
-					//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-					IMessageBrowser ts = rb.getErrorStorageBrowser();
-					receiverInfo.put("hasErrorStorage", (ts!=null));
-					if (ts!=null) {
-						try {
-							if (showCountErrorStore) {
-								receiverInfo.put("errorStorageCount", ts.getMessageCount());
-							} else {
-								receiverInfo.put("errorStorageCount", "?");
-							}
-						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in errorstore", e);
-							receiverInfo.put("errorStorageCount", "error");
-						}
-					}
-					ts=rb.getMessageLogBrowser();
-					receiverInfo.put("hasMessageLog", (ts!=null));
-					if (ts!=null) {
-						try {
-							if (showCountMessageLog) {
-								receiverInfo.put("messageLogCount", ts.getMessageCount());
-							} else {
-								receiverInfo.put("messageLogCount", "?");
-							}
-						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in messageLog", e);
-							receiverInfo.put("messageLogCount", "error");
-						}
-					}
-					ts=rb.getInProcessBrowser();
-					receiverInfo.put("hasInProcessLog", (ts!=null));
-					if (ts!=null) {
-						try {
-							if (showCountMessageLog) {
-								receiverInfo.put("inProcessLogCount", ts.getMessageCount());
-							} else {
-								receiverInfo.put("inProcessLogCount", "?");
-							}
-						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in inProcessLog", e);
-							receiverInfo.put("inProcessLogCount", "error");
-						}
-					}
-					boolean isRestListener = (listener instanceof RestListener);
-					listenerInfo.put("isRestListener", isRestListener);
-					if (isRestListener) {
-						RestListener rl = (RestListener) listener;
-						listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-						listenerInfo.put("isView", (rl.isView()==null?false:rl.isView()));
-					}
-					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
-						JmsListenerBase jlb = (JmsListenerBase) listener;
-						JmsBrowser<javax.jms.Message> jmsBrowser;
-						if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-							jmsBrowser = new JmsBrowser<>();
-						} else {
-							jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
-						}
-						jmsBrowser.setName("MessageBrowser_" + jlb.getName());
-						jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
-						jmsBrowser.setDestinationName(jlb.getDestinationName());
-						jmsBrowser.setDestinationType(jlb.getDestinationType());
-						String numMsgs;
-						try {
-							int messageCount = jmsBrowser.getMessageCount();
-							numMsgs = String.valueOf(messageCount);
-						} catch (Throwable t) {
-							log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
-							numMsgs = "?";
-						}
-						receiverInfo.put("pendingMessagesCount", numMsgs);
-					}
-					boolean isEsbJmsFFListener = false;
-					if (listener instanceof EsbJmsListener) {
-						EsbJmsListener ejl = (EsbJmsListener) listener;
-						if(ejl.getMessageProtocol() != null) {
-							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
-								isEsbJmsFFListener = true;
-							}
-							if(showPendingMsgCount) {
-								String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-								if (esbNumMsgs == null) {
-									esbNumMsgs = "?";
-								}
-								receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
-							}
-						}
-					}
-					receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
-
-					receiverInfo.put("listener", listenerInfo);
-				}
-
-				if (receiver instanceof HasSender) {
-					ISender rsender = ((HasSender) receiver).getSender();
-					if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-						sender=rsender; 
-					}
-				}
-				if (sender != null) { 
-					receiverInfo.put("senderName", sender.getName());
-					receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
-					if (sender instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-						receiverInfo.put("senderDestination", pd);
-					}
-				}
-				if (receiver instanceof IThreadCountControllable) {
-					IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-					if (tcc.isThreadCountReadable()) {
-						receiverInfo.put("threadCount", tcc.getCurrentThreadCount());
-						receiverInfo.put("maxThreadCount", tcc.getMaxThreadCount());
-					}
-					if (tcc.isThreadCountControllable()) {
-						receiverInfo.put("threadCountControllable", "true");
-					}
-				}
-				receivers.add(receiverInfo);
+			receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
+			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
+			
+			receiverInfo.put("name", receiver.getName());
+			receiverInfo.put("class", ClassUtils.nameOf(receiver));
+			Map<String, Object> messages = new HashMap<String, Object>(3);
+			messages.put("received", receiver.getMessagesReceived());
+			messages.put("retried", receiver.getMessagesRetried());
+			messages.put("rejected", receiver.getMessagesRejected());
+			receiverInfo.put("messages", messages);
+			ISender sender=null;
+			Map<String, Object> listenerInfo = new HashMap<String, Object>();
+			IListener<?> listener=receiver.getListener();
+			listenerInfo.put("name", listener.getName());
+			listenerInfo.put("class", ClassUtils.nameOf(listener));
+			if (listener instanceof HasPhysicalDestination) {
+				String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
+				listenerInfo.put("destination", pd);
 			}
+			if (listener instanceof HasSender) {
+				sender = ((HasSender)listener).getSender();
+			}
+			//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
+			IMessageBrowser ts = receiver.getErrorStorageBrowser();
+			receiverInfo.put("hasErrorStorage", (ts!=null));
+			if (ts!=null) {
+				try {
+					if (showCountErrorStore) {
+						receiverInfo.put("errorStorageCount", ts.getMessageCount());
+					} else {
+						receiverInfo.put("errorStorageCount", "?");
+					}
+				} catch (Exception e) {
+					log.warn("Cannot determine number of messages in errorstore", e);
+					receiverInfo.put("errorStorageCount", "error");
+				}
+			}
+			ts=receiver.getMessageLogBrowser();
+			receiverInfo.put("hasMessageLog", (ts!=null));
+			if (ts!=null) {
+				try {
+					if (showCountMessageLog) {
+						receiverInfo.put("messageLogCount", ts.getMessageCount());
+					} else {
+						receiverInfo.put("messageLogCount", "?");
+					}
+				} catch (Exception e) {
+					log.warn("Cannot determine number of messages in messageLog", e);
+					receiverInfo.put("messageLogCount", "error");
+				}
+			}
+			ts=receiver.getInProcessBrowser();
+			receiverInfo.put("hasInProcessLog", (ts!=null));
+			if (ts!=null) {
+				try {
+					if (showCountMessageLog) {
+						receiverInfo.put("inProcessLogCount", ts.getMessageCount());
+					} else {
+						receiverInfo.put("inProcessLogCount", "?");
+					}
+				} catch (Exception e) {
+					log.warn("Cannot determine number of messages in inProcessLog", e);
+					receiverInfo.put("inProcessLogCount", "error");
+				}
+			}
+			boolean isRestListener = (listener instanceof RestListener);
+			listenerInfo.put("isRestListener", isRestListener);
+			if (isRestListener) {
+				RestListener rl = (RestListener) listener;
+				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
+				listenerInfo.put("isView", (rl.isView()==null?false:rl.isView()));
+			}
+			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
+				JmsListenerBase jlb = (JmsListenerBase) listener;
+				JmsBrowser<javax.jms.Message> jmsBrowser;
+				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
+					jmsBrowser = new JmsBrowser<>();
+				} else {
+					jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
+				}
+				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
+				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
+				jmsBrowser.setDestinationName(jlb.getDestinationName());
+				jmsBrowser.setDestinationType(jlb.getDestinationType());
+				String numMsgs;
+				try {
+					int messageCount = jmsBrowser.getMessageCount();
+					numMsgs = String.valueOf(messageCount);
+				} catch (Throwable t) {
+					log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
+					numMsgs = "?";
+				}
+				receiverInfo.put("pendingMessagesCount", numMsgs);
+			}
+			boolean isEsbJmsFFListener = false;
+			if (listener instanceof EsbJmsListener) {
+				EsbJmsListener ejl = (EsbJmsListener) listener;
+				if(ejl.getMessageProtocol() != null) {
+					if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+						isEsbJmsFFListener = true;
+					}
+					if(showPendingMsgCount) {
+						String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+						if (esbNumMsgs == null) {
+							esbNumMsgs = "?";
+						}
+						receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
+					}
+				}
+			}
+			receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
+
+			receiverInfo.put("listener", listenerInfo);
+
+			if (receiver instanceof HasSender) {
+				ISender rsender = ((HasSender) receiver).getSender();
+				if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
+					sender=rsender; 
+				}
+			}
+			if (sender != null) { 
+				receiverInfo.put("senderName", sender.getName());
+				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
+				if (sender instanceof HasPhysicalDestination) {
+					String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+					receiverInfo.put("senderDestination", pd);
+				}
+			}
+			if (receiver instanceof IThreadCountControllable) {
+				IThreadCountControllable tcc = (IThreadCountControllable)receiver;
+				if (tcc.isThreadCountReadable()) {
+					receiverInfo.put("threadCount", tcc.getCurrentThreadCount());
+					receiverInfo.put("maxThreadCount", tcc.getMaxThreadCount());
+				}
+				if (tcc.isThreadCountControllable()) {
+					receiverInfo.put("threadCountControllable", "true");
+				}
+			}
+			receivers.add(receiverInfo);
 		}
 		return receivers;
 	}

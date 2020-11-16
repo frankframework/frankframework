@@ -33,9 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -87,45 +86,39 @@ public final class ShowAdapterStatistics extends Base {
 		statisticsMap.put("hourly", hourslyStatistics);
 
 		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
-		Iterator<?> recIt=adapter.getReceiverIterator();
-		if (recIt.hasNext()) {
-			while (recIt.hasNext()) {
-				IReceiver receiver=(IReceiver) recIt.next();
-				Map<String, Object> receiverMap = new HashMap<String, Object>();
+		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+			Receiver receiver = it.next();
+			Map<String, Object> receiverMap = new HashMap<String, Object>();
 
-				receiverMap.put("name", receiver.getName());
-				receiverMap.put("class", receiver.getClass().getName());
-				receiverMap.put("messagesReceived", receiver.getMessagesReceived());
-				receiverMap.put("messagesRetried", receiver.getMessagesRetried());
+			receiverMap.put("name", receiver.getName());
+			receiverMap.put("class", receiver.getClass().getName());
+			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
+			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
-				if (receiver instanceof IReceiverStatistics) {
-					IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
-					Iterator<?> statsIter;
-					statsIter = statReceiver.getProcessStatisticsIterator();
-					if (statsIter != null) {
-						ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
+			Iterator<?> statsIter;
+			statsIter = receiver.getProcessStatisticsIterator();
+			if (statsIter != null) {
+				ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
 //						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
 //						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
-						while(statsIter.hasNext()) {
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-						}
-						receiverMap.put("processing", procStatsMap);
-					}
-
-					statsIter = statReceiver.getIdleStatisticsIterator();
-					if (statsIter != null) {
-						ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
-						while(statsIter.hasNext()) {
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							idleStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-						}
-						receiverMap.put("idle", idleStatsMap);
-					}
-
-					receivers.add(receiverMap);
+				while(statsIter.hasNext()) {
+					StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+					procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
 				}
+				receiverMap.put("processing", procStatsMap);
 			}
+
+			statsIter = receiver.getIdleStatisticsIterator();
+			if (statsIter != null) {
+				ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
+				while(statsIter.hasNext()) {
+					StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+					idleStatsMap.add(statisticsKeeperToMapBuilder(pstat));
+				}
+				receiverMap.put("idle", idleStatsMap);
+			}
+
+			receivers.add(receiverMap);
 		}
 		statisticsMap.put("receivers", receivers);
 

@@ -58,9 +58,9 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
@@ -180,9 +180,8 @@ public final class ShowConfiguration extends Base {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-				while (receiverIterator.hasNext()) {
-					IReceiver receiver = receiverIterator.next();
+				for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
+					Receiver receiver = it.next();
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {
