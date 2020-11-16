@@ -200,6 +200,7 @@ public class DocWriterNew {
 	private static List<ConfigChild> getNonDeprecatedConfigChildren(FrankElement element) {
 		List<ConfigChild> result = element.getConfigChildren().stream()
 				.filter(c -> ! c.isDeprecated())
+				.filter(c -> c.isDocumented() || (c.getOverriddenFrom() == null))
 				.collect(Collectors.toList());
 		return result;
 	}
@@ -410,6 +411,7 @@ public class DocWriterNew {
 	private static List<FrankAttribute> getNonDeprecatedAttributes(FrankElement element) {
 		return element.getAttributes().stream()
 				.filter(a -> ! a.isDeprecated())
+				.filter(a -> a.isDocumented() || (a.getOverriddenFrom() == null))
 				.collect(Collectors.toList());
 	}
 
