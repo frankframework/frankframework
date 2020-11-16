@@ -185,7 +185,8 @@ public class FrankDocModelTest {
 
 	@Test
 	public void whenSetterHasPrimitiveTypeThenAttribute() throws ReflectiveOperationException {
-		checkReflectAttributeCreated("attributeOnlySetterInt");
+		FrankAttribute attribute = checkReflectAttributeCreated("attributeOnlySetterInt");
+		assertFalse(attribute.isDocumented());
 	}
 
 	@Test

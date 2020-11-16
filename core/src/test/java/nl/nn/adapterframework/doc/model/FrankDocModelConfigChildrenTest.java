@@ -42,6 +42,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("syntax1NameChild", actual.getSyntax1Name());
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
+		assertTrue(actual.isDocumented());
 		assertEquals(100, actual.getSequenceInConfig());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
@@ -63,6 +64,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("syntax1NameDeprecatedChild", actual.getSyntax1Name());
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
+		assertTrue(actual.isDocumented());
 		assertEquals(200, actual.getSequenceInConfig());
 		assertFalse(actual.isAllowMultiple());
 		assertTrue(actual.isDeprecated());
@@ -76,6 +78,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("syntax1NameInheritedChild", actual.getSyntax1Name());
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
+		assertFalse(actual.isDocumented());
 		assertEquals(50, actual.getSequenceInConfig());
 		assertTrue(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
@@ -90,6 +93,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("syntax1NameInheritedChildDocOnDerived", actual.getSyntax1Name());
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
+		assertTrue(actual.isDocumented());
 		assertEquals(70, actual.getSequenceInConfig());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isMandatory());
@@ -104,6 +108,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("syntax1NameInheritedChildDocWithOrderOverride", actual.getSyntax1Name());
 		assertEquals("Container", actual.getConfigParent().getSimpleName());
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
+		assertTrue(actual.isDocumented());
 		assertEquals(10, actual.getSequenceInConfig());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());

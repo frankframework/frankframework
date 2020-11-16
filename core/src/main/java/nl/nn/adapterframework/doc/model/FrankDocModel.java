@@ -214,8 +214,10 @@ public class FrankDocModel {
 
 	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
 		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
+		attribute.setDocumented(
+				(method.getAnnotation(IbisDoc.class) != null)
+				|| (method.getAnnotation(IbisDocRef.class) != null));
 		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
-		attribute.setHasIbisDocRef(ibisDocRef != null);
 		if(ibisDocRef != null) {
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			IbisDoc ibisDoc = null;
@@ -316,6 +318,7 @@ public class FrankDocModel {
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
 			Class<?> elementClass = m.getParameterTypes()[0];
 			configChild.setElementType(findOrCreateElementType(elementClass));
+			configChild.setDocumented(m.getAnnotation(IbisDoc.class) != null);
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
 			configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());

@@ -12,6 +12,7 @@ public class ConfigChild {
 
 	private @Getter FrankElement configParent;
 	private @Getter @Setter ElementType elementType;
+	private @Getter @Setter boolean documented;
 	private @Getter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
