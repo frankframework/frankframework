@@ -55,7 +55,7 @@ import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
@@ -402,7 +402,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
 		int totalCounter = 0;
 		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-			ReceiverBase receiver = (ReceiverBase) receiverIt.next();
+			Receiver receiver = (Receiver) receiverIt.next();
 			IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 			if (errorStorage != null) {
 				int counter;
@@ -565,8 +565,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			}
 			if (configurationSelected != null) {
 				ISender sender = null;
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
+				if (receiver instanceof Receiver) {
+					Receiver rb = (Receiver) receiver;
 					IListener listener = rb.getListener();
 					receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
 					if (listener instanceof HasPhysicalDestination) {
@@ -685,8 +685,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	private boolean isAvailable(IReceiver receiver) {
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
+		if (receiver instanceof Receiver) {
+			Receiver rb = (Receiver) receiver;
 			IListener listener = rb.getListener();
 			boolean isRestListener = (listener instanceof RestListener);
 			boolean isJavaListener = (listener instanceof JavaListener);

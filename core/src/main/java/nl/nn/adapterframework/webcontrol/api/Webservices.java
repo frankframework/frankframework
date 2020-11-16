@@ -55,7 +55,7 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
 
 /**
@@ -84,8 +84,8 @@ public final class Webservices extends Base {
 			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
 			while (recIt.hasNext()) {
 				IReceiver receiver = recIt.next();
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
+				if (receiver instanceof Receiver) {
+					Receiver rb = (Receiver) receiver;
 					IListener listener = rb.getListener();
 					if (listener instanceof RestListener) {
 						RestListener rl = (RestListener) listener;

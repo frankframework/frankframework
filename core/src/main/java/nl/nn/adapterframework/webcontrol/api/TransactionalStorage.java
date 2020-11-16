@@ -54,7 +54,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -82,7 +82,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -114,7 +114,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -158,7 +158,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -212,7 +212,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -240,7 +240,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -285,7 +285,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -313,7 +313,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -464,7 +464,7 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private void resendMessage(ReceiverBase receiver, String messageId) {
+	private void resendMessage(Receiver receiver, String messageId) {
 		try {
 			receiver.retryMessage(messageId);
 		} catch (ListenerException e) {

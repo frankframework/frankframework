@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -56,7 +56,7 @@ public class BrowseExecute extends Browse {
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, Receiver receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
         PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
 		log.debug("retrieved transactionManager ["+ClassUtils.nameOf(transactionManager)+"]["+transactionManager+"] from ibismanager ["+ibisManager+"]");
 
@@ -142,7 +142,7 @@ public class BrowseExecute extends Browse {
 		}
 	}
 
-	private void exportMessage(IMessageBrowser mb, String id, ReceiverBase receiver, ZipOutputStream zipOutputStream) {
+	private void exportMessage(IMessageBrowser mb, String id, Receiver receiver, ZipOutputStream zipOutputStream) {
 		IListener listener = null;
 		if (receiver!=null) {
 			listener = receiver.getListener();

@@ -39,7 +39,7 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -106,8 +106,8 @@ public class Webservices extends TimeoutGuardPipe {
 			Iterator recIt = adapter.getReceiverIterator();
 			while (recIt.hasNext()) {
 				IReceiver receiver = (IReceiver) recIt.next();
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
+				if (receiver instanceof Receiver) {
+					Receiver rb = (Receiver) receiver;
 					IListener listener = rb.getListener();
 					if (listener instanceof RestListener) {
 						RestListener rl = (RestListener) listener;

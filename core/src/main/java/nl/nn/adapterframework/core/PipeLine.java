@@ -38,7 +38,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -321,8 +321,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 				Iterator<IReceiver> recIt = adapter.getReceiverIterator();
 				while (recIt.hasNext()) {
 					IReceiver receiver = recIt.next();
-					if (receiver instanceof ReceiverBase ) {
-						ReceiverBase rb = (ReceiverBase) receiver;
+					if (receiver instanceof Receiver ) {
+						Receiver rb = (Receiver) receiver;
 						IListener listener = rb.getListener();
 						try {
 							if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {

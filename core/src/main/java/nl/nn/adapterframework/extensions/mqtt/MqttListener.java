@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverAware;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -59,13 +59,13 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessage>, IPushingListener<MqttMessage>, MqttCallbackExtended {
 
-	private ReceiverBase<MqttMessage> receiver;
+	private Receiver<MqttMessage> receiver;
 	private IMessageHandler<MqttMessage> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
 
 	@Override
 	public void setReceiver(IReceiver<MqttMessage> receiver) {
-		this.receiver = (ReceiverBase<MqttMessage>)receiver;
+		this.receiver = (Receiver<MqttMessage>)receiver;
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnError(ReceiverBase.ONERROR_RECOVER);
+		receiver.setOnError(Receiver.ONERROR_RECOVER);
 		// Don't recreate client when trying to recover
 		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
 			super.configure();

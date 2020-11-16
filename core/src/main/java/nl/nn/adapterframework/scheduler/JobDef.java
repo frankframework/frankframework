@@ -63,7 +63,7 @@ import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -688,7 +688,7 @@ public class JobDef {
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
 			for (Iterator<IReceiver> it=adapter.getReceiverIterator(); it.hasNext();) {
-				collectMessageLogs(messageLogs, ((ReceiverBase)it.next()).getMessageLog());
+				collectMessageLogs(messageLogs, ((Receiver)it.next()).getMessageLog());
 			}
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
@@ -1121,8 +1121,8 @@ public class JobDef {
 					IReceiver iReceiver = receiverIt.next();
 					countReceiver++;
 
-					if (iReceiver instanceof ReceiverBase) {
-						ReceiverBase receiver = (ReceiverBase) iReceiver;
+					if (iReceiver instanceof Receiver) {
+						Receiver receiver = (Receiver) iReceiver;
 					
 						RunStateEnum receiverRunState = receiver.getRunState();
 						if (!adapterRunState.equals(RunStateEnum.ERROR)

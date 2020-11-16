@@ -38,7 +38,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -291,9 +291,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return receiver;
 	}
 
-	public ReceiverBase<javax.jms.Message> getReceiverBase() {
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase<javax.jms.Message> rb = (ReceiverBase<javax.jms.Message>) receiver;
+	public Receiver<javax.jms.Message> getReceiverBase() {
+		if (receiver instanceof Receiver) {
+			Receiver<javax.jms.Message> rb = (Receiver<javax.jms.Message>) receiver;
 			return rb;
 		}
 		return null;

@@ -42,7 +42,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -88,7 +88,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iAdapter;
 			for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-				ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+				Receiver receiver=(Receiver)receiverIt.next();
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();

@@ -30,7 +30,7 @@ import javanet.staxutils.IndentingXMLStreamWriter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IXmlValidator;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -48,8 +48,8 @@ public abstract class WsdlUtils {
         Iterator j = a.getReceiverIterator();
         while (j.hasNext()) {
             Object o = j.next();
-            if (o instanceof ReceiverBase) {
-                ReceiverBase r = (ReceiverBase) o;
+            if (o instanceof Receiver) {
+                Receiver r = (Receiver) o;
                 result.add(r.getListener());
             }
         }

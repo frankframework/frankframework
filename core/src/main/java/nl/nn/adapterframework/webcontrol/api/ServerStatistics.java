@@ -55,7 +55,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -183,7 +183,7 @@ public class ServerStatistics extends Base {
 				long esr = 0;
 				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
 					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
+						Receiver receiver = (Receiver) receiverIt.next();
 						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {

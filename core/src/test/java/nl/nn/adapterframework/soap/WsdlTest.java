@@ -39,7 +39,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
@@ -257,7 +257,7 @@ public class WsdlTest {
         when(simple.getAdapter()).thenReturn(adp);
         Configuration cfg = mock(Configuration.class);
         when(simple.getAdapter().getConfiguration()).thenReturn(cfg);
-        final ReceiverBase receiverBase = mock(ReceiverBase.class);
+        final Receiver receiverBase = mock(Receiver.class);
         WebServiceListener listener = new WebServiceListener();
         listener.setServiceNamespaceURI(targetNamespace);
         when(receiverBase.getListener()).thenReturn(listener);

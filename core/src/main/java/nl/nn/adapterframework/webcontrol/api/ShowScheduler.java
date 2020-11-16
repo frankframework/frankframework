@@ -66,7 +66,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -523,8 +523,8 @@ public final class ShowScheduler extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
 		String listenerName = null;
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
+		if (receiver instanceof Receiver) {
+			Receiver rb = (Receiver) receiver;
 			IListener<?> listener = rb.getListener();
 			if(listener != null) {
 				listenerName = listener.getName();

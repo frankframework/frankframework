@@ -76,7 +76,7 @@ import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -627,8 +627,8 @@ public final class ShowConfigurationStatus extends Base {
 				messages.put("rejected", receiver.getMessagesRejected());
 				receiverInfo.put("messages", messages);
 				ISender sender=null;
-				if (receiver instanceof ReceiverBase ) {
-					ReceiverBase rb = (ReceiverBase) receiver;
+				if (receiver instanceof Receiver ) {
+					Receiver rb = (Receiver) receiver;
 					Map<String, Object> listenerInfo = new HashMap<String, Object>();
 					IListener<?> listener=rb.getListener();
 					listenerInfo.put("name", listener.getName());

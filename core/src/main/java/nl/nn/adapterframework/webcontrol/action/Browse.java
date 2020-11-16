@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -64,7 +64,7 @@ public class Browse extends ActionBase {
 	
 	
 	// if performAction returns true, no forward should be returned
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, Receiver receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 		return false;
 	}
@@ -171,7 +171,7 @@ public class Browse extends ActionBase {
 				MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
 				mb=pipe.getMessageLog();
 			} else {
-				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+				Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 				mb = receiver.getMessageLogBrowser();
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
@@ -179,7 +179,7 @@ public class Browse extends ActionBase {
 				performAction(adapter, null, action, mb, messageId, selected, request, response);
 			}
 		} else {
-			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+			Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
 			if (receiver==null) {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;

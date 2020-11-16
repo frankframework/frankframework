@@ -54,6 +54,7 @@ public interface IReceiver<M> extends IManagable, HasStatistics {
  	 * @see #startRunning
  	 * @throws ConfigurationException when initialization did not succeed.
  	 */ 
+	@Override
 	public void configure() throws ConfigurationException;
 	
 	/**

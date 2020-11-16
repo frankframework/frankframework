@@ -24,7 +24,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
  * retrieving-back messages under transaction control.
- * @see nl.nn.adapterframework.receivers.ReceiverBase
+ * @see nl.nn.adapterframework.receivers.Receiver
  * @author  Gerrit van Brakel
  * @since   4.1
 */

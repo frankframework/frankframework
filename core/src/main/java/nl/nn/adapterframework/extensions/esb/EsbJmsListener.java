@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -74,7 +74,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			setForceMessageIdAsCorrelationId(true);
 			if (CACHE_CONSUMER.equals(getCacheMode())) {
 				boolean recovered = false;
-				ReceiverBase receiverBase = getReceiverBase();
+				Receiver receiverBase = getReceiverBase();
 				if (receiverBase != null) {
 					recovered = (receiverBase.isRecover() || receiverBase.isRecoverAdapter());
 				}

@@ -45,7 +45,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -320,8 +320,8 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
 					IReceiver receiver = adapter.getReceiverByName(receiverName);
-					if (receiver instanceof ReceiverBase) {
-						ReceiverBase rb = (ReceiverBase) receiver;
+					if (receiver instanceof Receiver) {
+						Receiver rb = (Receiver) receiver;
 						ITransactionalStorage errorStorage = rb.getErrorStorage();
 						if (errorStorage == null) {
 							log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");

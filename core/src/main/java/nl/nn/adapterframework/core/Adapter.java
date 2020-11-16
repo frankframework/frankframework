@@ -42,7 +42,7 @@ import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -526,8 +526,8 @@ public class Adapter implements IAdapter, NamedBean {
 		while (it.hasNext()) {
 			IReceiver receiver = it.next();
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase receiverBase = (ReceiverBase) receiver;
+				if (receiver instanceof Receiver) {
+					Receiver receiverBase = (Receiver) receiver;
 					if (listenerClass.equals(receiverBase.getListener().getClass())) {
 						return receiver;
 					}
@@ -754,8 +754,8 @@ public class Adapter implements IAdapter, NamedBean {
 	@IbisDoc("100")
 	public void registerReceiver(IReceiver receiver) {
 		boolean receiverActive=true;
-		if (receiver instanceof ReceiverBase) {
-			receiverActive=((ReceiverBase)receiver).isActive();
+		if (receiver instanceof Receiver) {
+			receiverActive=((Receiver)receiver).isActive();
 		}
 		if (receiverActive) {
 			receivers.add(receiver);

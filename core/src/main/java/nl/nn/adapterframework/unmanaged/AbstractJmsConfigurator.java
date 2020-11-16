@@ -18,7 +18,7 @@ package nl.nn.adapterframework.unmanaged;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +37,7 @@ abstract public class AbstractJmsConfigurator {
 	private IPortConnectedListener<Message> listener;
 	private ConnectionFactory connectionFactory;
 	private Destination destination;
-	private ReceiverBase<Message> receiver;
+	private Receiver<Message> receiver;
 	private IbisExceptionListener exceptionListener;
 
 	public void configureEndpointConnection(IPortConnectedListener<Message> listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
@@ -50,7 +50,7 @@ abstract public class AbstractJmsConfigurator {
 		setListener(listener);
 		setConnectionFactory(connectionFactory);
 		setDestination(destination);
-		this.receiver = (ReceiverBase<Message>)getListener().getReceiver();
+		this.receiver = (Receiver<Message>)getListener().getReceiver();
 		this.exceptionListener = exceptionListener;
 	}
 
@@ -75,7 +75,7 @@ abstract public class AbstractJmsConfigurator {
 		return destination;
 	}
 
-	public ReceiverBase<Message> getReceiver() {
+	public Receiver<Message> getReceiver() {
 		return receiver;
 	}
 
