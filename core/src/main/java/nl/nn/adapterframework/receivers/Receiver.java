@@ -101,7 +101,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
+ * {@link IReceiver Receiver} implementation.
  *
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
@@ -159,7 +159,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> implements IReceiver<M>, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -1853,7 +1853,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"10", "The source of messages"})
-	protected void setListener(IListener<M> newListener) {
+	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (StringUtils.isEmpty(listener.getName())) {
 			listener.setName("listener of ["+getName()+"]");
@@ -1868,7 +1868,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	@IbisDoc("20")
-	protected void setSender(ISender sender) {
+	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
 	@Override
@@ -1883,7 +1883,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 */
 	@Deprecated
 	@ConfigurationWarning("In-Process Storage no longer exists")
-	protected void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
+	public void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1898,7 +1898,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * @param errorSender The errorSender to set
 	 */
 	@IbisDoc({"30", "Sender that will receive the result in case the PipeLineExit state was not 'success'"})
-	protected void setErrorSender(ISender errorSender) {
+	public void setErrorSender(ISender errorSender) {
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
@@ -1907,7 +1907,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
-	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
+	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
 			this.errorStorage = errorStorage;
 			errorStorage.setName("errorStorage of ["+getName()+"]");
@@ -1932,7 +1932,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	
 	
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
-	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
 			messageLog.setName("messageLog of ["+getName()+"]");

@@ -752,7 +752,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see IReceiver
 	 */
 	@IbisDoc("100")
-	public void registerReceiver(IReceiver receiver) {
+	public void registerReceiver(Receiver receiver) {
 		boolean receiverActive=true;
 		if (receiver instanceof Receiver) {
 			receiverActive=((Receiver)receiver).isActive();
