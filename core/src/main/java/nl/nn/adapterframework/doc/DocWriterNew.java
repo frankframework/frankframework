@@ -322,8 +322,16 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
-		addElement(context, xsdFieldName(child), xsdTypeOf(child.getElementType()),
-				getMinOccurs(child), getMaxOccurs(child));
+		ElementType elementType = child.getElementType();
+		if(elementType.isFromJavaInterface()) {
+			addElement(context, xsdFieldName(child), xsdTypeOf(elementType),
+					getMinOccurs(child), getMaxOccurs(child));
+		}
+		else {
+			FrankElement containedFrankElement = elementType.getMembers().values().iterator().next();
+			addElement(context, xsdFieldName(child), xsdTypeOf(containedFrankElement),
+					getMinOccurs(child), getMaxOccurs(child));
+		}
 	}
 
 	private static String xsdFieldName(ConfigChild configChild) {
