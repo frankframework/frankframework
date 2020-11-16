@@ -124,6 +124,7 @@ public class DocWriterNew {
 		FrankElementBreadthFirstSorter() {
 			available = new HashSet<>();
 			available.addAll(model.getAllTypes().values().stream()
+					.filter(t -> t.isFromJavaInterface())
 					.map(SortKeyForXsd::getInstance)
 					.collect(Collectors.toSet()));
 			available.addAll(model.getAllElements().values().stream()
@@ -146,7 +147,6 @@ public class DocWriterNew {
 				List<SortKeyForXsd> children = getSortedChildren(current);
 				children.stream().filter(available::contains).forEach(this::take);
 			}
-			available.forEach(result::add);
 			return result;
 		}
 
@@ -177,13 +177,23 @@ public class DocWriterNew {
 			List<ConfigChild> configChildren = getNonDeprecatedConfigChildren(element);
 			configChildren.sort((c1, c2) -> c1.getSyntax1Name().compareTo(c2.getSyntax1Name()));
 			List<SortKeyForXsd> result = configChildren.stream()
-					.map(ConfigChild::getElementType)
-					.map(SortKeyForXsd::getInstance)
+					.map(c -> getTypeKey(c))
 					.collect(Collectors.toList());
 			if(isParentSortElementChild(element, result)) {
 				result.add(SortKeyForXsd.getInstance(element.getParent()));
 			}
 			return result;
+		}
+
+		private SortKeyForXsd getTypeKey(ConfigChild configChild) {
+			ElementType elementType = configChild.getElementType();
+			if(elementType.isFromJavaInterface()) {
+				return SortKeyForXsd.getInstance(elementType);
+			}
+			else {
+				FrankElement content = elementType.getMembers().values().iterator().next();
+				return SortKeyForXsd.getInstance(content);
+			}
 		}
 
 		private boolean isParentSortElementChild(FrankElement container, List<SortKeyForXsd> otherChildren) {
