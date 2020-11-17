@@ -29,13 +29,11 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
@@ -160,7 +158,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		List<Configuration> allConfigurations = ibisManager.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 
-		List<IAdapter> registeredAdapters = retrieveRegisteredAdapters(ibisManager, configAll, configuration);
+		List<Adapter> registeredAdapters = retrieveRegisteredAdapters(ibisManager, configAll, configuration);
 		storeConfiguration(session, configAll, configuration);
 
 		XmlBuilder adapters = toAdaptersXml(ibisManager, allConfigurations, configuration, registeredAdapters,
@@ -173,8 +171,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return root.toXML();
 	}
 
-	private List<IAdapter> retrieveRegisteredAdapters(IbisManager ibisManager, boolean configAll,
-			Configuration configuration) {
+	private List<Adapter> retrieveRegisteredAdapters(IbisManager ibisManager, boolean configAll, Configuration configuration) {
 		if (configAll) {
 			return ibisManager.getRegisteredAdapters();
 		} else {
@@ -182,8 +179,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		}
 	}
 
-	private XmlBuilder toAdaptersXml(IbisManager ibisManager, List<Configuration> configurations,
-			Configuration configurationSelected, List<IAdapter> registeredAdapters,
+	private XmlBuilder toAdaptersXml(IbisManager ibisManager, List<Configuration> configurations, Configuration configurationSelected, List<Adapter> registeredAdapters,
 			ShowConfigurationStatusManager showConfigurationStatusManager) {
 		XmlBuilder adapters = new XmlBuilder("registeredAdapters");
 		if (configurationSelected != null) {
@@ -209,8 +205,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			adapters.addSubElement(configurationWarningsXml);
 		}
 
-		for (IAdapter iAdapter : registeredAdapters) {
-			Adapter adapter = (Adapter) iAdapter;
+		for (Adapter adapter : registeredAdapters) {
 			XmlBuilder adapterXml = toAdapterXml(configurationSelected, adapter, showConfigurationStatusManager);
 			adapters.addSubElement(adapterXml);
 		}
@@ -361,9 +356,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			if (configurationSelected != null) {
 				String config = configurationSelected.getName();
 				int totalCounter = 0;
-				for (Iterator adapterIt = configurationSelected.getRegisteredAdapters().iterator(); adapterIt
-						.hasNext();) {
-					Adapter adapter = (Adapter) adapterIt.next();
+				for (Adapter adapter: configurationSelected.getRegisteredAdapters()) {
 					int counter = retrieveErrorStoragesMessageCount(adapter);
 					if (counter < 0) {
 						// error occured
@@ -379,8 +372,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				for (Configuration configuration : configurations) {
 					String config = configuration.getName();
 					int totalCounter = 0;
-					for (Iterator adapterIt = configuration.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
-						Adapter adapter = (Adapter) adapterIt.next();
+					for (Adapter adapter: configuration.getRegisteredAdapters()) {
 						int counter = retrieveErrorStoragesMessageCount(adapter);
 						if (counter < 0) {
 							// error occured
@@ -431,8 +423,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		}
 	}
 	
-	private XmlBuilder toAdapterXml(Configuration configurationSelected, Adapter adapter,
-			ShowConfigurationStatusManager showConfigurationStatusManager) {
+	private XmlBuilder toAdapterXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager) {
 		ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager = new ShowConfigurationStatusAdapterManager();
 
 		XmlBuilder adapterXML = new XmlBuilder("adapter");
@@ -647,13 +638,9 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				}
 				receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
 
-				if (receiver instanceof HasSender) {
-					ISender rsender = ((HasSender) receiver).getSender();
-					if (rsender != null) { // this sender has preference, but
-											// avoid overwriting listeners
-											// sender with null
-						sender = rsender;
-					}
+				ISender rsender = receiver.getSender();
+				if (rsender != null) { // this sender has preference, but avoid overwriting listeners sender with null
+					sender = rsender;
 				}
 				if (sender != null) {
 					receiverXML.addAttribute("senderName", sender.getName());
@@ -663,15 +650,12 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 						receiverXML.addAttribute("senderDestination", pd);
 					}
 				}
-				if (receiver instanceof IThreadCountControllable) {
-					IThreadCountControllable tcc = (IThreadCountControllable) receiver;
-					if (tcc.isThreadCountReadable()) {
-						receiverXML.addAttribute("threadCount", tcc.getCurrentThreadCount() + "");
-						receiverXML.addAttribute("maxThreadCount", tcc.getMaxThreadCount() + "");
-					}
-					if (tcc.isThreadCountControllable()) {
-						receiverXML.addAttribute("threadCountControllable", "true");
-					}
+				if (receiver.isThreadCountReadable()) {
+					receiverXML.addAttribute("threadCount", receiver.getCurrentThreadCount() + "");
+					receiverXML.addAttribute("maxThreadCount", receiver.getMaxThreadCount() + "");
+				}
+				if (receiver.isThreadCountControllable()) {
+					receiverXML.addAttribute("threadCountControllable", "true");
 				}
 			}
 		}

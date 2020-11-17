@@ -44,8 +44,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration()
-				.getIbisManager().getIbisContext();
+		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 	}
 
 	@Override

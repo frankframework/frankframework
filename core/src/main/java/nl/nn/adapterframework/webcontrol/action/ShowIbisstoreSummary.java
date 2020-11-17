@@ -33,7 +33,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
@@ -84,8 +83,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 			}
 		}
 
-		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
+		for(Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {

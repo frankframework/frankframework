@@ -108,8 +108,7 @@ public final class ShowIbisstoreSummary extends Base {
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
 
-		for(IAdapter iAdapter : getIbisManager().getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
+		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
 			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {

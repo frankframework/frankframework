@@ -61,7 +61,7 @@ public class GenericMessageSendingPipe extends MessageSendingPipe {
 
 	@Override
 	public void setSender(ISender sender) {
-		super.setSender((ISender)sender);
+		super.setSender(sender);
 	}
 
 }

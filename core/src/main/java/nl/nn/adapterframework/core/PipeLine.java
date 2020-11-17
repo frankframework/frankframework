@@ -220,9 +220,9 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 */
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
-		IAdapter adapter = null;
-		if (owner instanceof IAdapter) {
-			adapter = (IAdapter)owner;
+		Adapter adapter = null;
+		if (owner instanceof Adapter) {
+			adapter = (Adapter)owner;
 		}
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
@@ -310,8 +310,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe && adapter instanceof Adapter) {
-				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(((Adapter) adapter).isRecover());
+			if (getOutputWrapper() instanceof AbstractPipe) {
+				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(adapter.isRecover());
 			}
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);

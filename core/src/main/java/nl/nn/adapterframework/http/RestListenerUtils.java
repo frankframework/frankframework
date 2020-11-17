@@ -31,7 +31,6 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -151,7 +150,7 @@ public class RestListenerUtils {
 
 	private static boolean doRestartShowConfigurationStatus(IbisContext ibisContext) {
 
-		IAdapter adapter = null;
+		Adapter adapter = null;
 		Receiver receiver = null;
 		if (ibisContext != null) {
 			IbisManager ibisManager = ibisContext.getIbisManager();
@@ -159,59 +158,40 @@ public class RestListenerUtils {
 				Configuration configuration = ibisManager.getConfiguration(SHOW_CONFIG_STATUS_CONFIGURATION);
 				if (configuration != null) {
 					adapter = configuration.getRegisteredAdapter(SHOW_CONFIG_STATUS_ADAPTER);
-					if (adapter instanceof Adapter) {
-						receiver = ((Adapter) adapter).getReceiverByNameAndListener(SHOW_CONFIG_STATUS_RECEIVER, RestListener.class);
-					}
+					receiver = adapter.getReceiverByNameAndListener(SHOW_CONFIG_STATUS_RECEIVER, RestListener.class);
 				}
 			}
 		}
 
 		if (adapter == null) {
-			log.info("could not restart ShowConfigurationStatus, adapter ["
-					+ SHOW_CONFIG_STATUS_ADAPTER + "] not found");
+			log.info("could not restart ShowConfigurationStatus, adapter [" + SHOW_CONFIG_STATUS_ADAPTER + "] not found");
 			return false;
 		}
 		if (receiver == null) {
-			log.info("could not restart ShowConfigurationStatus, receiver ["
-					+ SHOW_CONFIG_STATUS_RECEIVER + "] not found");
+			log.info("could not restart ShowConfigurationStatus, receiver [" + SHOW_CONFIG_STATUS_RECEIVER + "] not found");
 			return false;
 		}
 
 		RunStateEnum adapterStatus = adapter.getRunState();
 		RunStateEnum receiverStatus = receiver.getRunState();
 
-		if (RunStateEnum.STARTED.equals(adapterStatus)
-				&& RunStateEnum.STARTED.equals(receiverStatus)) {
-			log.info(
-					"ShowConfigurationStatus is already running, will restart it");
-			ibisContext.getIbisManager().handleAdapter("stopadapter",
-					SHOW_CONFIG_STATUS_CONFIGURATION,
-					SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER,
-					"system", true);
+		if (RunStateEnum.STARTED.equals(adapterStatus) && RunStateEnum.STARTED.equals(receiverStatus)) {
+			log.info("ShowConfigurationStatus is already running, will restart it");
+			ibisContext.getIbisManager().handleAdapter("stopadapter", SHOW_CONFIG_STATUS_CONFIGURATION, SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER, "system", true);
 		}
 
 		if (RunStateEnum.STOPPED.equals(adapterStatus)) {
 			log.info("starting adapter of ShowConfigurationStatus");
-			ibisContext.getIbisManager().handleAdapter("startadapter",
-					SHOW_CONFIG_STATUS_CONFIGURATION,
-					SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER,
-					"system", true);
+			ibisContext.getIbisManager().handleAdapter("startadapter", SHOW_CONFIG_STATUS_CONFIGURATION, SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER, "system", true);
 			return true;
 		} else {
-			if (RunStateEnum.STARTED.equals(adapterStatus)
-					&& RunStateEnum.STOPPED.equals(receiverStatus)) {
+			if (RunStateEnum.STARTED.equals(adapterStatus) && RunStateEnum.STOPPED.equals(receiverStatus)) {
 				log.info("starting receiver of ShowConfigurationStatus");
-				ibisContext.getIbisManager().handleAdapter("startreceiver",
-						SHOW_CONFIG_STATUS_CONFIGURATION,
-						SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER,
-						"system", true);
+				ibisContext.getIbisManager().handleAdapter("startreceiver", SHOW_CONFIG_STATUS_CONFIGURATION, SHOW_CONFIG_STATUS_ADAPTER, SHOW_CONFIG_STATUS_RECEIVER, "system", true);
 				return true;
 			}
 		}
-		log.info(
-				"could not restart ShowConfigurationStatus with adapter status ["
-						+ adapterStatus + "] and receiver status ["
-						+ receiverStatus + "]");
+		log.info("could not restart ShowConfigurationStatus with adapter status [" + adapterStatus + "] and receiver status [" + receiverStatus + "]");
 		return false;
 	}
 }

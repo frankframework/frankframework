@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ abstract public class AbstractJmsConfigurator {
 		setListener(listener);
 		setConnectionFactory(connectionFactory);
 		setDestination(destination);
-		this.receiver = (Receiver<Message>)getListener().getReceiver();
+		this.receiver = getListener().getReceiver();
 		this.exceptionListener = exceptionListener;
 	}
 

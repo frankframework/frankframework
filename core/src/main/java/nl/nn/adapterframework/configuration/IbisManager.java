@@ -21,7 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -66,11 +66,11 @@ public interface IbisManager extends ApplicationEventPublisherAware {
      */
     void shutdown();
 
-    public IAdapter getRegisteredAdapter(String name);
+    public Adapter getRegisteredAdapter(String name);
 
     public List<String> getSortedStartedAdapterNames();
 
-    public List<IAdapter> getRegisteredAdapters();
+    public List<Adapter> getRegisteredAdapters();
 
     /**
      * Get the Spring Platform Transaction Manager, for use by

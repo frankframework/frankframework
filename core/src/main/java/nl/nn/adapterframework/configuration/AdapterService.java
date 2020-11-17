@@ -15,10 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,9 +24,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
+
 /**
  * Straight forward implementation of {@link IAdapterService}, which is only filled by calls to 
- * {@link #registerAdapter(nl.nn.adapterframework.core.IAdapter)}, typically by digester rules 
+ * {@link #registerAdapter(nl.nn.adapterframework.core.Adapter)}, typically by digester rules 
  * via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.Adapter)}
  *
  * @author Michiel Meeuwissen
@@ -39,21 +39,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class AdapterService implements IAdapterService {
 
 	protected final Logger log = LogUtil.getLogger(this);
-	private final Map<String, IAdapter> adapters = new LinkedHashMap<>(); // insertion order map
+	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 	private FlowDiagramManager flowDiagramManager;
 
 	@Override
-	public IAdapter getAdapter(String name) {
+	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
 	}
 
 	@Override
-	public final Map<String, IAdapter> getAdapters() {
+	public final Map<String, Adapter> getAdapters() {
 		return Collections.unmodifiableMap(adapters);
 	}
 
 	@Override
-	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
+	public void registerAdapter(Adapter adapter) throws ConfigurationException {
 		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterService ["+this+"]");
 		if(adapter.getName() == null) {
 			throw new ConfigurationException("Adapter has no name");
@@ -76,7 +76,7 @@ public class AdapterService implements IAdapterService {
 	}
 
 	@Override
-	public void unRegisterAdapter(IAdapter adapter) {
+	public void unRegisterAdapter(Adapter adapter) {
 		adapters.remove(adapter.getName());
 		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+adapter+"] from AdapterService ["+this+"]");
 	}

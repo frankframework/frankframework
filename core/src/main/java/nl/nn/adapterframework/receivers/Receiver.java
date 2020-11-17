@@ -47,7 +47,6 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
@@ -265,7 +264,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
 
 	// the adapter that handles the messages and initiates this listener
-	private IAdapter adapter;
+	private Adapter adapter;
 
 	private IListener<M> listener;
 	private ISender errorSender=null;
@@ -1280,7 +1279,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					}
 				}
 				if (!messageInError && !isTransacted()) {
-					String commitOnState=((Adapter)adapter).getPipeLine().getCommitOnState();
+					String commitOnState=adapter.getPipeLine().getCommitOnState();
 					
 					if (StringUtils.isNotEmpty(commitOnState) && 
 						!commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
@@ -1786,7 +1785,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 * 
 	 * @see nl.nn.adapterframework.core.IAdapter
 	 */
-	public void setAdapter(IAdapter adapter) {
+	public void setAdapter(Adapter adapter) {
 		this.adapter = adapter;
 	}
 	
@@ -1794,7 +1793,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
 	@Override
-	public IAdapter getAdapter() {
+	public Adapter getAdapter() {
 		return adapter;
 	}
 
@@ -2269,12 +2268,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	public boolean isRecoverAdapter() {
-		IAdapter adapter = getAdapter();
-		if (adapter instanceof Adapter) {
-			Adapter at = (Adapter) adapter;
-			return at.isRecover();
-		}
-		return false;
+		return getAdapter().isRecover();
 	}
 
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})

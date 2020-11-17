@@ -296,17 +296,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	protected boolean isRecoverAdapter() {
-		boolean recover = false;
-		IAdapter iAdapter = getAdapter();
-		if (iAdapter == null) {
-			recover = recoverAdapter;
-		} else {
-			if (iAdapter instanceof Adapter) {
-				Adapter adapter = (Adapter) iAdapter;
-				recover = adapter.isRecover();
-			}
-		}
-		return recover;
+		Adapter adapter = getAdapter();
+		return adapter == null ? recoverAdapter : adapter.isRecover();
 	}
 
 	/**
@@ -394,7 +385,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	@Override
-	public IAdapter getAdapter() {
+	public Adapter getAdapter() {
 		if (getPipeLine()!=null) {
 			return getPipeLine().getAdapter();
 		}

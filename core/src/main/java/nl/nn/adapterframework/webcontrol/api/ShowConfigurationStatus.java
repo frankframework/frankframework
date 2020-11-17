@@ -98,7 +98,7 @@ public final class ShowConfigurationStatus extends Base {
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	private Adapter getAdapter(String adapterName) {
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -114,10 +114,7 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 
 		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
-		List<IAdapter> registeredAdapters = getIbisManager().getRegisteredAdapters();
-
-		for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
-			Adapter adapter = (Adapter)adapterIt.next();
+		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
 
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
 			if(expanded != null && !expanded.isEmpty()) {
@@ -724,11 +721,9 @@ public final class ShowConfigurationStatus extends Base {
 
 			receiverInfo.put("listener", listenerInfo);
 
-			if (receiver instanceof HasSender) {
-				ISender rsender = ((HasSender) receiver).getSender();
-				if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-					sender=rsender; 
-				}
+			ISender rsender = receiver.getSender();
+			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
+				sender=rsender; 
 			}
 			if (sender != null) { 
 				receiverInfo.put("senderName", sender.getName());
@@ -738,15 +733,12 @@ public final class ShowConfigurationStatus extends Base {
 					receiverInfo.put("senderDestination", pd);
 				}
 			}
-			if (receiver instanceof IThreadCountControllable) {
-				IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-				if (tcc.isThreadCountReadable()) {
-					receiverInfo.put("threadCount", tcc.getCurrentThreadCount());
-					receiverInfo.put("maxThreadCount", tcc.getMaxThreadCount());
-				}
-				if (tcc.isThreadCountControllable()) {
-					receiverInfo.put("threadCountControllable", "true");
-				}
+			if (receiver.isThreadCountReadable()) {
+				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
+				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
+			}
+			if (receiver.isThreadCountControllable()) {
+				receiverInfo.put("threadCountControllable", "true");
 			}
 			receivers.add(receiverInfo);
 		}

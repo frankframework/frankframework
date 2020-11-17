@@ -44,8 +44,6 @@ import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
@@ -142,8 +140,7 @@ public final class ShowSecurityItems extends ActionBase {
 		XmlBuilder registeredAdapters = new XmlBuilder("registeredAdapters");
 		securityItems.addSubElement(registeredAdapters);
 		int countCertificate = 0;
-		for (IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
+		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			registeredAdapters.addSubElement(adapterXML);
@@ -157,11 +154,9 @@ public final class ShowSecurityItems extends ActionBase {
 
 				receiverXML.addAttribute("name", receiver.getName());
 
-				if (receiver instanceof HasSender) {
-					ISender sender = ((HasSender) receiver).getSender();
-					if (sender != null) {
-						receiverXML.addAttribute("senderName", sender.getName());
-					}
+				ISender sender = receiver.getSender();
+				if (sender != null) {
+					receiverXML.addAttribute("senderName", sender.getName());
 				}
 			}
 			adapterXML.addSubElement(receiversXML);

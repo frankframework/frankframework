@@ -77,8 +77,7 @@ public final class Webservices extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
-			Adapter adapter = (Adapter) a;
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			for (Receiver receiver: adapter.getReceivers()) {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
@@ -95,15 +94,14 @@ public final class Webservices extends Base {
 		returnMap.put("services", webServices);
 
 		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
 			try {
-				Adapter adapter = (Adapter) a;
 				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
 				wsdlMap.put("name", wsdl.getName());
 				wsdlMap.put("extension", getWsdlExtension());
 			} catch (Exception e) {
-				wsdlMap.put("name", a.getName());
+				wsdlMap.put("name", adapter.getName());
 
 				if (e.getMessage() != null) {
 					wsdlMap.put("error", e.getMessage());

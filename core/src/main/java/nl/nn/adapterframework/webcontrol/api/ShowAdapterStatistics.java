@@ -59,7 +59,7 @@ public final class ShowAdapterStatistics extends Base {
 
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
 
-		Adapter adapter = (Adapter)getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");

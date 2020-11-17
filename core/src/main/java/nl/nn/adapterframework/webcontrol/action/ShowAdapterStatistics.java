@@ -62,7 +62,7 @@ public class ShowAdapterStatistics extends ActionBase {
 	    String deepString =  request.getParameter("deep");
 	    boolean deep = "true".equals(deepString);
 	
-	    Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
+	    Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 	    XmlBuilder adapterXML = new XmlBuilder("adapterStatistics");
 	
 	    adapterXML.addAttribute("name", adapter.getName());
@@ -102,13 +102,7 @@ public class ShowAdapterStatistics extends ActionBase {
 			receiverXML.addAttribute("class", receiver.getClass().getName());
 			receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
 			receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
-/*				  
-		    if (receiver instanceof HasSender) {
-				ISender sender = ((HasSender) receiver).getSender();
-			          if (sender != null) 
-				          	receiverXML.addAttribute("senderName", sender.getName());
- 	        }
-*/		    
+
 			XmlBuilder procStatsXML = new XmlBuilder("procStats");
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));

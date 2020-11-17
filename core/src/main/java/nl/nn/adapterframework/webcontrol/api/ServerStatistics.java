@@ -49,7 +49,7 @@ import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
@@ -179,7 +179,7 @@ public class ServerStatistics extends Base {
 			//ErrorStore count
 			if (showCountErrorStore) {
 				long esr = 0;
-				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
+				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
 					for (Receiver receiver: adapter.getReceivers()) {
 						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
@@ -390,11 +390,10 @@ public class ServerStatistics extends Base {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
-		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
 		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
-		for (IAdapter adapter : adapters) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
