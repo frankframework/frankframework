@@ -18,7 +18,6 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
