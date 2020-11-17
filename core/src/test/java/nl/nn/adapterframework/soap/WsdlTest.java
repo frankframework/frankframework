@@ -261,9 +261,9 @@ public class WsdlTest {
         WebServiceListener listener = new WebServiceListener();
         listener.setServiceNamespaceURI(targetNamespace);
         when(receiverBase.getListener()).thenReturn(listener);
-        when(adp.getReceiverIterator()).thenAnswer(new Answer<Iterator>() {
-            public Iterator answer(InvocationOnMock invocation) throws Throwable {
-                return Arrays.asList(receiverBase).iterator();
+        when(adp.getReceivers()).thenAnswer(new Answer<Iterable<Receiver>>() {
+            public Iterable<Receiver> answer(InvocationOnMock invocation) throws Throwable {
+                return Arrays.asList(receiverBase);
             }
         });
         when(adp.getName()).thenReturn(adapterName);

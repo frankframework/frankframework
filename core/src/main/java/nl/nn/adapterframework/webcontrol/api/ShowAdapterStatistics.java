@@ -86,8 +86,7 @@ public final class ShowAdapterStatistics extends Base {
 		statisticsMap.put("hourly", hourslyStatistics);
 
 		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
-		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-			Receiver receiver = it.next();
+		for (Receiver receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverMap = new HashMap<String, Object>();
 
 			receiverMap.put("name", receiver.getName());

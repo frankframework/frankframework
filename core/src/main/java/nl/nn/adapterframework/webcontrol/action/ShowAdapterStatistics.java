@@ -95,8 +95,7 @@ public class ShowAdapterStatistics extends ActionBase {
 		}
 	    
 		XmlBuilder receiversXML=new XmlBuilder("receivers");
-		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-			Receiver receiver = it.next();
+		for (Receiver receiver: adapter.getReceivers()) {
 			XmlBuilder receiverXML=new XmlBuilder("receiver");
 			receiversXML.addSubElement(receiverXML);
 

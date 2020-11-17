@@ -45,8 +45,7 @@ public abstract class WsdlUtils {
 
 	public static Collection<IListener> getListeners(IAdapter adapter) {
 		List<IListener> result = new ArrayList<IListener>();
-		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-			Receiver receiver = it.next();
+		for (Receiver receiver: adapter.getReceivers()) {
 			result.add(receiver.getListener());
 		}
 		return result;

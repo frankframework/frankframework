@@ -151,8 +151,7 @@ public final class ShowSecurityItems extends ActionBase {
 			adapterXML.addAttribute("name", adapter.getName());
 
 			XmlBuilder receiversXML = new XmlBuilder("receivers");
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				Receiver receiver = it.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				XmlBuilder receiverXML = new XmlBuilder("receiver");
 				receiversXML.addSubElement(receiverXML);
 

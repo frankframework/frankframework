@@ -686,8 +686,8 @@ public class JobDef {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				collectMessageLogs(messageLogs, it.next().getMessageLog());
+			for (Receiver receiver: adapter.getReceivers()) {
+				collectMessageLogs(messageLogs, receiver.getMessageLog());
 			}
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
@@ -1116,8 +1116,7 @@ public class JobDef {
 				} else {
 					heartbeatLog.warn(message);
 				}
-				for (Iterator<Receiver> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					Receiver receiver = receiverIt.next();
+				for (Receiver receiver: adapter.getReceivers()) {
 					countReceiver++;
 
 					RunStateEnum receiverRunState = receiver.getRunState();

@@ -400,8 +400,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
 		int totalCounter = 0;
-		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-			Receiver receiver = (Receiver) receiverIt.next();
+		for (Receiver receiver: adapter.getReceivers()) {
 			IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 			if (errorStorage != null) {
 				int counter;
@@ -520,7 +519,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager, ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
-		Iterator<Receiver> recIt = adapter.getReceiverIterator();
+		Iterator<Receiver> recIt = adapter.getReceivers().iterator();
 		if (!recIt.hasNext()) {
 			return null;
 		}

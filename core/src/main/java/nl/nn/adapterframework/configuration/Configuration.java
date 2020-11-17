@@ -241,8 +241,8 @@ public class Configuration implements INamedObject{
 	/**
 	 * Register an adapter with the configuration.
 	 */
-	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
-		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
+	public void registerAdapter(Adapter adapter) throws ConfigurationException {
+		if (adapter.isActive()) {
 			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
 			return;
 		}

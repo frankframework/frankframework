@@ -241,7 +241,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");
@@ -282,7 +282,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");

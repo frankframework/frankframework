@@ -318,8 +318,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-					Receiver receiver = it.next();
+				for (Receiver receiver: adapter.getReceivers()) {
 					IListener listener = receiver.getListener();
 					try {
 						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {

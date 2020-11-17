@@ -180,8 +180,7 @@ public final class ShowConfiguration extends Base {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-					Receiver receiver = it.next();
+				for (Receiver receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {

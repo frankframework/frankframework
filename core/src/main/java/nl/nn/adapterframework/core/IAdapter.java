@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Iterator;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jmx.JmxAttribute;
@@ -51,7 +49,7 @@ public interface IAdapter extends IManagable {
 	 */
 	public MessageKeeper getMessageKeeper();
 	public Receiver getReceiverByName(String receiverName);
-	public Iterator<Receiver> getReceiverIterator();
+	public Iterable<Receiver> getReceivers();
 	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
 

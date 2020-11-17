@@ -80,8 +80,7 @@ public final class Webservices extends Base {
 		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
 		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				Receiver receiver = it.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;

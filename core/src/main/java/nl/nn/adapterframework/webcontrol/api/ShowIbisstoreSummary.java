@@ -111,8 +111,7 @@ public final class ShowIbisstoreSummary extends Base {
 
 		for(IAdapter iAdapter : getIbisManager().getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iAdapter;
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				Receiver receiver = it.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();

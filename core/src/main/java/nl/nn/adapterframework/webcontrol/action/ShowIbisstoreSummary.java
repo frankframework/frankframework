@@ -87,8 +87,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iAdapter;
-			for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-				Receiver receiver=(Receiver)receiverIt.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();

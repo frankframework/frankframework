@@ -102,8 +102,7 @@ public class Webservices extends TimeoutGuardPipe {
 		XmlBuilder restsXML = new XmlBuilder("rests");
 		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				Receiver receiver = it.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;

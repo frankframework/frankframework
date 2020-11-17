@@ -219,8 +219,7 @@ public final class ShowConfigurationStatus extends Base {
 		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 		if(state.equals(RunStateEnum.STARTED)) {
-			for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-				Receiver receiver = it.next();
+			for (Receiver receiver: adapter.getReceivers()) {
 				RunStateEnum rState = receiver.getRunState();
 
 				if(!rState.equals(RunStateEnum.STARTED)) {
@@ -606,8 +605,7 @@ public final class ShowConfigurationStatus extends Base {
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 
-		for (Iterator<Receiver> it = adapter.getReceiverIterator(); it.hasNext();) {
-			Receiver receiver = it.next();
+		for (Receiver receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverInfo = new HashMap<String, Object>();
 
 			RunStateEnum receiverRunState = receiver.getRunState();

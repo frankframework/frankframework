@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -523,8 +522,8 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public Iterator<Receiver> getReceiverIterator() {
-		return receivers.iterator();
+	public Iterable<Receiver> getReceivers() {
+		return receivers;
 	}
 
 	public PipeLine getPipeLine() {

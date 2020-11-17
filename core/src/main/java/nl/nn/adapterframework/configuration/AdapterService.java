@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 /**
  * Straight forward implementation of {@link IAdapterService}, which is only filled by calls to 
  * {@link #registerAdapter(nl.nn.adapterframework.core.IAdapter)}, typically by digester rules 
- * via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.IAdapter)}
+ * via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.Adapter)}
  *
  * @author Michiel Meeuwissen
  * @since 5.4
