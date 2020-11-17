@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;

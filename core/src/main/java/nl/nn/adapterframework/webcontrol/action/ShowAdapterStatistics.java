@@ -95,7 +95,7 @@ public class ShowAdapterStatistics extends ActionBase {
 		}
 	    
 		XmlBuilder receiversXML=new XmlBuilder("receivers");
-		for (Receiver receiver: adapter.getReceivers()) {
+		for (Receiver<?> receiver: adapter.getReceivers()) {
 			XmlBuilder receiverXML=new XmlBuilder("receiver");
 			receiversXML.addSubElement(receiverXML);
 
@@ -110,33 +110,23 @@ public class ShowAdapterStatistics extends ActionBase {
 				          	receiverXML.addAttribute("senderName", sender.getName());
  	        }
 */		    
-		    Iterator statsIter;
+			XmlBuilder procStatsXML = new XmlBuilder("procStats");
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
+			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
+				procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
+			}
+			receiverXML.addSubElement(procStatsXML);
 
-		    statsIter = receiver.getProcessStatisticsIterator();
-		    if (statsIter != null) {
-			    XmlBuilder procStatsXML = new XmlBuilder("procStats");
-//				procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
-//				procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
-			    while(statsIter.hasNext()) {
-			        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-			        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
-		        }
-				receiverXML.addSubElement(procStatsXML);
-		    }
+			
+			XmlBuilder idleStatsXML = new XmlBuilder("idleStats");
+			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
+				idleStatsXML.addSubElement(statisticsKeeperToXmlBuilder(istat, "stat", deep));
+			}
+			receiverXML.addSubElement(idleStatsXML);
+		}
+		adapterXML.addSubElement(receiversXML); 
 
-		    statsIter = receiver.getIdleStatisticsIterator();
-		    if (statsIter != null) {
-		        XmlBuilder procStatsXML = new XmlBuilder("idleStats");
-			    while(statsIter.hasNext()) {
-			        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-			        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
-	  	      	}
-				receiverXML.addSubElement(procStatsXML);
-		    }
-	        adapterXML.addSubElement(receiversXML); 
-	    }
-	
-	    
 		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML, deep);
 		handler.configure();
 		Object handle = handler.start(null,null,null);

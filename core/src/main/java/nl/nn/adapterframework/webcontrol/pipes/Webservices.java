@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;

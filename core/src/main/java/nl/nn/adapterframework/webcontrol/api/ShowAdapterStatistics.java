@@ -86,7 +86,7 @@ public final class ShowAdapterStatistics extends Base {
 		statisticsMap.put("hourly", hourslyStatistics);
 
 		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
-		for (Receiver receiver: adapter.getReceivers()) {
+		for (Receiver<?> receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverMap = new HashMap<String, Object>();
 
 			receiverMap.put("name", receiver.getName());
@@ -94,28 +94,19 @@ public final class ShowAdapterStatistics extends Base {
 			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
-			Iterator<?> statsIter;
-			statsIter = receiver.getProcessStatisticsIterator();
-			if (statsIter != null) {
-				ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
-				while(statsIter.hasNext()) {
-					StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-				}
-				receiverMap.put("processing", procStatsMap);
+			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
+			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
+				procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
 			}
+			receiverMap.put("processing", procStatsMap);
 
-			statsIter = receiver.getIdleStatisticsIterator();
-			if (statsIter != null) {
-				ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
-				while(statsIter.hasNext()) {
-					StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					idleStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-				}
-				receiverMap.put("idle", idleStatsMap);
+			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
+			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
+				idleStatsMap.add(statisticsKeeperToMapBuilder(istat));
 			}
+			receiverMap.put("idle", idleStatsMap);
 
 			receivers.add(receiverMap);
 		}

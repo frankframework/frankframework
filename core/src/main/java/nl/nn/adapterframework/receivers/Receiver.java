@@ -1540,33 +1540,24 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		numRetried.performAction(action);
 		numRejected.performAction(action);
 		messageExtractionStatistics.performAction(action);
-		Iterator<StatisticsKeeper> statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,null,"procStats");
-		if (statsIter != null) {
-			while(statsIter.hasNext()) {
-				StatisticsKeeper pstat = statsIter.next();
-				hski.handleStatisticsKeeper(pstatData,pstat);
-				pstat.performAction(action);
-			}
+		for(StatisticsKeeper pstat:getProcessStatistics()) {
+			hski.handleStatisticsKeeper(pstatData,pstat);
+			pstat.performAction(action);
 		}
 		hski.closeGroup(pstatData);
 
-		statsIter = getIdleStatisticsIterator();
-		if (statsIter != null) {
-			Object istatData=hski.openGroup(recData,null,"idleStats");
-			while(statsIter.hasNext()) {
-				StatisticsKeeper pstat = statsIter.next();
-				hski.handleStatisticsKeeper(istatData,pstat);
-				pstat.performAction(action);
-			}
-			hski.closeGroup(istatData);
+		Object istatData=hski.openGroup(recData,null,"idleStats");
+		for(StatisticsKeeper istat:getIdleStatistics()) {
+			hski.handleStatisticsKeeper(istatData,istat);
+			istat.performAction(action);
 		}
+		hski.closeGroup(istatData);
 
-		statsIter = getQueueingStatisticsIterator();
+		Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
 		if (statsIter!=null) {
 			Object qstatData=hski.openGroup(recData,null,"queueingStats");
-			while(statsIter.hasNext()) {
-				StatisticsKeeper qstat = statsIter.next();
+			for(StatisticsKeeper qstat:statsIter) {
 				hski.handleStatisticsKeeper(qstatData,qstat);
 				qstat.performAction(action);
 			}
@@ -1764,8 +1755,8 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 * @return iterator
 	 */
 	@Override
-	public Iterator<StatisticsKeeper> getProcessStatisticsIterator() {
-		return processStatistics.iterator();
+	public Iterable<StatisticsKeeper> getProcessStatistics() {
+		return processStatistics;
 	}
 	
 	/**
@@ -1773,14 +1764,11 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 * @return iterator
 	 */
 	@Override
-	public Iterator<StatisticsKeeper> getIdleStatisticsIterator() {
-		return idleStatistics.iterator();
+	public Iterable<StatisticsKeeper> getIdleStatistics() {
+		return idleStatistics;
 	}
-	public Iterator<StatisticsKeeper> getQueueingStatisticsIterator() {
-		if (queueingStatistics==null) {
-			return null;
-		}
-		return queueingStatistics.iterator();
+	public Iterable<StatisticsKeeper> getQueueingStatistics() {
+		return queueingStatistics;
 	}		
 
 	public void setTxManager(PlatformTransactionManager manager) {
