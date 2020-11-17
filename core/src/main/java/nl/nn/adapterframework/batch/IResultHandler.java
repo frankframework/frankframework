@@ -48,7 +48,7 @@ public interface IResultHandler extends IConfigurable {
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
+	void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -56,7 +56,7 @@ public interface IResultHandler extends IConfigurable {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
+	String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession

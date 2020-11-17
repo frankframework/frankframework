@@ -294,7 +294,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		if (reader==null) {
 			throw new PipeRunException(this,"could not obtain reader for ["+streamId+"]");
 		}
-		Object transformationResult=null;
+		String transformationResult=null;
 		try {
 			transformationResult = transform(streamId, reader, session);
 		} finally {
@@ -408,7 +408,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Read all lines from the reader, treat every line as a record and transform 
 	 * it using the registered managers, record- and result handlers.
 	 */	
-	private Object transform(String streamId, BufferedReader reader, IPipeLineSession session) throws PipeRunException {
+	private String transform(String streamId, BufferedReader reader, IPipeLineSession session) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
 		int counter = 0;
@@ -469,7 +469,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					if (log.isDebugEnabled()) log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"] line ["+linenumber+"] record ["+rawRecord+"]");
 					// there is a record handler, so transform the line
 					List<String> parsedRecord = curHandler.parse(session, rawRecord);
-					Object result = curHandler.handleRecord(session, parsedRecord);
+					String result = curHandler.handleRecord(session, parsedRecord);
 					counter++;
 				
 					// if there is a result handler, write the transformed result
@@ -536,14 +536,14 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * finalizeResult is called when all records in the input file are handled
 	 * and gives the resulthandlers a chance to finalize.
 	 */	
-	private Object finalizeResult(IPipeLineSession session, String inputFilename, boolean error) throws Exception {
+	private String finalizeResult(IPipeLineSession session, String inputFilename, boolean error) throws Exception {
 		// finalize result
-		List results = new ArrayList<>();
+		List<String> results = new ArrayList<>();
 		for (IResultHandler resultHandler: registeredResultHandlers.values()) {
 			resultHandler.closeRecordType(session, inputFilename);
 			closeAllBlocks(session,inputFilename,resultHandler);
 			log.debug("finalizing resulthandler ["+resultHandler.getName()+"]");
-			Object result = resultHandler.finalizeResult(session, inputFilename, error);
+			String result = resultHandler.finalizeResult(session, inputFilename, error);
 			if (result != null) {
 				results.add(result);
 			}

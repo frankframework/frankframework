@@ -35,7 +35,7 @@ public class Result2StringWriter extends ResultWriter {
 	}
 
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		super.finalizeResult(session,streamId, error);
 		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
 		String result=null;

@@ -75,7 +75,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
 			if (log.isDebugEnabled()) {

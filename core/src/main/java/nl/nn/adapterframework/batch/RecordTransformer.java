@@ -66,7 +66,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
 		Stack<IOutputField> conditions = new Stack<>();
 		

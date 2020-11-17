@@ -67,7 +67,7 @@ public class Result2Filewriter extends ResultWriter {
 	}
 
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);

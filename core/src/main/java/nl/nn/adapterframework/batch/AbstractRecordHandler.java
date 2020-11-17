@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author  John Dekker
  */
-public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters, IConfigurable {
+public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -166,8 +166,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
-			Object field=record.get(i-1);
-			String fieldValue=field==null?"":field.toString();
+			String field=record.get(i-1);
+			String fieldValue=field==null?"":field;
 			if (result==null) {
 				result=fieldValue;
 			} else {
@@ -194,8 +194,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
-			Object prevField=prevRecord.get(i-1);
-			Object curField=curRecord.get(i-1);
+			String prevField=prevRecord.get(i-1);
+			String curField=curRecord.get(i-1);
 			if (! prevField.equals(curField)) {
 				if (log.isTraceEnabled()) log.trace("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
 				return true;
