@@ -16,6 +16,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,12 +42,20 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 
+	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
+			Comparator.comparing(ConfigChild::getSequenceInConfig)
+			.thenComparing(ConfigChild::getSyntax1Name);
+	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
+			Comparator.comparing(FrankAttribute::getOrder)
+			.thenComparing(FrankAttribute::getName);
+
 	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
 
 	private FrankDocModel model;
 	private Map<String, String> syntax2Names;
 	List<SortKeyForXsd> xsdSortOrder;
 	private XmlBuilder xsdRoot;
+	private String startClassName;
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -61,7 +70,12 @@ public class DocWriterNew {
 	}
 
 	public void init() {
-		xsdSortOrder = breadthFirstSort(CONFIGURATION);
+		init(CONFIGURATION);
+	}
+
+	public void init(String startClassName) {
+		this.startClassName = startClassName;
+		xsdSortOrder = breadthFirstSort(startClassName);
 	}
 
 	static Map<String, String> chooseSyntax2Names(List<FrankElement> elementPartition) {
@@ -217,7 +231,8 @@ public class DocWriterNew {
 
 	public String getSchema() {
 		xsdRoot = getXmlSchema();
-		addElement(xsdRoot, "Configuration", "ConfigurationType");
+		FrankElement rootElement = model.getAllElements().get(startClassName);
+		addElement(xsdRoot, rootElement.getSimpleName(), xsdTypeOf(rootElement));
 		defineAllTypes();
 		return xsdRoot.toXML(true);
 	}
@@ -279,8 +294,7 @@ public class DocWriterNew {
 				children = children.stream()
 						.filter(c -> childKeys.contains(new ConfigChildKey(c)))
 						.collect(Collectors.toList());
-				children.sort(
-						(c1, c2) -> new Integer(c1.getSequenceInConfig()).compareTo(new Integer(c2.getSequenceInConfig())));
+				children.sort(CONFIG_CHILD_COMPARATOR);
 				children.forEach(c -> addConfigChild(context, c));				
 			}
 
@@ -447,7 +461,7 @@ public class DocWriterNew {
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> originalAttributes) {
 		List<FrankAttribute> frankAttributes = new ArrayList<>(originalAttributes);
-		frankAttributes.sort((a1, a2) -> new Integer(a1.getOrder()).compareTo(new Integer(a2.getOrder())));
+		frankAttributes.sort(FRANK_ATTRIBUTE_COMPARATOR);
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), frankAttribute.getDefaultValue());
 			if(! StringUtils.isEmpty(frankAttribute.getDescription())) {

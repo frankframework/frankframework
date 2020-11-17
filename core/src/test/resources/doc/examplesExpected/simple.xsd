@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="Start" type="StartType" />
+  <xs:complexType name="StartType">
+    <xs:group ref="StartDeclaredChildGroup" />
+    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="StartDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Syntax1NameIChild" type="IChildCombinationType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Syntax1NameTChild" type="TChildType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="StartDeclaredAttributeGroup">
+    <xs:attribute name="attribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:complexType name="IChildCombinationType">
+    <xs:choice>
+      <xs:element name="DescribedPossibleIChild" type="DescribedPossibleIChildType" />
+      <xs:element name="NotDescribedPossibleIChild" type="NotDescribedPossibleIChildType" />
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="TChildType" />
+  <xs:complexType name="ObjectType" />
+  <xs:complexType name="DescribedPossibleIChildType">
+    <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="DescribedPossibleIChildDeclaredAttributeGroup">
+    <xs:attribute name="firstAttribute" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>First attribute of DescribedPossibleIChild</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="secondAttribute" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Second attribute of DescribedPossibleIChild</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="NotDescribedPossibleIChildType">
+    <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">
+    <xs:attribute name="firstAttribute" type="xs:string" />
+    <xs:attribute name="secondAttribute" type="xs:string" />
+  </xs:attributeGroup>
+</xs:schema>
