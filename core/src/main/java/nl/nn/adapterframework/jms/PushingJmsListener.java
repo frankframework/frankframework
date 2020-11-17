@@ -290,14 +290,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return receiver;
 	}
 
-	public Receiver<javax.jms.Message> getReceiverBase() {
-		if (receiver instanceof Receiver) {
-			Receiver<javax.jms.Message> rb = (Receiver<javax.jms.Message>) receiver;
-			return rb;
-		}
-		return null;
-	}
-
 	public void setCacheMode(String string) {
 		cacheMode = string;
 	}

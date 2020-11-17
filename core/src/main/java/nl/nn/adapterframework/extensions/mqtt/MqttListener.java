@@ -135,7 +135,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		log.debug(message);
 		// Call receiver which will set status to error after which recover job
 		// will try to recover. Note that at configure time
-		// receiver.setOnError(ReceiverBase.ONERROR_RECOVER) was called. Also
+		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
 		// note that mqtt lib will also try to recover (when automaticReconnect
 		// is true) (see connectComplete also) which will probably recover
 		// earlier because of it's smaller interval. When no connection was

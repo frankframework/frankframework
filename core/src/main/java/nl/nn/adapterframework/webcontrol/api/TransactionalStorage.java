@@ -82,7 +82,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -114,7 +114,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -158,7 +158,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -212,7 +212,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -240,7 +240,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -285,7 +285,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -313,7 +313,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = (Receiver) adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}

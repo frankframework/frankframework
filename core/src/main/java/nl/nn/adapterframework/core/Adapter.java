@@ -737,11 +737,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@IbisDoc("100")
 	public void registerReceiver(Receiver receiver) {
-		boolean receiverActive=true;
-		if (receiver instanceof Receiver) {
-			receiverActive=((Receiver)receiver).isActive();
-		}
-		if (receiverActive) {
+		if (receiver.isActive()) {
 			receivers.add(receiver);
 			log.debug("Adapter ["	+ name 	+ "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		} else {
@@ -824,7 +820,7 @@ public class Adapter implements IAdapter, NamedBean {
 			public void run() {
 				Thread.currentThread().setName("starting Adapter "+getName());
 				try {
-					// See also ReceiverBase.startRunning()
+					// See also Receiver.startRunning()
 					if (!configurationSucceeded) {
 						log.error("configuration of adapter [" + getName() + "] did not succeed, therefore starting the adapter is not possible");
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
@@ -898,7 +894,7 @@ public class Adapter implements IAdapter, NamedBean {
 			public void run() {
 				Thread.currentThread().setName("stopping Adapter " +getName());
 				try {
-					// See also ReceiverBase.stopRunning()
+					// See also Receiver.stopRunning()
 					synchronized (runState) {
 						RunStateEnum currentRunState = getRunState();
 						if (currentRunState.equals(RunStateEnum.STARTING)
@@ -915,7 +911,7 @@ public class Adapter implements IAdapter, NamedBean {
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
-					// comment in method ReceiverBase.tellResourcesToStop()
+					// comment in method Receiver.tellResourcesToStop()
 					for (Receiver receiver: receivers) {
 						while (receiver.getRunState() != RunStateEnum.STOPPED) {
 							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");

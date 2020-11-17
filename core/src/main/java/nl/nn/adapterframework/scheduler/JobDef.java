@@ -1145,8 +1145,7 @@ public class JobDef {
 									}
 								}
 							}
-							// check for start is in method startRunning in
-							// ReceiverBase self
+							// check for start is in method startRunning in Receiver itself
 							receiver.startRunning();
 							log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 						}
@@ -1174,8 +1173,7 @@ public class JobDef {
 											}
 										}
 									}
-									// check for start is in method startRunning in
-									// ReceiverBase self
+									// check for start is in method startRunning in Receiver itself
 									receiver.startRunning();
 									log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
 								}

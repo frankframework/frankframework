@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -60,12 +59,9 @@ public class GenericMessageSendingPipe extends MessageSendingPipe {
 		super.setListener(listener);
 	}
 
-	public void setSender(Object sender) {
-		if (sender instanceof ISender) {
-			super.setSender((ISender)sender);
-		} else {
-			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
-		}
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender((ISender)sender);
 	}
 
 }
