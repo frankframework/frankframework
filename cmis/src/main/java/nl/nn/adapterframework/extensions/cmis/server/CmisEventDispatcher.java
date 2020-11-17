@@ -100,7 +100,7 @@ public class CmisEventDispatcher {
 		catch (ListenerException e) {
 			if(e.getCause() instanceof PipeRunException) {
 				PipeRunException pre = (PipeRunException) e.getCause();
-				if(pre.getCause() != null && pre.getCause() instanceof CmisBaseException)
+				if(pre != null && pre.getCause() instanceof CmisBaseException)
 					throw (CmisBaseException)pre.getCause();
 			}
 			throw new CmisRuntimeException(e.getMessage(), e);

@@ -21,16 +21,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -173,6 +174,16 @@ public class IbisTester {
 		long configLoadEndTime = System.currentTimeMillis();
 		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
 
+		List<Configuration> configurations = ibisContext.getIbisManager().getConfigurations();
+		for(Configuration configuration : configurations) {
+			if(configuration.getConfigurationException() != null) {
+				error("error loading configuration ["+configuration.getName()+"]: "+ configuration.getConfigurationException().getMessage());
+			} else {
+				debug("loading configuration ["+configuration.getName()+"] with ["+configuration.getRegisteredAdapters().size()+"] adapters");
+			}
+		}
+
+		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
 		List<IAdapter> registeredAdapters = ibisContext.getIbisManager().getRegisteredAdapters();
@@ -204,6 +215,7 @@ public class IbisTester {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
 		}
+
 		String msg = "adapters started [" + adaptersStarted + "] from [" + adaptersCount + "]";
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
