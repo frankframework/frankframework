@@ -46,10 +46,8 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 				if (log.isTraceEnabled()) log.trace("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
 				if (name.length()<=record.length()) {
 					value = record.substring(startPosition, name.length());
-					if (value.equals(name)) {
-						if ((rhf = valueHandlersMap.get(name))!=null) {
-							break;
-						}
+					if (value.equals(name) && (rhf = valueHandlersMap.get(name))!=null) {
+						break;
 					}
 				}
 			}
