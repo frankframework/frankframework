@@ -33,8 +33,16 @@
 					<div class="col-md-12">
 						<table class="table table-striped">
 							<tbody>
+								<tr>
+									<td>0</td>
+									<td>/</td>
+									<td>ALL</td>
+									<td>
+										<a target="_blank" href="{{::rootURL}}api/openapi.json" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>OpenAPI 3.0</span></a>
+									</td>
+								</tr>
 								<tr ng-repeat="apiListener in apiListeners">
-									<td>{{$index}}</td>
+									<td>{{$index + 1}}</td>
 									<td>{{::apiListener.uriPattern}}</td>
 									<td>{{::apiListener.method}}</td>
 									<td ng-if="::apiListener.error">{{::apiListener.error}}</td>
