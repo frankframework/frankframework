@@ -33,7 +33,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;

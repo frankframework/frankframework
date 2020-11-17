@@ -39,7 +39,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
