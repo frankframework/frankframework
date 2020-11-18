@@ -703,8 +703,15 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 							ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
 						}
 					}
+					String maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+					if (maximumTransactionTimeout!=null && StringUtils.isNumeric(maximumTransactionTimeout)) {
+						int mtt = Integer.parseInt(maximumTransactionTimeout);
+						if (getTransactionTimeout()>mtt) {
+							ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the maximum transaction timeout ["+mtt+"]");
+						}
+					}
 				}
-			} 
+			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
 				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
