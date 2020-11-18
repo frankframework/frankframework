@@ -22,11 +22,10 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
@@ -124,10 +123,9 @@ public class FxfListener extends EsbJmsListener {
 
 	private void warn(String msg, Throwable t) {
 		log.warn(msg, t);
-		IReceiver iReceiver = getReceiver();
-		if (iReceiver != null && iReceiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) iReceiver;
-			IAdapter iAdapter = rb.getAdapter();
+		Receiver receiver = getReceiver();
+		if (receiver != null) {
+			IAdapter iAdapter = receiver.getAdapter();
 			if (iAdapter != null) {
 				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}

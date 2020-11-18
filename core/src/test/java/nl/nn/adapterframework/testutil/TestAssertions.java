@@ -125,7 +125,7 @@ public class TestAssertions extends org.junit.Assert {
 	}
 
 	public static boolean isTestRunningOnTravis() {
-		return StringUtils.isNotEmpty(System.getProperty("TRAVIS_CI_USER")) || StringUtils.isNotEmpty(System.getenv("TRAVIS_CI_USER"));
+		return "TRAVIS".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "TRAVIS".equalsIgnoreCase(System.getenv("CI_SERVICE"));
 	}
 
 	public static boolean isTestRunningOnWindows() {

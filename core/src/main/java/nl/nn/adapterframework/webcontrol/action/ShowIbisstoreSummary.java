@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -45,7 +43,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -88,10 +86,8 @@ public class ShowIbisstoreSummary extends ActionBase {
 			}
 		}
 
-		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
-			for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-				ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+		for(Adapter adapter: ibisManager.getRegisteredAdapters()) {
+			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();

@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
@@ -34,18 +36,14 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.receivers.GenericReceiver;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
@@ -115,12 +113,12 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			adapter.setConfiguration(configuration);
 			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(" ", "_");
 			adapter.setName(fileBaseName);
-			GenericReceiver genericReceiver = new GenericReceiver();
+			Receiver receiver = new Receiver();
 			EsbJmsListener esbJmsListener = new EsbJmsListener();
 			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_" + fileBaseName);
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
-			genericReceiver.setListener(esbJmsListener);
-			adapter.registerReceiver(genericReceiver);
+			receiver.setListener(esbJmsListener);
+			adapter.registerReceiver(receiver);
 			pipeLine.setAdapter(adapter);
 			Wsdl wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
