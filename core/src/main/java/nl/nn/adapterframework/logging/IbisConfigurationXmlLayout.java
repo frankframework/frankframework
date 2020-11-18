@@ -19,7 +19,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -85,8 +84,7 @@ public class IbisConfigurationXmlLayout extends IbisMaskingLayout {
 
 		public void setElementContent(String value) {
 			if (value != null) {
-				//Escape illegal JDOM characters
-				element.setText(StringEscapeUtils.escapeJava(value));
+				element.setText(value);
 			}
 		}
 
@@ -131,8 +129,7 @@ public class IbisConfigurationXmlLayout extends IbisMaskingLayout {
 		@Override
 		public String toString() {
 			Document document = new Document(element.detach());
-			XMLOutputter xmlOutputter = new XMLOutputter();
-			xmlOutputter.getFormat().setOmitDeclaration(true);
+			XMLOutputter xmlOutputter = new XMLOutputter(Format. getPrettyFormat().setOmitDeclaration(true));
 			return xmlOutputter.outputString(document);
 		}
 	}
