@@ -20,7 +20,9 @@ import java.sql.Connection;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -118,11 +120,22 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return executeStatementSet(blockHandle, message, session);
+		return executeStatementSet(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
-	protected final Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
+	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		QueryExecutionContext blockHandle = openBlock(session);
+		try {
+			return executeStatementSet(blockHandle, message, session, next);
+		} finally {
+			closeBlock(blockHandle, session);
+		}
+	}
+
+	@Override
+	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
 	}
 

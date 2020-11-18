@@ -41,9 +41,12 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -164,7 +167,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
@@ -270,7 +273,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 		}
 		
 		JsonStructure result = types.build();
-		return new Message(result.toString());
+		return new PipeRunResult(null, new Message(result.toString()));
 	}
 }
 

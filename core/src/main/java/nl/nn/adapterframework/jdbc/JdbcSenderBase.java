@@ -122,12 +122,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	}
 
 	@Override
-	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
-	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		return new PipeRunResult(null, sendMessage(message, session));
-	}
-
-	@Override
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this);
