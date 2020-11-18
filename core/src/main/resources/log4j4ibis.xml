@@ -68,7 +68,7 @@
 	</Appenders>
 
 	<Loggers>
-		<Logger name="liquibase" level="${ctx:log.level}" />
+		<Logger name="liquibase" level="INFO" />
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
