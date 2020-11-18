@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -55,11 +54,11 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result = null;
-		IAdapter adapter;
+		Adapter adapter;
 		try {
 			if ("input".equals(getFrom())) {
 				String adapterName = message.asString();
-				adapter = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getRegisteredAdapter(adapterName);
+				adapter = getAdapter().getConfiguration().getIbisManager().getRegisteredAdapter(adapterName);
 				if (adapter == null) {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}
@@ -71,7 +70,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 		try {
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
-			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine(), generationInfo);
+			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			wsdl.wsdl(outputStream, null);

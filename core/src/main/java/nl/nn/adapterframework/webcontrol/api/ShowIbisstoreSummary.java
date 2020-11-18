@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,14 +39,13 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 @Path("/")
@@ -109,10 +107,8 @@ public final class ShowIbisstoreSummary extends Base {
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
 
-		for(IAdapter iAdapter : getIbisManager().getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
-			for(Iterator<?> receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-				ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
+			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();

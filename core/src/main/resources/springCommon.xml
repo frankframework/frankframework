@@ -332,7 +332,7 @@
 
 	<bean
 		name="proto-receiver"
-		class="nl.nn.adapterframework.receivers.GenericReceiver"
+		class="nl.nn.adapterframework.receivers.Receiver"
 		autowire="byName"
 		scope="prototype"
 	/>

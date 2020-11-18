@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-
 import java.util.Map;
+
+import nl.nn.adapterframework.core.Adapter;
 
 /**
  * @author Michiel Meeuwissen
@@ -26,24 +26,24 @@ import java.util.Map;
 public interface IAdapterService {
 
 	/**
-	 * Retrieve an {@link IAdapter} from the {@link IAdapterService}
+	 * Retrieve an {@link Adapter} from the {@link IAdapterService}
 	 */
-	IAdapter getAdapter(String name);
+	Adapter getAdapter(String name);
 
 	/**
 	 * Returns all adapters registered with the {@link IAdapterService}
 	 */
-	Map<String, IAdapter> getAdapters();
+	Map<String, Adapter> getAdapters();
 
 	/**
-	 * Register an {@link IAdapter} with the {@link IAdapterService}. Adapters 
-	 * may only be registered once and {@link IAdapter} names must be unique.
+	 * Register an {@link Adapter} with the {@link IAdapterService}. Adapters 
+	 * may only be registered once and {@link Adapter} names must be unique.
 	 * @throws ConfigurationException If an adapter has no name or has already been registered
 	 */
-	void registerAdapter(IAdapter adapter) throws ConfigurationException;
+	void registerAdapter(Adapter adapter) throws ConfigurationException;
 
 	/**
-	 * Removes an {@link IAdapter} from the {@link IAdapterService}
+	 * Removes an {@link Adapter} from the {@link IAdapterService}
 	 */
-	void unRegisterAdapter(IAdapter adapter);
+	void unRegisterAdapter(Adapter adapter);
 }

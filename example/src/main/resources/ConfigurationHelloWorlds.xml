@@ -1,9 +1,6 @@
 <module>
 	<adapter name="HelloWorlds" active="${HelloWorlds.active}">
-		<receiver
-			name="HelloWorlds"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver name="HelloWorlds" >
 			<listener
 				name="HelloWorlds"
 				className="nl.nn.adapterframework.receivers.JavaListener"
