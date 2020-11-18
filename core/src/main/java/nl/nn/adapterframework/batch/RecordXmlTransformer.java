@@ -98,7 +98,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			// get value
 			String value = "";
 			if (ndx < parsedRecord.size()) {
-				value = (String)parsedRecord.get(ndx++);
+				value = parsedRecord.get(ndx++);
 				if (!it.hasNext() && !StringUtils.isEmpty(endOfRecord)) {
 					if (value.endsWith(endOfRecord)) {
 						int ei = value.length() - endOfRecord.length();

@@ -74,7 +74,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	
 	@Override
 	public void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception {
-		write(session, streamId, (String)result);
+		write(session, streamId, result);
 	}
 	
 	protected void writeNewLine(Writer w) throws IOException {
