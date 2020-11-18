@@ -69,7 +69,7 @@
 			<Layout type="IbisConfigurationXmlLayout" />
 			<Policies>
 				<OnStartupTriggeringPolicy />
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="1MB" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
