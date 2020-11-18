@@ -285,4 +285,31 @@ public class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
+
+	@Test
+	@IsolatedThread
+	public void twoEndpointsOneWithoutValidatorTest() throws Exception {
+		String uri="/path";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri+"/validator", "get", null)
+			.setValidator("simple.xsd", null, "user", null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+		
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri+"/noValidator", "get", null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
+		String result = callOpenApi(uri);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
 }
