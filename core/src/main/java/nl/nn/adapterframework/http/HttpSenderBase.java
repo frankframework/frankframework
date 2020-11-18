@@ -653,10 +653,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
 
 				@Override
-				protected void kill() {
+				protected void abort() {
 					httpRequestBase.abort();
 				}
-				
+
 			};
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
