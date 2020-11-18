@@ -25,10 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -54,7 +54,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private ContentType producedContentType;
 	private String multipartBodyName = null;
 
-	private IReceiver<String> receiver;
+	private Receiver<String> receiver;
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
@@ -297,12 +297,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	}
 
 	@Override
-	public void setReceiver(IReceiver<String> receiver) {
+	public void setReceiver(Receiver<String> receiver) {
 		this.receiver = receiver;
 	}
 
 	@Override
-	public IReceiver<String> getReceiver() {
+	public Receiver<String> getReceiver() {
 		return receiver;
 	}
 }

@@ -47,11 +47,11 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
@@ -60,7 +60,6 @@ import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -101,7 +100,24 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
+ * The receiver is the trigger and central communicator for the framework.
+ * <br/>
+ * The main responsibilities are:
+ * <ul>
+ *    <li>receiving messages</li>
+ *    <li>for asynchronous receivers (which have a separate sender):<br/>
+ *            <ul><li>initializing ISender objects</li>
+ *                <li>stopping ISender objects</li>
+ *                <li>sending the message with the ISender object</li>
+ *            </ul>
+ *    <li>synchronous receivers give the result directly</li>
+ *    <li>take care of connection, sessions etc. to startup and shutdown</li>
+ * </ul>
+ * Listeners call the IAdapter.processMessage(String correlationID,String message)
+ * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
+ * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
+ * requests.
+ * 
  *
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
@@ -159,7 +175,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -248,7 +264,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
 
 	// the adapter that handles the messages and initiates this listener
-	private IAdapter adapter;
+	private Adapter adapter;
 
 	private IListener<M> listener;
 	private ISender errorSender=null;
@@ -265,7 +281,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
  
-	int retryInterval=1;
+	private int retryInterval=1;
 	private int poisonMessageIdCacheSize = 100;
 	private int processResultCacheSize = 100;
    
@@ -291,9 +307,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	};
 
 	private class ProcessResultCacheItem {
-		int receiveCount;
-		Date receiveDate;
-		String comments;
+		private int receiveCount;
+		private Date receiveDate;
+		private String comments;
 	}
 
 	public boolean configurationSucceeded() {
@@ -332,7 +348,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 
 	private String hide(String string) {
 		String hiddenString = "";
-		for (int i = 0; i < string.toString().length(); i++) {
+		for (int i = 0; i < string.length(); i++) {
 			hiddenString = hiddenString + "*";
 		}
 		return hiddenString;
@@ -488,6 +504,13 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		}
 	}
 
+ 	/**
+ 	 * This method is called by the <code>IAdapter</code> to let the
+ 	 * receiver do things to initialize itself before the <code>startListening</code>
+ 	 * method is called.
+ 	 * @see #startRunning
+ 	 * @throws ConfigurationException when initialization did not succeed.
+ 	 */ 
 	@Override
 	public void configure() throws ConfigurationException {		
 		configurationSucceeded = false;
@@ -1146,11 +1169,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		} else {
 			businessCorrelationId=technicalCorrelationId;
 		}
-		if (StringUtils.isEmpty(businessCorrelationId)) {
-			if (StringUtils.isNotEmpty(messageId)) {
-				log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
-				businessCorrelationId=messageId;
-			}
+		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
+			log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
+			businessCorrelationId=messageId;
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);
@@ -1258,7 +1279,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 					}
 				}
 				if (!messageInError && !isTransacted()) {
-					String commitOnState=((Adapter)adapter).getPipeLine().getCommitOnState();
+					String commitOnState=adapter.getPipeLine().getCommitOnState();
 					
 					if (StringUtils.isNotEmpty(commitOnState) && 
 						!commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
@@ -1296,10 +1317,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			}
 		} finally {
 			cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
-			if (!isTransacted() && messageInError) {
-				if (!manualRetry) {
-					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
-				}
+			if (!isTransacted() && messageInError && !manualRetry) {
+				moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 			}
 			try {
 				Map<String,Object> afterMessageProcessedMap=threadContext;
@@ -1414,10 +1433,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 				return true;
 			}
 		} 
-		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
-			return true;
-		}
-		return false;
+		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}
 
 	/*
@@ -1495,11 +1511,9 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		} else {
 			log.warn(getLogPrefix()+"will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		}
-		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			if (!suspensionMessagePending) {
-				suspensionMessagePending=true;
-				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			}
+		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+			suspensionMessagePending=true;
+			throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
@@ -1525,33 +1539,24 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		numRetried.performAction(action);
 		numRejected.performAction(action);
 		messageExtractionStatistics.performAction(action);
-		Iterator<StatisticsKeeper> statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,null,"procStats");
-		if (statsIter != null) {
-			while(statsIter.hasNext()) {
-				StatisticsKeeper pstat = statsIter.next();
-				hski.handleStatisticsKeeper(pstatData,pstat);
-				pstat.performAction(action);
-			}
+		for(StatisticsKeeper pstat:getProcessStatistics()) {
+			hski.handleStatisticsKeeper(pstatData,pstat);
+			pstat.performAction(action);
 		}
 		hski.closeGroup(pstatData);
 
-		statsIter = getIdleStatisticsIterator();
-		if (statsIter != null) {
-			Object istatData=hski.openGroup(recData,null,"idleStats");
-			while(statsIter.hasNext()) {
-				StatisticsKeeper pstat = statsIter.next();
-				hski.handleStatisticsKeeper(istatData,pstat);
-				pstat.performAction(action);
-			}
-			hski.closeGroup(istatData);
+		Object istatData=hski.openGroup(recData,null,"idleStats");
+		for(StatisticsKeeper istat:getIdleStatistics()) {
+			hski.handleStatisticsKeeper(istatData,istat);
+			istat.performAction(action);
 		}
+		hski.closeGroup(istatData);
 
-		statsIter = getQueueingStatisticsIterator();
+		Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
 		if (statsIter!=null) {
 			Object qstatData=hski.openGroup(recData,null,"queueingStats");
-			while(statsIter.hasNext()) {
-				StatisticsKeeper qstat = statsIter.next();
+			for(StatisticsKeeper qstat:statsIter) {
 				hski.handleStatisticsKeeper(qstatData,qstat);
 				qstat.performAction(action);
 			}
@@ -1571,10 +1576,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			
 			return tcc.isThreadCountReadable();
 		}
-		if (getListener() instanceof IPullingListener) {
-			return true;
-		}
-		return false;
+		return getListener() instanceof IPullingListener;
 	}
 	@Override
 	public boolean isThreadCountControllable() {
@@ -1583,10 +1585,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			
 			return tcc.isThreadCountControllable();
 		}
-		if (getListener() instanceof IPullingListener) {
-			return true;
-		}
-		return false;
+		return getListener() instanceof IPullingListener;
 	}
 
 	@Override
@@ -1755,8 +1754,8 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * @return iterator
 	 */
 	@Override
-	public Iterator<StatisticsKeeper> getProcessStatisticsIterator() {
-		return processStatistics.iterator();
+	public Iterable<StatisticsKeeper> getProcessStatistics() {
+		return processStatistics;
 	}
 	
 	/**
@@ -1764,14 +1763,11 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * @return iterator
 	 */
 	@Override
-	public Iterator<StatisticsKeeper> getIdleStatisticsIterator() {
-		return idleStatistics.iterator();
+	public Iterable<StatisticsKeeper> getIdleStatistics() {
+		return idleStatistics;
 	}
-	public Iterator<StatisticsKeeper> getQueueingStatisticsIterator() {
-		if (queueingStatistics==null) {
-			return null;
-		}
-		return queueingStatistics.iterator();
+	public Iterable<StatisticsKeeper> getQueueingStatistics() {
+		return queueingStatistics;
 	}		
 
 	public void setTxManager(PlatformTransactionManager manager) {
@@ -1782,8 +1778,14 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	
-	@Override
-	public void setAdapter(IAdapter adapter) {
+	/**
+	 * The processing of messages must be delegated to the <code>Adapter</code>
+	 * object. The adapter also provides a MessageKeeper, which the receiver may use
+	 * to store messages in.
+	 * 
+	 * @see nl.nn.adapterframework.core.IAdapter
+	 */
+	public void setAdapter(Adapter adapter) {
 		this.adapter = adapter;
 	}
 	
@@ -1791,22 +1793,20 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
 	@Override
-	public IAdapter getAdapter() {
+	public Adapter getAdapter() {
 		return adapter;
 	}
 
 	/**
-	 * Get the number of messages received.
+	 * get the number of messages received by this receiver.
 	 */
-	@Override
 	public long getMessagesReceived() {
 		return numReceived.getValue();
 	}
 
 	/**
-	 * Get the number of messages retried.
+	 * get the number of duplicate messages received this receiver.
 	 */
-	@Override
 	public long getMessagesRetried() {
 		return numRetried.getValue();
 	}
@@ -1814,7 +1814,6 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
-	@Override
 	public long getMessagesRejected() {
 		return numRejected.getValue();
 	}
@@ -1853,7 +1852,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"10", "The source of messages"})
-	protected void setListener(IListener<M> newListener) {
+	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (StringUtils.isEmpty(listener.getName())) {
 			listener.setName("listener of ["+getName()+"]");
@@ -1862,13 +1861,12 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
 	}
-	@Override
 	public IListener<M> getListener() {
 		return listener;
 	}
 
 	@IbisDoc("20")
-	protected void setSender(ISender sender) {
+	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
 	@Override
@@ -1883,7 +1881,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 */
 	@Deprecated
 	@ConfigurationWarning("In-Process Storage no longer exists")
-	protected void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
+	public void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1898,7 +1896,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	 * @param errorSender The errorSender to set
 	 */
 	@IbisDoc({"30", "Sender that will receive the result in case the PipeLineExit state was not 'success'"})
-	protected void setErrorSender(ISender errorSender) {
+	public void setErrorSender(ISender errorSender) {
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
@@ -1907,7 +1905,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
-	protected void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
+	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
 			this.errorStorage = errorStorage;
 			errorStorage.setName("errorStorage of ["+getName()+"]");
@@ -1932,7 +1930,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	
 	
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
-	protected void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
 			messageLog.setName("messageLog of ["+getName()+"]");
@@ -2270,12 +2268,7 @@ public class ReceiverBase<M> implements IReceiver<M>, IReceiverStatistics, IMess
 	}
 
 	public boolean isRecoverAdapter() {
-		IAdapter adapter = getAdapter();
-		if (adapter instanceof Adapter) {
-			Adapter at = (Adapter) adapter;
-			return at.isRecover();
-		}
-		return false;
+		return getAdapter().isRecover();
 	}
 
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})

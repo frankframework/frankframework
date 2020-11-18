@@ -43,7 +43,6 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -52,6 +51,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -126,7 +126,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	private IListenerConnector jmsConnector;
 	private IMessageHandler<IFSAMessage> handler;
-	private IReceiver receiver;
+	private Receiver receiver;
 	private IbisExceptionListener exceptionListener;
 
 	public PushingIfsaProviderListener() {
@@ -572,11 +572,13 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return listenerPort;
 	}
 
-    
-	public void setReceiver(IReceiver receiver) {
+
+	@Override
+	public void setReceiver(Receiver receiver) {
 		this.receiver = receiver;
 	}
-	public IReceiver getReceiver() {
+	@Override
+	public Receiver getReceiver() {
 		return receiver;
 	}
 
@@ -588,6 +590,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return cacheMode;
 	}
 
+	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -597,6 +600,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -606,6 +610,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -615,6 +620,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -624,6 +630,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -632,6 +639,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -640,6 +648,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public int getDeliveryCount(Object rawMessage) {
 		try {
 			javax.jms.Message message=(javax.jms.Message)rawMessage;

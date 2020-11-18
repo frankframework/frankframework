@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 
 /**
  * This implementation of {@link IAdapterService} registers the adapters to a JMX server.
@@ -44,7 +44,7 @@ import nl.nn.adapterframework.core.IAdapter;
 public class JmxRegisteringAdapterService extends AdapterService implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
-	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<>();
+	private static Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -54,7 +54,7 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 	}
 
 	@Override
-	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
+	public void registerAdapter(Adapter adapter) throws ConfigurationException {
 		super.registerAdapter(adapter);
 
 		log.debug("registering adapter [" + adapter.getName() + "] to the JMX server");
@@ -66,7 +66,7 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 	}
 
 	@Override
-	public void unRegisterAdapter(IAdapter adapter) {
+	public void unRegisterAdapter(Adapter adapter) {
 		super.unRegisterAdapter(adapter);
 
 		synchronized(registeredAdapters) {

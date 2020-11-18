@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -221,9 +220,9 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 */
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
-		IAdapter adapter = null;
-		if (owner instanceof IAdapter) {
-			adapter = (IAdapter)owner;
+		Adapter adapter = null;
+		if (owner instanceof Adapter) {
+			adapter = (Adapter)owner;
 		}
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
@@ -311,26 +310,21 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe && adapter instanceof Adapter) {
-				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(((Adapter) adapter).isRecover());
+			if (getOutputWrapper() instanceof AbstractPipe) {
+				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(adapter.isRecover());
 			}
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				Iterator<IReceiver> recIt = adapter.getReceiverIterator();
-				while (recIt.hasNext()) {
-					IReceiver receiver = recIt.next();
-					if (receiver instanceof ReceiverBase ) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						IListener listener = rb.getListener();
-						try {
-							if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-								break;
-							}
-						} catch (JmsException e) {
-							throw new ConfigurationException(e);
+				for (Receiver receiver: adapter.getReceivers()) {
+					IListener listener = receiver.getListener();
+					try {
+						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
+							break;
 						}
+					} catch (JmsException e) {
+						throw new ConfigurationException(e);
 					}
 				}
 			}
