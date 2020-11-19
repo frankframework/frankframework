@@ -17,8 +17,7 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
@@ -27,9 +26,8 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author John Dekker
  */
-public interface IRecordHandler extends INamedObject {
+public interface IRecordHandler extends IConfigurable {
 
-	public void configure() throws ConfigurationException;
 	public void open() throws SenderException;
 	public void close() throws SenderException;
 
@@ -45,7 +43,7 @@ public interface IRecordHandler extends INamedObject {
 	 * 
 	 * @return transformed result
 	 */	
-	Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception;
+	String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception;
 	
 	boolean isNewRecordType(IPipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
 	

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
  * 
- * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -56,19 +55,16 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	@Override
 	public void closeDocument(IPipeLineSession session, String streamId) {
-		Writer w = openWriters.remove(streamId);
-		if (w != null) {
-			try {
-				w.close();
-			} catch (IOException e) {
-				log.error("Exception closing ["+streamId+"]",e);
-			}
+		try (Writer w = openWriters.remove(streamId)) {
+			// just close the writer
+		} catch (IOException e) {
+			log.error("Exception closing ["+streamId+"]",e);
 		}
 		super.closeDocument(session,streamId);
 	}
 
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
 		return null;
@@ -77,13 +73,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	
 	@Override
-	public void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result) throws Exception {
-		if (result instanceof String) {
-			write(session, streamId, (String)result);
-		}
-		else if (result instanceof String[]) {
-			write(session, streamId, (String[])result);
-		}
+	public void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception {
+		write(session, streamId, result);
 	}
 	
 	protected void writeNewLine(Writer w) throws IOException {
@@ -105,16 +96,6 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 
-	private void write(IPipeLineSession session, String streamId, String[] lines) throws Exception {
-		Writer w = getWriter(session, streamId, false);
-		for (int i = 0; i < lines.length; i++) {
-			if (lines[i]!=null) {
-				w.write(lines[i]);
-				writeNewLine(w);
-			}
-		}
-	}
-	
 	@Override
 	public void openRecordType(IPipeLineSession session, String streamId) throws Exception {
 		Writer w = getWriter(session, streamId, false);
@@ -169,7 +150,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 			throw new IOException("cannot get writer for stream ["+streamId+"]");
 		}
 		openWriters.put(streamId,writer);
-		return writer;		
+		return writer;
 	}
 
 	

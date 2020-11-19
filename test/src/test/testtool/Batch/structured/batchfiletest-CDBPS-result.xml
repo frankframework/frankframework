@@ -1,22 +1,22 @@
-<document>
-<documents>
-<doc>
-<regel>b1-1</regel>
-<regel>b1-2</regel>
-<regel>b1-3</regel>
-<regel>r1-1-1</regel>
-<regel>r1-1-2</regel>
-<regel>r1-2-1</regel>
-<regel>r1-2-2</regel>
-</doc>
-<doc>
-<regel>b2-1</regel>
-<regel>b2-2</regel>
-<regel>b2-3</regel>
-<regel>r2-1-1</regel>
-<regel>r2-1-2</regel>
-<regel>r2-2-1</regel>
-<regel>r2-2-2</regel>
-</doc>
-</documents>
+<document name="Test Tool correlation id">
+  <documents>
+    <doc>
+      <regel>b1-1</regel>
+      <regel>b1-2</regel>
+      <regel>b1-3</regel>
+      <regel>r1-1-1</regel>
+      <regel>r1-1-2</regel>
+      <regel>r1-2-1</regel>
+      <regel>r1-2-2</regel>
+    </doc>
+    <doc>
+      <regel>b2-1</regel>
+      <regel>b2-2</regel>
+      <regel>b2-3</regel>
+      <regel>r2-1-1</regel>
+      <regel>r2-1-2</regel>
+      <regel>r2-2-1</regel>
+      <regel>r2-2-2</regel>
+    </doc>
+  </documents>
 </document>
