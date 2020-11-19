@@ -700,13 +700,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					if (maximumTransactionTimeout != null && getTransactionTimeout() > maximumTransactionTimeout) {
 						ConfigurationWarnings.add(null, log, getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 					}
-					String maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-					if (maximumTransactionTimeout!=null && StringUtils.isNumeric(maximumTransactionTimeout)) {
-						int mtt = Integer.parseInt(maximumTransactionTimeout);
-						if (getTransactionTimeout()>mtt) {
-							ConfigurationWarnings.add(this, log, "has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the maximum transaction timeout ["+mtt+"]");
-						}
-					}
 				}
 			}
 
