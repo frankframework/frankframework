@@ -27,8 +27,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
