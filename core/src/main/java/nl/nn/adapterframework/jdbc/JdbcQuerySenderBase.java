@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -1123,7 +1124,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public void setBlobBase64Direction(String string) {
 		blobBase64Direction = string;
 	}
-	
 	public String getBlobBase64Direction() {
 		return blobBase64Direction;
 	}
@@ -1131,6 +1131,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
 				"If blobCharset and blobSessionKey are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
 	public void setBlobCharset(String string) {
+		if (StringUtils.isEmpty(string)) {
+			ConfigurationWarnings.add(this, log, getLogPrefix()+"setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
+		}
 		blobCharset = string;
 	}
 	public String getBlobCharset() {
