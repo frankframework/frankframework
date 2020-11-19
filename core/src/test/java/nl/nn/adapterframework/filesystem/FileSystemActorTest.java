@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -82,7 +83,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		thrown.expectMessage("action must be specified");
+		thrown.expectMessage("either action or parameter [action] must be specified");
 		thrown.expectMessage("fake owner of FileSystemActor");
 		actor.configure(fileSystem,null,owner);
 	}
@@ -316,6 +317,33 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystemActorInfoActionTest(true);
 	}
 
+	@Test
+	public void fileSystemActorReadActionFromSessionKeyTest() throws Exception {
+		String filename = "parameterAction" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue("read");
+		params.add(p);
+		params.configure();
+
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		Object result = actor.doAction(message, pvl, session);
+		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
+		String actualContents = Misc.streamToString((InputStream)result);
+		assertEquals(contents, actualContents);
+		assertTrue(_fileExists(filename));
+	}
 
 	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
 		String filename = "sender" + FILE1;
