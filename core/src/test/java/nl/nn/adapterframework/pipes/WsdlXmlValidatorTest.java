@@ -13,14 +13,13 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -241,7 +240,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");
@@ -282,7 +281,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");

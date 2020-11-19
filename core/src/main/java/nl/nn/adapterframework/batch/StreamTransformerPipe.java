@@ -344,7 +344,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 			return true;
 		} else {
-			if (log.isDebugEnabled()) log.debug("did not found open block ["+blockName+"] at block stack");
+			if (log.isDebugEnabled()) log.debug("did not find open block ["+blockName+"] at block stack");
 			return false;
 		}
 	}

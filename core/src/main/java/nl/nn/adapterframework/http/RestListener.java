@@ -37,7 +37,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
  * to receive REST messages.
  *
  * Note:

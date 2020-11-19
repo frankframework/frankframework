@@ -23,7 +23,6 @@ import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -171,7 +170,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName(config4Adaptername);
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");

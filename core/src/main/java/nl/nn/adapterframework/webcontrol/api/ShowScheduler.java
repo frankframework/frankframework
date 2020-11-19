@@ -61,12 +61,11 @@ import org.quartz.impl.matchers.GroupMatcher;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -518,17 +517,14 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
 		String listenerName = null;
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
-			IListener<?> listener = rb.getListener();
-			if(listener != null) {
-				listenerName = listener.getName();
-			}
+		IListener<?> listener = receiver.getListener();
+		if(listener != null) {
+			listenerName = listener.getName();
 		}
 		if(StringUtils.isEmpty(listenerName)) {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");

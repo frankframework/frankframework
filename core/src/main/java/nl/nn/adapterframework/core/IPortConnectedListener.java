@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.receivers.Receiver;
+
 /**
  * Interface extending IPushingListener for listeners which connect to a
  * ListenerPort or other type of named endpoint, from which they receive
@@ -32,8 +34,8 @@ public interface IPortConnectedListener<M> extends IPushingListener<M> {
 	public String getListenerPort();
 	public IMessageHandler<M> getHandler();
 
-	public void setReceiver(IReceiver<M> receiver);
-	public IReceiver<M> getReceiver();
+	public void setReceiver(Receiver<M> receiver);
+	public Receiver<M> getReceiver();
 
 	public IListenerConnector<M> getListenerPortConnector();
 }

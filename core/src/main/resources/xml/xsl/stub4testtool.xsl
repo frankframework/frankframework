@@ -57,7 +57,6 @@
 			</xsl:when>
 			<xsl:when test="name()='pipeline'">
 				<xsl:element name="receiver">
-					<xsl:attribute name="className">nl.nn.adapterframework.receivers.GenericReceiver</xsl:attribute>
 					<xsl:attribute name="name">
 						<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
 					</xsl:attribute>

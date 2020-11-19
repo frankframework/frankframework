@@ -50,7 +50,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private TransactionDefinition txNew = null;
 
-	private ReceiverBase<M> receiver;
+	private Receiver<M> receiver;
 	private PlatformTransactionManager txManager;
 	private Counter threadsRunning = new Counter(0);
 	private Counter tasksStarted = new Counter(0);
@@ -300,8 +300,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private void resetRetryInterval() {
 		synchronized (receiver) {
-			if (retryInterval > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
+			if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+				receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -317,8 +317,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
-		if (currentInterval*2 > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
+		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
@@ -331,10 +331,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	}
 	
 	
-	public void setReceiver(ReceiverBase<M> receiver) {
+	public void setReceiver(Receiver<M> receiver) {
 		this.receiver = receiver;
 	}
-	public ReceiverBase<M> getReceiver() {
+	public Receiver<M> getReceiver() {
 		return receiver;
 	}
 

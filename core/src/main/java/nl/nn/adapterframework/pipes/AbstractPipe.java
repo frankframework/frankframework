@@ -33,7 +33,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
@@ -296,17 +295,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	protected boolean isRecoverAdapter() {
-		boolean recover = false;
-		IAdapter iAdapter = getAdapter();
-		if (iAdapter == null) {
-			recover = recoverAdapter;
-		} else {
-			if (iAdapter instanceof Adapter) {
-				Adapter adapter = (Adapter) iAdapter;
-				recover = adapter.isRecover();
-			}
-		}
-		return recover;
+		Adapter adapter = getAdapter();
+		return adapter == null ? recoverAdapter : adapter.isRecover();
 	}
 
 	/**
@@ -394,7 +384,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	@Override
-	public IAdapter getAdapter() {
+	public Adapter getAdapter() {
 		if (getPipeLine()!=null) {
 			return getPipeLine().getAdapter();
 		}

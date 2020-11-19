@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,7 +26,7 @@ import org.springframework.mock.web.MockServletContext;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -189,8 +188,7 @@ public class IbisTester {
 		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
-		List<IAdapter> registeredAdapters = ibisContext.getIbisManager().getRegisteredAdapters();
-		for (IAdapter adapter : registeredAdapters) {
+		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
 			RunStateEnum runState = adapter.getRunState();
 			if (!(RunStateEnum.STARTED).equals(runState)) {

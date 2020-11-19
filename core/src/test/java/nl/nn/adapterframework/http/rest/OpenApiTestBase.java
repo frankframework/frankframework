@@ -34,7 +34,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
-import nl.nn.adapterframework.receivers.GenericReceiver;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -214,7 +214,7 @@ public class OpenApiTestBase extends Mockito {
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
 			PipeLine pipeline = spy(PipeLine.class);
-			GenericReceiver receiver = new GenericReceiver();
+			Receiver receiver = new Receiver();
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 			pipeline.setInputValidator(validator);
