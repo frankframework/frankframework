@@ -182,7 +182,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 					} else {
 						if ("blob".equalsIgnoreCase(getMessageFieldType())) {
 							if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
-								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false));
+								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
 							} else {
 								try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
 									message=new Message(blobStream);
@@ -426,6 +426,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}

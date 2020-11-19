@@ -182,7 +182,7 @@ public class JdbcUtil {
 			case Types.BINARY:
 			case Types.BLOB:
 				try {
-					return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,false,decompressBlobs,getBlobSmart,encodeBlobBase64);
+					return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,decompressBlobs,getBlobSmart,encodeBlobBase64);
 				} catch (JdbcException e) {
 					log.debug("Caught JdbcException, assuming no blob found",e);
 					return nullValue;
@@ -334,31 +334,31 @@ public class JdbcUtil {
 		throw new IOException("cannot stream Clob to ["+target.getClass().getName()+"]");
 	}
 	
-	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
-			return getBlobAsString(blobStream, Integer.toString(column), charset, xmlEncode, blobSmartGet, encodeBlobBase64);
-		} catch (ZipException | EOFException e) {
-			if (blobSmartGet && blobIsCompressed) {
+			return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
+		} catch (ZipException | EOFException e) { 	// if any decompression exception occurs in getBlobInputStream
+			if (blobSmartGet && blobIsCompressed) { // then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
 				try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, false)) {
-					return getBlobAsString(blobStream, Integer.toString(column), charset, xmlEncode, blobSmartGet, encodeBlobBase64);
+					return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
 				}
 			}
 			throw e;
 		}
 	}
-	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
-			return getBlobAsString(blobStream, column, charset, xmlEncode, blobSmartGet, encodeBlobBase64);
-		} catch (ZipException | EOFException e) {
-			if (blobSmartGet && blobIsCompressed) {
+			return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
+		} catch (ZipException | EOFException e) { 	// if any decompression exception occurs in getBlobInputStream
+			if (blobSmartGet && blobIsCompressed) { // then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
 				try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, false)) {
-					return getBlobAsString(blobStream, column, charset, xmlEncode, blobSmartGet, encodeBlobBase64);
+					return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
 				}
 			}
 			throw e;
 		}
 	}
-	public static String getBlobAsString(final InputStream blobIntputStream, String column, String charset, boolean xmlEncode, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final InputStream blobIntputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		if (blobIntputStream==null) {
 			log.debug("no blob found in column ["+column+"]");
 			return null;
@@ -397,7 +397,7 @@ public class JdbcUtil {
 
 			return XmlUtils.replaceNonValidXmlCharacters(rawMessage);
 		} 
-		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null,xmlEncode);
+		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null, false);
 	}
 
 	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
@@ -631,7 +631,7 @@ public class JdbcUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return getBlobAsString(dbmsSupport, rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, true, true, false);
+				return getBlobAsString(dbmsSupport, rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
 			}
 		} catch (Exception e) {
 			throw new JdbcException("could not obtain value using query ["+query+"]",e);

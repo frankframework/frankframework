@@ -119,13 +119,14 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
+	// implements IBlockEnabledSender.sendMessage()
 	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return executeStatementSet(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
-	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
-	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	// implements IStreamingSender.sendMessage()
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		QueryExecutionContext blockHandle = openBlock(session);
 		try {
 			return executeStatementSet(blockHandle, message, session, next);

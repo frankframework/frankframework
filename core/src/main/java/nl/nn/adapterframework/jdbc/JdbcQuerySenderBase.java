@@ -331,16 +331,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			} 
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isEmpty(getBlobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
+				if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+					return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
 				} 
-				return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
+				return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 			} 
 			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isEmpty(getClobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
+				if (StringUtils.isNotEmpty(getClobSessionKey())) {
+					return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
 				} 
-				return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
+				return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 			} 
 			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
 				return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
@@ -466,7 +466,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
-					log.warn(getLogPrefix() + "has set scalar=true. However, the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
+					log.warn(getLogPrefix() + "has set scalar=true but the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
 				}
 				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
 					if (response!=null) {
@@ -519,7 +519,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 				if (resultset.next()) {
-					log.warn(getLogPrefix() + "has set scalar=true. However, the query returns more than 1 row. Consider optimizing the query.");
+					log.warn(getLogPrefix() + "has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
 				}
 			} else {
 				if (isScalarExtended()) {
