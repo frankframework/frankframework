@@ -1,17 +1,44 @@
 package nl.nn.adapterframework.doc.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
+
+	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
+			Comparator.comparing(ConfigChild::getSequenceInConfig)
+			.thenComparing(ConfigChild::getSyntax1Name);
+	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
+			Comparator.comparing(FrankAttribute::getOrder)
+			.thenComparing(FrankAttribute::getName);
+
+	@EqualsAndHashCode
+	private final class ConfigChildKey {
+		private final @Getter String syntax1Name;
+		private final @Getter ElementType elementType;
+		private final @Getter boolean mandatory;
+		private final @Getter boolean allowMultiple;
+
+		public ConfigChildKey(ConfigChild configChild) {
+			syntax1Name = configChild.getSyntax1Name();
+			elementType = configChild.getElementType();
+			mandatory = configChild.isMandatory();
+			allowMultiple = configChild.isAllowMultiple();
+		}
+	}
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
@@ -47,6 +74,7 @@ public class FrankElement {
 	 * @param inputAttributes
 	 */
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
+		inputAttributes.sort(FRANK_ATTRIBUTE_COMPARATOR);
 		this.attributes = Collections.unmodifiableList(inputAttributes);
 		attributeLookup = new HashMap<>();
 		for(FrankAttribute a: attributes) {
@@ -65,6 +93,7 @@ public class FrankElement {
 	 * @param children
 	 */
 	public void setConfigChildren(List<ConfigChild> children) {
+		children.sort(CONFIG_CHILD_COMPARATOR);
 		this.configChildren = Collections.unmodifiableList(children);
 		configChildLookup = new HashMap<>();
 		for(ConfigChild c: children) {
@@ -77,11 +106,97 @@ public class FrankElement {
 		}
 	}
 
-	public FrankAttribute find(String attributeName) {
-		return attributeLookup.get(attributeName);
+	FrankAttribute findAttributeMatch(ElementChild attribute) {
+		return attributeLookup.get(((FrankAttribute) attribute).getName());
 	}
 
-	public ConfigChild find(ConfigChildKey key) {
-		return configChildLookup.get(key);
+	ConfigChild findConfigChildMatch(ElementChild configChild) {
+		return configChildLookup.get(new ConfigChildKey(((ConfigChild) configChild)));
+	}
+
+	public <T extends ElementChild> List<T> getSelectedChildren(Function<FrankElement, List<T>> kind) {
+		List<T> rawChildren = kind.apply(this);
+		return rawChildren.stream()
+				.filter(ElementChild.SELECTED)
+				.collect(Collectors.toList());
+	}
+
+	private FrankElement getNextAncestor(Function<FrankElement, List<ElementChild>> childSelector) {
+		FrankElement current = parent;
+		while((current != null) && childSelector.apply(current).size() == 0) {
+			current = current.parent;
+		}
+		return current;
+	}
+
+	public FrankElement getNextSelectedAttributeAncestor() {
+		return getNextAncestor(el -> el.getSelectedChildren(
+				FrankElement::getGenericAttributes));
+	}
+
+	private List<ElementChild> getGenericAttributes() {
+		List<ElementChild> result = new ArrayList<>();
+		getAttributes().forEach(result::add);
+		return result;
+	}
+
+	public FrankElement getNextSelectedConfigChildAncestor() {
+		return getNextAncestor(el -> el.getSelectedChildren(
+				FrankElement::getGenericConfigChildren));
+	}
+
+	private List<ElementChild> getGenericConfigChildren() {
+		List<ElementChild> result = new ArrayList<>();
+		getConfigChildren().forEach(result::add);
+		return result;
+	}
+
+	public FrankElement getNextSelectedParent() {
+		return getNextAncestor(FrankElement::getGenericSelectedChildren);
+	}
+
+	private List<ElementChild> getGenericSelectedChildren() {
+		List<ElementChild> result = new ArrayList<>();
+		getSelectedChildren(FrankElement::getAttributes).forEach(result::add);
+		getSelectedChildren(FrankElement::getConfigChildren).forEach(result::add);
+		return result;
+	}
+
+	public void walkSelectedCumulativeAttributes(CumulativeChildHandler handler) {
+		new AncestorChildNavigation<String>(handler) {
+			@Override
+			List<? extends ElementChild> getChildrenOf(FrankElement element) {
+				return element.getSelectedChildren(FrankElement::getAttributes);
+			}
+
+			@Override
+			FrankElement nextAncestor(FrankElement element) {
+				return element.getNextSelectedAttributeAncestor(); 
+			}
+
+			@Override
+			String keyOf(ElementChild child) {
+				return ((FrankAttribute) child).getName();
+			}
+		}.run(this);
+	}
+
+	public void walkSelectedCumulativeConfigChildren(CumulativeChildHandler handler) {
+		new AncestorChildNavigation<ConfigChildKey>(handler) {
+			@Override
+			List<? extends ElementChild> getChildrenOf(FrankElement element) {
+				return element.getSelectedChildren(FrankElement::getConfigChildren);
+			}
+
+			@Override
+			FrankElement nextAncestor(FrankElement element) {
+				return element.getNextSelectedConfigChildAncestor(); 
+			}
+
+			@Override
+			ConfigChildKey keyOf(ElementChild child) {
+				return new ConfigChildKey((ConfigChild) child);
+			}
+		}.run(this);		
 	}
 }

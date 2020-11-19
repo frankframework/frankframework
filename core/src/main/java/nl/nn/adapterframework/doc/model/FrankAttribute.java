@@ -7,7 +7,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankAttribute {
+public class FrankAttribute extends ElementChild {
 	private static Logger log = LogUtil.getLogger(FrankAttribute.class);
 
 	private @Getter String name;
@@ -17,13 +17,13 @@ public class FrankAttribute {
 	 */
 	private @Getter @Setter int order;
 	
-	private @Getter FrankElement owningElement;
-	private @Getter @Setter boolean documented;
+	private @Getter(onMethod=@__(@Override)) FrankElement owningElement;
+	private @Getter(onMethod=@__(@Override)) @Setter boolean documented;
 	private @Getter @Setter FrankElement describingElement;
 	private @Getter String description;
 	private @Getter String defaultValue;
-	private @Getter @Setter boolean isDeprecated;
-	private @Getter FrankElement overriddenFrom;
+	private @Getter(onMethod=@__(@Override)) @Setter boolean isDeprecated;
+	private @Getter(onMethod=@__(@Override)) FrankElement overriddenFrom;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		this.name = name;
@@ -50,23 +50,6 @@ public class FrankAttribute {
 			description = ibisDocValues[0];
 			if (ibisDocValues.length > 1) {
 				defaultValue = ibisDocValues[1];
-			}
-		}
-	}
-
-	void calculateOverriddenFrom() {
-		FrankElement match = owningElement;
-		while(match.getParent() != null) {
-			match = match.getParent();
-			FrankAttribute matchingAttribute = match.find(name);
-			if(matchingAttribute != null) {
-				FrankElement matchOverriddenFrom = matchingAttribute.overriddenFrom;
-				if(matchOverriddenFrom != null) {
-					overriddenFrom = matchOverriddenFrom;
-				} else {
-					overriddenFrom = match;
-				}
-				return;
 			}
 		}
 	}
