@@ -70,7 +70,6 @@ import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -86,7 +85,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private final String SPNEGO_OID="1.3.6.1.5.5.2";
 	private final String KERBEROS5_OID="1.2.840.113554.1.2.2";
 	private String authType = "SPNEGO";
-	private List<String> authTypes = Arrays.asList("NTLM", "SPNEGO");
+	//private List<String> authTypes = Arrays.asList("NTLM", "SPNEGO");
 	private boolean listHiddenFiles = false;
 	private SMBClient client = null;
 	private Connection connection;
