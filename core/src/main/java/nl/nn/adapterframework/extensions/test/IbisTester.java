@@ -152,6 +152,9 @@ public class IbisTester {
 		debug("***end***");
 	}
 
+	/**
+	 * returns a string containing the error, if any
+	 */
 	public String testStartAdapters() {
 		// Log4J2 will automatically create a console appender and basic pattern layout.
 		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
@@ -217,9 +220,10 @@ public class IbisTester {
 		}
 
 		String msg = "adapters started [" + adaptersStarted + "] from [" + adaptersCount + "]";
+
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
-			return null;
+			return null; // null == good
 		} else {
 			return error(msg);
 		}
