@@ -240,7 +240,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	@IbisDoc({"1", "specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
+	@IbisDoc({"1", "specifies the id of the transfer flow", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
@@ -256,7 +256,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return flowOutFolder;
 	}
 
-	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the folder the output folder will be constructed as <code>/opt/data/FXF/&lt;instanceNameLowerCase&gt;/&lt;flowId&gt;/out/</code> ", "true"})
+	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the folder the output folder <code>flowOutFolder</code> will be constructed as <code>/opt/data/FXF/&lt;instanceNameLowerCase&gt;/&lt;flowId&gt;/out/</code> ", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
