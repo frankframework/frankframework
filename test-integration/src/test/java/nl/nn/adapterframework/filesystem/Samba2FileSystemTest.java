@@ -3,7 +3,7 @@ package nl.nn.adapterframework.filesystem;
 public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSystem> {
 
 	private String shareName = "share";
-	private String userName = "admin";
+	private String userName = "wearefrank";
 	private String password = "pass_123";
 	private String host = "localhost";
 	private Integer port = 139;

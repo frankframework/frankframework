@@ -20,10 +20,10 @@ import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
 	private String realm = "";
-	private String kdc = "";
+	private String kdc = "localhost";
 	private String shareName = "Share";
-	private String username = "";
-	private String password = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
 	private String domain = "";
 	
 	@Override
