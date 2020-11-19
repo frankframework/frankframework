@@ -406,8 +406,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (nextStartPos == -1) {
 				nextStartPos = query.length();
 			}
-			int endPos =
-					query.indexOf(UNP_END, startPos + UNP_START.length());
+			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
 				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position ["	+ startPos + "] in ["+ query+ "]");
@@ -477,15 +476,19 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							response.setHeader("Content-Disposition", contentDisposition); 
 						}
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, new Message(""));
+						return new PipeRunResult(null, Message.nullMessage());
 					}
 					if (blobSessionVar!=null) {
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, new Message(""));
+						return new PipeRunResult(null, Message.nullMessage());
 					}
-					if (!isBlobSmartGet() && StringUtils.isNotEmpty(getBlobCharset())) {
+					if (!isBlobSmartGet()) {
 						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
+							if (StringUtils.isNotEmpty(getBlobCharset())) {
+								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asWriter(), isCloseOutputstreamOnExit());
+							} else {
+								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null,             isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
+							}
 							return target.getPipeRunResult();
 						} catch (Exception e) {
 							throw new JdbcException(e);
@@ -495,7 +498,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (JdbcUtil.isClobType(resultset, 1, rsmeta)) {
 					if (clobSessionVar!=null) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
-						return new PipeRunResult(null, new Message(""));
+						return new PipeRunResult(null, Message.nullMessage());
 					}
 					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
@@ -757,9 +760,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			} catch (SQLException e) {
 				log.warn(
-					new SenderException(
-						getLogPrefix() + "got exception closing resultset",
-						e));
+					new SenderException(getLogPrefix() + "got exception closing resultset", e));
 			}
 		}
 	}
@@ -904,7 +905,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					newMessage.append(message.substring(eindHaakje, lengthMessage));
 				} else {
-					newMessage.append(message.substring(eindHaakje, lengthMessage));				
+					newMessage.append(message.substring(eindHaakje, lengthMessage));
 				}
 			}
 			return newMessage.toString();
@@ -1046,7 +1047,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	@IbisDoc({"13", "If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)", "false"})
+	@IbisDoc({"13", "If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)", "false"})
+	@Deprecated
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1129,7 +1131,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
-				"If blobCharset and blobSessionKey are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
+				"If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, getLogPrefix()+"setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
