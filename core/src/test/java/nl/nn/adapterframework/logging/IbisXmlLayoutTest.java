@@ -32,7 +32,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
  */
 public class IbisXmlLayoutTest {
 
-	private IbisXmlLayout layout = new IbisXmlLayout(null, null, true);
+	private IbisXmlLayout layout = new IbisXmlLayout(null, null, false);
 	private static final String UNICODE_CHARACTERS = " aâΔع你好ಡತ ";
 
 	private LogEvent generateLogEvent(String string) {
@@ -50,7 +50,6 @@ public class IbisXmlLayoutTest {
 
 		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
 				"  <message>my test message!</message>\n" + 
-				"  <throwable />\n" + 
 				"</event>", result.trim());
 	}
 
@@ -61,7 +60,6 @@ public class IbisXmlLayoutTest {
 
 		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
 				"  <message>my &lt;![CDATA[cdata]]&gt; test message!</message>\n" + 
-				"  <throwable />\n" + 
 				"</event>", result.trim());
 	}
 
@@ -72,7 +70,6 @@ public class IbisXmlLayoutTest {
 
 		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
 				"  <message>my \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  test message!</message>\n" + 
-				"  <throwable />\n" + 
 				"</event>", result.trim());
 	}
 
@@ -83,7 +80,6 @@ public class IbisXmlLayoutTest {
 
 		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
 				"  <message>my &lt;![CDATA[cdata]]&gt; test message with \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  unicode!</message>\n" + 
-				"  <throwable />\n" + 
 				"</event>", result.trim());
 	}
 
@@ -105,7 +101,35 @@ public class IbisXmlLayoutTest {
 
 		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
 				"  <message>my &lt;![CDATA[cdata with \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  unicode]]&gt; test message!</message>\n" + 
-				"  <throwable />\n" + 
+				"</event>", result.trim());
+	}
+
+	@Test
+	public void configLoggerTest() {
+		IbisXmlLayout ibisXmlLayout = new IbisXmlLayout(null, null, true);
+		LogEvent logEvent = generateLogEvent("<configuration name=\"IAF_WebControl\">\n" + 
+				"	  <module>\n" + 
+				"	     <adapter name=\"WebControlShowConfigurationStatus\">\n" + 
+				"		       <receiver className=\"nl.nn.adapterframework.receivers.GenericReceiver\"\n" + 
+				"                   name=\"WebControlShowConfigurationStatus\">\n" + 
+				"			         <listener className=\"nl.nn.adapterframework.http.RestListener\"\n" + 
+				"                      name=\"WebControlShowConfigurationStatus\"\n" + 
+				"                      uriPattern=\"showConfigurationStatus\"\n" + 
+				"                      view=\"false\"/>\n" + 
+				"		       </receiver>");
+		String result = ibisXmlLayout.toSerializable(logEvent);
+
+		TestAssertions.assertEqualsIgnoreCRLF("<event timestamp=\"0\" level=\"DEBUG\">\n" + 
+				"  <message>&lt;configuration name=\"IAF_WebControl\"&gt;\n" + 
+				"	  &lt;module&gt;\n" + 
+				"	     &lt;adapter name=\"WebControlShowConfigurationStatus\"&gt;\n" + 
+				"		       &lt;receiver className=\"nl.nn.adapterframework.receivers.GenericReceiver\"\n" + 
+				"                   name=\"WebControlShowConfigurationStatus\"&gt;\n" + 
+				"			         &lt;listener className=\"nl.nn.adapterframework.http.RestListener\"\n" + 
+				"                      name=\"WebControlShowConfigurationStatus\"\n" + 
+				"                      uriPattern=\"showConfigurationStatus\"\n" + 
+				"                      view=\"false\"/&gt;\n" + 
+				"		       &lt;/receiver&gt;</message>\n" + 
 				"</event>", result.trim());
 	}
 }

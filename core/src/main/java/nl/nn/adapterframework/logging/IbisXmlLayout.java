@@ -48,11 +48,11 @@ import org.jdom2.output.XMLOutputter;
  */
 @Plugin(name = "IbisXmlLayout", category = "Core", elementType = "layout", printObject = true)
 public class IbisXmlLayout extends IbisMaskingLayout {
-	private boolean alwaysWriteExceptions = true;
+	private boolean configLogLayout = false;
 
-	protected IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
+	protected IbisXmlLayout(final Configuration config, final Charset charset, final boolean configLogLayout) {
 		super(config, charset);
-		this.alwaysWriteExceptions = alwaysWriteExceptions;
+		this.configLogLayout = configLogLayout;
 	}
 
 	@Override
@@ -65,11 +65,13 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		Message message = event.getMessage();
 		XmlBuilder messageBuilder = XmlBuilder.create("message");
-		messageBuilder.setElementContent(message.getFormattedMessage());
+		//Escape illegal JDOM characters ? if logging config then keep the line formatting
+		String msg = configLogLayout ? message.getFormattedMessage() : StringEscapeUtils.escapeJava(message.getFormattedMessage());
+		messageBuilder.setElementContent(msg);
 		eventBuilder.setSubElement(messageBuilder);
 
 		Throwable t = message.getThrowable();
-		if(t != null || alwaysWriteExceptions) {
+		if(t != null) {
 			XmlBuilder throwableBuilder = XmlBuilder.create("throwable");
 			StringWriter sw = new StringWriter();
 			if(t != null) {
@@ -87,8 +89,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			@PluginConfiguration final Configuration config,
 			// LOG4J2-783 use platform default by default, so do not specify defaultString for charset
 			@PluginAttribute(value = "charset") final Charset charset,
-			@PluginAttribute(value = "alwaysWriteExceptions", defaultBoolean = true) final boolean alwaysWriteExceptions) {
-		return new IbisXmlLayout(config, charset, alwaysWriteExceptions);
+			@PluginAttribute(value = "configLogLayout", defaultBoolean = false) final boolean configLogLayout) {
+		return new IbisXmlLayout(config, charset, configLogLayout);
 	}
 
 	private static class XmlBuilder {
@@ -103,10 +105,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 		}
 
 		public void setElementContent(String value) {
-			if (value != null) {
-				//Escape illegal JDOM characters
-				element.setText(StringEscapeUtils.escapeJava(value));
-			}
+			element.setText(value);
 		}
 
 		public void setSubElement(XmlBuilder newElement) {
