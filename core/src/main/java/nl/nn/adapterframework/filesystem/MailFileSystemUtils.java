@@ -20,6 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -28,6 +32,8 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
+	
+	public static final String RETURN_PATH_HEADER="Return-Path";
 
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
@@ -45,7 +51,15 @@ public class MailFileSystemUtils {
 				recipientsXml.addElement("recipient", "type", "bcc", address);
 			}
 		}
-		emailXml.addElement("from", fileSystem.getFrom(emailMessage));
+		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
+		String from    = fileSystem.getFrom(emailMessage);
+		String replyTo = fileSystem.getReplyTo(emailMessage);
+		String sender  = fileSystem.getSender(emailMessage);
+		String bestReplyAddress = findBestReplyAddress(from, replyTo, sender, properties);
+		if (StringUtils.isNotEmpty(from))    emailXml.addElement("from", from);
+		if (StringUtils.isNotEmpty(replyTo)) emailXml.addElement("replyTo", replyTo);
+		if (StringUtils.isNotEmpty(sender)) emailXml.addElement("sender", sender);
+		emailXml.addElement("bestReplyAddress", bestReplyAddress);
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
 		emailXml.addElement("message", fileSystem.getMessageBody(emailMessage));
 		try (SaxElementBuilder attachmentsXml = emailXml.startElement("attachments")) {
@@ -56,7 +70,6 @@ public class MailFileSystemUtils {
 			throw new FileSystemException("Cannot extract attachment",e);
 		}
 		try (SaxElementBuilder headersXml = emailXml.startElement("headers")) {
-			Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 			if (properties != null) {
 				for (Map.Entry<String,Object> header: properties.entrySet()) {
 					if (header.getValue() instanceof List) {
@@ -85,6 +98,42 @@ public class MailFileSystemUtils {
 			if (emailMessage!=null) {
 				fileSystem.extractEmail(emailMessage, attachmentXml);
 			}
+		}
+	}
+	
+
+	public static String findBestReplyAddress(String from, String replyTo, String sender, Map<String,Object> headers) {
+		String result;
+		
+		if (null != (result = getValidAddress("replyTo", replyTo))) {
+			return result; 
+		}
+		if (null != (result = getValidAddress("from", from))) {
+			return result; 
+		}
+		if (null != (result = getValidAddress("sender", sender))) {
+			return result; 
+		}
+		Object returnPath = headers.get(RETURN_PATH_HEADER);
+		if (returnPath instanceof String && null != (result = getValidAddress("return path", (String)returnPath))) {
+			return result; 
+		}
+		return null;
+	}
+	
+	public static String getValidAddress(String type, String address) {
+		try {
+			if (StringUtils.isEmpty(address)) {
+				return null;
+			}
+			InternetAddress[] addresses = InternetAddress.parseHeader(address, true);
+			if (addresses.length==0) {
+				return null;
+			} 
+			return InternetAddress.toString(addresses);
+		} catch (AddressException e) {
+			log.warn("type ["+type+"] address ["+address+"] is invalid: "+e.getMessage());
+			return null;
 		}
 	}
 	

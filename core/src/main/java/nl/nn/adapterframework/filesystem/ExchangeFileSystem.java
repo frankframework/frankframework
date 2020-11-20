@@ -698,6 +698,38 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	}
 
 	@Override
+	public String getSender(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			EmailAddress sender = emailMessage.getSender();
+			return sender==null ? null : sender.getAddress();
+		} catch (ServiceLocalException e) {
+			log.warn("Could not get Sender Address: "+ e.getMessage());
+			return null;
+		}
+	}
+
+	@Override
+	public String getReplyTo(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			EmailAddressCollection replyTo = emailMessage.getReplyTo();
+			if (replyTo==null) {
+				return null;
+			}
+			
+			String addressList=null;
+			for (EmailAddress address: replyTo) {
+				if (addressList!=null) {
+					addressList += ", ";
+				}
+				addressList += address.getAddress();
+			}
+			return MailFileSystemUtils.getValidAddress("replyTo", addressList);
+		} catch (ServiceLocalException e) {
+			throw new FileSystemException("Could not get ReplyTo Address", e);
+		}
+	}
+	
+	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			return emailMessage.getSubject();

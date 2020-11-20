@@ -25,25 +25,21 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	public String MAIL_MESSAGE_ID = "Message-ID";
 	
 	public Iterable<String> getToRecipients(M emailMessage) throws FileSystemException ;
-
 	public Iterable<String> getCCRecipients(M emailMessage) throws FileSystemException;
-	
 	public Iterable<String> getBCCRecipients(M emailMessage) throws FileSystemException;
 	
 	public String getFrom(M emailMessage) throws FileSystemException;
+	public String getSender(M emailMessage) throws FileSystemException;
+	public String getReplyTo(M emailMessage) throws FileSystemException;
 
 	public String getSubject(M emailMessage) throws FileSystemException;
-	
 	public Date getDateTimeSent(M emailMessage) throws FileSystemException;
-	
 	public Date getDateTimeReceived(M emailMessage) throws FileSystemException;
 
 	public String getMessageBody(M emailMessage) throws FileSystemException;
-	
 	public Message getMimeContent(M emailMessage) throws FileSystemException;
 
 	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException;
-	
 	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException;
 	
 }
