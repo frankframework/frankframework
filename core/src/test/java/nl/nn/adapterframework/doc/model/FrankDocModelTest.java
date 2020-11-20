@@ -31,6 +31,7 @@ public class FrankDocModelTest {
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
 	private static final String REFERRED_PARENT = IBISDOCREF + ".ParentTarget";
 	private static final String REFERRER = "nl.nn.adapterframework.doc.testtarget.ibisdocref.Referrer";
+	private static final String REFERRER_CHILD = "nl.nn.adapterframework.doc.testtarget.ibisdocref.ReferrerChild";
 
 	private FrankDocModel instance;
 	private FrankElement fakeAttributeOwner;
@@ -326,8 +327,12 @@ public class FrankDocModelTest {
 	}
 
 	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName) throws ReflectiveOperationException {
+		return checkIbisdocrefInvestigatedFrankAttribute(attributeName, REFERRER);
+	}
+
+	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName, String targetClassName) throws ReflectiveOperationException {
 		Map<String, FrankAttribute> attributeMap =
-				getAttributesOfClass(REFERRER);
+				getAttributesOfClass(targetClassName);
 		assertTrue(attributeMap.containsKey(attributeName));
 		return attributeMap.get(attributeName);
 	}
@@ -372,5 +377,12 @@ public class FrankDocModelTest {
 		assertSame(
 				fakeAttributeOwner,
 				actual.getOwningElement());
+	}
+
+	@Test
+	public void whenMethodOverriddenWithoutDocThenDocumentedFalseButIbisDocRefInfoInherited() throws ReflectiveOperationException {
+		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", REFERRER_CHILD);
+		assertFalse(actual.isDocumented());
+		assertEquals("Description of ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", actual.getDescription());
 	}
 }
