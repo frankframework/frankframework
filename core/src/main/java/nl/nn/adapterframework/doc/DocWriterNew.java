@@ -185,8 +185,11 @@ public class DocWriterNew {
 			List<SortKeyForXsd> result = configChildren.stream()
 					.map(c -> getTypeKey(c))
 					.collect(Collectors.toList());
-			if(isParentSortElementChild(element, result)) {
-				result.add(SortKeyForXsd.getInstance(element.getParent()));
+			FrankElement candidateParent = element.getNextAncestor(SELECTED);
+			if(
+					(candidateParent != null)
+					&& (available.contains(SortKeyForXsd.getInstance(candidateParent)))) {
+				result.add(SortKeyForXsd.getInstance(candidateParent));
 			}
 			return result;
 		}
@@ -200,16 +203,6 @@ public class DocWriterNew {
 				FrankElement content = elementType.getMembers().values().iterator().next();
 				return SortKeyForXsd.getInstance(content);
 			}
-		}
-
-		private boolean isParentSortElementChild(FrankElement container, List<SortKeyForXsd> otherChildren) {
-			FrankElement parent = container.getParent();
-			if(parent == null) {
-				return false;
-			}
-			Set<String> otherConfigChildNames = otherChildren.stream()
-					.map(SortKeyForXsd::getName).collect(Collectors.toSet());
-			return ! otherConfigChildNames.contains(parent.getFullName());
 		}
 	}
 

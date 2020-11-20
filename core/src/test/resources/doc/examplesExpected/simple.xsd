@@ -21,7 +21,6 @@
     </xs:choice>
   </xs:complexType>
   <xs:complexType name="TChildType" />
-  <xs:complexType name="ObjectType" />
   <xs:complexType name="DescribedPossibleIChildType">
     <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
   </xs:complexType>
