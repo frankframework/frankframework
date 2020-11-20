@@ -6,23 +6,29 @@ import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class ElementChild {
-	public abstract FrankElement getOwningElement();
-	public abstract boolean isDeprecated();
-	public abstract boolean isDocumented();
-	private @Getter @Setter FrankElement overriddenFrom;
+public abstract class ElementChild<T extends ElementChild<?>> {
+	private @Getter FrankElement owningElement;
+	private @Getter @Setter boolean deprecated;
+	private @Getter @Setter boolean documented;
+	private @Getter FrankElement overriddenFrom;
 
-	public static Predicate<ElementChild> SELECTED = c ->
+	public static Predicate<ElementChild<?>> SELECTED = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
-	void calculateOverriddenFrom(BiFunction<FrankElement, ElementChild, ? extends ElementChild> lookup) {
+	ElementChild(final FrankElement owningElement) {
+		this.owningElement = owningElement;
+	}
+
+	public static Predicate<ElementChild<?>> ALL = c -> true;
+
+	void calculateOverriddenFrom(BiFunction<FrankElement, T, T> lookup) {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			ElementChild matchingChild = lookup.apply(match, this);
+			T matchingChild = lookup.apply(match, cast());
 			if(matchingChild != null) {
-				FrankElement matchOverriddenFrom = matchingChild.overriddenFrom;
+				FrankElement matchOverriddenFrom = matchingChild.getOverriddenFrom();
 				if(matchOverriddenFrom != null) {
 					overriddenFrom = matchOverriddenFrom;
 				} else {
@@ -32,4 +38,6 @@ public abstract class ElementChild {
 			}
 		}
 	}
+
+	abstract T cast();
 }

@@ -40,7 +40,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenConfigChildMethodThenConfigChildProduced() {
 		ConfigChild actual = selectChild("syntax1NameChild");
 		assertEquals("syntax1NameChild", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
 		assertEquals(100, actual.getSequenceInConfig());
@@ -62,7 +62,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenConfigChildMethodDeprecatedThenConfigChildDeprecated() {
 		ConfigChild actual = selectChild("syntax1NameDeprecatedChild");
 		assertEquals("syntax1NameDeprecatedChild", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
 		assertEquals(200, actual.getSequenceInConfig());
@@ -76,7 +76,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenChildSetterInheritedThenConfigChildProduced() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChild");
 		assertEquals("syntax1NameInheritedChild", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
 		assertEquals(50, actual.getSequenceInConfig());
@@ -91,7 +91,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenIbisDocOnDerivedMethodThenStillOrderFromIbisDoc() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChildDocOnDerived");
 		assertEquals("syntax1NameInheritedChildDocOnDerived", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
 		assertEquals(70, actual.getSequenceInConfig());
@@ -106,7 +106,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChildDocWithOrderOverride");
 		assertEquals("syntax1NameInheritedChildDocWithOrderOverride", actual.getSyntax1Name());
-		assertEquals("Container", actual.getConfigParent().getSimpleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
 		assertEquals(10, actual.getSequenceInConfig());

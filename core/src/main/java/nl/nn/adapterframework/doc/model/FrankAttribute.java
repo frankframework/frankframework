@@ -7,7 +7,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankAttribute extends ElementChild {
+public class FrankAttribute extends ElementChild<FrankAttribute> {
 	private static Logger log = LogUtil.getLogger(FrankAttribute.class);
 
 	private @Getter String name;
@@ -17,17 +17,13 @@ public class FrankAttribute extends ElementChild {
 	 */
 	private @Getter @Setter int order;
 	
-	private @Getter(onMethod=@__(@Override)) FrankElement owningElement;
-	private @Getter(onMethod=@__(@Override)) @Setter boolean documented;
 	private @Getter @Setter FrankElement describingElement;
 	private @Getter String description;
 	private @Getter String defaultValue;
-	private @Getter(onMethod=@__(@Override)) @Setter boolean isDeprecated;
-	private @Getter(onMethod=@__(@Override)) FrankElement overriddenFrom;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
+		super(attributeOwner);
 		this.name = name;
-		this.owningElement = attributeOwner;
 		this.describingElement = attributeOwner;
 	}
 
@@ -52,5 +48,10 @@ public class FrankAttribute extends ElementChild {
 				defaultValue = ibisDocValues[1];
 			}
 		}
+	}
+
+	@Override
+	FrankAttribute cast() {
+		return this;
 	}
 }

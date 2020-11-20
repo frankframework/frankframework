@@ -5,24 +5,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-abstract class AncestorChildNavigation<K> {
-	private final CumulativeChildHandler handler;
+abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
+	private final CumulativeChildHandler<T> handler;
+	private final Function<FrankElement, List<T>> childFunction;
 	private FrankElement current;
 	private Map<K, Boolean> items;
 	private Set<K> overridden;
 
-	AncestorChildNavigation(CumulativeChildHandler handler) {
+	AncestorChildNavigation(CumulativeChildHandler<T> handler, Function<FrankElement, List<T>> childFunction) {
 		this.handler = handler;
+		this.childFunction = childFunction;
 	}
 
 	void run(FrankElement start) {
 		enter(start);
 		handler.handleChildrenOf(start);
 		overridden = getCurrentOverrides();
-		while(nextAncestor(current) != null) {
-			enter(nextAncestor(current));
+		while(nextAncestor(current, childFunction) != null) {
+			enter(nextAncestor(current, childFunction));
 			if(overridden.isEmpty()) {
 				safeAddCumulative();
 				return;
@@ -31,16 +34,24 @@ abstract class AncestorChildNavigation<K> {
 		}
 	}
 
+	static <U extends ElementChild<U>> FrankElement nextAncestor(FrankElement elem, Function<FrankElement, List<U>> fun) {
+		FrankElement ancestor = elem.getParent();
+		while((ancestor != null) && (fun.apply(ancestor).size() == 0)) {
+			ancestor = ancestor.getParent();
+		}
+		return ancestor;
+	}
+
 	private void enter(FrankElement current) {
 		this.current = current;
 		items = new HashMap<>();
-		for(ElementChild c: getChildrenOf(current)) {
+		for(T c: childFunction.apply(current)) {
 			items.put(keyOf(c), c.getOverriddenFrom() != null);
 		}
 	}
 
 	private void safeAddCumulative() {
-		if(nextAncestor(current) == null) {
+		if(nextAncestor(current, childFunction) == null) {
 			handler.handleChildrenOf(current);
 		} else {
 			handler.handleCumulativeChildrenOf(current);
@@ -68,8 +79,8 @@ abstract class AncestorChildNavigation<K> {
 		}
 	}
 
-	private List<ElementChild> selectChildren(Set<K> keys) {
-		return getChildrenOf(current).stream()
+	private List<T> selectChildren(Set<K> keys) {
+		return childFunction.apply(current).stream()
 				.filter(c -> keys.contains(keyOf(c)))
 				.collect(Collectors.toList());
 						
@@ -89,7 +100,5 @@ abstract class AncestorChildNavigation<K> {
 				.collect(Collectors.toSet());		
 	}
 
-	abstract List<? extends ElementChild> getChildrenOf(FrankElement arg);
-	abstract FrankElement nextAncestor(FrankElement arg);
-	abstract K keyOf(ElementChild arg);
+	abstract K keyOf(T arg);
 }

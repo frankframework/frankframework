@@ -7,9 +7,9 @@ import nl.nn.adapterframework.doc.model.CumulativeChildHandler;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.FrankElement;
 
-class GroupCreator {
-	static interface Callback extends CumulativeChildHandler {
-		List<? extends ElementChild> getChildrenOf(FrankElement elem);
+class GroupCreator<T extends ElementChild<T>> {
+	static interface Callback<T extends ElementChild<T>> extends CumulativeChildHandler<T> {
+		List<T> getChildrenOf(FrankElement elem);
 		FrankElement getAncestorOf(FrankElement elem);
 		void addDeclaredGroup();
 		void addCumulativeGroup();
@@ -18,13 +18,13 @@ class GroupCreator {
 	}
 
 	private FrankElement frankElement;
-	private Callback callback;
-	private Consumer<Callback> cumulativeGroupTrigger;
+	private Callback<T> callback;
+	private Consumer<Callback<T>> cumulativeGroupTrigger;
 
 	GroupCreator(
 			FrankElement frankElement,
-			Consumer<Callback> cumulativeGroupTrigger,
-			Callback callback) {
+			Consumer<Callback<T>> cumulativeGroupTrigger,
+			Callback<T> callback) {
 		this.frankElement = frankElement;
 		this.cumulativeGroupTrigger = cumulativeGroupTrigger;
 		this.callback = callback;

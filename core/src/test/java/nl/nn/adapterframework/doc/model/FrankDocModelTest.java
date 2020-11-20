@@ -117,24 +117,24 @@ public class FrankDocModelTest {
 		// We check here that protected method getChildAttribute does not produce
 		// an attribute
 		assertEquals(2, actualParent.getAttributes().size());
-		FrankAttribute actualParentAttribute = actualParent.find("parentAttribute");
+		FrankAttribute actualParentAttribute = findAttribute(actualParent, "parentAttribute");
 		assertEquals("parentAttribute", actualParentAttribute.getName());
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
 		assertSame(actualParent, actualParentAttribute.getOwningElement());
 		assertNull(actualParentAttribute.getOverriddenFrom());
-		FrankAttribute actualInheritedAttribute = actualParent.find("inheritedAttribute");
+		FrankAttribute actualInheritedAttribute = findAttribute(actualParent, "inheritedAttribute");
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertNull(actualInheritedAttribute.getOverriddenFrom());
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
 		assertEquals(2, actualChild.getAttributes().size());
-		FrankAttribute actualChildAttribute = actualChild.find("childAttribute");
+		FrankAttribute actualChildAttribute = findAttribute(actualChild, "childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
 		assertSame(actualChild, actualChildAttribute.getOwningElement());
 		assertSame(actualChild, actualChildAttribute.getDescribingElement());
 		assertNull(actualChildAttribute.getOverriddenFrom());
-		actualInheritedAttribute = actualChild.find("inheritedAttribute");
+		actualInheritedAttribute = findAttribute(actualChild, "inheritedAttribute");
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
 		FrankElement actualGrandChild = actualAllElements.get(SIMPLE_GRNAD_CHILD);
@@ -143,6 +143,15 @@ public class FrankDocModelTest {
 		actualInheritedAttribute = actualGrandChild.getAttributes().get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
+	}
+
+	private FrankAttribute findAttribute(final FrankElement elem, String name) {
+		for(FrankAttribute attribute: elem.getAttributes()) {
+			if(attribute.getName().contentEquals(name)) {
+				return attribute;
+			}
+		}
+		return null;
 	}
 
 	@Test

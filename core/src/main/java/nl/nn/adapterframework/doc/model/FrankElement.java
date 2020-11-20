@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -87,6 +87,10 @@ public class FrankElement {
 		}
 	}
 
+	public List<FrankAttribute> getAttributes(Predicate<? super FrankAttribute> filter) {
+		return attributes.stream().filter(filter).collect(Collectors.toList());
+	}
+
 	/**
 	 * Setter for config children. We prevent modifying the list of config children
 	 * because we want to maintain the private field configChildLookup.
@@ -106,96 +110,59 @@ public class FrankElement {
 		}
 	}
 
-	FrankAttribute findAttributeMatch(ElementChild attribute) {
-		return attributeLookup.get(((FrankAttribute) attribute).getName());
+	public List<ConfigChild> getConfigChildren(Predicate<? super ConfigChild> filter) {
+		return configChildren.stream().filter(filter).collect(Collectors.toList());
 	}
 
-	ConfigChild findConfigChildMatch(ElementChild configChild) {
-		return configChildLookup.get(new ConfigChildKey(((ConfigChild) configChild)));
+	FrankAttribute findAttributeMatch(FrankAttribute attribute) {
+		return attributeLookup.get(attribute.getName());
 	}
 
-	public <T extends ElementChild> List<T> getSelectedChildren(Function<FrankElement, List<T>> kind) {
-		List<T> rawChildren = kind.apply(this);
-		return rawChildren.stream()
-				.filter(ElementChild.SELECTED)
-				.collect(Collectors.toList());
+	ConfigChild findConfigChildMatch(ConfigChild configChild) {
+		return configChildLookup.get(new ConfigChildKey(configChild));
 	}
 
-	private FrankElement getNextAncestor(Function<FrankElement, List<ElementChild>> childSelector) {
+	public FrankElement getNextConfigChildAncestor(Predicate<? super ConfigChild> childFilter) {
+		return AncestorChildNavigation.nextAncestor(this, el -> el.getConfigChildren(childFilter));
+	}
+
+	public FrankElement getNextAncestor(Predicate<ElementChild<?>> selector) {
 		FrankElement current = parent;
-		while((current != null) && childSelector.apply(current).size() == 0) {
+		while((current != null) && (current.getGenericChildren(selector).size() == 0)) {
 			current = current.parent;
 		}
 		return current;
 	}
 
-	public FrankElement getNextSelectedAttributeAncestor() {
-		return getNextAncestor(el -> el.getSelectedChildren(
-				FrankElement::getGenericAttributes));
+	public FrankElement getNextAttributeAncestor(Predicate<? super FrankAttribute> childFilter) {
+		return AncestorChildNavigation.nextAncestor(this, el -> el.getAttributes(childFilter));
 	}
 
-	private List<ElementChild> getGenericAttributes() {
-		List<ElementChild> result = new ArrayList<>();
-		getAttributes().forEach(result::add);
+	private List<ElementChild<?>> getGenericChildren(Predicate<ElementChild<?>> selector) {
+		List<ElementChild<?>> result = new ArrayList<>();
+		result.addAll(getAttributes(selector));
+		result.addAll(getConfigChildren(selector));
 		return result;
 	}
 
-	public FrankElement getNextSelectedConfigChildAncestor() {
-		return getNextAncestor(el -> el.getSelectedChildren(
-				FrankElement::getGenericConfigChildren));
-	}
-
-	private List<ElementChild> getGenericConfigChildren() {
-		List<ElementChild> result = new ArrayList<>();
-		getConfigChildren().forEach(result::add);
-		return result;
-	}
-
-	public FrankElement getNextSelectedParent() {
-		return getNextAncestor(FrankElement::getGenericSelectedChildren);
-	}
-
-	private List<ElementChild> getGenericSelectedChildren() {
-		List<ElementChild> result = new ArrayList<>();
-		getSelectedChildren(FrankElement::getAttributes).forEach(result::add);
-		getSelectedChildren(FrankElement::getConfigChildren).forEach(result::add);
-		return result;
-	}
-
-	public void walkSelectedCumulativeAttributes(CumulativeChildHandler handler) {
-		new AncestorChildNavigation<String>(handler) {
+	public void walkCumulativeAttributes(
+			CumulativeChildHandler<FrankAttribute> handler,
+			Predicate<? super FrankAttribute> childSelector) {
+		new AncestorChildNavigation<String, FrankAttribute>(handler, el -> el.getAttributes(childSelector)) {
 			@Override
-			List<? extends ElementChild> getChildrenOf(FrankElement element) {
-				return element.getSelectedChildren(FrankElement::getAttributes);
-			}
-
-			@Override
-			FrankElement nextAncestor(FrankElement element) {
-				return element.getNextSelectedAttributeAncestor(); 
-			}
-
-			@Override
-			String keyOf(ElementChild child) {
-				return ((FrankAttribute) child).getName();
+			String keyOf(FrankAttribute child) {
+				return child.getName();
 			}
 		}.run(this);
 	}
 
-	public void walkSelectedCumulativeConfigChildren(CumulativeChildHandler handler) {
-		new AncestorChildNavigation<ConfigChildKey>(handler) {
+	public void walkCumulativeConfigChildren(
+			CumulativeChildHandler<ConfigChild> handler,
+			Predicate<? super ConfigChild> childSelector) {
+		new AncestorChildNavigation<ConfigChildKey, ConfigChild>(handler, el -> el.getConfigChildren(childSelector)) {
 			@Override
-			List<? extends ElementChild> getChildrenOf(FrankElement element) {
-				return element.getSelectedChildren(FrankElement::getConfigChildren);
-			}
-
-			@Override
-			FrankElement nextAncestor(FrankElement element) {
-				return element.getNextSelectedConfigChildAncestor(); 
-			}
-
-			@Override
-			ConfigChildKey keyOf(ElementChild child) {
-				return new ConfigChildKey((ConfigChild) child);
+			ConfigChildKey keyOf(ConfigChild child) {
+				return new ConfigChildKey(child);
 			}
 		}.run(this);		
 	}
