@@ -654,12 +654,10 @@ public final class ShowSecurityItems extends ActionBase {
 			} else {
 				XmlBuilder transactionService = new XmlBuilder("transactionService");
 				serverProps.addSubElement(transactionService);
-				String totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout(confSrvString);
-				transactionService.addAttribute("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
-				String maximumTransactionTimeout = Misc.getMaximumTransactionTimeout(confSrvString);
-				transactionService.addAttribute("maximumTransactionTimeout", maximumTransactionTimeout);
+				transactionService.addAttribute("totalTransactionLifetimeTimeout", Misc.getTotalTransactionLifetimeTimeout(confSrvString));
+				transactionService.addAttribute("maximumTransactionTimeout", Misc.getMaximumTransactionTimeout(confSrvString));
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log.warn("error retrieving configuration server properties", e);
 			serverProps.addAttribute("error", "true");
 			serverProps.setCdataValue(e.getMessage());

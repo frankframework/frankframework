@@ -18,9 +18,6 @@ package nl.nn.adapterframework.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
-import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1088,78 +1085,62 @@ public class Misc {
 		}
 	}
 
-	public static String getTotalTransactionLifetimeTimeout() throws IOException, SAXException, TransformerException {
-		String confSrvString = getConfigurationServer();
-		if (confSrvString==null) {
-			return null;
-		}
-		return getTotalTransactionLifetimeTimeout(confSrvString);
-	}
-
-	public static String getTotalTransactionLifetimeTimeout(String configServerXml) throws IOException, SAXException, TransformerException {
-		if (configServerXml==null) {
-			return null;
-		}
-		String confSrvString = XmlUtils.removeNamespaces(configServerXml);
-		confSrvString = XmlUtils.removeNamespaces(confSrvString);
-		String xPath = "Server/components/services/@totalTranLifetimeTimeout";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
-		return tp.transform(confSrvString, null);
-	}
-
-	public static String getMaximumTransactionTimeout() throws IOException, SAXException, TransformerException {
-		String confSrvString = getConfigurationServer();
-		if (confSrvString==null) {
-			return null;
-		}
-		return getMaximumTransactionTimeout(confSrvString);
-	}
-
-	public static String getMaximumTransactionTimeout(String configServerXml) throws IOException, SAXException, TransformerException {
-		if (configServerXml==null) {
-			return null;
-		}
-		String confSrvString = XmlUtils.removeNamespaces(configServerXml);
-		confSrvString = XmlUtils.removeNamespaces(confSrvString);
-		String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
-		return tp.transform(confSrvString, null);
-	}
-
-	public static String getSystemTransactionTimeout() {
+	public static Integer getTotalTransactionLifetimeTimeout() {
 		String confSrvString = null;
 		try {
 			confSrvString = getConfigurationServer();
 		} catch (Exception e) {
 			log.warn("Exception getting configurationServer",e);
 		}
-		if (confSrvString==null) {
+		return getTotalTransactionLifetimeTimeout(confSrvString);
+	}
+
+	public static Integer getTotalTransactionLifetimeTimeout(String configServerXml){
+		if (configServerXml==null) {
 			return null;
 		}
-		String totalTransactionLifetimeTimeout = null;
-		String maximumTransactionTimeout = null;
 		try {
-			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout(confSrvString);
-		} catch (Exception e) {
+			String confSrvString = XmlUtils.removeNamespaces(configServerXml);
+			confSrvString = XmlUtils.removeNamespaces(confSrvString);
+			String xPath = "Server/components/services/@totalTranLifetimeTimeout";
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
+			String ttlt = tp.transform(confSrvString, null);
+			if(ttlt != null) {
+				return Integer.valueOf(ttlt);
+			}
+		} catch(Exception e) {
 			log.warn("Exception getting totalTransactionLifetimeTimeout",e);
 		}
+		return null;
+	}
+
+	public static Integer getMaximumTransactionTimeout() {
+		String confSrvString = null;
 		try {
-			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout(confSrvString);
+			confSrvString = getConfigurationServer();
 		} catch (Exception e) {
+			log.warn("Exception getting configurationServer",e);
+		}
+		return getMaximumTransactionTimeout(confSrvString);
+	}
+
+	public static Integer getMaximumTransactionTimeout(String configServerXml) {
+		if (configServerXml==null) {
+			return null;
+		}
+		try {
+			String confSrvString = XmlUtils.removeNamespaces(configServerXml);
+			confSrvString = XmlUtils.removeNamespaces(confSrvString);
+			String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
+			String mtt = tp.transform(confSrvString, null);
+			if(StringUtils.isNotEmpty(mtt)) {
+				return Integer.valueOf(mtt);
+			}
+		} catch(Exception e) {
 			log.warn("Exception getting maximumTransactionTimeout",e);
 		}
-		if (totalTransactionLifetimeTimeout==null || maximumTransactionTimeout==null) {
-			return null;
-		} else {
-			if (StringUtils.isNumeric(totalTransactionLifetimeTimeout) && StringUtils.isNumeric(maximumTransactionTimeout)) {
-				int ttlf = Integer.parseInt(totalTransactionLifetimeTimeout);
-				int mtt = Integer.parseInt(maximumTransactionTimeout);
-				int stt = Math.min(ttlf, mtt);
-				return String.valueOf(stt);
-			} else {
-				return null;
-			}
-		}
+		return null;
 	}
 
 	public static String getAge(long value) {
