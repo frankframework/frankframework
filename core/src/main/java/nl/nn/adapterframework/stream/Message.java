@@ -209,19 +209,19 @@ public class Message implements Serializable {
 				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
 			}
 		}
-		if (StringUtils.isEmpty(defaultCharset)) {
-			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		if (StringUtils.isEmpty(charset)) {
+			charset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputStream");
-			return new ReaderInputStream((Reader) request, defaultCharset);
+			return new ReaderInputStream((Reader) request, charset);
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as InputStream");
 			return new ByteArrayInputStream((byte[]) request);
 		}
 		log.debug("returning String as InputStream");
-		return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
+		return new ByteArrayInputStream(request.toString().getBytes(charset));
 	}
 
 	/**

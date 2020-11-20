@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -39,6 +40,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that performs base64 encoding and decoding.
@@ -53,8 +55,8 @@ public class Base64Pipe extends StreamingPipe {
 	private String direction = "encode";
 	private int lineLength = 76;
 	private String lineSeparator = "auto";
-	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String outputType = "string";
+	private String charset = null;
+	private String outputType = "stream";
 	private boolean convertToString = true; // Deprecated, but set to true, apparently for backward compatibility. We could consider setting it false, avoiding needless conversions from bytes to string
 
 	private List<String> outputTypes = Arrays.asList("string", "bytes", "stream");
@@ -89,6 +91,15 @@ public class Base64Pipe extends StreamingPipe {
 		if(!convertToString && getDirection().equals("decode")) {
 			setOutputType("bytes");
 		}
+
+		if(charset == null) {
+			if(outputType.equals("string")) {
+				charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+				ConfigurationWarnings.add(this, log, "please consider changing the output type to bytes or stream instead"); //if charset not set, why use strings?
+			}
+		} else if(!outputType.equals("string")) {
+			ConfigurationWarnings.add(this, log, "charset can only be set when outputType='string'");
+		}
 	}
 
 	private void setLineSeparatorArray(String separator) {
@@ -110,7 +121,7 @@ public class Base64Pipe extends StreamingPipe {
 		if(getOutputType().equals("stream")) {
 			return new PipeRunResult(getForward(), base64);
 		}
-		
+
 		try (MessageOutputStream target=getTargetStream(session)) {
 			if (getOutputType().equals("string")) {
 				try (Writer writer = target.asWriter()) {
@@ -127,7 +138,6 @@ public class Base64Pipe extends StreamingPipe {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
@@ -163,7 +173,7 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
+	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "stream"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
@@ -171,7 +181,7 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to encode or decode message to or from string. (Only used when outputType=string or convert2string=true)", "utf-8"})
+	@IbisDoc({"3", "Character encoding to be used to encode or decode message to or from string. (Only used when outputType=string)", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -194,5 +204,4 @@ public class Base64Pipe extends StreamingPipe {
 	public int getLineLength() {
 		return lineLength;
 	}
-
 }

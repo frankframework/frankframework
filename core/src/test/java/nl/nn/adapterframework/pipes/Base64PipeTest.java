@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.util.Misc;
 
@@ -82,6 +83,43 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		doPipe(pipe, input.getBytes(), session);
+	}
+
+	@Test
+	public void wrongEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.configure();
+		pipe.start();
+		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
+		Message in = new Message(inputString); //Saving it with a different charset
+		System.out.println();
+		PipeRunResult encodeResult = doPipe(pipe, in, session); //Base64Pipe still works and does as told (convert a string with an incompatible charset)
+
+		assertEquals("Test120/iYych1R6ZERFeU10MTIwPQ==", encodeResult.getResult().asString().trim()); //Unreadable base64 string
+
+		pipe.setDirection("decode");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult decodeResult = doPipe(pipe, encodeResult.getResult(), session);
+		assertEquals(new String(in.asByteArray(), "UTF-8"), decodeResult.getResult().asString());
+	}
+
+	@Test
+	public void correctEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.configure();
+		pipe.start();
+		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("UTF-8");
+		Message in = new Message(inputString);
+		PipeRunResult encodeResult = doPipe(pipe, in, session);
+
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", encodeResult.getResult().asString().trim());
+
+		pipe.setDirection("decode");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult decodeResult = doPipe(pipe, encodeResult.getResult(), session);
+		assertEquals(new String(inputString, "UTF-8"), decodeResult.getResult().asString());
 	}
 
 	@Test
