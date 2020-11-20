@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +50,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 		assertNull(actual.getOverriddenFrom());
+		assertTrue(SELECTED.test(actual));
 	}
 
 	private ConfigChild selectChild(String name) {
@@ -70,10 +73,11 @@ public class FrankDocModelConfigChildrenTest {
 		assertTrue(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 		assertNull(actual.getOverriddenFrom());
+		assertFalse(SELECTED.test(actual));
 	}
 
 	@Test
-	public void whenChildSetterInheritedThenConfigChildProduced() {
+	public void whenChildInheritedFromProtectedThenChildAndNotOverriddenButAnnotationsInherited() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChild");
 		assertEquals("syntax1NameInheritedChild", actual.getSyntax1Name());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
@@ -85,6 +89,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isMandatory());
 		// The method in the parent is protected, so not overridden
 		assertNull(actual.getOverriddenFrom());
+		assertTrue(SELECTED.test(actual));
 	}
 
 	@Test
@@ -112,6 +117,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals(10, actual.getSequenceInConfig());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
+		assertTrue(SELECTED.test(actual));
 	}
 
 	@Test
@@ -129,7 +135,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(5, configChildren.size());
+		assertEquals(7, configChildren.size());
 	}
 
 	@Test
@@ -150,5 +156,29 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenConfigChildOverriddenFromGrandparentThenGrandparentTaken() {
 		ConfigChild grandChild = checkAndFindGrandChild("syntax1NameInheritedWithoutOverride");
 		assertEquals("ContainerParent", grandChild.getOverriddenFrom().getSimpleName());
+	}
+
+	@Test
+	public void whenConfigChildOverriddenNotDocumentedThenChildCreatedButNotSelected() {
+		ConfigChild actual = selectChild("syntax1NameInheritedChildNonSelected");
+		assertEquals(120, actual.getSequenceInConfig());
+		assertFalse(actual.isDocumented());
+		assertFalse(actual.isDeprecated());
+		assertNotNull(actual.getOverriddenFrom());
+		assertFalse(SELECTED.test(actual));
+	}
+
+	@Test
+	public void whenChildOverridesWithoutDocsThenNotDocumentedButAnnotationsInherited() {
+		ConfigChild actual = selectChild("syntax1NameChildOverriddenOnlyParentAnnotated");
+		assertEquals("syntax1NameChildOverriddenOnlyParentAnnotated", actual.getSyntax1Name());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
+		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
+		assertFalse(actual.isDocumented());
+		assertEquals(110, actual.getSequenceInConfig());
+		assertTrue(actual.isDeprecated());
+		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
+		// Not selected because deprecated
+		assertFalse(SELECTED.test(actual));
 	}
 }

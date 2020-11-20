@@ -16,4 +16,13 @@ public class ContainerParent {
 	@IbisDoc("20")
 	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
 	}
+
+	@IbisDoc("120")
+	public void setInheritedChildNonSelected(InheritedChildNonSelected child) {
+	}
+
+	@Deprecated
+	@IbisDoc("110")
+	public void setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated child) {
+	}
 }

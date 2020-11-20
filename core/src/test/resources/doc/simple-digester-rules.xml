@@ -7,4 +7,6 @@
   <rule pattern="*/syntax1NameChildNoDoc" registerMethod="setChildNoDoc"/>
   <rule pattern="*/syntax1NameInheritedChildDocWithOrderOverride" registerMethod="setInheritedChildDocWithOrderOverride"/>
   <rule pattern="*/syntax1NameInheritedWithoutOverride" registerMethod="setInheritedWithoutOverride"/>
+  <rule pattern="*/syntax1NameInheritedChildNonSelected" registerMethod="setInheritedChildNonSelected"/>
+  <rule pattern="*/syntax1NameChildOverriddenOnlyParentAnnotated" registerMethod="setChildOverriddenOnlyParentAnnotated"/>
 </digester-rules>

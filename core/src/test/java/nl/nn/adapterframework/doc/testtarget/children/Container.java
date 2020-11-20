@@ -32,4 +32,12 @@ public class Container extends ContainerParent {
 	@IbisDoc("10")
 	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
 	}
+
+	@Override
+	public void setInheritedChildNonSelected(InheritedChildNonSelected child) {
+	}
+
+	@Override
+	public void setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated child) {
+	}
 }
