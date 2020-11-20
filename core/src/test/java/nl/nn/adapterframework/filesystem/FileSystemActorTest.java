@@ -318,7 +318,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void fileSystemActorReadActionFromSessionKeyTest() throws Exception {
+	public void fileSystemActorReadActionFromParameterTest() throws Exception {
 		String filename = "parameterAction" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -331,7 +331,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setValue("read");
 		params.add(p);
 		params.configure();
-
+		
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
